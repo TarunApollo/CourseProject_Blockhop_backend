@@ -1,0 +1,50 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.0.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+  	id 'net.ltgt.errorprone' version '4.3.0'
+}
+
+java {
+	sourceCompatibility = '25'
+	targetCompatibility = '25'
+}
+
+group = 'ch.usi.inf.bsc.sa4'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+  	implementation("org.jspecify:jspecify")
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+  	errorprone 'com.google.errorprone:error_prone_core:2.42.0' // https://github.com/google/error-prone
+	errorprone 'com.uber.nullaway:nullaway:0.12.12' // https://github.com/uber/NullAway
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+javadoc {
+	options.tags = [ "spec.requires:cm:Requires:", "returns", "spec.effects:cm:Effects:", "spec.modifies:cm:Modifies:"  ]
+}
+
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+tasks.withType(JavaCompile).configureEach {
+	options.errorprone {
+		disableAllChecks = true // Other error prone checks are disabled
+		check("NullAway", CheckSeverity.ERROR) // bump checks from warnings (default) to errors
+		option("NullAway:JSpecifyMode") // https://github.com/uber/NullAway/wiki/JSpecify-Support
+		option("NullAway:AnnotatedPackages", "ch.usi.inf.bsc.sa4")
+	}
+	// Keep a JDK 25 baseline
+	options.release = 25
+}

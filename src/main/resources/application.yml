@@ -1,0 +1,6 @@
+spring:
+  data:
+    mongodb:
+      database: users_tutorial_lab02
+      host: localhost
+      port: 27017
