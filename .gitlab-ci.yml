@@ -1,0 +1,31 @@
+image: gradle:jdk25
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+stages:
+  - build
+  - test
+  - deploy
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+compile_job:
+  stage: build
+  script: gradle compileJava
+  artifacts:
+    when: always
+    paths:
+      - build/classes
+    expire_in: 1 hour
+
+javadoc_job:
+  stage: build
+  script: gradle javadoc
+  artifacts:
+    when: always
+    paths:
+      - build/docs
+    expire_in: 1 hour
+
