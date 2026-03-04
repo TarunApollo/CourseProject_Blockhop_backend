@@ -32,3 +32,12 @@ javadoc_job:
 test_job:
   stage: test
   script: gradle test
+
+pages:
+  stage: deploy
+  script: mv build/docs/javadoc public
+  artifacts:
+    paths:
+      - public
+  only:
+    - dev
