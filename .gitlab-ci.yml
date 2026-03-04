@@ -29,3 +29,6 @@ javadoc_job:
       - build/docs
     expire_in: 1 hour
 
+test_job:
+  stage: test
+  script: gradle test
