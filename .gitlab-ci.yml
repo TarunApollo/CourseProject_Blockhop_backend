@@ -39,5 +39,5 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - dev
+  rules: 
+    - if: $CI_COMMIT_BRANCH == "dev"
