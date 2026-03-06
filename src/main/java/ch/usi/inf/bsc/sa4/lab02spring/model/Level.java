@@ -23,6 +23,7 @@ public class Level {
     HashMap<Position, GameObject> objectLayer = new HashMap<>();
     HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
+    //TODO: make fields such as clearCondition private and add them to the constructor
     public Level(String title, String description, String creatorId) {
         this.title = title;
         this.description = description;
