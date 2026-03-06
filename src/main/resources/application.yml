@@ -18,4 +18,9 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://auth.dev.si.usi.ch/auth/realms/simurbs
-  
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
