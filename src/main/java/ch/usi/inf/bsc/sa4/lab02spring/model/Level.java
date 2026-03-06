@@ -21,4 +21,22 @@ public class Level {
     Map<String, Date> timesPlayed = new HashMap<>();
     HashMap<Position, GameObject> objectLayer = new HashMap<>();
     HashMap<Position, GroundObject> worldLayer = new HashMap<>();
+
+    public Level(String title, String description) {
+        this.title = title;
+        this.description = description;
+        this.published = false;
+        this.exitDoorOpen = false;
+    }
+
+    public String getId() {
+        return id;
+    }
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }
