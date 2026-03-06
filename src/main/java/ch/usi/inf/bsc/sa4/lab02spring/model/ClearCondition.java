@@ -1,5 +1,4 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-public class ClearCondition {   
-    
+public record ClearCondition(int targetAmount) {
 }

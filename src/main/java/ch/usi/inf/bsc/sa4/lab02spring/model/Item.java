@@ -1,5 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-public abstract class Item {
-    
+public abstract class Item extends GameObject {
+
 }
