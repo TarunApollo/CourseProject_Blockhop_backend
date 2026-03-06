@@ -3,10 +3,12 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ChangePasswordDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.SwitchEduIdUser;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -88,5 +90,12 @@ public class UserController {
   @GetMapping("/search")
   public List<UserDTO> searchUsers(@RequestParam("query") String partialName) {
     return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
+  }
+
+  @GetMapping(path = "/me")
+  @SuppressWarnings("NullAway")
+  public ResponseEntity<SwitchEduIdUser> index(OAuth2AuthenticationToken authentication) {
+    String fullName = authentication.getPrincipal().getAttribute("name");
+    return ResponseEntity.ok(new SwitchEduIdUser(fullName));
   }
 }
