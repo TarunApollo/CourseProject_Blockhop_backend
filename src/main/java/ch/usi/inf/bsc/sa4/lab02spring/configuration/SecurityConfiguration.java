@@ -12,11 +12,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfiguration {
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    return http.csrf(AbstractHttpConfigurer::disable)
+  public SecurityFilterChain filterChain(HttpSecurity http) {
+    return http.csrf(AbstractHttpConfigurer::disable) // TODO: enable CSRF after backend phase
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/users/me").authenticated()
             .anyRequest().permitAll())
+            // .anyRequest().authenticated() // oauth2 for every request (TODO: replace line 19 with this after backend phase)
         .oauth2Login(Customizer.withDefaults())
         .build();
   }
