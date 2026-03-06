@@ -11,6 +11,7 @@ import java.util.Map;
 public class Level {
     @Id
     private String id;
+    private final String creatorId;
     private String title;
     private String description;
     private boolean exitDoorOpen;
@@ -22,11 +23,13 @@ public class Level {
     private HashMap<Position, GameObject> objectLayer = new HashMap<>();
     private HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
-    public Level(String title, String description) {
+    //TODO: make fields such as clearCondition private and add them to the constructor
+    public Level(String title, String description, String creatorId) {
         this.title = title;
         this.description = description;
         this.published = false;
         this.exitDoorOpen = false;
+        this.creatorId = creatorId;
     }
     public boolean isPublished(){
         return this.published;
