@@ -52,4 +52,8 @@ public class Level {
     public void setDescription(String newDescription){
         this.description = newDescription;
     }
+
+    public void setClearCondition(ClearCondition newClearCondition) {
+        this.clearCondition = newClearCondition;
+    }
 }
