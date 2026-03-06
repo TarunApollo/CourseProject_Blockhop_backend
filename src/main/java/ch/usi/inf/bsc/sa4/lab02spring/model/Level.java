@@ -11,8 +11,10 @@ import java.util.Map;
 public class Level {
     @Id
     private String id;
-    String title;
-    String description;
+    // TODO: could be a nice to have
+    // private final String creatorId;
+    private String title;
+    private String description;
     boolean exitDoorOpen;
     boolean published;
     ClearCondition clearCondition;
