@@ -96,6 +96,7 @@ public class UserController {
   @SuppressWarnings("NullAway")
   public ResponseEntity<SwitchEduIdUser> index(OAuth2AuthenticationToken authentication) {
     String fullName = authentication.getPrincipal().getAttribute("name");
+    String token = authentication.getPrincipal().getAttribute("sub");
     return ResponseEntity.ok(new SwitchEduIdUser(fullName));
   }
 }
