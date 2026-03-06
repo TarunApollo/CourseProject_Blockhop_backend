@@ -11,8 +11,7 @@ import java.util.Map;
 public class Level {
     @Id
     private String id;
-    // TODO: could be a nice to have
-    // private final String creatorId;
+    private final String creatorId;
     private String title;
     private String description;
     boolean exitDoorOpen;
