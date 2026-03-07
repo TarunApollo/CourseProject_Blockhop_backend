@@ -51,22 +51,6 @@ public class UserService {
     return userRepository.findById(userId);
   }
 
-  /// Changes the user's password.
-  /// 
-  /// @param userId      a user id.
-  /// @param oldPassword the old password.
-  /// @param newPassword the new password.
-  /// @return an optional with the updated user if the password has been changed
-  ///         successfully. An empty option if the user does not exist.
-  /// 
-  public Optional<User> changePassword(String userId, String oldPassword, String newPassword) {
-    Optional<User> optUser = this.getById(userId);
-    return optUser.map(user -> {
-      User updatedUser = user.changePassword(oldPassword, newPassword);
-      return this.userRepository.save(updatedUser);
-    });
-  }
-
   /// Searches for users whose name contains a given string.
   /// 
   /// @param partialName a partial name to search

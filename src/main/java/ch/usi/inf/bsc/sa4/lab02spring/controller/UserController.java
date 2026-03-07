@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ChangePasswordDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.SwitchEduIdUser;
@@ -60,25 +59,6 @@ public class UserController {
   @GetMapping("/{id}")
   public ResponseEntity<UserDTO> getUser(@PathVariable String id) {
     return ResponseEntity.of(this.userService.getById(id).map(UserDTO::new));
-  }
-
-  /// Changes the password of a user.
-  /// 
-  /// @param changePasswordDTO the post request for the password change
-  /// @return if the password change has been successful, a 200 OK with the user
-  ///         dto. If the user does not exist, it returns a bad request.
-  /// @throws IllegalArgumentException an unhandled exception, resulting in 500
-  ///                                  internal server error, if the password
-  ///                                  change fails.
-  /// @spec.requires nothing
-  /// @spec.modifies the persisted user.
-  /// 
-  @PostMapping("/changePassword")
-  public ResponseEntity<UserDTO> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
-    return ResponseEntity.of(
-        this.userService
-            .changePassword(changePasswordDTO.id(), changePasswordDTO.oldPassword(), changePasswordDTO.newPassword())
-            .map(UserDTO::new));
   }
 
   /// Searches for a user's name in the system
