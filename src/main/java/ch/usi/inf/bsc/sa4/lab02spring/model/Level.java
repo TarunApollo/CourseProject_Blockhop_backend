@@ -50,4 +50,15 @@ public class Level {
     public boolean isPublished() {
         return published;
     }
+
+    public Level cloneFor(String newCreatorId) {
+        Level clone = new Level(this.title, this.description, newCreatorId);
+        clone.exitDoorOpen = this.exitDoorOpen;
+        clone.clearCondition = this.clearCondition;
+        clone.startingItem = this.startingItem;
+        clone.door = this.door;
+        clone.objectLayer = new HashMap<>(this.objectLayer);
+        clone.worldLayer = new HashMap<>(this.worldLayer);
+        return clone;
+    }
 }
