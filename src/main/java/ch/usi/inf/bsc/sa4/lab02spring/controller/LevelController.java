@@ -27,6 +27,6 @@ public class LevelController {
 
   @PutMapping("/{id}/properties")
   public ResponseEntity<Level> updateLevel(@PathVariable String id, @RequestBody UpdateLevelDTO dto) {
-    return ResponseEntity.of(this.levelService.updateLevelProperties(id, dto.title(), dto.description(), dto.clearCondition()));
+    return ResponseEntity.of(this.levelService.updateLevelProperties(id, dto));
   }
 }
