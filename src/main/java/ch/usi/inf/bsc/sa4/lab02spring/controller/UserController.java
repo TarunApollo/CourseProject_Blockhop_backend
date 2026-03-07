@@ -68,6 +68,11 @@ public class UserController {
     return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
   }
 
+  /// Authenticates a user using SwitchEduId Login.
+  ///
+  /// @param authentication token containing information about logged user
+  ///
+  /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
   @GetMapping(path = "/me")
   @SuppressWarnings("NullAway")
   public ResponseEntity<UserDTO> index(OAuth2AuthenticationToken authentication) {

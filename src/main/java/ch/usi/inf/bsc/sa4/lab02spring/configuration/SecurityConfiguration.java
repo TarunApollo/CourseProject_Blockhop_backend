@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-// @EnableWebSecurity // TODO: uncomment this line after backend phase
+@EnableWebSecurity
 public class SecurityConfiguration {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) {
