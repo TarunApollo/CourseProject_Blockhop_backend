@@ -1,19 +1,16 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ChangePasswordDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.*;
 
 /// The controller for users.
 ///
@@ -44,7 +41,7 @@ public class UserController {
   /// @return a 200 OK with the newly created user DTO.
   /// @spec.modifies the list of users in the system.
   /// @spec.requires nothing
-  ///
+  /// @deprecated only use this for testing with postman. Switcheduid login should be used instead
   @PostMapping
   public UserDTO createUser(@RequestBody CreateUserDTO createUserDTO) {
     return new UserDTO(userService.createUser(createUserDTO));
@@ -60,25 +57,6 @@ public class UserController {
     return ResponseEntity.of(this.userService.getById(id).map(UserDTO::new));
   }
 
-  /// Changes the password of a user.
-  /// 
-  /// @param changePasswordDTO the post request for the password change
-  /// @return if the password change has been successful, a 200 OK with the user
-  ///         dto. If the user does not exist, it returns a bad request.
-  /// @throws IllegalArgumentException an unhandled exception, resulting in 500
-  ///                                  internal server error, if the password
-  ///                                  change fails.
-  /// @spec.requires nothing
-  /// @spec.modifies the persisted user.
-  /// 
-  @PostMapping("/changePassword")
-  public ResponseEntity<UserDTO> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
-    return ResponseEntity.of(
-        this.userService
-            .changePassword(changePasswordDTO.id(), changePasswordDTO.oldPassword(), changePasswordDTO.newPassword())
-            .map(UserDTO::new));
-  }
-
   /// Searches for a user's name in the system
   /// 
   /// @param partialName a request param with the string to search in the user's
@@ -88,5 +66,24 @@ public class UserController {
   @GetMapping("/search")
   public List<UserDTO> searchUsers(@RequestParam("query") String partialName) {
     return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
+  }
+
+  /// Authenticates a user using SwitchEduId Login.
+  ///
+  /// @param authentication token containing information about logged user
+  ///
+  /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
+  @GetMapping(path = "/me")
+  @SuppressWarnings("NullAway")
+  public ResponseEntity<UserDTO> index(OAuth2AuthenticationToken authentication) {
+    assert authentication.getPrincipal() != null;
+    String fullName = authentication.getPrincipal().getAttribute("name");
+    String eduId = authentication.getPrincipal().getAttribute("sub");
+    assert eduId != null;
+
+    Optional<User> optUser = this.userService.getById(eduId);
+    return optUser.map(
+            user -> ResponseEntity.ok(new UserDTO(user)))
+            .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
   }
 }
