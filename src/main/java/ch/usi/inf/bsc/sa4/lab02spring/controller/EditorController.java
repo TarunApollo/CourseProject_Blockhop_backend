@@ -1,9 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 
 @RestController
@@ -15,6 +20,13 @@ public class EditorController {
     @Autowired
         public EditorController(EditorService editorService) {
         this.editorService = editorService;
+    }
+
+    @PostMapping("/{userId}/levels")
+    public LevelDTO createLevel(
+            @PathVariable String userId,
+            @RequestBody CreateLevelDTO createLevelDTO) {
+        return new LevelDTO(editorService.createLevel(userId, createLevelDTO));
     }
 
 

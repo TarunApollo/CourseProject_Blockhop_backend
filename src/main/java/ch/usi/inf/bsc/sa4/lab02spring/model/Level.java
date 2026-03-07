@@ -42,4 +42,12 @@ public class Level {
     public String getDescription() {
         return description;
     }
+
+    public String getCreatorId() {
+        return creatorId;
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
 }
