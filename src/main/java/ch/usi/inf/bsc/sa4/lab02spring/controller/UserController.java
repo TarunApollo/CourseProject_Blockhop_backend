@@ -5,11 +5,14 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 /// The controller for users.
@@ -75,10 +78,17 @@ public class UserController {
   /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
   @GetMapping(path = "/me")
   @SuppressWarnings("NullAway")
-  public ResponseEntity<UserDTO> index(OAuth2AuthenticationToken authentication) {
-    assert authentication.getPrincipal() != null;
-    String fullName = authentication.getPrincipal().getAttribute("name");
-    String eduId = authentication.getPrincipal().getAttribute("sub");
+  public ResponseEntity<UserDTO> index(Authentication authentication) {
+
+    Object principal = authentication.getPrincipal();
+    Map<String, Object> attributes = Map.of();
+    if (authentication.getPrincipal() instanceof Jwt jwt) {
+      attributes = jwt.getClaims();
+    } else if (principal instanceof OAuth2User oAuth2User) {
+      attributes = oAuth2User.getAttributes();
+    }
+    String fullName = (String) attributes.get("name");
+    String eduId = (String) attributes.get("sub");
     assert eduId != null;
 
     Optional<User> optUser = this.userService.getById(eduId);
