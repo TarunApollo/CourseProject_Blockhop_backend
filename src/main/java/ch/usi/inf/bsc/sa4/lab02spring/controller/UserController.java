@@ -2,19 +2,15 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.SwitchEduIdUser;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /// The controller for users.
 ///
@@ -45,7 +41,7 @@ public class UserController {
   /// @return a 200 OK with the newly created user DTO.
   /// @spec.modifies the list of users in the system.
   /// @spec.requires nothing
-  ///
+  /// @deprecated only use this for testing with postman. Switcheduid login should be used instead
   @PostMapping
   public UserDTO createUser(@RequestBody CreateUserDTO createUserDTO) {
     return new UserDTO(userService.createUser(createUserDTO));
@@ -74,9 +70,15 @@ public class UserController {
 
   @GetMapping(path = "/me")
   @SuppressWarnings("NullAway")
-  public ResponseEntity<SwitchEduIdUser> index(OAuth2AuthenticationToken authentication) {
+  public ResponseEntity<UserDTO> index(OAuth2AuthenticationToken authentication) {
+    assert authentication.getPrincipal() != null;
     String fullName = authentication.getPrincipal().getAttribute("name");
-    String token = authentication.getPrincipal().getAttribute("sub");
-    return ResponseEntity.ok(new SwitchEduIdUser(fullName));
+    String eduId = authentication.getPrincipal().getAttribute("sub");
+    assert eduId != null;
+
+    Optional<User> optUser = this.userService.getById(eduId);
+    return optUser.map(
+            user -> ResponseEntity.ok(new UserDTO(user)))
+            .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
   }
 }

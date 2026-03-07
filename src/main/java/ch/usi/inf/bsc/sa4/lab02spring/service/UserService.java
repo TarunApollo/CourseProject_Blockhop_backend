@@ -30,14 +30,14 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-  /// Creates a new user and persists it in the DB.
+  /// Creates a new user (using SwitchEduId login information) and persists it in the DB.
   /// 
-  /// @param createUserDTO the data to create a new user.
+  /// @param dto the data to create a new user.
   /// @return the newly created user.
   /// @spec.requires <code>createUserDTO != null</code>
   /// 
-  public User createUser(CreateUserDTO createUserDTO) {
-    User newUser = new User(createUserDTO.name(), createUserDTO.password());
+  public User createUser(CreateUserDTO dto) {
+    User newUser = new User(dto.id(), dto.fullName());
     return this.userRepository.save(newUser);
   }
 
