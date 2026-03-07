@@ -16,6 +16,8 @@ public class Level {
     private String description;
     boolean exitDoorOpen;
     boolean published;
+    private int width;
+    private int height;
     ClearCondition clearCondition;
     StartFlag startingItem;
     ExitDoor door;
