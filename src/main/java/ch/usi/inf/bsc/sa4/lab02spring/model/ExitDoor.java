@@ -11,4 +11,12 @@ public class ExitDoor {
     public ExitDoor(ExitDoor other) {
         this.isOpen = other.isOpen;
     }
+
+    public boolean isOpen() {
+        return isOpen;
+    }
+
+    public void setOpen(boolean open) {
+        this.isOpen = open;
+    }
 }
