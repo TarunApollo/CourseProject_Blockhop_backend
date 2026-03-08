@@ -1,0 +1,3 @@
+package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
+
+public record CloneLevelDTO(String sourceLevelId) {}

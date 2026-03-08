@@ -79,7 +79,9 @@ public class UserController {
   @GetMapping(path = "/me")
   @SuppressWarnings("NullAway")
   public ResponseEntity<UserDTO> index(Authentication authentication) {
-
+    // if (authentication == null) {
+    //  return ResponseEntity.badRequest().build();
+    //}
     Object principal = authentication.getPrincipal();
     Map<String, Object> attributes = Map.of();
     if (authentication.getPrincipal() instanceof Jwt jwt) {

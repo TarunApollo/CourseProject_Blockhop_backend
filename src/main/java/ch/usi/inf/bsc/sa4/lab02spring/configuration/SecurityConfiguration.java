@@ -16,6 +16,8 @@ public class SecurityConfiguration {
         return http.csrf(AbstractHttpConfigurer::disable) // TODO: enable CSRF after backend phase
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/me").authenticated()
+                        .requestMatchers("/users/**").authenticated()
+                        .requestMatchers("/levels/**").authenticated()
                         .anyRequest().permitAll())
                 // .anyRequest().authenticated() // oauth2 for every request (TODO: replace line 19 with this after backend phase)
                 .oauth2Login(Customizer.withDefaults())
