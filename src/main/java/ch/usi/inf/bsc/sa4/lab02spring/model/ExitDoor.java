@@ -7,4 +7,8 @@ public class ExitDoor {
     // No-arg constructor required by Spring Data MongoDB for deserialization.
     //
     public ExitDoor() {}
+
+    public ExitDoor(ExitDoor other) {
+        this.isOpen = other.isOpen;
+    }
 }
