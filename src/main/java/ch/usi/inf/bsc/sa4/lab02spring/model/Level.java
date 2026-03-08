@@ -17,8 +17,8 @@ public class Level {
     private String description;
     boolean exitDoorOpen;
     boolean published;
-    private int width;
-    private int height;
+    private final int width = 256;
+    private final int height = 14;
     ClearCondition clearCondition;
     StartFlag startingItem;
     ExitDoor door;
@@ -60,8 +60,11 @@ public class Level {
         clone.clearCondition = this.clearCondition;
         clone.startingItem = this.startingItem;
         clone.door = this.door;
-        clone.objectLayer = new HashMap<>(this.objectLayer);
-        clone.worldLayer = new HashMap<>(this.worldLayer);
+        clone.objectLayer = new HashMap<>();
+        this.objectLayer.forEach((key, value) ->
+                clone.objectLayer.put(key, value.copy()));
+        clone.worldLayer = new HashMap<>();
+        clone.worldLayer.putAll(this.worldLayer);
         return clone;
     }
 }
