@@ -28,15 +28,9 @@ public class LevelService {
             if (level.isPublished()) {
                 throw new RuntimeException("Level is already published");
             }
-        if (dto.title() != null) {
-            level.setTitle(dto.title());
-        }
-        if (dto.description() != null) {
-            level.setDescription(dto.description());
-        }
-        if (dto.clearCondition() != null) {
-            level.setClearCondition(dto.clearCondition());
-        }
+        dto.title().ifPresent(level::setTitle);
+        dto.description().ifPresent(level::setDescription);
+        dto.clearCondition().ifPresent(level::setClearCondition);
         return levelRepository.save(level);
         });
     }
