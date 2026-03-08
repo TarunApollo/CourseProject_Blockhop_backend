@@ -17,8 +17,8 @@ public class Level {
     private String description;
     boolean exitDoorOpen;
     boolean published;
-    private final int width = 256;
-    private final int height = 14;
+    private int width;
+    private int height;
     ClearCondition clearCondition;
     StartFlag startingItem;
     ExitDoor door;
@@ -33,7 +33,9 @@ public class Level {
         this.description = description;
         this.published = false;
         this.exitDoorOpen = false;
-        this.creatorId = creatorId;
+        this.creatorId = creatorId;        
+        this.width = 256;
+        this.height = 14;
     }
 
     public String getId() {
