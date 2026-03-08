@@ -6,6 +6,7 @@ public class Slime extends Enemy {
         super();
     }
 
+    @Override
     public Slime copy() {
         return new Slime();
     }
