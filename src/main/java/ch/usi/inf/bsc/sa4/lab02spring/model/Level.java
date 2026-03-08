@@ -1,13 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("NullAway.Init")
+@Document(collection = "levels")
 public class Level {
     @Id
     private String id;
@@ -16,6 +17,8 @@ public class Level {
     private String description;
     private boolean exitDoorOpen;
     private boolean published;
+    private final int width = 256;
+    private final int height = 14;
     private ClearCondition clearCondition;
     private StartFlag startingItem;
     private ExitDoor door;
@@ -55,5 +58,23 @@ public class Level {
 
     public void setClearCondition(ClearCondition newClearCondition) {
         this.clearCondition = newClearCondition;
+    }
+
+    public String getCreatorId() {
+        return creatorId;
+    }
+
+    public Level cloneFor(String newCreatorId) {
+        Level clone = new Level(this.title, this.description, newCreatorId);
+        clone.exitDoorOpen = this.exitDoorOpen;
+        clone.clearCondition = this.clearCondition;
+        clone.startingItem = this.startingItem;
+        clone.door = this.door;
+        clone.objectLayer = new HashMap<>();
+        this.objectLayer.forEach((key, value) ->
+                clone.objectLayer.put(key, value.copy()));
+        clone.worldLayer = new HashMap<>();
+        clone.worldLayer.putAll(this.worldLayer);
+        return clone;
     }
 }
