@@ -60,8 +60,11 @@ public class Level {
         clone.clearCondition = this.clearCondition;
         clone.startingItem = this.startingItem;
         clone.door = this.door;
-        clone.objectLayer = new HashMap<>(this.objectLayer);
-        clone.worldLayer = new HashMap<>(this.worldLayer);
+        clone.objectLayer = new HashMap<>();
+        this.objectLayer.forEach((key, value) ->
+                clone.objectLayer.put(key, value.copy()));
+        clone.worldLayer = new HashMap<>();
+        clone.worldLayer.putAll(this.worldLayer);
         return clone;
     }
 }
