@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("NullAway.Init")
+@Document(collection = "levels")
 public class Level {
     @Id
     private String id;
