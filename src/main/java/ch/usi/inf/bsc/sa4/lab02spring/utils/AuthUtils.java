@@ -29,5 +29,5 @@ public final class AuthUtils {
         }
     }
 
-    public static String getLevelIdFromAuth(Authenticaion authentication)
+
 }
