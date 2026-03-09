@@ -1,9 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
@@ -48,6 +45,7 @@ public class LevelController {
   @GetMapping()
   public List<LevelDTO> getLevels() {
     var levels = this.levelService.getAllLevels();
+    System.out.println(levels);
     return levels.stream().map(LevelDTO::new).toList();
   }
   ///
@@ -76,5 +74,10 @@ public class LevelController {
   public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
     String userId = getUserIdFromAuth(authentication);
     return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
+  }
+
+  @PostMapping("/createlevelSingleTile")
+  public ResponseEntity<Level> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
+    return ResponseEntity.ok(this.levelService.createLevelSingleTile(dto));
   }
 }

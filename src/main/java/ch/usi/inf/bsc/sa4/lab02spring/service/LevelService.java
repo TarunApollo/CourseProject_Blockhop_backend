@@ -1,8 +1,8 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelSingleTileDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -14,6 +14,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -57,5 +58,15 @@ public class LevelService {
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);
         return levelRepository.save(level);
+    }
+
+    public Level createLevelSingleTile(CreateLevelSingleTileDTO dto){
+        final String creatorId = "DEFAULT_TEST";
+        Position pos = new Position(dto.posX(), dto.posY());
+        Level level = new Level(dto.title(), dto.description(), creatorId);
+        Map<Position, GameObject> map = level.getObjectLayer();
+        GameObject gameObject = new Coin(0, pos, 100);
+        map.put(pos, gameObject);
+        return this.levelRepository.save(level);
     }
 }
