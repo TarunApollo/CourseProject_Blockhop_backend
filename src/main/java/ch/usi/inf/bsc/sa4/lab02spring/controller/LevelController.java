@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
@@ -77,4 +78,14 @@ public class LevelController {
     String userId = getUserIdFromAuth(authentication);
     return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
   }
+
+  
+//   @PutMapping("/{levelId}/edit")
+//   public ResponseEntity<Level> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto){
+//     String userId = getUserIdFromAuth(authentication);
+//     return ResponseEntity.ok();
+
+     
+//   }
 }
+
