@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
@@ -21,8 +20,8 @@ public class Level {
     private int width;
     private int height;
     ClearCondition clearCondition;
-    Optional<StartFlag> startingItem = Optional.empty();
-    Optional<ExitDoor> door = Optional.empty();
+    StartFlag startingItem;
+    ExitDoor door;
     Map<String, Date> timesPlayed = new HashMap<>();
     HashMap<Position, GameObject> objectLayer = new HashMap<>();
     HashMap<Position, GroundObject> worldLayer = new HashMap<>();
@@ -64,8 +63,8 @@ public class Level {
         clone.exitDoorOpen = this.exitDoorOpen;
         clone.clearCondition = this.clearCondition;
         // added for deepcopying
-        clone.startingItem = this.startingItem.map(s -> (StartFlag) s.copy());
-        clone.door = this.door.map(ExitDoor::new);
+        clone.startingItem = this.startingItem;
+        clone.door = this.door;
         clone.objectLayer = new HashMap<>();
         this.objectLayer.forEach((key, value) -> clone.objectLayer.put(key, value.copy()));
         clone.worldLayer = new HashMap<>();
