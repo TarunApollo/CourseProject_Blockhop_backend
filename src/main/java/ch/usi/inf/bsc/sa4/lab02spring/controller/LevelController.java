@@ -80,12 +80,10 @@ public class LevelController {
   }
 
   
-//   @PutMapping("/{levelId}/edit")
-//   public ResponseEntity<Level> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto){
-//     String userId = getUserIdFromAuth(authentication);
-//     return ResponseEntity.ok();
 
+
+    
      
-//   }
-}
+  }
+
 

@@ -44,6 +44,12 @@ public class LevelService {
     public List<Level> getAllLevels() {
         return levelRepository.findAll();
     }
+    public String creator(String levelId){
+        Level level = levelRepository.findById(levelId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        return level.getCreatorId();
+    }
+    
+    
     public Level updateLevelProperties(String userId ,String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         String creator = level.getCreatorId();
