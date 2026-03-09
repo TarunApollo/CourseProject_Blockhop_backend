@@ -13,22 +13,20 @@ public class User {
     @Id
     private final String id; // switchEduId
     private final String name;
-    private final Set<String> completedLevelsIds;
-    private final Set<String> playedLevelsIds;
+    private final Set<Level> completedLevels = new HashSet<>();
+    private final Set<Level> playedLevels = new HashSet<>();
 
     @PersistenceCreator
-    public User(String id, String name, Set<String> completedLevelsIds, Set<String> playedLevelsIds) {
+    public User(String id, String name, Set<Level> completedLevels, Set<Level> playedLevels) {
         this.id = id;
         this.name = name;
-        this.completedLevelsIds = completedLevelsIds == null ? new HashSet<>() : completedLevelsIds;
-        this.playedLevelsIds = playedLevelsIds == null ? new HashSet<>() : playedLevelsIds;
+        this.completedLevels.addAll(completedLevels);
+        this.playedLevels.addAll(playedLevels);
     }
 
     public User(String id, String name) {
         this.id = id;
         this.name = name;
-        this.completedLevelsIds = new HashSet<>();
-        this.playedLevelsIds = new HashSet<>();
     }
 
     public String getId() {
@@ -39,7 +37,7 @@ public class User {
         return name;
     }
 
-    public Set<String> getCompletedLevelsIds() { return completedLevelsIds; }
+    public Set<Level> getCompletedLevels() { return completedLevels; }
 
-    public Set<String> getPlayedLevelsIds() { return playedLevelsIds; }
+    public Set<Level> getPlayedLevels() { return playedLevels; }
 }
