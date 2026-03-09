@@ -66,8 +66,9 @@ public class LevelController {
   }
   ///
   /// updates the level if present 
-  /// @param levelId
-  /// @param dto
+  /// @param authentication abstract token for authentication
+  /// @param levelId id of the level being changed
+  /// @param dto dtat tranfer object holding the data to be updated.
   /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
   /// 
   
