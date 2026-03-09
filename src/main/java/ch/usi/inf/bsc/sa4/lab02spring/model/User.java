@@ -1,28 +1,23 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+// @SuppressWarnings("NullAway.Init")
 @Document(collection = "users")
-@SuppressWarnings("NullAway.Init")
 public class User {
     @Id
     private final String id; // switchEduId
     private final String name;
-    private final Set<Level> completedLevels = new HashSet<>();
-    private final Set<Level> playedLevels = new HashSet<>();
-
-    @PersistenceCreator
-    public User(String id, String name, Set<Level> completedLevels, Set<Level> playedLevels) {
-        this.id = id;
-        this.name = name;
-        this.completedLevels.addAll(completedLevels);
-        this.playedLevels.addAll(playedLevels);
-    }
+    @DBRef
+    private Set<Level> levelsPlayed = new HashSet<>();
+    @DBRef
+    private Set<Level> levelsCompleted = new HashSet<>();
 
     public User(String id, String name) {
         this.id = id;
@@ -37,7 +32,19 @@ public class User {
         return name;
     }
 
-    public Set<Level> getCompletedLevels() { return completedLevels; }
+    public Set<Level> getLevelsPlayed() {
+        return levelsPlayed;
+    }
 
-    public Set<Level> getPlayedLevels() { return playedLevels; }
+    public Set<Level> getLevelsCompleted() {
+        return levelsCompleted;
+    }
+
+    public void addPlayedLevel(Level level) {
+        this.levelsPlayed.add(level);
+    }
+
+    public void addCompletedLevel(Level level) {
+        this.levelsCompleted.add(level);
+    }
 }
