@@ -33,6 +33,14 @@ public class Level {
         this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
     }
 
+    public Level cloneFor(String newCreatorId) {
+        Level clone = new Level(this.title, this.description, newCreatorId);
+        clone.clearCondition = this.clearCondition;
+        clone.objectLayer = new HashMap<>(this.objectLayer);
+        clone.worldLayer = new HashMap<>(this.worldLayer);
+        return clone;
+    }
+
     public String getId() {
         return id;
     }
@@ -83,13 +91,5 @@ public class Level {
 
     public void setClearCondition(ClearCondition clearCondition) {
         this.clearCondition = clearCondition;
-    }
-
-    public Level cloneFor(String newCreatorId) {
-        Level clone = new Level(this.title, this.description, newCreatorId);
-        clone.clearCondition = this.clearCondition;
-        clone.objectLayer = new HashMap<>(this.objectLayer);
-        clone.worldLayer = new HashMap<>(this.worldLayer);
-        return clone;
     }
 }
