@@ -34,8 +34,8 @@ public class EditorController {
   /// Allows creator to edit unpublished level
   /// @param authentication abstract token for authentication
   /// @param levelId id of the level being changed
-  /// @param dto dtat tranfer object holding the data to be updated.
-  /// @return a 200 if user is authenticated,is the creator and levels exists. Otherwise a 404 if level doesn't exist and a  401 if user  not authenticated or is not the creator
+  /// @param dto data tranfer object holding the data to be updated.
+  /// @return a 200 if user is authenticated,is the creator, the level is unpublished and levels exists. Otherwise a 404 if level doesn't exist and a 401 if user not authenticated, the level is published, or is not the creator
   /// 
   
 
@@ -43,7 +43,9 @@ public class EditorController {
   public ResponseEntity<Level> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto){
     String userId = getUserIdFromAuth(authentication);
     String creatorId = this.levelService.creator(levelId);
-    if(creatorId.equals(userId) == false){
+    Level level = this.levelService.getLevelbyId(levelId);
+    Boolean isPublished = this.levelService.published(level);
+    if(creatorId.equals(userId) == false && !isPublished){
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     } 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // will be different but i will update it with the editorService methods
