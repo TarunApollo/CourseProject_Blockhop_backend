@@ -8,7 +8,6 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
