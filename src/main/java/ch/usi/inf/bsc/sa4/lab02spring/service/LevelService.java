@@ -47,7 +47,7 @@ public class LevelService {
     public Level updateLevelProperties(String userId ,String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         String creator = level.getCreatorId();
-        if (creator != userId){
+        if (!userId.equals(creator)){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
         if(level.isPublished()){
