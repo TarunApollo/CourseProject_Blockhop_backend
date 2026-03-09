@@ -11,7 +11,6 @@ public class User {
     @Id
     private final String id; // switchEduId
     private final String name;
-    private Set<String> levels;
 
     @PersistenceCreator
     public User(String id, String name) {
