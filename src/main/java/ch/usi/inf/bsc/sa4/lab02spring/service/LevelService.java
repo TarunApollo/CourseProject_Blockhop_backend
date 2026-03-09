@@ -43,9 +43,12 @@ public class LevelService {
     public List<Level> getAllLevels() {
         return levelRepository.findAll();
     }
-    public Optional<Level> updateLevelProperties(String levelId, UpdateLevelDTO dto) {
+    public Optional<Level> updateLevelProperties(String userId ,String levelId, UpdateLevelDTO dto) {
         Optional<Level> optLevel = levelRepository.findById(levelId);
         return optLevel.map(level -> {
+            if (!level.getCreatorId().equals(userId)) {
+                throw new IllegalArgumentException("User is not the creator of this level.");
+            }
             if (level.isPublished()) {
                 throw new LevelPublishedException("Level is already published.");
             }

@@ -71,8 +71,9 @@ public class LevelController {
   /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
   /// 
   // (TODO : Authenticate user before this as well??)
-  @PutMapping("/{id}/properties")
-  public ResponseEntity<Level> updateLevel(@PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
-    return ResponseEntity.of(this.levelService.updateLevelProperties(levelId, dto));
+  @PutMapping("/{levelId}/properties")
+  public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
+    String userId = getUserIdFromAuth(authentication);
+    return ResponseEntity.of(this.levelService.updateLevelProperties(userId,levelId, dto));
   }
 }
