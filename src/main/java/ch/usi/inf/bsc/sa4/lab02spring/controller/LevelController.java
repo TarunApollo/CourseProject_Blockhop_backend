@@ -10,10 +10,6 @@ import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,32 +28,34 @@ public class LevelController {
   public LevelController(LevelService levelService, EditorService editorService) {
     this.levelService = levelService;
   }
-
+  ///
   /// Creates a new empty level and returns a level dto
-  /// TODO: javadoc!
+  /// must be authorised and it must have a completeLevelDTO to return a level
   /// @param authentication abstract token for authentication (either jwt or oauth2)
   /// @param createLevelDTO dto containing the necessary information to create a brand-new level
   /// @return a 200 if OK otherwise a 401 if the user is not authenticated
+  /// 
   @PostMapping()
   public ResponseEntity<LevelDTO> createLevel(Authentication authentication, @RequestBody CreateLevelDTO createLevelDTO) {
     String userId = getUserIdFromAuth(authentication);
     return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
   }
-
-  /// Return a list of the levels present in the collection
-  /// TODO: javadoc!
   ///
+  /// Return a list of the levels present in the collection
+  /// a parameterless method that returns all the available levels
   /// @return list of levels
+  /// 
   @GetMapping()
   public List<LevelDTO> getLevels() {
     var levels = this.levelService.getAllLevels();
     return levels.stream().map(LevelDTO::new).toList();
   }
-
-  /// Copies the given level if present and if the user is the creator of such level
-  /// TODO: javadoc!
   ///
+  /// Copies the given level if present and if the user is the creator of such level
+  /// @param authentication abstract token for authentication (either jwt or oauth2)
+  /// @param cloneLevelDTO dto containing the necessary information to clone the level
   /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
+  /// 
   @PostMapping("/clone")
   public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication, @RequestBody CloneLevelDTO cloneLevelDTO) {
     String userId = getUserIdFromAuth(authentication);
@@ -66,8 +64,15 @@ public class LevelController {
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
   }
+  ///
+  /// updates the level if present (TODO : Authenticate user before this as well??)
+  /// @param levelId
+  /// @param dto
+  /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
+  /// 
+  // (TODO : Authenticate user before this as well??)
   @PutMapping("/{id}/properties")
-  public ResponseEntity<Level> updateLevel(@PathVariable String id, @RequestBody UpdateLevelDTO dto) {
-    return ResponseEntity.of(this.levelService.updateLevelProperties(id, dto));
+  public ResponseEntity<Level> updateLevel(@PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
+    return ResponseEntity.of(this.levelService.updateLevelProperties(levelId, dto));
   }
 }

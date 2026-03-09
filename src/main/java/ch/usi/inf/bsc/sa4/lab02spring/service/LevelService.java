@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 import java.util.List;
 import java.util.Objects;
@@ -46,7 +47,7 @@ public class LevelService {
         Optional<Level> optLevel = levelRepository.findById(levelId);
         return optLevel.map(level -> {
             if (level.isPublished()) {
-                throw new RuntimeException("Level is already published");
+                throw new LevelPublishedException("Level is already published.");
             }
         dto.title().ifPresent(level::setTitle);
         dto.description().ifPresent(level::setDescription);
