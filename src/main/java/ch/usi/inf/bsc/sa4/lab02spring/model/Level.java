@@ -23,6 +23,7 @@ public class Level {
     private HashMap<Position, GameObject> objectLayer = new HashMap<>();
     private HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
+    //TODO: make fields such as clearCondition private and add them to the constructor
     public Level(String title, String description, String creatorId) {
         this.title = title;
         this.description = description;
@@ -40,11 +41,13 @@ public class Level {
         clone.worldLayer = new HashMap<>(this.worldLayer);
         return clone;
     }
+    public boolean isPublished(){
+        return this.published;
+    }
 
     public String getId() {
         return id;
     }
-
     public String getTitle() {
         return title;
     }
@@ -55,10 +58,6 @@ public class Level {
 
     public String getCreatorId() {
         return creatorId;
-    }
-
-    public boolean isPublished() {
-        return published;
     }
 
     public ClearCondition getClearCondition() {
