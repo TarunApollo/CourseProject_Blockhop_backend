@@ -15,29 +15,36 @@ public class Level {
     private final String creatorId;
     private String title;
     private String description;
-    boolean exitDoorOpen;
-    boolean published;
-    private final int width = 256;
-    private final int height = 14;
-    ClearCondition clearCondition;
-    StartFlag startingItem;
-    ExitDoor door;
-    Map<String, Date> timesPlayed = new HashMap<>();
-    HashMap<Position, GameObject> objectLayer = new HashMap<>();
-    HashMap<Position, GroundObject> worldLayer = new HashMap<>();
+    private boolean published;
+    private int width;
+    private int height;
+    private ClearCondition clearCondition;
+    private final Map<String, Date> timesPlayed = new HashMap<>();
+    private HashMap<Position, GameObject> objectLayer = new HashMap<>();
+    private HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
-    //TODO: make fields such as clearCondition private and add them to the constructor
     public Level(String title, String description, String creatorId) {
         this.title = title;
         this.description = description;
         this.published = false;
-        this.exitDoorOpen = false;
         this.creatorId = creatorId;
+        this.width = 256;
+        this.height = 14;
+        this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
+    }
+
+    public Level cloneFor(String newCreatorId) {
+        Level clone = new Level(this.title, this.description, newCreatorId);
+        clone.clearCondition = this.clearCondition;
+        clone.objectLayer = new HashMap<>(this.objectLayer);
+        clone.worldLayer = new HashMap<>(this.worldLayer);
+        return clone;
     }
 
     public String getId() {
         return id;
     }
+
     public String getTitle() {
         return title;
     }
@@ -54,17 +61,35 @@ public class Level {
         return published;
     }
 
-    public Level cloneFor(String newCreatorId) {
-        Level clone = new Level(this.title, this.description, newCreatorId);
-        clone.exitDoorOpen = this.exitDoorOpen;
-        clone.clearCondition = this.clearCondition;
-        clone.startingItem = this.startingItem;
-        clone.door = this.door;
-        clone.objectLayer = new HashMap<>();
-        this.objectLayer.forEach((key, value) ->
-                clone.objectLayer.put(key, value.copy()));
-        clone.worldLayer = new HashMap<>();
-        clone.worldLayer.putAll(this.worldLayer);
-        return clone;
+    public ClearCondition getClearCondition() {
+        return clearCondition;
+    }
+
+    public Map<String, Date> getTimesPlayed() {
+        return timesPlayed;
+    }
+
+    public HashMap<Position, GameObject> getObjectLayer() {
+        return objectLayer;
+    }
+
+    public HashMap<Position, GroundObject> getWorldLayer() {
+        return worldLayer;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
+    }
+
+    public void setClearCondition(ClearCondition clearCondition) {
+        this.clearCondition = clearCondition;
     }
 }
