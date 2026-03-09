@@ -65,12 +65,12 @@ public class LevelController {
             .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
   }
   ///
-  /// updates the level if present (TODO : Authenticate user before this as well??)
+  /// updates the level if present 
   /// @param levelId
   /// @param dto
   /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
   /// 
-  // (TODO : Authenticate user before this as well??)
+  
   @PutMapping("/{levelId}/properties")
   public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
     String userId = getUserIdFromAuth(authentication);
