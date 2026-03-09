@@ -74,6 +74,6 @@ public class LevelController {
   @PutMapping("/{levelId}/properties")
   public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
     String userId = getUserIdFromAuth(authentication);
-    return ResponseEntity.of(this.levelService.updateLevelProperties(userId,levelId, dto));
+    return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
   }
 }
