@@ -8,20 +8,27 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-// @SuppressWarnings("NullAway.Init")
 @Document(collection = "users")
 public class User {
     @Id
     private final String id; // switchEduId
     private final String name;
     @DBRef
-    private Set<Level> levelsPlayed = new HashSet<>();
+    private final Set<Level> levelsPlayed = new HashSet<>();
     @DBRef
-    private Set<Level> levelsCompleted = new HashSet<>();
+    private final Set<Level> levelsCompleted = new HashSet<>();
 
     public User(String id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    @PersistenceCreator
+    public User(String id, String name, Set<Level> levelsPlayed, Set<Level> levelsCompleted) {
+        this.id = id;
+        this.name = name;
+        this.levelsPlayed.addAll(levelsPlayed);
+        this.levelsCompleted.addAll(levelsCompleted);
     }
 
     public String getId() {
