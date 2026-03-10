@@ -17,22 +17,18 @@ public class Level {
     private String title;
     private String description;
     private boolean published;
-    private int width;
-    private int height;
-    private ClearCondition clearCondition;
+    private final int width = 256;
+    private final int height = 14;
+    private ClearCondition clearCondition = new ClearCondition(ConditionType.NONE, 0);
     private final Map<String, Date> timesPlayed = new HashMap<>();
-    private HashMap<Position, GameObject> objectLayer = new HashMap<Position, GameObject>();
-    private HashMap<Position, GroundObject> worldLayer = new HashMap<Position, GroundObject>();
+    private final HashMap<Position, GameObject> objectLayer = new HashMap<>();
+    private final HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
-    //TODO: make fields such as clearCondition private and add them to the constructor
     public Level(String title, String description, String creatorId) {
         this.title = title;
         this.description = description;
         this.published = false;
         this.creatorId = creatorId;
-        this.width = 256;
-        this.height = 14;
-        this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
     }
 
     @PersistenceCreator
@@ -41,21 +37,22 @@ public class Level {
         this.title = title;
         this.description = description;
         this.published = published;
-        this.width = width;
-        this.height = height;
         this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
         this.timesPlayed.putAll(timesPlayed);
     }
 
-    public Level cloneFor(String newCreatorId) {
-        Level clone = new Level(this.title, this.description, newCreatorId);
-        clone.clearCondition = this.clearCondition;
-        clone.objectLayer = new HashMap<Position, GameObject>(this.objectLayer);
-        clone.worldLayer = new HashMap<Position, GroundObject>(this.worldLayer);
-        return clone;
+    private Level(String title, String description, String creatorId, HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer) {
+        this(title, description, creatorId);
+        this.objectLayer.putAll(objectLayer);
+        this.worldLayer.putAll(worldLayer);
     }
+
+    public Level cloneFor(String newCreatorId) {
+        return new Level(this.title, this.description, newCreatorId, this.objectLayer, this.worldLayer);
+    }
+
     public boolean isPublished(){
         return this.published;
     }
@@ -86,6 +83,19 @@ public class Level {
     public Map<Position, GroundObject> getWorldLayer() {
         return Map.copyOf(this.worldLayer);
     }
+
+    public Map<String, Date> getTimesPlayed() {
+        return Map.copyOf(this.timesPlayed);
+    }
+
+    public void putObjectLayer(Position pos, GameObject gameObject) {
+        this.objectLayer.put(pos, gameObject);
+    }
+
+    public void putWorldLayer(Position pos, GroundObject groundObject) {
+        this.worldLayer.put(pos, groundObject);
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
