@@ -45,14 +45,15 @@ public class EditorController {
     String creatorId = this.levelService.creator(levelId);
     Level level = this.levelService.getLevelbyId(levelId);
     Boolean isPublished = this.levelService.published(level);
+    //
+    // also, you dont have to worry about any of this logic here, 
+    // just replicate whatever I did in for the level controller 
+    //
+    // && should be ||, but you can remove this as im checking this already
     if(creatorId.equals(userId) == false && !isPublished){
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     } 
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // will be different but i will update it with the editorService methods
-
-
-
-
 
 }
 }
