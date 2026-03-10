@@ -66,7 +66,9 @@ public class LevelService {
         Level level = new Level(dto.title(), dto.description(), creatorId);
         Map<Position, GameObject> map = level.getObjectLayer();
         GameObject gameObject = new Coin(0, pos, 100);
+        Box boxObject = new Box(1, new Position(3,3), BoxContentType.GOLD);
         map.put(pos, gameObject);
+        map.put(boxObject.pos(), boxObject);
         return this.levelRepository.save(level);
     }
 }

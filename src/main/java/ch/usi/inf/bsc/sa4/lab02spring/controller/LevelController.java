@@ -1,9 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,4 +82,13 @@ public class LevelController {
   public ResponseEntity<Level> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
     return ResponseEntity.ok(this.levelService.createLevelSingleTile(dto));
   }
+
+  @GetMapping("/{levelId}/pos")
+  public ResponseEntity<GameObject> getSomething(Authentication authentication,  @PathVariable String levelId) {
+    String userId = getUserIdFromAuth(authentication);
+    var level = this.levelService.getAllLevels().stream().filter((Level x) -> x.getId().equals(levelId)).findFirst();
+    var object = level.map((Level l) -> l.getObjectLayer().get(new Position(5, 10)));
+    return ResponseEntity.of(object);
+  }
+
 }

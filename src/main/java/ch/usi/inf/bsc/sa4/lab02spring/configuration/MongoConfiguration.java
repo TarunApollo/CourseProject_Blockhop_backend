@@ -19,10 +19,10 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         return "test";
     }
 
-    @Override
-    protected Set<Class<?>> getInitialEntitySet() {
-        return Collections.singleton(Coin.class);
-    }
+//    @Override
+//    protected Set<Class<?>> getInitialEntitySet() {
+//        return Set.of()(Coin.class);
+//    }
 
     @WritingConverter
     static public class PositionToStringConverter implements Converter<Position, String> {

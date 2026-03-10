@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -20,8 +21,8 @@ public class Level {
     private int height;
     private ClearCondition clearCondition;
     private final Map<String, Date> timesPlayed = new HashMap<>();
-    private HashMap<Position, GameObject> objectLayer = new HashMap<>();
-    private HashMap<Position, GroundObject> worldLayer = new HashMap<>();
+    private HashMap<Position, GameObject> objectLayer = new HashMap<Position, GameObject>();
+    private HashMap<Position, GroundObject> worldLayer = new HashMap<Position, GroundObject>();
 
     //TODO: make fields such as clearCondition private and add them to the constructor
     public Level(String title, String description, String creatorId) {
@@ -34,11 +35,25 @@ public class Level {
         this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
     }
 
+    @PersistenceCreator
+    public Level(String creatorId, String title, String description, boolean published, int width, int height, ClearCondition clearCondition, Map<String, Date> timesPlayed, Map<Position, GameObject> objectLayer, Map<Position, GroundObject>  worldLayer) {
+        this.creatorId = creatorId;
+        this.title = title;
+        this.description = description;
+        this.published = published;
+        this.width = width;
+        this.height = height;
+        this.clearCondition = clearCondition;
+        this.objectLayer.putAll(objectLayer);
+        this.worldLayer.putAll(worldLayer);
+        this.timesPlayed.putAll(timesPlayed);
+    }
+
     public Level cloneFor(String newCreatorId) {
         Level clone = new Level(this.title, this.description, newCreatorId);
         clone.clearCondition = this.clearCondition;
-        clone.objectLayer = new HashMap<>(this.objectLayer);
-        clone.worldLayer = new HashMap<>(this.worldLayer);
+        clone.objectLayer = new HashMap<Position, GameObject>(this.objectLayer);
+        clone.worldLayer = new HashMap<Position, GroundObject>(this.worldLayer);
         return clone;
     }
     public boolean isPublished(){
@@ -64,18 +79,13 @@ public class Level {
         return clearCondition;
     }
 
-    public Map<String, Date> getTimesPlayed() {
-        return timesPlayed;
+    public Map<Position, GameObject> getObjectLayer() {
+        return Map.copyOf(this.objectLayer);
     }
 
-    public HashMap<Position, GameObject> getObjectLayer() {
-        return objectLayer;
+    public Map<Position, GroundObject> getWorldLayer() {
+        return Map.copyOf(this.worldLayer);
     }
-
-    public HashMap<Position, GroundObject> getWorldLayer() {
-        return worldLayer;
-    }
-
     public void setTitle(String title) {
         this.title = title;
     }
