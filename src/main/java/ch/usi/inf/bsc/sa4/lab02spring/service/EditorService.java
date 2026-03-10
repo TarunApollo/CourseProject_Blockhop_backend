@@ -14,6 +14,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import java.util.HashMap;
 
 
+
 @Service
 public class EditorService {
 
@@ -31,7 +32,7 @@ public class EditorService {
         if (!userId.equals(level.getCreatorId())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        if (targetPosition.x() <= 0 || targetPosition.x() > level.getWidth() || targetPosition.y() <= 0 || targetPosition.x() > level.getHeight()){
+        if (targetPosition.x() < 0 || targetPosition.x() > level.getWidth() || targetPosition.y() < 0 || targetPosition.x() > level.getHeight()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
         if (level.isPublished()){
