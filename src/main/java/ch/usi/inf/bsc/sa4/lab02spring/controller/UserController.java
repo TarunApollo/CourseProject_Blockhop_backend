@@ -77,6 +77,13 @@ public class UserController {
   public List<UserDTO> searchUsers(@RequestParam("query") String partialName) {
     return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
   }
+
+  /// Returns the profile information for the authenticated user.
+  ///
+  /// @param authentication token containing information about the logged-in user
+  /// @return a 200 OK with the user's profile information (name, played levels count,
+  ///         completed levels count, and list of created levels), or 404 if user not found
+  ///
   @GetMapping("/profile")
   public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
     String userId = getUserIdFromAuth(authentication);
