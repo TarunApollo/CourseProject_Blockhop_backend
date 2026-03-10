@@ -1,16 +1,21 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
+import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
+
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +27,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
   private final UserService userService;
+  private final LevelService levelService;
 
   @Autowired
-  public UserController(UserService userService) {
+  public UserController(UserService userService, LevelService levelService) {
     this.userService = userService;
+    this.levelService = levelService;
   }
 
   /// Returns the list of existing users.
@@ -70,6 +77,17 @@ public class UserController {
   public List<UserDTO> searchUsers(@RequestParam("query") String partialName) {
     return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
   }
+  @GetMapping("/profile")
+  public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
+    String userId = getUserIdFromAuth(authentication);
+
+    return ResponseEntity.of(this.userService.getById(userId)
+            .map(user -> new UserProfileDTO(
+                    user,
+                    this.userService.getPlayedLevelsCount(user),
+                    this.userService.getCompletedLevelsCount(user),
+                    this.levelService.getCreatedLevelsByUser(userId))));
+  }
 
   /// Authenticates a user using SwitchEduId Login.
   ///
@@ -77,25 +95,32 @@ public class UserController {
   ///
   /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
   @GetMapping(path = "/me")
-  @SuppressWarnings("NullAway")
   public ResponseEntity<UserDTO> index(Authentication authentication) {
-    // if (authentication == null) {
-    //  return ResponseEntity.badRequest().build();
-    //}
-    Object principal = authentication.getPrincipal();
-    Map<String, Object> attributes = Map.of();
-    if (authentication.getPrincipal() instanceof Jwt jwt) {
-      attributes = jwt.getClaims();
-    } else if (principal instanceof OAuth2User oAuth2User) {
-      attributes = oAuth2User.getAttributes();
-    }
-    String fullName = (String) attributes.get("name");
-    String eduId = (String) attributes.get("sub");
-    assert eduId != null;
+    // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
+    String eduId = getUserIdFromAuth(authentication);
+    String fullName = getUserNameFromAuth(authentication);
 
     Optional<User> optUser = this.userService.getById(eduId);
     return optUser.map(
             user -> ResponseEntity.ok(new UserDTO(user)))
             .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
+  }
+
+  private String getUserNameFromAuth(Authentication authentication) {
+    Object principal = authentication.getPrincipal();
+
+    if (principal instanceof Jwt jwt) {
+      String name = jwt.getClaimAsString("name");
+      if (name != null) {
+        return name;
+      }
+    } else if (principal instanceof OAuth2User oAuth2User) {
+      String name = oAuth2User.getAttribute("name");
+      if (name != null) {
+        return name;
+      }
+    }
+
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user name not available");
   }
 }
