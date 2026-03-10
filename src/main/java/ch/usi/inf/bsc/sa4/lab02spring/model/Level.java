@@ -76,6 +76,14 @@ public class Level {
         return worldLayer;
     }
 
+    public int getWidth(){
+        return width;
+    }
+
+    public int getHeight(){
+        return height;
+    }
+    
     public void setTitle(String title) {
         this.title = title;
     }
