@@ -21,15 +21,16 @@ public class EditorController {
    
 
     @Autowired
-    public EditorController(EditorService editorService, LevelRepository levelRepository, LevelService levelService) {
-        this.levelRepository = levelRepository;
-        this.editorService = editorService;
-        this.levelService = levelService;
+    public EditorController(EditorService editorService) {
+                this.editorService = editorService;
+        }
 
-
-
-    }
-
+    /// Edits a tile in the world layer of an unpublished level.
+    ///
+    /// Behavior:
+    /// - If gid > 0 and the position is empty, a tile is added
+    /// - If gid > 0 and the position already contains a tile, that tile is replaced
+    /// - If gid == 0, the tile at that position is removed; if no tile exists, the operation is a no-op
       ///
   /// Allows creator to edit unpublished level
   /// @param authentication abstract token for authentication
