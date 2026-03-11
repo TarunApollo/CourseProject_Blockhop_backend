@@ -7,5 +7,4 @@ public record Coin(int gid, Position pos, int value) implements Item {
     public boolean canBeContained() {
         return true;
     }
-
 }

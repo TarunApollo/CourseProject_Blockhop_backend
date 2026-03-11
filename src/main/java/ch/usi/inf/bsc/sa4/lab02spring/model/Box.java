@@ -2,19 +2,25 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("box")
-public record Box(int gid, Position pos, Item content) implements Item {
+import java.util.List;
 
-    public boolean canBeContained() {
-        return false;
-    }
+@TypeAlias("box")
+public record Box(int gid, Position pos, List<Item> content) implements Item {
+
+    public boolean canBeContained() { return false; }
 
     public Box {
-        if (!this.pos().equals(content.pos())) {
-            throw new IllegalArgumentException("The Item's position inside this Box must be equal");
+        content = List.copyOf(content);
+        if (content.size() > 1) { // batch 1 constraint
+            throw new IllegalArgumentException("There can only be one item inside this box");
         }
-        if (!content.canBeContained()) {
-            throw new IllegalArgumentException("The Item can't be contained inside this Box");
-        }
+        content.forEach((item) -> {
+            if (!pos.equals(item.pos())) {
+                throw new IllegalArgumentException("The Item's position inside this Box must be equal");
+            }
+            if (!item.canBeContained()) {
+                throw new IllegalArgumentException("The Item can't be contained inside this Box");
+            }
+        });
     }
 }
