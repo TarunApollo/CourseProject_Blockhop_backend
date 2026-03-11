@@ -1,22 +1,17 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 
 import java.util.List;

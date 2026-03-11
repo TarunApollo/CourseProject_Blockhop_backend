@@ -1,20 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 
