@@ -2,9 +2,13 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -76,4 +80,18 @@ public class LevelController {
 //    String userId = getUserIdFromAuth(authentication);
 //    return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
 //  }
+//
+//  @PostMapping("/createlevelSingleTile")
+//  public ResponseEntity<Level> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
+//    return ResponseEntity.ok(this.levelService.createLevelSingleTile(dto));
+//  }
+
+  @GetMapping("/{levelId}/pos")
+  public ResponseEntity<GameObject> getSomething(Authentication authentication,  @PathVariable String levelId) {
+    String userId = getUserIdFromAuth(authentication);
+    var level = this.levelService.getAllLevels().stream().filter((Level x) -> x.getId().equals(levelId)).findFirst();
+    var object = level.map((Level l) -> l.getObjectLayer().get(new Position(5, 10)));
+    return ResponseEntity.of(object);
+  }
+
 }

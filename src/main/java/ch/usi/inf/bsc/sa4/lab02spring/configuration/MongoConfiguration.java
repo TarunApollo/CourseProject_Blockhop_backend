@@ -1,18 +1,28 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Configuration
-public class MongoConfiguration {
+public class MongoConfiguration extends AbstractMongoClientConfiguration {
+
+    @Override
+    protected String getDatabaseName() {
+        return "test";
+    }
+
+//    @Override
+//    protected Set<Class<?>> getInitialEntitySet() {
+//        return Set.of()(Coin.class);
+//    }
 
     @WritingConverter
     static public class PositionToStringConverter implements Converter<Position, String> {
@@ -31,7 +41,7 @@ public class MongoConfiguration {
         }
     }
 
-    @Bean
+    @Override
     public MongoCustomConversions customConversions(){
         List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());

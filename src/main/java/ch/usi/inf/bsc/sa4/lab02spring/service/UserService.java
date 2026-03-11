@@ -51,6 +51,14 @@ public class UserService {
     return userRepository.findById(userId);
   }
 
+    public int getPlayedLevelsCount(User user) {
+        return user.getLevelsPlayed().size();
+    }
+
+    public int getCompletedLevelsCount(User user) {
+        return user.getLevelsCompleted().size();
+    }
+
   /// Searches for users whose name contains a given string.
   /// 
   /// @param partialName a partial name to search
