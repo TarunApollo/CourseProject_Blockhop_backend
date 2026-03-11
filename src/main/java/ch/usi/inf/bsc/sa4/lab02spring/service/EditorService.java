@@ -56,6 +56,17 @@ public class EditorService {
         if (level.isPublished()) {
             throw new LevelPublishedException("Level is already published!");
         }
+
+        // Bounds check: coordinates must be within level dimensions
+        // BUG FIX: Previously checked targetPosition.x() against height, now correctly checks y()
+        Position targetPosition = dto.position();
+        if (targetPosition.x() < 0
+                || targetPosition.x() >= level.getWidth()
+                || targetPosition.y() < 0
+                || targetPosition.y() >= level.getHeight()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
         HashMap<Position, GroundObject> worldLayer = level.getWorldLayer();
         if (dto.gid() == 0) {
