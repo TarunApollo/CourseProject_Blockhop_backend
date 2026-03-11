@@ -4,4 +4,7 @@ import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("start_flag")
 public record StartFlag(int gid, Position pos) implements Item {
+    public boolean canBeContained() {
+        return false;
+    }
 }

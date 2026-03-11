@@ -4,4 +4,7 @@ import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("exit_door")
 public record ExitDoor(int gid, Position pos) implements Item {
+    public boolean canBeContained() {
+        return false;
+    }
 }
