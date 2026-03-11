@@ -1,10 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelSingleTileDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +12,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -45,6 +41,13 @@ public class LevelService {
     public List<Level> getAllLevels() {
         return levelRepository.findAll();
     }
+
+    public List<LevelDTO> getCreatedLevelsByUser(String userId) {
+        return levelRepository.findByCreatorId(userId).stream()
+                .map(LevelDTO::new)
+                .toList();
+    }
+
     public Level updateLevelProperties(String userId ,String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         String creator = level.getCreatorId();

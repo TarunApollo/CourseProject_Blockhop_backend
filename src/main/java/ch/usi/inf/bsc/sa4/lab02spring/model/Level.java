@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,16 +77,16 @@ public class Level {
         return clearCondition;
     }
 
+    public Map<String, Date> getTimesPlayed() {
+        return Collections.unmodifiableMap(this.timesPlayed);
+    }
+
     public Map<Position, GameObject> getObjectLayer() {
-        return Map.copyOf(this.objectLayer);
+        return Collections.unmodifiableMap(objectLayer);
     }
 
     public Map<Position, GroundObject> getWorldLayer() {
-        return Map.copyOf(this.worldLayer);
-    }
-
-    public Map<String, Date> getTimesPlayed() {
-        return Map.copyOf(this.timesPlayed);
+        return Collections.unmodifiableMap(worldLayer);
     }
 
     public void putObjectLayer(Position pos, GameObject gameObject) {
