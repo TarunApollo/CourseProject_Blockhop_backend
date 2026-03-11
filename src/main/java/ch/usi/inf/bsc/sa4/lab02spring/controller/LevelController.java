@@ -7,6 +7,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,10 +25,11 @@ import java.util.List;
 @RequestMapping("/levels")
 public class LevelController {
   private final LevelService levelService;
-
+  private final UserService userService;
   @Autowired
-  public LevelController(LevelService levelService, EditorService editorService) {
+  public LevelController(LevelService levelService, UserService userService) {
     this.levelService = levelService;
+    this.userService = userService;
   }
   ///
   /// Creates a new empty level and returns a level dto
@@ -59,7 +62,8 @@ public class LevelController {
   @PostMapping("/clone")
   public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication, @RequestBody CloneLevelDTO cloneLevelDTO) {
     String userId = getUserIdFromAuth(authentication);
-    return this.levelService.cloneLevel(cloneLevelDTO, userId)
+    var user = this.userService.getById(userId).get();
+    return this.levelService.cloneLevel(cloneLevelDTO, user)
             .map(LevelDTO::new)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
@@ -72,9 +76,9 @@ public class LevelController {
   /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
   /// 
   
-  @PutMapping("/{levelId}/properties")
-  public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
-    String userId = getUserIdFromAuth(authentication);
-    return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
-  }
+//  @PutMapping("/{levelId}/properties")
+//  public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
+//    String userId = getUserIdFromAuth(authentication);
+//    return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
+//  }
 }

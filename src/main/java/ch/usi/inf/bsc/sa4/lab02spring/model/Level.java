@@ -1,8 +1,10 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +14,8 @@ import java.util.Map;
 public class Level {
     @Id
     private String id;
-    private final String creatorId;
+    @DBRef
+    private final User creator;
     private String title;
     private String description;
     private boolean published;
@@ -24,24 +27,23 @@ public class Level {
     private final HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
     //TODO: make fields such as clearCondition private and add them to the constructor
-    public Level(String title, String description, String creatorId) {
+    public Level(String title, String description, User user) {
         this.title = title;
         this.description = description;
         this.published = false;
-        this.creatorId = creatorId;
+        this.creator = user;
         this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
     }
 
-    private Level(String title, String description, String creatorId, HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer) {
-        this(title, description, creatorId);
+    private Level(String title, String description, User creator, HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer) {
+        this(title, description, creator);
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
     }
 
-    public Level cloneFor(String newCreatorId) {
-        return new Level(this.title, this.description, newCreatorId, this.objectLayer, this.worldLayer);
+    public Level cloneFor(User creator) {
+        return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer);
     }
-
     public boolean isPublished(){
         return this.published;
     }
@@ -57,8 +59,8 @@ public class Level {
         return description;
     }
 
-    public String getCreatorId() {
-        return creatorId;
+    public User getCreator() {
+        return creator;
     }
 
     public ClearCondition getClearCondition() {
@@ -69,8 +71,8 @@ public class Level {
         return timesPlayed;
     }
 
-    public HashMap<Position, GameObject> getObjectLayer() {
-        return objectLayer;
+    public Map<Position, GameObject> getObjectLayer() {
+        return Collections.unmodifiableMap(objectLayer);
     }
 
     public HashMap<Position, GroundObject> getWorldLayer() {

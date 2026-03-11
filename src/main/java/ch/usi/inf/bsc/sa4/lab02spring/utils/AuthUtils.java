@@ -18,8 +18,7 @@ public final class AuthUtils {
             Object principal = authentication.getPrincipal();
             if (principal instanceof Jwt jwt) {
                 return jwt.getClaimAsString("sub");
-            } else if (principal instanceof
-                    OAuth2User oauth2User) {
+            } else if (principal instanceof OAuth2User oauth2User) {
                 if (oauth2User.getAttribute("sub") == null) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
                 }

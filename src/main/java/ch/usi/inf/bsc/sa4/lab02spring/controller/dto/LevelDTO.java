@@ -1,12 +1,13 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
 public record LevelDTO(
     String id,
     String title,
     String description,
-    String creatorId,
+    User creator,
     boolean published
 ) {
 
@@ -15,7 +16,7 @@ public record LevelDTO(
             level.getId(),
             level.getTitle(),
             level.getDescription(),
-            level.getCreatorId(),
+            level.getCreator(),
             level.isPublished()
         );
     }
