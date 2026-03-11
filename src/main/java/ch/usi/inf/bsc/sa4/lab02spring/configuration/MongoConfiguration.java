@@ -27,7 +27,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @WritingConverter
     static public class PositionToStringConverter implements Converter<Position, String> {
         public String convert(Position position){
-            return position.x() + "," + position.y();
+            return position.compactString();
         }
     }
 

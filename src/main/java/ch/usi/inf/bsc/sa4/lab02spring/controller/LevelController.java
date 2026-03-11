@@ -82,9 +82,19 @@ public class LevelController {
 //  }
 //
 //  @PostMapping("/createlevelSingleTile")
-//  public ResponseEntity<Level> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
+//  public ResponseEntity<LevelDTO> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
 //    return ResponseEntity.ok(this.levelService.createLevelSingleTile(dto));
 //  }
+  @PutMapping("/{levelId}/properties")
+  public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
+    String userId = getUserIdFromAuth(authentication);
+    return ResponseEntity.ok(this.levelService.updateLevelProperties(userId,levelId, dto));
+  }
+
+  @PostMapping("/createlevelSingleTile")
+  public ResponseEntity<LevelDTO> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
+    return ResponseEntity.ok(new LevelDTO(this.levelService.createLevelSingleTile(dto)));
+  }
 
   @GetMapping("/{levelId}/pos")
   public ResponseEntity<GameObject> getSomething(Authentication authentication,  @PathVariable String levelId) {
