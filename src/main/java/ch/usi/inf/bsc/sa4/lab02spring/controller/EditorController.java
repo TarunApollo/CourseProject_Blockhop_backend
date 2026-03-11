@@ -16,7 +16,4 @@ public class EditorController {
         this.levelRepository = levelRepository;
         this.editorService = editorService;
     }
-
-
-
 }
