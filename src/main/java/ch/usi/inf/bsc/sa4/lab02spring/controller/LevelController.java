@@ -78,8 +78,8 @@ public class LevelController {
   }
 
   @PostMapping("/createlevelSingleTile")
-  public ResponseEntity<Level> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
-    return ResponseEntity.ok(this.levelService.createLevelSingleTile(dto));
+  public ResponseEntity<LevelDTO> createLevelSingleTile(@RequestBody CreateLevelSingleTileDTO dto){
+    return ResponseEntity.ok(new LevelDTO(this.levelService.createLevelSingleTile(dto)));
   }
 
   @GetMapping("/{levelId}/pos")
