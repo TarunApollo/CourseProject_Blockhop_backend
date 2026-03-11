@@ -93,8 +93,6 @@ public class UserController {
                     this.levelService.getCreatedLevelsByUser(userId))));
   }
 
-    // TODO: /me should probably redirect to /profile once the user is logged in
-
   /// Authenticates a user using SwitchEduId Login.
   ///
   /// @param authentication token containing information about logged user
@@ -111,6 +109,4 @@ public class UserController {
             user -> ResponseEntity.ok(new UserDTO(user)))
             .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
   }
-
-
 }

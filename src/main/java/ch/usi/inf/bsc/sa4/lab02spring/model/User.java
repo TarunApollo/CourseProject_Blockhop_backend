@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,11 +41,11 @@ public class User {
     }
 
     public Set<Level> getLevelsPlayed() {
-        return Set.copyOf(levelsPlayed);
+        return Collections.unmodifiableSet(levelsPlayed);
     }
 
     public Set<Level> getLevelsCompleted() {
-        return Set.copyOf(levelsCompleted);
+        return Collections.unmodifiableSet(levelsCompleted);
     }
 
     public void addPlayedLevel(Level level) {

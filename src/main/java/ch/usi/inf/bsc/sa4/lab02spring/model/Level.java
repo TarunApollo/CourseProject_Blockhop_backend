@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,12 +69,12 @@ public class Level {
         return timesPlayed;
     }
 
-    public HashMap<Position, GameObject> getObjectLayer() {
-        return objectLayer;
+    public Map<Position, GameObject> getObjectLayer() {
+        return Collections.unmodifiableMap(objectLayer);
     }
 
-    public HashMap<Position, GroundObject> getWorldLayer() {
-        return worldLayer;
+    public Map<Position, GroundObject> getWorldLayer() {
+        return Collections.unmodifiableMap(worldLayer);
     }
 
     public void setTitle(String title) {
