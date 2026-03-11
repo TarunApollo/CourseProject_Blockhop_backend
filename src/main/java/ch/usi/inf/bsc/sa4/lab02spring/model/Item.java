@@ -4,5 +4,7 @@ import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("item")
 public interface Item extends GameObject {
-    boolean canBeContained();
+    default boolean canBeContained() {
+        return this instanceof Coin;
+    }
 }
