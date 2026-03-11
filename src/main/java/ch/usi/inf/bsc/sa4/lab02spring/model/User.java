@@ -19,11 +19,21 @@ public class User {
     @DBRef
     private final Set<Level> levelsCompleted = new HashSet<>();
 
+    /// Creates a new User with no levels played or completed.
+    /// @spec.requires id and name are not null.
+    /// @param id the unique identifier of the user (switchEduId).
+    /// @param name the display name of the user.
     public User(String id, String name) {
         this.id = id;
         this.name = name;
     }
 
+    ///
+    /// @spec.requires id, name, levelsPlayed, levelsCompleted are not null
+    /// @param id the unique identifier of the user (switchEduId)
+    /// @param name the game name of the user
+    /// @param levelsPlayed the set of games plaxyed by the user
+    /// @param levelsCompleted the set of levels completed by the user
     @PersistenceCreator
     public User(String id, String name, Set<Level> levelsPlayed, Set<Level> levelsCompleted) {
         this.id = id;
@@ -32,26 +42,40 @@ public class User {
         this.levelsCompleted.addAll(levelsCompleted);
     }
 
+    ///@return the unique identifier of the user
     public String getId() {
         return id;
     }
 
+    ///@return the gmae name of the user
     public String getName() {
         return name;
     }
 
+    ///@return the set of levels played by the user
     public Set<Level> getLevelsPlayed() {
         return Collections.unmodifiableSet(levelsPlayed);
     }
 
+    ///@return the set of levels completed by the user
     public Set<Level> getLevelsCompleted() {
         return Collections.unmodifiableSet(levelsCompleted);
     }
 
+    /// Adds a level to the set of levels played by the user
+    /// @spec.requires level is not null
+    /// @spec.modifies this.
+    /// @spec.effects adds the given level to the set of levels played by this user.
+    /// @param level the level to be added to the set levelsPlayed
     public void addPlayedLevel(Level level) {
         this.levelsPlayed.add(level);
     }
 
+    /// Adds a level to the set of levels completed by the user.
+    /// @spec.requires level is not null.
+    /// @spec.modifies this.
+    /// @spec.effects adds the given level to the set of levels completed by this user.
+    /// @param level the level to be added to the set levelsCompleted
     public void addCompletedLevel(Level level) {
         this.levelsCompleted.add(level);
     }
