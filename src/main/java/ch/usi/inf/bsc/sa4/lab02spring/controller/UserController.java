@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
+import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserNameFromAuth;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
@@ -12,12 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 /// The controller for users.
@@ -96,6 +93,8 @@ public class UserController {
                     this.levelService.getCreatedLevelsByUser(userId))));
   }
 
+    // TODO: /me should probably redirect to /profile once the user is logged in
+
   /// Authenticates a user using SwitchEduId Login.
   ///
   /// @param authentication token containing information about logged user
@@ -113,21 +112,5 @@ public class UserController {
             .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
   }
 
-  private String getUserNameFromAuth(Authentication authentication) {
-    Object principal = authentication.getPrincipal();
 
-    if (principal instanceof Jwt jwt) {
-      String name = jwt.getClaimAsString("name");
-      if (name != null) {
-        return name;
-      }
-    } else if (principal instanceof OAuth2User oAuth2User) {
-      String name = oAuth2User.getAttribute("name");
-      if (name != null) {
-        return name;
-      }
-    }
-
-    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user name not available");
-  }
 }

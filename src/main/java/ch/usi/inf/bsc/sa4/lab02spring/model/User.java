@@ -40,11 +40,11 @@ public class User {
     }
 
     public Set<Level> getLevelsPlayed() {
-        return levelsPlayed;
+        return Set.copyOf(levelsPlayed);
     }
 
     public Set<Level> getLevelsCompleted() {
-        return levelsCompleted;
+        return Set.copyOf(levelsCompleted);
     }
 
     public void addPlayedLevel(Level level) {
