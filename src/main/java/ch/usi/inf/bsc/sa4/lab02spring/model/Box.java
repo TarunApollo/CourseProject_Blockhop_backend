@@ -7,11 +7,9 @@ import java.util.List;
 @TypeAlias("box")
 public record Box(int gid, Position pos, List<Item> content) implements Item {
 
-    public boolean canBeContained() { return false; }
-
     public Box {
         content = List.copyOf(content);
-        if (content.size() > 1) { // batch 1 constraint
+        if (content.size() > 1) { // batch 1
             throw new IllegalArgumentException("There can only be one item inside this box");
         }
         content.forEach((item) -> {

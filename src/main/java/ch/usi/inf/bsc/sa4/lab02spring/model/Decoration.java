@@ -4,7 +4,5 @@ import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("decoration")
 public record Decoration(int gid, Position pos) implements Item {
-    public boolean canBeContained() {
-        return false;
-    }
+
 }

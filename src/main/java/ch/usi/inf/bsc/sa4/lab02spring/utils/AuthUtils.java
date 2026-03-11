@@ -6,7 +6,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.server.ResponseStatusException;
 
-// TODO: ask for idiomatic Spring way of doing this
 public final class AuthUtils {
     ///
     /// TODO: javadoc!
