@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -11,7 +10,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 
@@ -49,7 +48,7 @@ public class EditorService {
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
         // Security check: only creator can edit
-        if (!userId.equals(level.getCreatorId())) {
+        if (!userId.equals(level.getCreator())) {
              throw new SecurityException("Not the creator");
         }
 
@@ -65,7 +64,7 @@ public class EditorService {
             throw new IllegalArgumentException("Coordinates out of bounds");
         }
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
-        HashMap<Position, GroundObject> worldLayer = level.getWorldLayer();
+        Map<Position, GroundObject> worldLayer = level.getWorldLayer();
         if (dto.gid() == 0) {
             worldLayer.remove(targetPosition);
         } else {
