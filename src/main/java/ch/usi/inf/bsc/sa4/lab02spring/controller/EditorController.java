@@ -2,10 +2,14 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
@@ -36,10 +40,16 @@ public class EditorController {
     /// @param dto contains the target position and gid to apply
     /// @return 200 OK with the updated level, 401 if unauthorized, 403 if the level is published,
     ///         404 if level not found, 400 if coordinates are out of bounds
-    @PutMapping("/{levelId}")
+    @PutMapping("/{levelId}/world-layer")
     public ResponseEntity<Level> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-        // All validation (creator check, published check, bounds check) is handled by EditorService
+        Position targetPosition = dto.position();
+        if (targetPosition.x() < 0
+                || targetPosition.x() >= 256
+                || targetPosition.y() < 0
+                || targetPosition.y() >= 14) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok(this.editorService.editWorldLayerTile(userId, levelId, dto));
     }
 }
