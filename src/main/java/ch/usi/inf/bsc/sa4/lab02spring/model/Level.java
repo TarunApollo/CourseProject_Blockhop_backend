@@ -89,6 +89,15 @@ public class Level {
         this.worldLayer.put(pos, groundObject);
     }
 
+    public int getWidth(){
+        return width;
+    }
+
+    public int getHeight(){
+        return height;
+    }
+
+
     public void setTitle(String title) { this.title = title; }
 
     public void setDescription(String description) { this.description = description; }

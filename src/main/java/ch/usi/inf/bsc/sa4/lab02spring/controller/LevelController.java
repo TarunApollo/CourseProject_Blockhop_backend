@@ -1,10 +1,18 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -84,6 +92,14 @@ public class LevelController {
     public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
+        try {
+            return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
+        } catch (ForbiddenUserException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (LevelPublishedException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 }
+
+
