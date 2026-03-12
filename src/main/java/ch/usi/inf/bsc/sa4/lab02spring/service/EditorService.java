@@ -12,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 
 
@@ -45,11 +46,11 @@ public class EditorService {
     /// @throws LevelPublishedException if the level is already published
     public Level editWorldLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
         // Security check: only creator can edit
         if (!userId.equals(level.getCreatorId())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+             throw new SecurityException("Not the creator");
         }
 
         // Security check: only unpublished levels can be edited
@@ -57,6 +58,12 @@ public class EditorService {
             throw new LevelPublishedException("Level is already published!");
         }
         Position targetPosition = dto.position();
+        if (targetPosition == null){
+            throw new IllegalArgumentException("Position required!");
+        }
+        if (targetPosition.x() < 0 || targetPosition.x() >= 256 || targetPosition.y() < 0 || targetPosition.y() >= 14) {
+            throw new IllegalArgumentException("Coordinates out of bounds");
+        }
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
         HashMap<Position, GroundObject> worldLayer = level.getWorldLayer();
         if (dto.gid() == 0) {

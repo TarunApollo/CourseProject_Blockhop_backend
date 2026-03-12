@@ -2,16 +2,16 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
+
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/editor")
@@ -43,13 +43,14 @@ public class EditorController {
     @PutMapping("/{levelId}/world-layer")
     public ResponseEntity<Level> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-        Position targetPosition = dto.position();
-        if (targetPosition.x() < 0
-                || targetPosition.x() >= 256
-                || targetPosition.y() < 0
-                || targetPosition.y() >= 14) {
+        try {
+            return ResponseEntity.ok(editorService.editWorldLayerTile(userId, levelId, dto));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(this.editorService.editWorldLayerTile(userId, levelId, dto));
     }
 }
