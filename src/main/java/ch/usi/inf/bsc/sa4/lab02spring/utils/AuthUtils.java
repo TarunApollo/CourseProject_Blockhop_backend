@@ -18,8 +18,7 @@ public final class AuthUtils {
             Object principal = authentication.getPrincipal();
             if (principal instanceof Jwt jwt) {
                 return jwt.getClaimAsString("sub");
-            } else if (principal instanceof
-                    OAuth2User oauth2User) {
+            } else if (principal instanceof OAuth2User oauth2User) {
                 if (oauth2User.getAttribute("sub") == null) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
                 }
@@ -27,6 +26,24 @@ public final class AuthUtils {
             }
             throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
         }
+    }
+
+    public static String getUserNameFromAuth(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof Jwt jwt) {
+            String name = jwt.getClaimAsString("name");
+            if (name != null) {
+                return name;
+            }
+        } else if (principal instanceof OAuth2User oAuth2User) {
+            String name = oAuth2User.getAttribute("name");
+            if (name != null) {
+                return name;
+            }
+        }
+
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user name not available");
     }
 
 
