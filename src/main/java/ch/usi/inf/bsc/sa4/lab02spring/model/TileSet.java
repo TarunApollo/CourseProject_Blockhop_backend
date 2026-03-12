@@ -1,85 +1,79 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
+
 import java.util.List;
 
-// class to interpret the tileset json data
 
-public class TileSet {
-    public int columns;
-    public int firstgid;
-    public String image;
-    public int imageheight;
-    public int imagewidth;
-    public int margin;
-    public String name;
-    public int spacing;
-    public int tilecount;
-    public int tileheight;
-    public int tilewidth;
-
-    //list of individual tiles
-    public List<TileData> tiles;
+ // Record to interpret the tileset JSON data.
+ 
+public record TileSet(
+    int columns,
+    int firstgid,
+    String image,
+    int imageheight,
+    int imagewidth,
+    int margin,
+    String name,
+    int spacing,
+    int tilecount,
+    int tileheight,
+    int tilewidth,
+    List<TileData> tiles
+) {
 
     
-     // Represents an individual tile entry in the "tiles" array.
-
-  
-    public static class TileData {
-        public int id;
-        public String type;
-
-        //includes an array of properties and an object group
-        public List<Property> properties;
-        public ObjectGroup objectgroup;
+     //Represents an individual tile entry in the "tiles" array.
      
-    }
+    public record TileData(
+        int id,
+        String type,
+        List<Property> properties,
+        ObjectGroup objectgroup
+    ) {}
 
     
-     //Represents the properties array inside each individual tile tile.
+     //Represents the properties array inside each individual tile.
      
-   
-    public static class Property {
-        public String name;
-        public String type;
-        public Object value;
-    }
+    public record Property(
+        String name,
+        String type,
+        Object value
+    ) {}
 
     
-     //Represents collision or shape data in the "objectgroup" field.
+     // Represents collision or shape data in the "objectgroup" field.
      
-    
-    public static class ObjectGroup {
-        public String draworder;
-        public String name;
-        //s
-        public List<TiledObject> objects;
-        public double opacity;
-        public String type;
-        public boolean visible;
-        public double x;
-        public double y;
-    }
+    public record ObjectGroup(
+        String draworder,
+        String name,
+        List<TiledObject> objects,
+        double opacity,
+        String type,
+        boolean visible,
+        double x,
+        double y
+    ) {}
 
-    
-     // Represents each object in objectGroup.
+
+     // Represents each object in objectgroup.
      
-   
-    public static class TiledObject {
-        public double height;
-        public int id;
-        public String name;
-        public double rotation;
-        public String type;
-        public boolean visible;
-        public double width;
-        public double x;
-        public double y;
-        public List<Point> polygon; // (Just if polygon there are multiple points (coordinates))
-    }
+    public record TiledObject(
+        double height,
+        int id,
+        String name,
+        double rotation,
+        String type,
+        boolean visible,
+        double width,
+        double x,
+        double y,
+        List<Point> polygon
+    ) {}
 
-    //coordinates
-    public static class Point {
-        public double x;
-        public double y;
-    }
+
+      //Represents individual coordinate points.
+    
+    public record Point(
+        double x,
+        double y
+    ) {}
 }
-
