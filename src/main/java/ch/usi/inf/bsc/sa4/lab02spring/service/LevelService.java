@@ -52,11 +52,6 @@ public class LevelService {
     public Boolean published(Level level){
         return level.isPublished();
     }
-    public Level getLevelbyId(String levelId){
-        Level level = levelRepository.findById(levelId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        return level;
-
-    }
     
     
     public Level updateLevelProperties(String userId ,String levelId, UpdateLevelDTO dto) {
