@@ -51,7 +51,6 @@ public class LevelService {
 
     public Level updateLevelProperties(User user, String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-        // fix... mirror HTTP response in the controller and not HERE.
         if (!level.getCreator().getId().equals(user.getId())) {
             throw new ForbiddenUserException("Can't update a level that's not yours");
         }
