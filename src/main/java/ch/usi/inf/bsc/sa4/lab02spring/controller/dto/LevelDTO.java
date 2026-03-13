@@ -15,6 +15,8 @@ public record LevelDTO(
         Map<Position, GameObject> objectLayer
 ) {
 
+    /// Constructs a LevelDTO from the given Level entity.
+    /// @param level the level to convert into a DTO
     public LevelDTO(Level level) {
         this(
             level.getId(),

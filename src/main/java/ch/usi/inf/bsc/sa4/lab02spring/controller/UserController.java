@@ -28,6 +28,10 @@ public class UserController {
     private final LevelService levelService;
     private final AttemptService attemptService;
 
+    /// Constructs a new UserController with the given dependencies.
+    /// @param userService the service for accessing user data
+    /// @param levelService the service for managing level operations
+    /// @param attemptService the service for querying attempt-related statistics
     @Autowired
     public UserController(UserService userService, LevelService levelService, AttemptService attemptService) {
         this.userService = userService;
@@ -35,43 +39,38 @@ public class UserController {
         this.attemptService = attemptService;
     }
 
-    /// Returns the list of existing users.
-    ///
-    /// @return a list of existing users.
-    ///
+    /// @return a list of all existing users as UserDTOs
     @GetMapping
     public List<UserDTO> getUsers() {
         var users = this.userService.getAllUsers();
         return users.stream().map(UserDTO::new).toList();
     }
 
-    /// Returns the user dto with the given id.
-    ///
-    /// @param id a path variable containing the user's id.
-    /// @return a 200 OK if the user exists, a 404 NOT FOUND otherwise.
-    ///
+    /// Returns the user with the given id.
+    /// @spec.requires id is not null.
+    /// @param id the user's unique identifier (path variable)
+    /// @return a 200 OK response containing the user as a UserDTO if found,
+    ///         or a 404 Not Found response otherwise
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUser(@PathVariable String id) {
         return ResponseEntity.of(this.userService.getById(id).map(UserDTO::new));
     }
 
-    /// Searches for a user's name in the system
-    ///
-    /// @param partialName a request param with the string to search in the user's
-    ///                                                          name.
-    /// @return a 200 OK with the list of user dtos matching the query.
-    ///
+    /// Searches for users whose name matches the given query string.
+    /// @spec.requires partialName is not null.
+    /// @param partialName the string to search for in user names (request parameter "query")
+    /// @return a list of matching users as UserDTOs
     @GetMapping("/search")
     public List<UserDTO> searchUsers(@RequestParam("query") String partialName) {
         return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
     }
 
     /// Returns the profile information for the authenticated user.
-    ///
+    /// @spec.requires authentication is not null.
     /// @param authentication token containing information about the logged-in user
-    /// @return a 200 OK with the user's profile information (name, played levels count,
-    ///         completed levels count, and list of created levels), or 404 if user not found
-    ///
+    /// @return a 200 OK response containing the user's profile information
+    ///         (name, played levels count, completed levels count, and list of created levels),
+    ///         or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
         String userId = getUserIdFromAuth(authentication);
