@@ -1,8 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
+
 import java.util.Map;
+
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
 
 public record LevelDTO(
@@ -11,18 +14,21 @@ public record LevelDTO(
         String description,
         User creator,
         boolean published,
-        @JsonSerialize(using=LevelDTOObjectLayerSerializer.class)
-        Map<Position, GameObject> objectLayer
+        @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
+        Map<Position, GameObject> objectLayer,
+        @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
+        Map<Position, GroundObject> worldLayer
 ) {
 
     public LevelDTO(Level level) {
         this(
-            level.getId(),
-            level.getTitle(),
-            level.getDescription(),
-            level.getCreator(),
-            level.isPublished(),
-                level.getObjectLayer()
+                level.getId(),
+                level.getTitle(),
+                level.getDescription(),
+                level.getCreator(),
+                level.isPublished(),
+                level.getObjectLayer(),
+                level.getWorldLayer()
         );
     }
 }

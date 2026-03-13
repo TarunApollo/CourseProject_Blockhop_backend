@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,10 +42,10 @@ public class EditorController {
     /// @return 200 OK with the updated level, 401 if unauthorized, 403 if the level is published,
     ///         404 if level not found, 400 if coordinates are out of bounds
     @PutMapping("/{levelId}/world-layer")
-    public ResponseEntity<Level> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto) {
+    public ResponseEntity<LevelDTO> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         try {
-            return ResponseEntity.ok(editorService.editWorldLayerTile(userId, levelId, dto));
+            return ResponseEntity.ok(new LevelDTO(this.editorService.editWorldLayerTile(userId, levelId, dto)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (NoSuchElementException e) {
