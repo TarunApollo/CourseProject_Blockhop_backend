@@ -85,6 +85,10 @@ public class Level {
         this.objectLayer.put(pos, gameObject);
     }
 
+    public void removeGroundObject(Position pos){
+        this.worldLayer.remove(pos);
+    }
+
     public void putWorldLayer(Position pos, GroundObject groundObject) {
         this.worldLayer.put(pos, groundObject);
     }

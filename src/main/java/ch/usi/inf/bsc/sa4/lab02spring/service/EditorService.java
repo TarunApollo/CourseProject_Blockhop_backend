@@ -48,7 +48,7 @@ public class EditorService {
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
         // Security check: only creator can edit
-        if (!userId.equals(level.getCreator())) {
+        if (!userId.equals(level.getCreator().getId())) {
              throw new SecurityException("Not the creator");
         }
 
@@ -64,11 +64,10 @@ public class EditorService {
             throw new IllegalArgumentException("Coordinates out of bounds");
         }
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
-        Map<Position, GroundObject> worldLayer = level.getWorldLayer();
         if (dto.gid() == 0) {
-            worldLayer.remove(targetPosition);
+            level.removeGroundObject(targetPosition);
         } else {
-            worldLayer.put(targetPosition, new GroundObject(dto.gid()));
+            level.putWorldLayer(targetPosition, new GroundObject(dto.gid()));
         }
         return levelRepository.save(level);
     }
