@@ -6,7 +6,6 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.server.ResponseStatusException;
 
-// TODO: ask for idiomatic Spring way of doing this
 public final class AuthUtils {
     ///
     /// TODO: javadoc!
@@ -19,8 +18,7 @@ public final class AuthUtils {
             Object principal = authentication.getPrincipal();
             if (principal instanceof Jwt jwt) {
                 return jwt.getClaimAsString("sub");
-            } else if (principal instanceof
-                    OAuth2User oauth2User) {
+            } else if (principal instanceof OAuth2User oauth2User) {
                 if (oauth2User.getAttribute("sub") == null) {
                     throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
                 }
