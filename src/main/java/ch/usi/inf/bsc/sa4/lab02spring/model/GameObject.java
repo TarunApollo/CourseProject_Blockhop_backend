@@ -1,9 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import org.springframework.data.annotation.TypeAlias;
-
-@TypeAlias("game_object")
-public interface GameObject {
+public sealed interface GameObject permits Item, Enemy {
     int gid();
     Position pos();
 }

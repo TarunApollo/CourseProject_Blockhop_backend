@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
@@ -8,20 +7,18 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.levelTesting.UpdateLevelObjectDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import java.util.List;
 
@@ -100,6 +97,21 @@ public class LevelController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
+    // Method for testing adding an object into the objectLayer of a given level
+//    @PutMapping("{levelId}/object")
+//    public ResponseEntity<LevelDTO> updateLevelObject(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelObjectDTO dto){
+//        String userId = getUserIdFromAuth(authentication);
+//        User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+//        try {
+//            Level level = this.levelService.updateLevelObject(creator, levelId, dto);
+//            return ResponseEntity.ok(new LevelDTO(level));
+//        } catch (ForbiddenUserException e) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+//        } catch (LevelPublishedException e){
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        }
+//    }
 }
 
 

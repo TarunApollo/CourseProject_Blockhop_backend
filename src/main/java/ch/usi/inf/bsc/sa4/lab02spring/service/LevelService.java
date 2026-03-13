@@ -4,14 +4,13 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.levelTesting.UpdateLevelObjectDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -62,4 +61,17 @@ public class LevelService {
         dto.clearCondition().ifPresent(level::setClearCondition);
         return levelRepository.save(level);
     }
+
+    // Method for testing adding an object into the objectLayer of a given level
+//    public Level updateLevelObject(User user, String levelId, UpdateLevelObjectDTO dto){
+//        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+//        if (!level.getCreator().getId().equals(user.getId())) {
+//            throw new ForbiddenUserException("Can't update a level that's not yours");
+//        }
+//        if (level.isPublished()) {
+//            throw new LevelPublishedException("Level is already published");
+//        }
+//        level.putObjectLayer(dto.pos(), new Coin(1, dto.pos(), 100));
+//        return this.levelRepository.save(level);
+//    }
 }
