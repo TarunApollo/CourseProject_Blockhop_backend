@@ -49,6 +49,10 @@ public class LevelService {
                 .toList();
     }
 
+    public Optional<Level> getLevelById(String id) {
+        return levelRepository.findById(id);
+    }
+
     public Level updateLevelProperties(User user, String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         if (!level.getCreator().getId().equals(user.getId())) {

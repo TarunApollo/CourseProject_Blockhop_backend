@@ -24,6 +24,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/levels")
@@ -61,6 +62,17 @@ public class LevelController {
     public List<LevelDTO> getLevels() {
         var levels = this.levelService.getAllLevels();
         return levels.stream().map(LevelDTO::new).toList();
+    }
+
+    ///
+    /// Return a list of the levels present in the collection
+    /// a parameterless method that returns all the available levels
+    ///
+    /// @return list of levels
+    ///
+    @GetMapping("/{id}")
+    public ResponseEntity<LevelDTO> getLevel(@PathVariable String id) {
+        return ResponseEntity.of(this.levelService.getLevelById(id).map(LevelDTO::new));
     }
 
     ///
