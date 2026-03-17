@@ -3,6 +3,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.usi.inf.bsc.sa4.lab02spring.utils.TileSetNotLoadedException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
@@ -27,7 +28,7 @@ public class TileSetService {
                 .map(tile -> tileSet.firstgid() + tile.id())
                 .collect(Collectors.toUnmodifiableSet());
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load tileset", e);
+            throw new TileSetNotLoadedException(e);
         }
     }
 
