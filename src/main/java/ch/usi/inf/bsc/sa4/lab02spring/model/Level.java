@@ -4,6 +4,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +24,7 @@ public class Level {
     private boolean published;
     private final int width = 256;
     private final int height = 14;
-    private ClearCondition clearCondition = new ClearCondition(ConditionType.NONE, 0);
+    private ClearCondition clearCondition;
     private final HashMap<Position, GameObject> objectLayer = new HashMap<>();
     private final HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
@@ -75,45 +79,45 @@ public class Level {
     /// Creates a copy of the level for a given creator
     /// @spec.requires creator not to be null
     /// @param creator a User instance
-    /// @returns returns a new Level with the same title, description,
+    /// @return a new Level with the same title, description,
     ///               clearCondition, objectLayer, and worldLayer as this level,
     ///               but with the given creator and published set to false.
     public Level cloneFor(User creator) { return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer); }
 
-    /// @returns a boolean instance "published"
+    /// @return a boolean instance "published"
     public boolean isPublished() { return this.published; }
 
-    /// @returns the unique identifier of this level.
+    /// @return the unique identifier of this level.
     public String getId() {
         return id;
     }
 
-    /// @returns the title of this level.
+    /// @return the title of this level.
     public String getTitle() {
         return title;
     }
 
-    /// @returns the description of this level.
+    /// @return the description of this level.
     public String getDescription() {
         return description;
     }
 
-    /// @returns the creator of this level.
+    /// @return the creator of this level.
     public User getCreator() {
         return creator;
     }
 
-    /// @returns the clear condition of this level.
+    /// @return the clear condition of this level.
     public ClearCondition getClearCondition() {
         return clearCondition;
     }
 
-    /// @returns an unmodifiable view of the object layer of this level.
+    /// @return an unmodifiable view of the object layer of this level.
     public Map<Position, GameObject> getObjectLayer() {
         return Collections.unmodifiableMap(objectLayer);
     }
 
-    /// @returns an unmodifiable view of the world layer of this level.
+    /// @return an unmodifiable view of the world layer of this level.
     public Map<Position, GroundObject> getWorldLayer() {
         return Collections.unmodifiableMap(worldLayer);
     }
@@ -132,12 +136,22 @@ public class Level {
         this.worldLayer.put(pos, groundObject);
     }
 
-    /// @returns width of the map
+
+    /// @return width of the map
     public int getWidth(){
         return width;
     }
 
-    /// @returns height of the map
+    public void removeWorldLayer(Position position) {
+        this.worldLayer.remove(position);
+    }
+
+    public void removeGroundObject(Position pos){
+        this.worldLayer.remove(pos);
+    }
+
+
+    /// @return height of the map
     public int getHeight(){
         return height;
     }
@@ -168,4 +182,45 @@ public class Level {
     /// @spec.effects sets the clear condition of this level to the given value.
     /// @param clearCondition the new clear condition of this level.
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+
+    public boolean isOwnedBy(String userId) {
+        return this.creator.getId().equals(userId);
+    }
+
+    public boolean isOwnedBy(User user) {
+        return this.creator.getId().equals(user.getId());
+    }
+
+    public boolean canBeModified() {
+        return !this.published;
+    }
+
+    public void ensureModifiable() {
+        if (this.published) {
+            throw new LevelPublishedException("Cannot modify a published level");
+        }
+    }
+
+    public void ensureOwnedBy(String userId) {
+        if (!isOwnedBy(userId)) {
+            throw new ForbiddenUserException("Only the level owner can perform this action");
+        }
+    }
+
+    public boolean isWithinBounds(Position position) {
+        return position.x() >= 0 && position.x() < this.width
+            && position.y() >= 0 && position.y() < this.height;
+    }
+
+    public void ensureWithinBounds(Position position) {
+        if (position == null) {
+            throw new IllegalArgumentException("Position cannot be null");
+        }
+        if (!isWithinBounds(position)) {
+            throw new IllegalArgumentException(
+                String.format("Position (%d, %d) is out of bounds. Valid range: x=[0,%d], y=[0,%d]",
+                    position.x(), position.y(), this.width - 1, this.height - 1)
+            );
+        }
+    }
 }

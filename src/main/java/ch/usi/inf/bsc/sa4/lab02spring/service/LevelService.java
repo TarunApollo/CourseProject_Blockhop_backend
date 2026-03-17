@@ -1,17 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
-import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +35,7 @@ public class LevelService {
     ///              description, and creatorId set to userId.
     /// @param createLevelDTO the DTO containing the title and description of the new level.
     /// @param userId the unique identifier of the user.
-    /// @returns the newly created and saved Level.
+    /// @return the newly created and saved Level.
     public Level createLevel(CreateLevelDTO createLevelDTO, String userId) {
         User user = userService.getById(userId).orElseThrow(UserNotFoundException::new);
         Level level = new Level(createLevelDTO.title(), createLevelDTO.description(), user);
@@ -52,12 +49,12 @@ public class LevelService {
     ///               with the given user as the new creator.
     /// @param cloneLevelDTO the DTO containing the id of the level to clone.
     /// @param user the user cloning the level.
-    /// @returns a non-empty Optional containing the cloned Level if the source
+    /// @return a non-empty Optional containing the cloned Level if the source
     ///          level exists and belongs to the user, an empty Optional otherwise.
     public Optional<Level> cloneLevel(CloneLevelDTO cloneLevelDTO, User user) {
-        Optional<Level> optLevel = this.levelRepository.findById(cloneLevelDTO.sourceLevelId());
-        return optLevel.filter((level) -> level.getCreator().getId().equals(user.getId()))
-                .map((level) -> this.levelRepository.save(level.cloneFor(user)));
+        return this.levelRepository.findById(cloneLevelDTO.sourceLevelId())
+                .filter(level -> level.isOwnedBy(user))  // uses domain method instead of inline check
+                .map(level -> levelRepository.save(level.cloneFor(user)));
     }
 
     /// @return a list of all levels
@@ -85,16 +82,14 @@ public class LevelService {
     /// @param dto the DTO containing the optional new values for title, description, and clear condition
     /// @return the updated and saved level
     /// @throws LevelNotFoundException if no level with the given id exists
-    /// @throws ForbiddenUserException if the level does not belong to the given user
-    /// @throws LevelPublishedException if the level is already published
+    ///    /// @throws ForbiddenUserException if the level does not belong to the given user
+    ///    /// @throws LevelPublishedException if the level is already published
     public Level updateLevelProperties(User user, String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-        if (!level.getCreator().getId().equals(user.getId())) {
-            throw new ForbiddenUserException("Can't update a level that's not yours");
-        }
-        if (level.isPublished()) {
-            throw new LevelPublishedException("Level is already published");
-        }
+        // use domain methods for business rule enforcement
+        level.ensureOwnedBy(user.getId()); // throws ForbiddenUserException if not owner
+        level.ensureModifiable();  // throws LevelPublishedException if published
+
         dto.title().ifPresent(level::setTitle);
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);
