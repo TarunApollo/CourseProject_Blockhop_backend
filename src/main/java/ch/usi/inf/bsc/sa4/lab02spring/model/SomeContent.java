@@ -1,8 +1,8 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-public record SomeContent(Item content) implements Content {
+public record SomeContent(ContentType type) implements Content {
     public SomeContent {
-        if (!content.canBeContained()){
+        if (type == null){
             throw new IllegalArgumentException();
         }
     }
