@@ -56,21 +56,15 @@ public class EditorService {
         if (level.isPublished()) {
             throw new LevelPublishedException("Level is already published!");
         }
-        Position targetPosition = dto.position();
-        if (targetPosition == null){
-            throw new IllegalArgumentException("Position required!");
-        }
-        if (targetPosition.x() < 0 || targetPosition.x() >= 256 || targetPosition.y() < 0 || targetPosition.y() >= 14) {
-            throw new IllegalArgumentException("Coordinates out of bounds");
-        }
+
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
         if (dto.gid() == 0) {
-            level.removeGroundObject(targetPosition);
+            level.removeGroundObject(dto.position());
         } else {
             if (!tileSetService.isGroundGID(dto.gid())) {
                 throw new IllegalArgumentException("Not a ground tile");
             }
-            level.putWorldLayer(targetPosition, new GroundObject(dto.gid()));
+            level.putWorldLayer(dto.position(), new GroundObject(dto.gid()));
         }
         return levelRepository.save(level);
     }

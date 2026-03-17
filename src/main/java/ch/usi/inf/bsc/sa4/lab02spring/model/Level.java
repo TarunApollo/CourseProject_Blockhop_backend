@@ -145,4 +145,23 @@ public class Level {
             throw new ForbiddenUserException("Only the level owner can perform this action");
         }
     }
+
+    public boolean isWithinBounds(Position position) {
+        return position.x() >= 0 && position.x() < this.width
+            && position.y() >= 0 && position.y() < this.height;
+    }
+
+    public void ensureWithinBounds(Position position) {
+        if (position == null) {
+            throw new IllegalArgumentException("Position cannot be null");
+        }
+        if (!isWithinBounds(position)) {
+            throw new IllegalArgumentException(
+                // LLM generated format string because I'm lazy
+                String.format("Position (%d, %d) is out of bounds. Valid range: x=[0,%d], y=[0,%d]",
+                    position.x(), position.y(), this.width - 1, this.height - 1)
+            );
+        }
+    }
+
 }
