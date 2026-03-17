@@ -35,9 +35,9 @@ public class LevelService {
     }
 
     public Optional<Level> cloneLevel(CloneLevelDTO cloneLevelDTO, User user) {
-        Optional<Level> optLevel = this.levelRepository.findById(cloneLevelDTO.sourceLevelId());
-        return optLevel.filter((level) -> level.getCreator().getId().equals(user.getId()))
-                .map((level) -> this.levelRepository.save(level.cloneFor(user)));
+        return this.levelRepository.findById(cloneLevelDTO.sourceLevelId())
+                .filter(level -> level.isOwnedBy(user))  // uses domain method instead of inline check
+                .map(level -> levelRepository.save(level.cloneFor(user)));
     }
 
     public List<Level> getAllLevels() {
