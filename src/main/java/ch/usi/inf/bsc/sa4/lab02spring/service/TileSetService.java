@@ -17,6 +17,10 @@ public class TileSetService {
     private Set<Integer> groundGIDs = Set.of();
 
     @PostConstruct
+    ///
+    /// a parameterless void method that extracts gids from a predefined tileset of type Ground and 
+    /// puts them into a set.
+    /// 
     public void extractGroundGIDs() {
         try {
             ObjectMapper mapper = new ObjectMapper();
