@@ -51,12 +51,10 @@ public class LevelService {
 
     public Level updateLevelProperties(User user, String levelId, UpdateLevelDTO dto) {
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-        if (!level.getCreator().getId().equals(user.getId())) {
-            throw new ForbiddenUserException("Can't update a level that's not yours");
-        }
-        if (level.isPublished()) {
-            throw new LevelPublishedException("Level is already published");
-        }
+        // use domain methods for business rule enforcement
+        level.ensureOwnedBy(user.getId()); // throws ForbiddenUserException if not owner
+        level.ensureModifiable();  // throws LevelPublishedException if published
+
         dto.title().ifPresent(level::setTitle);
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);

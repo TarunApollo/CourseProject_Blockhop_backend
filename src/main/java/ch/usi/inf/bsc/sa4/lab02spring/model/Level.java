@@ -4,6 +4,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,4 +113,36 @@ public class Level {
     public void setPublished(boolean published) { this.published = published; }
 
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+
+
+    /// =====
+    /// Domain logic methods
+    /// =====
+
+     // previously this check was duplicated in EditorService and LevelService
+     // with inconsistent implementations (some compared User object directly;
+     // some compared IDs..)
+    public boolean isOwnedBy(String userId) {
+        return this.creator.getId().equals(userId);
+    }
+
+    public boolean isOwnedBy(User user) {
+        return this.creator.getId().equals(user.getId());
+    }
+
+    public boolean canBeModified() {
+        return !this.published;
+    }
+
+    public void ensureModifiable() {
+        if (this.published) {
+            throw new LevelPublishedException("Cannot modify a published level");
+        }
+    }
+
+    public void ensureOwnedBy(String userId) {
+        if (!isOwnedBy(userId)) {
+            throw new ForbiddenUserException("Only the level owner can perform this action");
+        }
+    }
 }
