@@ -20,6 +20,8 @@ public class EditorService {
 
     private final LevelRepository levelRepository;
 
+    /// Constructs a new EditorService with the given dependency.
+    /// @param levelRepository the repository for accessing level data
     @Autowired
     public EditorService(LevelRepository levelRepository) {
         this.levelRepository = levelRepository;
@@ -37,18 +39,27 @@ public class EditorService {
     /// - Only unpublished levels can be edited (throws LevelPublishedException otherwise)
     /// - Coordinates must be within level bounds: 0 ≤ x < width, 0 ≤ y < height (returns 400 BAD_REQUEST otherwise)
     ///
+    /// /// @spec.requires userId, levelId, and dto are not null.
+    /// @spec.requires dto contains a non-null position and a valid gid.
+    /// @spec.modifies the world layer of the level identified by levelId in the repository.
+    /// @spec.effects if gid > 0, adds or replaces the ground object at the target position.
+    ///               If gid == 0, removes the ground object at the target position if one exists.
+    ///               Saves the updated level to the repository.
     /// @param userId the authenticated user's ID
     /// @param levelId the level to edit
     /// @param dto contains the target position and gid
     /// @return the updated level
-    /// @throws ResponseStatusException if level not found (404), unauthorized (401), or coordinates out of bounds (400)
+    /// @throws NoSuchElementException if no level with the given id exists
+    /// @throws SecurityException if the user is not the creator of the level
     /// @throws LevelPublishedException if the level is already published
+    /// @throws IllegalArgumentException if the position is null or the coordinates
+    ///         are out of bounds (x must be in [0, 256), y must be in [0, 14))
     public Level editWorldLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
         // Security check: only creator can edit
-        if (!userId.equals(level.getCreator())) {
+        if (!userId.equals(level.getCreator().getId())) {
              throw new SecurityException("Not the creator");
         }
 
