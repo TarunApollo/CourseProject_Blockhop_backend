@@ -20,7 +20,7 @@ public class Level {
     private boolean published;
     private final int width = 256;
     private final int height = 14;
-    private ClearCondition clearCondition = new ClearCondition(ConditionType.NONE, 0);
+    private ClearCondition clearCondition;
     private final HashMap<Position, GameObject> objectLayer = new HashMap<>();
     private final HashMap<Position, GroundObject> worldLayer = new HashMap<>();
 
@@ -29,7 +29,7 @@ public class Level {
         this.description = description;
         this.published = false;
         this.creator = user;
-        this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
+        this.clearCondition = new ClearCondition(new NoCondition(), 0);
     }
 
     @PersistenceCreator
@@ -43,13 +43,14 @@ public class Level {
         this.worldLayer.putAll(worldLayer);
     }
 
-    private Level(String title, String description, User creator,  HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer) {
+    private Level(String title, String description, User creator,  HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer, ClearCondition clearCondition) {
         this(title, description, creator);
+        this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
     }
 
-    public Level cloneFor(User creator) { return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer); }
+    public Level cloneFor(User creator) { return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer, this.clearCondition); }
 
     public boolean isPublished() { return this.published; }
 
