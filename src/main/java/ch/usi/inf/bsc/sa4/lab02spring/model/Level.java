@@ -97,6 +97,10 @@ public class Level {
         this.worldLayer.put(pos, groundObject);
     }
 
+    public GroundObject removeWorldLayer(Position position) {
+        return this.worldLayer.remove(position);
+    }
+
     public int getWidth(){
         return width;
     }
@@ -163,5 +167,4 @@ public class Level {
             );
         }
     }
-
 }

@@ -53,7 +53,7 @@ public class EditorService {
 
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
         if (dto.gid() == 0) {
-            level.removeGroundObject(dto.position());
+            level.removeWorldLayer(dto.position());
         } else {
             if (!tileSetService.isGroundGID(dto.gid())) {
                 throw new IllegalArgumentException("Not a ground tile");
