@@ -8,13 +8,4 @@ public interface GameObject {
 
     Position pos();
 
-    default boolean canBeCondition() {
-        return switch (this) {
-            case Box box -> true;
-            case Slime slime -> true;
-            case Snail snail -> true;
-            case Coin value -> true;
-            default -> false;
-        };
-    }
 }
