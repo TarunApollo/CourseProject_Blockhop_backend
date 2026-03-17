@@ -70,6 +70,7 @@ public class Level {
     ///
     private Level(String title, String description, User creator,  HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer, ClearCondition clearCondition) {
         this(title, description, creator);
+        this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
     }
