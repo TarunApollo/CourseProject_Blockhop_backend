@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
@@ -21,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import java.util.List;
 
@@ -31,45 +29,44 @@ public class LevelController {
     private final LevelService levelService;
     private final UserService userService;
 
+  /// Constructs a new LevelController with the given dependencies.
+  /// @param levelService the service for managing level operations
+  /// @param userService the service for accessing user data
     @Autowired
     public LevelController(LevelService levelService, UserService userService) {
         this.levelService = levelService;
         this.userService = userService;
     }
 
-    ///
-    /// Creates a new empty level and returns a level dto
-    /// must be authorized, and it must have a completeLevelDTO to return a level
-    ///
-    /// @param authentication abstract token for authentication (either jwt or oauth2)
-    /// @param createLevelDTO dto containing the necessary information to create a brand-new level
-    /// @return a 200 if OK otherwise a 401 if the user is not authenticated
-    ///
+  /// Creates a new empty level and returns a level DTO.
+  /// @spec.requires authentication and createLevelDTO are not null.
+  /// @spec.effects saves a new level to the repository with the authenticated user as creator.
+  /// @param authentication abstract token for authentication
+  /// @param createLevelDTO the DTO containing the necessary information to create a new level
+  /// @return a 200 OK response containing the created level as a LevelDTO
+  /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping()
     public ResponseEntity<LevelDTO> createLevel(Authentication authentication, @RequestBody CreateLevelDTO createLevelDTO) {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
-    ///
-    /// Return a list of the levels present in the collection
-    /// a parameterless method that returns all the available levels
-    ///
-    /// @return list of levels
-    ///
+  /// Returns a list of all levels present in the collection.
+  /// @return a list of all levels as LevelDTOs
     @GetMapping()
     public List<LevelDTO> getLevels() {
         var levels = this.levelService.getAllLevels();
         return levels.stream().map(LevelDTO::new).toList();
     }
 
-    ///
-    /// Copies the given level if present and if the user is the creator of such level
-    ///
-    /// @param authentication abstract token for authentication (either jwt or oauth2)
-    /// @param cloneLevelDTO  dto containing the necessary information to clone the level
-    /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
-    ///
+  /// Clones the given level if it exists and the authenticated user is its creator.
+  /// @spec.requires authentication and cloneLevelDTO are not null.
+  /// @spec.effects saves a clone of the level to the repository with the user as the new creator.
+  /// @param authentication abstract token for authentication
+  /// @param cloneLevelDTO the DTO containing the id of the level to clone
+  /// @return a 200 OK response containing the cloned level as a LevelDTO,
+  ///         or a 403 Forbidden response if the level does not exist or does not belong to the user
+  /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping("/clone")
     public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication, @RequestBody CloneLevelDTO cloneLevelDTO) {
         String userId = getUserIdFromAuth(authentication);
@@ -80,14 +77,17 @@ public class LevelController {
                 .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 
-    ///
-    /// updates the level if present
-    ///
-    /// @param authentication abstract token for authentication
-    /// @param levelId        id of the level being changed
-    /// @param dto            data transfer object holding the data to be updated.
-    /// @return a 200 if user is authenticated and levels exists a 404 if level doesn't exist a 401 if user not authenticated
-    ///
+  /// Updates the properties of an existing unpublished level owned by the authenticated user.
+  /// @spec.requires authentication, levelId, and dto are not null.
+  /// @spec.modifies the level identified by levelId in the repository.
+  /// @spec.effects updates the title, description, and/or clear condition of the level
+  /// @param authentication abstract token for authentication
+  /// @param levelId the id of the level to update
+  /// @param dto the DTO containing the optional new values for title, description, and clear condition
+  /// @return a 200 OK response containing the updated level,
+  ///         a 403 Forbidden response if the level does not belong to the authenticated user,
+  ///         or a 401 Unauthorized response if the level is already published
+  /// @throws UserNotFoundException if the authenticated user does not exist
     @PutMapping("/{levelId}/properties")
     public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);

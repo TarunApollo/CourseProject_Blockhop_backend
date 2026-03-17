@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 public class UserService {
   private final UserRepository userRepository;
 
+
+  /// Constructs a new UserService with the given dependency.
+  /// @param userRepository the repository for accessing user data
   @Autowired
   public UserService(UserRepository userRepository) {
     this.userRepository = userRepository;

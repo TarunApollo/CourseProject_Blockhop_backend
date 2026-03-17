@@ -2,7 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +18,8 @@ import java.util.NoSuchElementException;
 public class EditorController {
     private final EditorService editorService;
 
+    /// Constructs a new EditorController with the given dependency.
+    /// @param editorService the service for handling level editing operations
     @Autowired
     public EditorController(EditorService editorService) {
         this.editorService = editorService;
@@ -36,6 +37,10 @@ public class EditorController {
     /// - Only unpublished levels can be edited
     /// - Coordinates must remain within level bounds (0 to width-1, 0 to height-1)
     ///
+    /// @spec.requires authentication, levelId, and dto are not null.
+    /// @spec.modifies the world layer of the level identified by levelId in the repository.
+    /// @spec.effects delegates to EditorService to add, replace, or remove a tile
+    ///               at the target position in the world layer, then saves the level.
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level to edit
     /// @param dto contains the target position and gid to apply

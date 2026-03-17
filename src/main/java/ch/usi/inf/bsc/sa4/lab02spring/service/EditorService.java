@@ -17,7 +17,11 @@ import java.util.NoSuchElementException;
 public class EditorService {
 
     private final LevelRepository levelRepository;
+
+
     private final TileSetService tileSetService;
+    /// Constructs a new EditorService with the given dependency.
+    /// @param levelRepository the repository for accessing level data
     @Autowired
     public EditorService(LevelRepository levelRepository, TileSetService tileSetService ) {
         this.levelRepository = levelRepository;
@@ -36,6 +40,11 @@ public class EditorService {
     /// - Only unpublished levels can be edited (throws LevelPublishedException otherwise)
     /// - Coordinates must be within level bounds: 0 ≤ x < width, 0 ≤ y < height (returns 400 BAD_REQUEST otherwise)
     ///
+    /// @spec.requires dto contains a non-null position and a valid gid.
+    /// @spec.modifies the world layer of the level identified by levelId in the repository.
+    /// @spec.effects if gid > 0, adds or replaces the ground object at the target position.
+    ///               If gid == 0, removes the ground object at the target position if one exists.
+    ///               Saves the updated level to the repository.
     /// @param userId the authenticated user's ID
     /// @param levelId the level to edit
     /// @param dto contains the target position and gid
@@ -49,7 +58,7 @@ public class EditorService {
         // Security check: only creator can edit
         level.ensureOwnedBy(userId); // Throws ForbiddenUserException if not owner
         // Security check: only unpublished levels can be edited
-        level.ensureModifiable();    
+        level.ensureModifiable();
 
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
         if (dto.gid() == 0) {

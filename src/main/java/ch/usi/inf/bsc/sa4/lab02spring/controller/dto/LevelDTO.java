@@ -20,6 +20,8 @@ public record LevelDTO(
         Map<Position, GroundObject> worldLayer
 ) {
 
+    /// Constructs a LevelDTO from the given Level entity.
+    /// @param level the level to convert into a DTO
     public LevelDTO(Level level) {
         this(
                 level.getId(),
