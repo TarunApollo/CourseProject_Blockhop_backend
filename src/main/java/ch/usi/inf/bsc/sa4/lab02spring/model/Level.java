@@ -38,6 +38,10 @@ public class Level {
         this.title = title;
         this.description = description;
         this.published = published;
+        if(clearCondition == null)
+        {
+            throw new IllegalArgumentException();
+        }
         this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
@@ -105,5 +109,12 @@ public class Level {
 
     public void setPublished(boolean published) { this.published = published; }
 
-    public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+    public void setClearCondition(ClearCondition clearCondition) 
+    { 
+        if(clearCondition == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        this.clearCondition = clearCondition; 
+    }
 }
