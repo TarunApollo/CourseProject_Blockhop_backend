@@ -10,7 +10,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 
@@ -19,10 +18,11 @@ import java.util.NoSuchElementException;
 public class EditorService {
 
     private final LevelRepository levelRepository;
-
+    private final TileSetService tileSetService;
     @Autowired
-    public EditorService(LevelRepository levelRepository) {
+    public EditorService(LevelRepository levelRepository, TileSetService tileSetService ) {
         this.levelRepository = levelRepository;
+        this.tileSetService = tileSetService;
     }
 
     /// Edits a tile in the world layer of a level.
@@ -67,6 +67,9 @@ public class EditorService {
         if (dto.gid() == 0) {
             level.removeGroundObject(targetPosition);
         } else {
+            if (!tileSetService.isGroundGID(dto.gid())) {
+                throw new IllegalArgumentException("Not a ground tile");
+            }
             level.putWorldLayer(targetPosition, new GroundObject(dto.gid()));
         }
         return levelRepository.save(level);
