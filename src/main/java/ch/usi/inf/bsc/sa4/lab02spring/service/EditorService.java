@@ -10,6 +10,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
+
+import java.security.Security;
 import java.util.NoSuchElementException;
 
 
@@ -48,14 +50,9 @@ public class EditorService {
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
         // Security check: only creator can edit
-        if (!userId.equals(level.getCreator().getId())) {
-             throw new SecurityException("Not the creator");
-        }
-
+        level.ensureOwnedBy(userId); // Throws ForbiddenUserException if not owner
         // Security check: only unpublished levels can be edited
-        if (level.isPublished()) {
-            throw new LevelPublishedException("Level is already published!");
-        }
+        level.ensureModifiable();    
 
         // Tile operation: gid == 0 means remove, gid > 0 means add/replace
         if (dto.gid() == 0) {
