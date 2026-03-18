@@ -2,6 +2,8 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
+
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,25 @@ public class EditorController {
         String userId = getUserIdFromAuth(authentication);
         try {
             Level updated = editorService.editWorldLayerTile(userId, levelId, dto);
+            return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    // endpoint for efficient batch ops
+    @PutMapping("/{levelId}/world-layer/batch")
+    public ResponseEntity<WorldLayerResponseDTO> updateWorldLayer(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateWorldLayerDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+        try {
+            Level updated = editorService.updateWorldLayer(userId, levelId, dto);
             return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
