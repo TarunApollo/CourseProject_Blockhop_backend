@@ -8,7 +8,7 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import java.util.Map;
 
 //TODO: docs
-record WorldLayerResponseDTO(
+public record WorldLayerResponseDTO(
     String levelId,
     @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
     Map<Position, GroundObject> worldLayer
