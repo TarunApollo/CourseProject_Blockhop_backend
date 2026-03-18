@@ -29,7 +29,7 @@ public class Level {
         this.description = description;
         this.published = false;
         this.creator = user;
-        this.clearCondition = new ClearCondition(new NoCondition(), 0);
+        this.clearCondition = new ClearCondition(new Condition.NoClearCondition(), 0);
     }
 
     @PersistenceCreator
@@ -38,10 +38,6 @@ public class Level {
         this.title = title;
         this.description = description;
         this.published = published;
-        if(clearCondition == null)
-        {
-            throw new IllegalArgumentException();
-        }
         this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
@@ -111,10 +107,6 @@ public class Level {
 
     public void setClearCondition(ClearCondition clearCondition) 
     { 
-        if(clearCondition == null)
-        {
-            throw new IllegalArgumentException();
-        }
         this.clearCondition = clearCondition; 
     }
 }
