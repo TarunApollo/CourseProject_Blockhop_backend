@@ -1,5 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundTileId;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -91,13 +94,19 @@ public class EditorService {
         level.ensureOwnedBy(userId);
 
         // Construct validated GroundTileId value objects (validation happens here in service layer)
-        Map<Position, GroundTileId> tiles = dto.tiles().entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> e.getValue() == 0
-                                ? GroundTileId.remove()
-                                : new GroundTileId(e.getValue(), tileSetService::isGroundGID)
-                ));
+//        Map<Position, GroundTileId> tiles = dto.tiles().stream()
+//                .collect(Collectors.toMap(
+//                        e -> e.position(),
+//                        e -> e.gid() == 0
+//                                ? GroundTileId.remove()
+//                                : new GroundTileId(e.gid(), tileSetService::isGroundGID)
+//                ));
+
+        Map<Position, GroundTileId> tiles = new HashMap<>();
+        for(EditorLevelDTO object : dto.tiles()){
+            GroundTileId gid = new GroundTileId(object.gid(), tileSetService::isGroundGID);
+            tiles.put(object.position(), gid);
+        }
 
         level.updateWorldLayerBatch(tiles);
 
