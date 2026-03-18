@@ -2,15 +2,17 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GroundTileId;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -28,7 +30,7 @@ public class EditorService {
         this.tileSetService = tileSetService;
     }
 
-    /// Edits a tile in the world layer of a level.
+    /// Edits a single tile in the world layer of a level.
     ///
     /// Tile operations:
     /// - If gid > 0 and the position is empty, a tile is added (put operation)
@@ -49,26 +51,56 @@ public class EditorService {
     /// @param levelId the level to edit
     /// @param dto contains the target position and gid
     /// @return the updated level
-    /// @throws ResponseStatusException if level not found (404), unauthorized (401), or coordinates out of bounds (400)
-    /// @throws LevelPublishedException if the level is already published
+    /// @throws NoSuchElementException if level not found
+    /// @throws ForbiddenUserException if not level owner
+    /// @throws LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if position out of bounds or gid invalid
     public Level editWorldLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
-        // Security check: only creator can edit
-        level.ensureOwnedBy(userId); // Throws ForbiddenUserException if not owner
-        // Security check: only unpublished levels can be edited
-        level.ensureModifiable();
+        // Security check: only creator can edit (throws ForbiddenUserException if not owner)
+        level.ensureOwnedBy(userId);
 
-        // Tile operation: gid == 0 means remove, gid > 0 means add/replace
-        if (dto.gid() == 0) {
-            level.removeWorldLayer(dto.position());
-        } else {
-            if (!tileSetService.isGroundGID(dto.gid())) {
-                throw new IllegalArgumentException("Not a ground tile");
-            }
-            level.putWorldLayer(dto.position(), new GroundObject(dto.gid()));
-        }
+        // Construct validated GroundTileId value object (validation happens here in service layer)
+        GroundTileId gid = dto.gid() == 0
+                ? GroundTileId.remove()
+                : new GroundTileId(dto.gid(), tileSetService::isGroundGID);
+
+        // Delegate to entity with validated value object (entity stays pure)
+        level.updateWorldLayerTile(dto.position(), gid);
+
+        return levelRepository.save(level);
+    }
+
+    //TODO: write spec
+    /// Batch updates multiple tiles in the world layer of a level
+    /// @param userId the authenticated user's ID
+    /// @param levelId the level to edit
+    /// @param dto contains the map of positions to gids to apply
+    /// @return the updated level
+    /// @throws NoSuchElementException if level not found
+    /// @throws ForbiddenUserException if not level owner
+    /// @throws LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
+    public Level updateWorldLayer(String userId, String levelId, UpdateWorldLayerDTO dto) {
+        Level level = levelRepository.findById(levelId)
+                .orElseThrow(() -> new NoSuchElementException("Level not found"));
+
+        // Security check: only creator can edit (throws ForbiddenUserException if not owner)
+        level.ensureOwnedBy(userId);
+
+        // Construct validated GroundTileId value objects (validation happens here in service layer)
+        Map<Position, GroundTileId> tiles = dto.tiles().entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue() == 0
+                                ? GroundTileId.remove()
+                                : new GroundTileId(e.getValue(), tileSetService::isGroundGID)
+                ));
+
+        level.updateWorldLayerBatch(tiles);
+
         return levelRepository.save(level);
     }
 }
