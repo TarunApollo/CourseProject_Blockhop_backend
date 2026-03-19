@@ -21,8 +21,8 @@ public class Level {
     private final int width = 256;
     private final int height = 14;
     private ClearCondition clearCondition;
-    private final HashMap<Position, GameObject> objectLayer = new HashMap<>();
-    private final HashMap<Position, GroundObject> worldLayer = new HashMap<>();
+    private final Map<Position, GameObject> objectLayer = new HashMap<>();
+    private final Map<Position, GroundObject> worldLayer = new HashMap<>();
 
     /// Creates a new unpublished level
     /// @spec.requires title, description, creatorId not to be null
@@ -38,7 +38,7 @@ public class Level {
         this.description = description;
         this.published = false;
         this.creator = user;
-        this.clearCondition = new ClearCondition(new NoCondition(), 0);
+        this.clearCondition = new ClearCondition(new Condition.NoClearCondition(), 0);
     }
 
     /// Persistence constructor used by Spring Data MongoDB to recreate a Level from the database.
@@ -68,7 +68,7 @@ public class Level {
     /// @param objectLayer a map of positions to game objects to copy into the object layer
     /// @param worldLayer a map of positions to ground objects to copy into the world layer
     ///
-    private Level(String title, String description, User creator,  HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer, ClearCondition clearCondition) {
+    private Level(String title, String description, User creator,  Map<Position, GameObject> objectLayer, Map<Position, GroundObject> worldLayer, ClearCondition clearCondition) {
         this(title, description, creator);
         this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);

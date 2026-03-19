@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import java.util.Optional;
-
-public interface Content{
-
+public sealed interface Content {
+    record NoContent() implements Content {}
+    record SomeContent(ContentType type) implements Content {}
 }

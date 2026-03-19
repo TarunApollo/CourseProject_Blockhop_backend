@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.TypeAlias;
-import java.util.List;
 
 
 /// Creates a new Box with the given id, position, and content.
