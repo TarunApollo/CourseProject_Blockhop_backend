@@ -4,6 +4,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -141,6 +145,15 @@ public class Level {
         return width;
     }
 
+    public void removeWorldLayer(Position position) {
+        this.worldLayer.remove(position);
+    }
+
+    public void removeGroundObject(Position pos){
+        this.worldLayer.remove(pos);
+    }
+
+
     /// @return height of the map
     public int getHeight(){
         return height;
@@ -172,4 +185,45 @@ public class Level {
     /// @spec.effects sets the clear condition of this level to the given value.
     /// @param clearCondition the new clear condition of this level.
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+
+    public boolean isOwnedBy(String userId) {
+        return this.creator.getId().equals(userId);
+    }
+
+    public boolean isOwnedBy(User user) {
+        return this.creator.getId().equals(user.getId());
+    }
+
+    public boolean canBeModified() {
+        return !this.published;
+    }
+
+    public void ensureModifiable() {
+        if (this.published) {
+            throw new LevelPublishedException("Cannot modify a published level");
+        }
+    }
+
+    public void ensureOwnedBy(String userId) {
+        if (!isOwnedBy(userId)) {
+            throw new ForbiddenUserException("Only the level owner can perform this action");
+        }
+    }
+
+    public boolean isWithinBounds(Position position) {
+        return position.x() >= 0 && position.x() < this.width
+            && position.y() >= 0 && position.y() < this.height;
+    }
+
+    public void ensureWithinBounds(Position position) {
+        if (position == null) {
+            throw new IllegalArgumentException("Position cannot be null");
+        }
+        if (!isWithinBounds(position)) {
+            throw new IllegalArgumentException(
+                String.format("Position (%d, %d) is out of bounds. Valid range: x=[0,%d], y=[0,%d]",
+                    position.x(), position.y(), this.width - 1, this.height - 1)
+            );
+        }
+    }
 }
