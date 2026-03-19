@@ -25,14 +25,14 @@ public class Level {
     private final int width = 256;
     private final int height = 14;
     private ClearCondition clearCondition;
-    private final HashMap<Position, GameObject> objectLayer = new HashMap<>();
-    private final HashMap<Position, GroundObject> worldLayer = new HashMap<>();
+    private final Map<Position, GameObject> objectLayer = new HashMap<>();
+    private final Map<Position, GroundObject> worldLayer = new HashMap<>();
 
     /// Creates a new unpublished level
     /// @spec.requires title, description, creatorId not to be null
     /// @spec.effects creates a Level with the given title, description, and user.
     ///                 published is set to false, width to 256, height to 14,
-    ///                 and clearCondition to ClearCondition(NONE, 0).
+    ///                 and clearCondition with NoCondition and 0 target value
     ///                 objectLayer, and worldLayer are initialized as empty maps.
     /// @param title a string that represents the name of the level
     /// @param description short description of the level
@@ -42,7 +42,7 @@ public class Level {
         this.description = description;
         this.published = false;
         this.creator = user;
-        this.clearCondition = new ClearCondition(ConditionType.NONE, 0);
+        this.clearCondition = new ClearCondition(new Condition.NoClearCondition(), 0);
     }
 
     /// Persistence constructor used by Spring Data MongoDB to recreate a Level from the database.
@@ -64,14 +64,17 @@ public class Level {
         this.worldLayer.putAll(worldLayer);
     }
 
+
     /// Creates a new unpublished level with pre-existing object and world layers.
     /// @param title the name of the level
     /// @param description a short description of the level
     /// @param creator the user who will own this level
     /// @param objectLayer a map of positions to game objects to copy into the object layer
     /// @param worldLayer a map of positions to ground objects to copy into the world layer
-    private Level(String title, String description, User creator,  HashMap<Position, GameObject> objectLayer, HashMap<Position, GroundObject> worldLayer) {
+    ///
+    private Level(String title, String description, User creator,  Map<Position, GameObject> objectLayer, Map<Position, GroundObject> worldLayer, ClearCondition clearCondition) {
         this(title, description, creator);
+        this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
         this.worldLayer.putAll(worldLayer);
     }
@@ -82,7 +85,8 @@ public class Level {
     /// @return a new Level with the same title, description,
     ///               clearCondition, objectLayer, and worldLayer as this level,
     ///               but with the given creator and published set to false.
-    public Level cloneFor(User creator) { return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer); }
+    ///
+    public Level cloneFor(User creator) { return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer, this.clearCondition); }
 
     /// @return a boolean instance "published"
     public boolean isPublished() { return this.published; }
@@ -135,7 +139,6 @@ public class Level {
     public void putWorldLayer(Position pos, GroundObject groundObject) {
         this.worldLayer.put(pos, groundObject);
     }
-
 
     /// @return width of the map
     public int getWidth(){

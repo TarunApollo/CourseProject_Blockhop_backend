@@ -21,12 +21,12 @@ public class User {
         this.name = name;
     }
 
-    ///@return the unique identifier of the user
+    /// @return the unique identifier of the user
     public String getId() {
         return id;
     }
 
-    ///@return the name of the user
+    /// @return the name of the user
     public String getName() {
         return name;
     }

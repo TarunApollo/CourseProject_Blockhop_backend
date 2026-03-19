@@ -20,8 +20,8 @@ public class AttemptService {
     /// @spec.requires user is not null.
     /// @param user the user whose played levels to count
     /// @return the number of distinct levels the user has at least one attempt on
-    public int getPlayedLevelsCount(User user) {
-        return (int) this.attemptRepository.findByUser(user).stream()
+    public long getPlayedLevelsCount(User user) {
+        return this.attemptRepository.findByUser(user).stream()
                 .map(attempt -> attempt.level().getId())
                 .distinct()
                 .count();
@@ -31,8 +31,8 @@ public class AttemptService {
     /// @spec.requires user is not null.
     /// @param user the user whose completed levels to count
     /// @return the number of distinct levels the user has at least one completed attempt on
-    public int getCompletedLevelsCount(User user) {
-        return (int) this.attemptRepository.findByUserAndCompletedTrue(user).stream()
+    public long getCompletedLevelsCount(User user) {
+        return this.attemptRepository.findByUserAndCompletedTrue(user).stream()
                 .map(attempt -> attempt.level().getId())
                 .distinct()
                 .count();
