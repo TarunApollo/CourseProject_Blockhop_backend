@@ -24,6 +24,6 @@ public enum ContentType {
                 return type;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Unknown content type: " + value);
     }
 }

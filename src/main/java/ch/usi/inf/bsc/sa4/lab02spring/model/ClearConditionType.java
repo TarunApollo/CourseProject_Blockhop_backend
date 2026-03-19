@@ -28,6 +28,7 @@ public enum ClearConditionType {
                 return type;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Unknown clear condition type: " + value);
+
     }
 }
