@@ -41,8 +41,8 @@ public class EditorService {
     /// - If gid == 0, the tile at that position is removed (remove operation); if no tile exists, this is a no-op
     ///
     /// Security enforcement:
-    /// - Only the level creator can edit (returns 401 UNAUTHORIZED otherwise)
-    /// - Only unpublished levels can be edited (throws LevelPublishedException otherwise)
+    /// - Only the level creator can edit (throws ForbiddenUserException resulting in 403 FORBIDDEN)
+    /// - Only unpublished levels can be edited (throws LevelPublishedException resulting in 403 FORBIDDEN)
     /// - Coordinates must be within level bounds: 0 ≤ x < width, 0 ≤ y < height (returns 400 BAD_REQUEST otherwise)
     ///
     /// @spec.requires dto contains a non-null position and a valid gid.

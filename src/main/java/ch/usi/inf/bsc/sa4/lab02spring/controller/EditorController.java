@@ -3,9 +3,10 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,12 +66,11 @@ public class EditorController {
             return ResponseEntity.badRequest().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
-        } catch (SecurityException e) {
+        } catch (ForbiddenUserException | LevelPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 
-    // endpoint for efficient batch ops
     @PutMapping("/{levelId}/world-layer/batch")
     public ResponseEntity<WorldLayerResponseDTO> updateWorldLayer(
             Authentication authentication,
@@ -84,7 +84,7 @@ public class EditorController {
             return ResponseEntity.badRequest().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
-        } catch (SecurityException e) {
+        } catch (ForbiddenUserException | LevelPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
