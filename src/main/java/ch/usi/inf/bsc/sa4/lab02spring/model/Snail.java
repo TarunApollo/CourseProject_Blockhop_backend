@@ -4,6 +4,7 @@ import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("snail")
 public record Snail(int gid, Position pos, boolean isHiding ) implements Enemy {
-    //needs a boolean??
-    
+    public Snail withHiding(boolean hiding){
+        return new Snail(this.gid(),this.pos(),hiding);
+    }
 }
