@@ -11,11 +11,6 @@ import tools.jackson.databind.annotation.JsonSerialize;
 public record ObjectLayerResponseDTO(
     String levelId,
     @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
-    Map<Position, GameObject> worldLayer
+    Map<Position, GameObject> objectLayer
 ) {
-
-    public ObjectLayerResponseDTO(String levelId, Map<Position, GameObject> worldLayer) {
-        this.levelId = levelId;
-        this.worldLayer = worldLayer;
-    }
 }
