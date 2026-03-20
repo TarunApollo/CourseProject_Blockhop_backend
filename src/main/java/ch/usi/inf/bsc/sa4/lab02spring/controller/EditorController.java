@@ -93,7 +93,7 @@ public class EditorController {
         }
     }
     @PutMapping("/{levelId}/object-layer")
-        public ResponseEntity<ObjectLayerResponseDTO> updateObjectLayer(
+        public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
             Authentication authentication,
             @PathVariable String levelId,
             @RequestBody EditorLevelDTO dto
