@@ -1,16 +1,26 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import java.util.NoSuchElementException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
+import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
-
-import java.util.NoSuchElementException;
 
 
 @Service
@@ -71,4 +81,48 @@ public class EditorService {
         }
         return levelRepository.save(level);
     }
+    
+public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
+    Level level = levelRepository.findById(levelId)
+        .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+
+    level.ensureOwnedBy(userId);
+    level.ensureModifiable();
+    level.ensureWithinBounds(dto.position());
+
+    if (dto.gid() == 0) {
+        level.removeGroundObject(dto.position());
+    } else {
+        if (tileSetService.isGroundGID(dto.gid())) {
+            throw new IllegalArgumentException("Ground tiles cannot be placed in object layer");
+        }
+        if (level.getWorldLayer().containsKey(dto.position())) {
+            throw new IllegalArgumentException("Cannot place object on ground tile");
+        }
+        if (level.getObjectLayer().containsKey(dto.position())) {
+            throw new IllegalArgumentException("Tile already has an object");
+        }
+        level.putObjectLayer(dto.position(), createGameObject(dto.gid(), dto.position()));
+    }
+    return levelRepository.save(level);
+}
+
+private GameObject createGameObject(int gid, Position pos) {
+    String type = tileSetService.getObjectTileType(gid);
+    return switch (type) {
+        case "Decoration" -> new Decoration(gid, pos);
+        case "Enemy_Slime_Normal" -> new Slime(gid, pos);
+        case "Enemy_Snail" -> new Snail(gid, pos, false);
+        case "Box", "BoxDouble" -> new Box(gid, pos, new Content.NoContent() );
+        case "Start_Flag", "Start_Flag_B" -> new StartFlag(gid, pos);
+        case "Door_Closed", "Door_Open" -> new ExitDoor(gid, pos);
+        case "Item_Coin_Gold", "Item_Coin_Gold_Side" -> new Coin(gid, pos, 100);
+        case "Item_Coin_Silver", "Item_Coin_Silver_Side" -> new Coin(gid, pos, 25);
+        case "Item_Coin_Bronze", "Item_Coin_Bronze_Side" -> new Coin(gid, pos, 5);
+        case "Item_Shell" -> new Snail(gid, pos, true);
+        case "ExclamationMark" -> new Decoration(gid, pos);
+        default -> throw new IllegalArgumentException("Unknown object type: " + type);
+    };
+}
+
 }
