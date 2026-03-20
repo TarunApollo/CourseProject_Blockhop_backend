@@ -86,7 +86,7 @@ public class LevelController {
   /// @param dto the DTO containing the optional new values for title, description, and clear condition
   /// @return a 200 OK response containing the updated level,
   ///         a 403 Forbidden response if the level does not belong to the authenticated user,
-  ///         or a 401 Unauthorized response if the level is already published
+  ///         or a 403 Forbidden response if the level is already published
   /// @throws UserNotFoundException if the authenticated user does not exist
     @PutMapping("/{levelId}/properties")
     public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
@@ -96,10 +96,8 @@ public class LevelController {
             return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
         } catch (ForbiddenUserException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (LevelPublishedException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }
-
-
