@@ -103,8 +103,10 @@ public class EditorService {
 //                ));
 
         Map<Position, GroundTileId> tiles = new HashMap<>();
-        for(EditorLevelDTO object : dto.tiles()){
-            GroundTileId gid = new GroundTileId(object.gid(), tileSetService::isGroundGID);
+        for (EditorLevelDTO object : dto.tiles()) {
+            GroundTileId gid = object.gid() == 0
+                    ? GroundTileId.remove()
+                    : new GroundTileId(object.gid(), tileSetService::isGroundGID);
             tiles.put(object.position(), gid);
         }
 
