@@ -1,7 +1,12 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,19 +49,43 @@ public class EditorController {
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level to edit
     /// @param dto contains the target position and gid to apply
-    /// @return 200 OK with the updated level, 401 if unauthorized, 403 if the level is published,
-    ///         404 if level not found, 400 if coordinates are out of bounds
+    /// @return 200 OK with the updated world layer,
+    ///         400 BAD_REQUEST if position is out of bounds or gid is invalid,
+    ///         403 FORBIDDEN if user is not the level creator,
+    ///         404 NOT_FOUND if level doesn't exist
     @PutMapping("/{levelId}/world-layer")
-    public ResponseEntity<LevelDTO> editLevel(Authentication authentication, @PathVariable String levelId, @RequestBody EditorLevelDTO dto) {
+    public ResponseEntity<WorldLayerResponseDTO> editWorldLayerTile(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         try {
-            return ResponseEntity.ok(new LevelDTO(this.editorService.editWorldLayerTile(userId, levelId, dto)));
+            Level updated = editorService.editWorldLayerTile(userId, levelId, dto);
+            return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
-        } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    @PutMapping("/{levelId}/world-layer/batch")
+    public ResponseEntity<WorldLayerResponseDTO> updateWorldLayer(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateWorldLayerDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+        try {
+            Level updated = editorService.updateWorldLayer(userId, levelId, dto);
+            return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }
