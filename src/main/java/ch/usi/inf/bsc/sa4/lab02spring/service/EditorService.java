@@ -15,7 +15,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -25,8 +24,7 @@ public class EditorService {
 
 
     private final TileSetService tileSetService;
-    /// Constructs a new EditorService with the given dependency.
-    /// @param levelRepository the repository for accessing level data
+
     @Autowired
     public EditorService(LevelRepository levelRepository, TileSetService tileSetService ) {
         this.levelRepository = levelRepository;
@@ -62,25 +60,21 @@ public class EditorService {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
-        // Security check: only creator can edit (throws ForbiddenUserException if not owner)
         level.ensureOwnedBy(userId);
 
-        // Construct validated GroundTileId value object (validation happens here in service layer)
         GroundTileId gid = dto.gid() == 0
                 ? GroundTileId.remove()
                 : new GroundTileId(dto.gid(), tileSetService::isGroundGID);
 
-        // Delegate to entity with validated value object (entity stays pure)
         level.updateWorldLayerTile(dto.position(), gid);
 
         return levelRepository.save(level);
     }
 
-    //TODO: write spec
-    /// Batch updates multiple tiles in the world layer of a level
+    /// Batch updates multiple tiles in the world layer of a level.
     /// @param userId the authenticated user's ID
     /// @param levelId the level to edit
-    /// @param dto contains the map of positions to gids to apply
+    /// @param dto contains the list of positions and gids to apply
     /// @return the updated level
     /// @throws NoSuchElementException if level not found
     /// @throws ForbiddenUserException if not level owner
@@ -90,17 +84,8 @@ public class EditorService {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level not found"));
 
-        // Security check: only creator can edit (throws ForbiddenUserException if not owner)
         level.ensureOwnedBy(userId);
 
-        // Construct validated GroundTileId value objects (validation happens here in service layer)
-//        Map<Position, GroundTileId> tiles = dto.tiles().stream()
-//                .collect(Collectors.toMap(
-//                        e -> e.position(),
-//                        e -> e.gid() == 0
-//                                ? GroundTileId.remove()
-//                                : new GroundTileId(e.gid(), tileSetService::isGroundGID)
-//                ));
 
         Map<Position, GroundTileId> tiles = new HashMap<>();
         for (EditorLevelDTO object : dto.tiles()) {
