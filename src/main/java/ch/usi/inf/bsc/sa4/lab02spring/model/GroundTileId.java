@@ -5,32 +5,44 @@ import java.util.function.IntPredicate;
 /**
  * Value object representing a ground tile identifier for world layer operations.
  *
- * Why it's cool: Self-validating -> cannot be constructed with an invalid GID.
- * This keeps the domain model pure by ensuring entities don't need to validate 
- * GIDs or depend on application services
+ * <p>IMPORTANT: The canonical constructor {@code new GroundTileId(int)} bypasses validation
+ * and should NOT be used directly by clients. Always use one of:
+ * <ul>
+ *   <li>{@link #GroundTileId(int, IntPredicate)} - for validated tile IDs</li>
+ *   <li>{@link #remove()} - for creating a removal marker</li>
+ * </ul>
  *
- * Pros for ddd design:
- * - Value objects should enforce their own invariants at construction time
- * - Invalid states should be unrepresentable (can't construct invalid GroundTileId)
- * - Validation logic lives at the boundary (service layer), not in entities
- * - Entity methods receive already-validated domain objects, keeping them pure
+ * <p>Using the canonical constructor directly may result in invalid GIDs being
+ * constructed. It is the caller's responsibility to use the validated constructor.
  *
- * Usage:
- * - GroundTileId.remove() creates a removal marker (value = 0)
- * - new GroundTileId(gid, validator::isGroundGID) creates a tile with validation
- * - gid == 0 means "remove the tile at this position"
- * - gid > 0 means "add/replace tile at this position"
+ * <p><b>Canonical constructor contract:</b> performs NO validation.
+ * Caller must ensure value is valid or 0. Use {@link #GroundTileId(int, IntPredicate)} instead.
+ *
+ * <p><b>Why it's cool:</b> Self-validating (when using the two-argument constructor).
+ * This keeps the domain model pure by ensuring entities don't need to validate
+ * GIDs or depend on application services.
+ *
+ * <p><b>Pros for DDD design:</b>
+ * <ul>
+ *   <li>Value objects should enforce their own invariants at construction time</li>
+ *   <li>Invalid states should be unrepresentable (when using validated constructor)</li>
+ *   <li>Validation logic lives at the boundary (service layer), not in entities</li>
+ *   <li>Entity methods receive already-validated domain objects, keeping them pure</li>
+ * </ul>
+ *
+ *
+ * @param value the GID value; caller using canonical constructor must ensure it is valid or 0
  */
-
 public record GroundTileId(int value) {
 
-    
-    // Validates that the GID represents a valid ground tile (or 0 for removal).
-    //
-    // @param value the GID value (must be valid ground tile, or 0 for removal)
-    // @param validator predicate that returns true if GID is a valid ground tile
-    // @throws IllegalArgumentException if GID is not a valid ground tile (and not 0)
-    //
+    /**
+     * Constructs a validated GroundTileId.
+     *
+     * @param value the GID value; must be 0 (removal) or a valid ground tile GID
+     * @param validator predicate to validate the GID; must not be null
+     * @requires value == 0 || validator.test(value)
+     * @requires validator != null
+     */
     public GroundTileId(int value, IntPredicate validator) {
         this(value);
         if (value != 0 && !validator.test(value)) {
@@ -38,18 +50,22 @@ public record GroundTileId(int value) {
         }
     }
 
-    // Creates a GroundTileId representing a removal operation.
-    // No validation needed since value is 0 (reserved for "no tile").
-    //
-    // @return a GroundTileId with value 0, indicating tile removal
+    /**
+     * Creates a GroundTileId representing a removal operation.
+     *
+     * <p>No validation needed since value is 0 (reserved for "no tile").
+     *
+     * @return a GroundTileId with value 0, indicating tile removal
+     */
     public static GroundTileId remove() {
         return new GroundTileId(0);
     }
 
-    //
-    // Checks if this GroundTileId represents a removal operation.
-    // @return true if this is a removal (value == 0), false otherwise
-    //
+    /**
+     * Checks if this GroundTileId represents a removal operation.
+     *
+     * @return true if value is 0, false otherwise
+     */
     public boolean isRemoval() {
         return this.value == 0;
     }
