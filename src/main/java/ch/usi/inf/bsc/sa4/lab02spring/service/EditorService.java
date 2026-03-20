@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.GameObjectTileId;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GroundTileId;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
@@ -62,7 +62,9 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        GameObjectTileId gid = new GameObjectTileId(dto.gid(), tileSetService::isGroundGID);
+        GroundTileId gid = dto.gid() == 0
+                ? GroundTileId.remove()
+                : new GroundTileId(dto.gid(), tileSetService::isGroundGID);
 
         level.updateWorldLayerTile(dto.position(), gid);
 
@@ -85,9 +87,9 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        Map<Position, GameObjectTileId> tiles = new HashMap<>();
-        for (EditorLevelDTO object : dto.tiles()) {
-            GameObjectTileId gid = new GameObjectTileId(object.gid(), tileSetService::isGroundGID);
+        Map<Position, GroundTileId> tiles = new HashMap<>();
+        for(EditorLevelDTO object : dto.tiles()){
+            GroundTileId gid = new GroundTileId(object.gid(), tileSetService::isGroundGID);
             tiles.put(object.position(), gid);
         }
 
@@ -95,7 +97,6 @@ public class EditorService {
 
         return levelRepository.save(level);
     }
-
     public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
@@ -104,18 +105,19 @@ public class EditorService {
         level.ensureModifiable();
         level.ensureWithinBounds(dto.position());
 
-        GameObjectTileId tileId = new GameObjectTileId(dto.gid(), tileSetService::isObjectGID);
-
-        if (tileId.isRemoval()) {
+        if (dto.gid() == 0) {
             level.removeGroundObject(dto.position());
         } else {
+            if (tileSetService.isGroundGID(dto.gid())) {
+                throw new IllegalArgumentException("Ground tiles cannot be placed in object layer");
+            }
             if (level.getWorldLayer().containsKey(dto.position())) {
                 throw new IllegalArgumentException("Cannot place object on ground tile");
             }
             if (level.getObjectLayer().containsKey(dto.position())) {
                 throw new IllegalArgumentException("Tile already has an object");
             }
-            level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId, dto.position()));
+            level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(dto.gid(), dto.position()));
         }
         return levelRepository.save(level);
     }

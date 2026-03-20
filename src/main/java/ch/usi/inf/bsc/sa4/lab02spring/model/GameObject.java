@@ -4,5 +4,8 @@ import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("game_object")
 public interface GameObject {
+    int gid();
+
     Position pos();
+
 }

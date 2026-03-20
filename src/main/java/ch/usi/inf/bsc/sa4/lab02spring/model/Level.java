@@ -231,7 +231,7 @@ public class Level {
     }
 
     // TODO: docs
-    public void updateWorldLayerTile(Position position, GameObjectTileId gid) {
+    public void updateWorldLayerTile(Position position, GroundTileId gid) {
         this.ensureWithinBounds(position);
 
         if (gid.isRemoval()) {
@@ -242,15 +242,15 @@ public class Level {
     }
 
     // TODO: docs
-    public void updateWorldLayerBatch(Map<Position, GameObjectTileId> tiles) {
+    public void updateWorldLayerBatch(Map<Position, GroundTileId> tiles) {
         for (Position pos : tiles.keySet()) {
             this.ensureWithinBounds(pos);
         }
 
         // All positions valid? --> apply all mutations
-        for (Map.Entry<Position, GameObjectTileId> entry : tiles.entrySet()) {
+        for (Map.Entry<Position, GroundTileId> entry : tiles.entrySet()) {
             Position pos = entry.getKey();
-            GameObjectTileId gid = entry.getValue();
+            GroundTileId gid = entry.getValue();
 
             if (gid.isRemoval()) {
                 this.worldLayer.remove(pos);

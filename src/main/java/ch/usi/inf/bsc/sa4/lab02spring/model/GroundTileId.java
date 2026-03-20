@@ -3,12 +3,12 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import java.util.function.IntPredicate;
 
 /**
- * Value object representing a tile identifier for both world layer and object layer operations.
+ * Value object representing a ground tile identifier for world layer operations.
  *
- * <p>IMPORTANT: The canonical constructor {@code new GameObjectTileId(int)} bypasses validation
+ * <p>IMPORTANT: The canonical constructor {@code new GroundTileId(int)} bypasses validation
  * and should NOT be used directly by clients. Always use one of:
  * <ul>
- *   <li>{@link #GameObjectTileId(int, IntPredicate)} - for validated tile IDs</li>
+ *   <li>{@link #GroundTileId(int, IntPredicate)} - for validated tile IDs</li>
  *   <li>{@link #remove()} - for creating a removal marker</li>
  * </ul>
  *
@@ -16,7 +16,7 @@ import java.util.function.IntPredicate;
  * constructed. It is the caller's responsibility to use the validated constructor.
  *
  * <p><b>Canonical constructor contract:</b> performs NO validation.
- * Caller must ensure value is valid or 0. Use {@link #GameObjectTileId(int, IntPredicate)} instead.
+ * Caller must ensure value is valid or 0. Use {@link #GroundTileId(int, IntPredicate)} instead.
  *
  * <p><b>Why it's cool:</b> Self-validating (when using the two-argument constructor).
  * This keeps the domain model pure by ensuring entities don't need to validate
@@ -33,34 +33,34 @@ import java.util.function.IntPredicate;
  *
  * @param value the GID value; caller using canonical constructor must ensure it is valid or 0
  */
-public record GameObjectTileId(int value) {
+public record GroundTileId(int value) {
 
     /**
-     * Constructs a validated GameObjectTileId.
+     * Constructs a validated GroundTileId.
      *
-     * @param value the GID value; must be 0 (removal) or a valid tile GID
+     * @param value the GID value; must be 0 (removal) or a valid ground tile GID
      * @param validator predicate to validate the GID; must not be null
      */
-    public GameObjectTileId(int value, IntPredicate validator) {
+    public GroundTileId(int value, IntPredicate validator) {
         this(value);
         if (value != 0 && !validator.test(value)) {
-            throw new IllegalArgumentException("Invalid GID: " + value);
+            throw new IllegalArgumentException("Invalid ground GID: " + value);
         }
     }
 
     /**
-     * Creates a GameObjectTileId representing a removal operation.
+     * Creates a GroundTileId representing a removal operation.
      *
      * <p>No validation needed since value is 0 (reserved for "no tile").
      *
-     * @return a GameObjectTileId with value 0, indicating tile removal
+     * @return a GroundTileId with value 0, indicating tile removal
      */
-    public static GameObjectTileId remove() {
-        return new GameObjectTileId(0);
+    public static GroundTileId remove() {
+        return new GroundTileId(0);
     }
 
     /**
-     * Checks if this GameObjectTileId represents a removal operation.
+     * Checks if this GroundTileId represents a removal operation.
      *
      * @return true if value is 0, false otherwise
      */
