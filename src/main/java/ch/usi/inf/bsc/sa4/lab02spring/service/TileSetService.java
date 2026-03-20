@@ -49,7 +49,12 @@ public class TileSetService {
     public boolean isGroundGID(int gid) {
         return groundGIDs.contains(gid);
     }
-    public String getObjectTileType(int gid){
+
+    public boolean isObjectGID(int gid) {
+        return gidToType.containsKey(gid) && !isGroundGID(gid);
+    }
+
+    public String getObjectTileType(int gid) {
         return gidToType.getOrDefault(gid, "");
     }
 }
