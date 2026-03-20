@@ -61,6 +61,7 @@ public class EditorService {
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
 
         level.ensureOwnedBy(userId);
+        level.ensureModifiable();
 
         GroundTileId gid = dto.gid() == 0
                 ? GroundTileId.remove()
@@ -85,7 +86,7 @@ public class EditorService {
                 .orElseThrow(() -> new NoSuchElementException("Level not found"));
 
         level.ensureOwnedBy(userId);
-
+        level.ensureModifiable();
 
         Map<Position, GroundTileId> tiles = new HashMap<>();
         for(EditorLevelDTO object : dto.tiles()){

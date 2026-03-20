@@ -226,7 +226,6 @@ public class Level {
 
     // TODO: docs
     public void updateWorldLayerTile(Position position, GroundTileId gid) {
-        this.ensureModifiable();
         this.ensureWithinBounds(position);
 
         if (gid.isRemoval()) {
@@ -238,9 +237,6 @@ public class Level {
 
     // TODO: docs
     public void updateWorldLayerBatch(Map<Position, GroundTileId> tiles) {
-        this.ensureModifiable();
-
-        // Validate all positions before any mutation
         for (Position pos : tiles.keySet()) {
             this.ensureWithinBounds(pos);
         }
