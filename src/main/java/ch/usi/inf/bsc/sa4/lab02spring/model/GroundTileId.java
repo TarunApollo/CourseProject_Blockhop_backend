@@ -40,8 +40,6 @@ public record GroundTileId(int value) {
      *
      * @param value the GID value; must be 0 (removal) or a valid ground tile GID
      * @param validator predicate to validate the GID; must not be null
-     * @requires value == 0 || validator.test(value)
-     * @requires validator != null
      */
     public GroundTileId(int value, IntPredicate validator) {
         this(value);
