@@ -24,7 +24,7 @@ public class TileSetService {
     /// a parameterless void method that extracts gids from a predefined tileset of type Ground and 
     /// puts them into a set.
     /// 
-    public void extractGroundGIDs() {
+    public void loadTileSet() {
         try {
             ObjectMapper mapper = new ObjectMapper();
             TileSet tileSet = mapper.readValue(
@@ -54,7 +54,7 @@ public class TileSetService {
         return gidToType.containsKey(gid) && !isGroundGID(gid);
     }
 
-    public String getObjectTileType(int gid) {
+    public String getObjectTileType(int gid){
         return gidToType.getOrDefault(gid, "");
     }
 }
