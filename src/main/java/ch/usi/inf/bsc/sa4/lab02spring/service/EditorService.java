@@ -109,16 +109,13 @@ public class EditorService {
         if (tileId.isRemoval()) {
             level.removeObjectLayer(dto.position());
         } else {
-            if (tileSetService.isGroundGID(dto.gid())) {
-                throw new IllegalArgumentException("Ground tiles cannot be placed in object layer");
-            }
             if (level.getWorldLayer().containsKey(dto.position())) {
                 throw new IllegalArgumentException("Cannot place object on ground tile");
             }
             if (level.getObjectLayer().containsKey(dto.position())) {
                 throw new IllegalArgumentException("Tile already has an object");
             }
-            level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(dto.gid(), dto.position()));
+            level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
         }
         return levelRepository.save(level);
     }
