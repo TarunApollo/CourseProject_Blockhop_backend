@@ -1,34 +1,33 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.GroundTileId;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 @Service
 public class EditorService {
 
     private final LevelRepository levelRepository;
-
-
     private final TileSetService tileSetService;
+    private final GameObjectFactory gameObjectFactory;
 
     @Autowired
-    public EditorService(LevelRepository levelRepository, TileSetService tileSetService ) {
+    public EditorService(LevelRepository levelRepository, TileSetService tileSetService, GameObjectFactory gameObjectFactory) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
+        this.gameObjectFactory = gameObjectFactory;
     }
 
     /// Edits a single tile in the world layer of a level.
@@ -63,10 +62,9 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        GroundTileId gid = dto.gid() == 0
-                ? GroundTileId.remove()
-                : new GroundTileId(dto.gid(), tileSetService::isGroundGID);
-
+        TileObjectId gid = dto.gid() == 0
+        ? TileObjectId.remove()
+        : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
         return levelRepository.save(level);
@@ -88,14 +86,37 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        Map<Position, GroundTileId> tiles = new HashMap<>();
+        Map<Position, TileObjectId> tiles = new HashMap<>();
         for(EditorLevelDTO object : dto.tiles()){
-            GroundTileId gid = new GroundTileId(object.gid(), tileSetService::isGroundGID);
+            TileObjectId gid = new TileObjectId(object.gid(), tileSetService::isGroundGID);
             tiles.put(object.position(), gid);
         }
 
         level.updateWorldLayerBatch(tiles);
 
+        return levelRepository.save(level);
+    }
+    public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
+        Level level = levelRepository.findById(levelId)
+                .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+
+        level.ensureOwnedBy(userId);
+        level.ensureModifiable();
+        level.ensureWithinBounds(dto.position());
+
+        TileObjectId tileId = new TileObjectId(dto.gid(), tileSetService::isObjectGID);
+
+        if (tileId.isRemoval()) {
+            level.removeObjectLayer(dto.position());
+        } else {
+            if (level.getWorldLayer().containsKey(dto.position())) {
+                throw new IllegalArgumentException("Cannot place object on ground tile");
+            }
+            if (level.getObjectLayer().containsKey(dto.position())) {
+                throw new IllegalArgumentException("Tile already has an object");
+            }
+            level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
+        }
         return levelRepository.save(level);
     }
 }

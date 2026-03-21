@@ -1,16 +1,17 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
@@ -145,14 +146,16 @@ public class Level {
         return width;
     }
 
-    public void removeWorldLayer(Position position) {
-        this.worldLayer.remove(position);
-    }
 
+    /// remove a ground object from the world layer.
     public void removeGroundObject(Position pos){
         this.worldLayer.remove(pos);
     }
 
+    /// remove a game object from the objectLayer(why on earth do we call it the object layer if they are all objects??)
+    public void removeObjectLayer(Position pos) {
+        this.objectLayer.remove(pos);
+    }
 
     /// @return height of the map
     public int getHeight(){
@@ -228,7 +231,7 @@ public class Level {
     }
 
     // TODO: docs
-    public void updateWorldLayerTile(Position position, GroundTileId gid) {
+    public void updateWorldLayerTile(Position position, TileObjectId gid) {
         this.ensureWithinBounds(position);
 
         if (gid.isRemoval()) {
@@ -239,15 +242,15 @@ public class Level {
     }
 
     // TODO: docs
-    public void updateWorldLayerBatch(Map<Position, GroundTileId> tiles) {
+    public void updateWorldLayerBatch(Map<Position, TileObjectId> tiles) {
         for (Position pos : tiles.keySet()) {
             this.ensureWithinBounds(pos);
         }
 
         // All positions valid? --> apply all mutations
-        for (Map.Entry<Position, GroundTileId> entry : tiles.entrySet()) {
+        for (Map.Entry<Position, TileObjectId> entry : tiles.entrySet()) {
             Position pos = entry.getKey();
-            GroundTileId gid = entry.getValue();
+            TileObjectId gid = entry.getValue();
 
             if (gid.isRemoval()) {
                 this.worldLayer.remove(pos);

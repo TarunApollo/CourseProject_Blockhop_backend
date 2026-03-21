@@ -1,22 +1,26 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import java.util.NoSuchElementException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
-
-import java.util.NoSuchElementException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 @RestController
 @RequestMapping("/editor")
@@ -88,4 +92,22 @@ public class EditorController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
-}
+    @PutMapping("/{levelId}/object-layer")
+        public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody EditorLevelDTO dto
+        ){
+        String userId = getUserIdFromAuth(authentication);
+         try {
+            Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        }
+ }
