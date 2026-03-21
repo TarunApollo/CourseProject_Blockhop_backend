@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.GameObjectTileId;
+import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
@@ -62,9 +62,9 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        GameObjectTileId gid = dto.gid() == 0
-        ? GameObjectTileId.remove()
-        : new GameObjectTileId(dto.gid(), tileSetService::isGroundGID);
+        TileObjectId gid = dto.gid() == 0
+        ? TileObjectId.remove()
+        : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
         return levelRepository.save(level);
@@ -86,9 +86,9 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        Map<Position, GameObjectTileId> tiles = new HashMap<>();
+        Map<Position, TileObjectId> tiles = new HashMap<>();
         for(EditorLevelDTO object : dto.tiles()){
-            GameObjectTileId gid = new GameObjectTileId(object.gid(), tileSetService::isGroundGID);
+            TileObjectId gid = new TileObjectId(object.gid(), tileSetService::isGroundGID);
             tiles.put(object.position(), gid);
         }
 
@@ -104,7 +104,7 @@ public class EditorService {
         level.ensureModifiable();
         level.ensureWithinBounds(dto.position());
 
-        GameObjectTileId tileId = new GameObjectTileId(dto.gid(), tileSetService::isObjectGID);
+        TileObjectId tileId = new TileObjectId(dto.gid(), tileSetService::isObjectGID);
 
         if (tileId.isRemoval()) {
             level.removeObjectLayer(dto.position());
