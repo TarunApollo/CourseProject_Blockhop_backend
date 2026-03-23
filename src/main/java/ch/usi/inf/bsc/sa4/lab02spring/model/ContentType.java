@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ContentType {
-    COIN("coin");
+    GOLD_COIN("Item_Coin_Gold"),
+    SILVER_COIN("Item_Coin_Silver"),
+    BRONZE_COIN("Item_Coin_Bronze");
 
     private final String value;
 
