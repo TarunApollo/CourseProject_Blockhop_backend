@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import java.util.List;
 
-
-public record UpdateObjectPropertiesDTO(Position position , String contentType) {}
+public record UpdateObjectPropertiesDTO(List<UpdateObjectPropertyDTO> updates) {}
