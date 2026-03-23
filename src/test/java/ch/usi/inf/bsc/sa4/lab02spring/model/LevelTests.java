@@ -82,4 +82,80 @@ public class LevelTests {
             assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
+
+    @Nested
+    @DisplayName("methods setTitle, setDescription, setPublished, and setClearCondition")
+    class Setters {
+
+        private Level level;
+        private ClearCondition clearCondition;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Old title", "Old description", creator);
+            this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.SLIME), 2);
+        }
+
+        @Test
+        @DisplayName("should update the mutable fields")
+        public void updatesMutableFields() {
+            this.level.setTitle("New title");
+            this.level.setDescription("New description");
+            this.level.setPublished(true);
+            this.level.setClearCondition(this.clearCondition);
+
+            assertEquals("New title", this.level.getTitle());
+            assertEquals("New description", this.level.getDescription());
+            assertTrue(this.level.isPublished());
+            assertSame(this.clearCondition, this.level.getClearCondition());
+        }
+    }
+
+    @Nested
+    @DisplayName("methods isOwnedBy and ensureOwnedBy")
+    class OwnershipMethods {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("owner-id", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Test
+        @DisplayName("should report ownership for the matching user id")
+        public void matchesUserId() {
+            assertTrue(this.level.isOwnedBy("owner-id"));
+            assertFalse(this.level.isOwnedBy("other-id"));
+        }
+
+        @Test
+        @DisplayName("should report ownership for the matching user")
+        public void matchesUser() {
+            assertTrue(this.level.isOwnedBy(new User("owner-id", "Mario clone")));
+            assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
+        }
+
+        @Nested
+        @DisplayName("method ensureOwnedBy")
+        class EnsureOwnedByMethod {
+
+            @Test
+            @DisplayName("throws ForbiddenUserException")
+            public void throwsForbiddenUserException() {
+                Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("other-id");
+                assertThrows(ForbiddenUserException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("should not throw when the user owns the level")
+            public void allowsOwner() {
+                Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("owner-id");
+                assertDoesNotThrow(codeToExecute);
+            }
+        }
+    }
 }
+
