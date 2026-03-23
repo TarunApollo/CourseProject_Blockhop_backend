@@ -8,10 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ContentType;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
@@ -116,6 +121,39 @@ public class EditorService {
                 throw new IllegalArgumentException("Tile already has an object");
             }
             level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
+        }
+        return levelRepository.save(level);
+    }
+
+
+    public Level updateObjectProperties(String userId, String levelId, UpdateObjectPropertiesDTO dto) {
+        Level level = levelRepository.findById(levelId)
+                .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+
+        level.ensureOwnedBy(userId);
+        level.ensureModifiable();
+
+        for (var update : dto.updates()) {
+            level.ensureWithinBounds(update.position());
+
+            GameObject obj = level.getObjectLayer().get(update.position());
+            if (obj == null) {
+                throw new NoSuchElementException("No object at position " + update.position());
+            }
+            if (!(obj instanceof Box box)) {
+                throw new IllegalArgumentException("Only boxes have editable properties");
+            }
+
+            Content content = switch (update.contentTypeString()) {
+                case "Item_Coin_Gold" -> new Content.SomeContent(ContentType.GOLD_COIN);
+                case "Item_Coin_Silver" -> new Content.SomeContent(ContentType.SILVER_COIN);
+                case "Item_Coin_Bronze" -> new Content.SomeContent(ContentType.BRONZE_COIN);
+                //only valid coin strings set content, all other nonsense is ignored.
+                // null seems pointless as controller should reject it, but oh well.
+                case null, default -> new Content.NoContent();
+            };
+
+            level.putObjectLayer(update.position(), new Box(box.gid(), box.pos(), content));
         }
         return levelRepository.save(level);
     }

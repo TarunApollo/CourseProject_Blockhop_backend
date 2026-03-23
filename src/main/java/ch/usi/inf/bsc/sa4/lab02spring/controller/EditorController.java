@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -93,13 +94,13 @@ public class EditorController {
         }
     }
     @PutMapping("/{levelId}/object-layer")
-        public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
+    public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
             Authentication authentication,
             @PathVariable String levelId,
             @RequestBody EditorLevelDTO dto
-        ){
+    ){
         String userId = getUserIdFromAuth(authentication);
-         try {
+        try {
             Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
             return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
         } catch (IllegalArgumentException e) {
@@ -109,5 +110,24 @@ public class EditorController {
         } catch (ForbiddenUserException | LevelPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+    }
+
+    @PutMapping("/{levelId}/object-layer/batch")
+    public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateObjectPropertiesDTO dto
+    ){
+        String userId = getUserIdFromAuth(authentication);
+        try {
+        Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+        return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+    }
  }
