@@ -238,4 +238,77 @@ public class LevelTests {
             }
         }
     }
+
+    @Nested
+    @DisplayName("methods getObjectLayer and getWorldLayer")
+    class LayerGetters {
+
+        private Level level;
+        private Position position;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.position = new Position(1, 1);
+            this.level.putWorldLayer(this.position, new GroundObject(8));
+            this.level.putObjectLayer(this.position, new StartFlag(9, this.position));
+        }
+
+        @Test
+        @DisplayName("should return unmodifiable views")
+        public void returnsUnmodifiableViews() {
+            Executable modifyWorldLayer = () -> this.level.getWorldLayer().put(new Position(2, 2), new GroundObject(3));
+            Executable modifyObjectLayer = () -> this.level.getObjectLayer().put(new Position(2, 2), new StartFlag(4, new Position(2, 2)));
+
+            assertThrows(UnsupportedOperationException.class, modifyWorldLayer);
+            assertThrows(UnsupportedOperationException.class, modifyObjectLayer);
+        }
+    }
+
+    @Nested
+    @DisplayName("methods putObjectLayer, putWorldLayer, removeObjectLayer, and removeGroundObject")
+    class LayerMutationMethods {
+
+        private Level level;
+        private Position objectPosition;
+        private Position worldPosition;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.objectPosition = new Position(2, 3);
+            this.worldPosition = new Position(4, 5);
+        }
+
+        @Test
+        @DisplayName("should add and replace entries in both layers")
+        public void addsAndReplacesEntries() {
+            StartFlag firstObject = new StartFlag(10, this.objectPosition);
+            Coin replacementObject = new Coin(11, this.objectPosition, 5);
+            GroundObject firstGround = new GroundObject(20);
+            GroundObject replacementGround = new GroundObject(21);
+
+            this.level.putObjectLayer(this.objectPosition, firstObject);
+            this.level.putObjectLayer(this.objectPosition, replacementObject);
+            this.level.putWorldLayer(this.worldPosition, firstGround);
+            this.level.putWorldLayer(this.worldPosition, replacementGround);
+
+            assertSame(replacementObject, this.level.getObjectLayer().get(this.objectPosition));
+            assertEquals(replacementGround, this.level.getWorldLayer().get(this.worldPosition));
+        }
+
+        @Test
+        @DisplayName("should remove existing entries from both layers")
+        public void removesEntries() {
+            this.level.putObjectLayer(this.objectPosition, new StartFlag(10, this.objectPosition));
+            this.level.putWorldLayer(this.worldPosition, new GroundObject(20));
+
+            this.level.removeObjectLayer(this.objectPosition);
+            this.level.removeGroundObject(this.worldPosition);
+            assertFalse(this.level.getObjectLayer().containsKey(this.objectPosition));
+            assertFalse(this.level.getWorldLayer().containsKey(this.worldPosition));
+        }
+    }
 }
