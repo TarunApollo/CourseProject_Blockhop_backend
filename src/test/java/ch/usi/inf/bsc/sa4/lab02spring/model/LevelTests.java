@@ -157,5 +157,85 @@ public class LevelTests {
             }
         }
     }
-}
 
+    @Nested
+    @DisplayName("methods canBeModified and ensureModifiable")
+    class PublicationMethods {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Test
+        @DisplayName("should allow modification when unpublished")
+        public void allowsModificationWhenUnpublished() {
+            assertTrue(this.level.canBeModified());
+            assertDoesNotThrow(() -> this.level.ensureModifiable());
+        }
+
+        @Test
+        @DisplayName("should reject modification when published")
+        public void rejectsModificationWhenPublished() {
+            this.level.setPublished(true);
+            assertFalse(this.level.canBeModified());
+            assertThrows(LevelPublishedException.class, () -> this.level.ensureModifiable());
+        }
+    }
+
+    @Nested
+    @DisplayName("methods isWithinBounds and ensureWithinBounds")
+    class BoundsMethods {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Test
+        @DisplayName("should accept positions on the borders")
+        public void acceptsBorderPositions() {
+            assertTrue(this.level.isWithinBounds(new Position(0, 0)));
+            assertTrue(this.level.isWithinBounds(new Position(255, 13)));
+        }
+
+        @Test
+        @DisplayName("should reject positions outside the valid range")
+        public void rejectsOutOfBoundsPositions() {
+            assertFalse(this.level.isWithinBounds(new Position(-1, 0)));
+            assertFalse(this.level.isWithinBounds(new Position(256, 0)));
+            assertFalse(this.level.isWithinBounds(new Position(0, -1)));
+            assertFalse(this.level.isWithinBounds(new Position(0, 14)));
+        }
+
+        @Nested
+        @DisplayName("method ensureWithinBounds")
+        class EnsureWithinBoundsMethod {
+
+            @Test
+            @DisplayName("throws IllegalArgumentException when position is null")
+            public void nullPosition() {
+                assertThrows(IllegalArgumentException.class, () -> BoundsMethods.this.level.ensureWithinBounds(null));
+            }
+
+            @Test
+            @DisplayName("throws IllegalArgumentException when position is out of bounds")
+            public void outOfBoundsPosition() {
+                assertThrows(IllegalArgumentException.class,
+                    () -> BoundsMethods.this.level.ensureWithinBounds(new Position(256, 14)));
+            }
+
+            @Test
+            @DisplayName("should not throw when position is valid")
+            public void validPosition() {
+                assertDoesNotThrow(() -> BoundsMethods.this.level.ensureWithinBounds(new Position(255, 13)));
+            }
+        }
+    }
+}
