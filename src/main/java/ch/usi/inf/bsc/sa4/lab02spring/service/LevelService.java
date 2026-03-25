@@ -3,7 +3,9 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,5 +96,25 @@ public class LevelService {
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);
         return levelRepository.save(level);
+    }
+
+    /// Allows the user to play the level  of an existing published level
+    /// Only the fields present in the DTO will be updated.
+    /// @spec.requires user, levelId, and dto are not null.
+    /// @spec.modifies the level with the given levelId in the repository.
+    /// @param user the user requesting to play the level
+    /// @param levelId the id of the level to update
+    /// @param dto the DTO for now empty
+    /// @return the published existing level
+    /// @throws LevelNotFoundException if no level with the given id exists
+    ///    /// @throws ForbiddenUserException if the level hasnt been published
+
+    public Level playLevel(User user, String levelId, PlayLevelDTO dto){
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        level.isPlayable(); //throws forbidden exception if it isnt published
+        
+        return levelRepository.save(level);
+
+
     }
 }

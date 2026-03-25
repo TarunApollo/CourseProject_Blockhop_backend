@@ -206,6 +206,11 @@ public class Level {
             throw new LevelPublishedException("Cannot modify a published level");
         }
     }
+    public void isPlayable(){
+        if (!this.published){
+            throw new ForbiddenUserException("Level is Coming Soon and is being built currently");
+        }
+    }
 
     public void ensureOwnedBy(String userId) {
         if (!isOwnedBy(userId)) {

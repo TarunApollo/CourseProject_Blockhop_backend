@@ -1,9 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
@@ -100,4 +96,5 @@ public class LevelController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
 }
