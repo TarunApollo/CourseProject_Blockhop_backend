@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -258,5 +259,60 @@ public class Level {
                 this.worldLayer.put(pos, new GroundObject(gid.value()));
             }
         }
+    }
+
+    /// Updates the content of a box at the given position.
+    /// @param position the position of the box to update
+    /// @param boxContentType the new content type for the box
+    /// @throws IllegalArgumentException if position is out of bounds
+    /// @throws NoSuchElementException if no object exists at the position
+    /// @throws IllegalArgumentException if the object at the position is not a Box
+    public void updateBoxContent(Position position, BoxContentType boxContentType) {
+        this.ensureWithinBounds(position);
+        GameObject existing = this.objectLayer.get(position);
+        if (existing == null) {
+            throw new NoSuchElementException("No object at position " + position);
+        }
+        if (!(existing instanceof Box box)) {
+            throw new IllegalArgumentException("Only boxes have editable content properties");
+        }
+        this.objectLayer.put(position, box.withContent(boxContentType.toContent()));
+    }
+
+    /// Updates the type of a coin at the given position.
+    /// @param position the position of the coin to update
+    /// @param newGid the new GID for the coin type
+    /// @param newValue the new value for the coin type
+    /// @throws IllegalArgumentException if position is out of bounds
+    /// @throws NoSuchElementException if no object exists at the position
+    /// @throws IllegalArgumentException if the object at the position is not a Coin
+    public void updateCoinType(Position position, int newGid, int newValue) {
+        this.ensureWithinBounds(position);
+        GameObject existing = this.objectLayer.get(position);
+        if (existing == null) {
+            throw new NoSuchElementException("No object at position " + position);
+        }
+        if (!(existing instanceof Coin coin)) {
+            throw new IllegalArgumentException("Only coins have editable type properties");
+        }
+        this.objectLayer.put(position, coin.withGidAndValue(newGid, newValue));
+    }
+
+    /// Updates the hiding state of a snail at the given position.
+    /// @param position the position of the snail to update
+    /// @param isHiding true if the snail should be hiding (shell), false otherwise
+    /// @throws IllegalArgumentException if position is out of bounds
+    /// @throws NoSuchElementException if no object exists at the position
+    /// @throws IllegalArgumentException if the object at the position is not a Snail
+    public void updateSnailHiding(Position position, boolean isHiding) {
+        this.ensureWithinBounds(position);
+        GameObject existing = this.objectLayer.get(position);
+        if (existing == null) {
+            throw new NoSuchElementException("No object at position " + position);
+        }
+        if (!(existing instanceof Snail snail)) {
+            throw new IllegalArgumentException("Only snails have editable hiding properties");
+        }
+        this.objectLayer.put(position, snail.withHiding(isHiding));
     }
 }
