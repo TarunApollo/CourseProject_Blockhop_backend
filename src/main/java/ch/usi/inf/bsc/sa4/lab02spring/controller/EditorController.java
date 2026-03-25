@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -93,12 +94,12 @@ public class EditorController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
             Authentication authentication,
             @PathVariable String levelId,
-            @RequestBody EditorLevelDTO dto
-    ){
+            @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         try {
             Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
@@ -112,16 +113,33 @@ public class EditorController {
         }
     }
 
-    @PutMapping("/{levelId}/object-layer/batch")
+    //TODO: LLM generated docs - needs checking
+    /// Updates the properties of an existing object in the object layer.
+    ///
+    /// Uses polymorphic DTOs based on "type" field:
+    /// - Box: {"type": "box", "position": {...}, "content": "bronze_coin"}
+    /// - Coin: {"type": "coin", "position": {...}, "coinType": "gold"}
+    /// - Snail: {"type": "snail", "position": {...}, "isHiding": true}
+    ///
+    /// Security checks are delegated to the EditorService, which enforces:
+    /// - Only the level creator can edit
+    /// - Only unpublished levels can be edited
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level containing the object
+    /// @param dto polymorphic DTO with position and type-specific properties
+    /// @return 200 OK with the updated object layer,
+    ///         403 FORBIDDEN if user is not the level creator or level is published,
+    ///         404 NOT_FOUND if level or object doesn't exist
+    @PatchMapping("/{levelId}/object-layer/properties")
     public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
             Authentication authentication,
             @PathVariable String levelId,
-            @RequestBody UpdateObjectPropertiesDTO dto
-    ){
+            @RequestBody UpdateObjectPropertiesDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         try {
-        Level updated = editorService.updateObjectProperties(userId, levelId, dto);
-        return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+            Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (NoSuchElementException e) {
@@ -130,4 +148,4 @@ public class EditorController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
- }
+}
