@@ -97,4 +97,17 @@ public class LevelController {
         }
     }
 
+    @GetMapping("/play/{levelId}")
+    public ResponseEntity<Level> playLevel(Authentication authentication,@PathVariable String levelId,@RequestBody PlayLevelDTO dto){
+      String userId = getUserIdFromAuth(authentication);
+      User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+      try {
+            return ResponseEntity.ok(this.levelService.playLevel(user, levelId, dto));
+        } catch (ForbiddenUserException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } 
+
+
+    }
+
 }
