@@ -7,19 +7,16 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.BoxPropertyUpdateDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CoinPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SnailPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
-import ch.usi.inf.bsc.sa4.lab02spring.model.ContentType;
-import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 @Service
 public class EditorService {
@@ -101,6 +98,16 @@ public class EditorService {
 
         return levelRepository.save(level);
     }
+
+    /// Edits a single tile in the object layer of a level.
+    /// @param userId the authenticated user's ID
+    /// @param levelId the level to edit
+    /// @param dto contains the target position, gid, and optional properties
+    /// @return the updated level
+    /// @throws NoSuchElementException if level not found
+    /// @throws ForbiddenUserException if not level owner
+    /// @throws LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if position out of bounds, gid invalid, or placement rules violated
     public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
@@ -120,41 +127,39 @@ public class EditorService {
             if (level.getObjectLayer().containsKey(dto.position())) {
                 throw new IllegalArgumentException("Tile already has an object");
             }
-            level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
+            level.putObjectLayer(dto.position(), 
+                gameObjectFactory.createGameObject(tileId.value(), dto.position(), dto.getProperties()));
         }
         return levelRepository.save(level);
     }
 
-
+    /// Updates the properties of an existing object in the object layer.
+    /// @param userId the authenticated user's ID
+    /// @param levelId the level containing the object
+    /// @param dto contains the position and properties to update
+    /// @return the updated level
+    /// @throws NoSuchElementException if level or object not found
+    /// @throws ForbiddenUserException if not level owner
+    /// @throws LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if property doesn't match object type
     public Level updateObjectProperties(String userId, String levelId, UpdateObjectPropertiesDTO dto) {
         Level level = levelRepository.findById(levelId)
-                .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+                .orElseThrow(() -> new NoSuchElementException("Level not found"));
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        for (var update : dto.updates()) {
-            level.ensureWithinBounds(update.position());
-
-            GameObject obj = level.getObjectLayer().get(update.position());
-            if (obj == null) {
-                throw new NoSuchElementException("No object at position " + update.position());
+        switch (dto) {
+            case BoxPropertyUpdateDTO boxUpdate -> 
+                level.updateBoxContent(dto.position(), boxUpdate.content());
+            case CoinPropertyUpdateDTO coinUpdate -> {
+                int newGid = tileSetService.getGidForTileType(coinUpdate.coinType().tileType());
+                level.updateCoinType(dto.position(), newGid, coinUpdate.coinType().coinValue());
             }
-            if (!(obj instanceof Box box)) {
-                throw new IllegalArgumentException("Only boxes have editable properties");
-            }
-
-            Content content = switch (update.contentTypeString()) {
-                case "Item_Coin_Gold" -> new Content.SomeContent(ContentType.GOLD_COIN);
-                case "Item_Coin_Silver" -> new Content.SomeContent(ContentType.SILVER_COIN);
-                case "Item_Coin_Bronze" -> new Content.SomeContent(ContentType.BRONZE_COIN);
-                //only valid coin strings set content, all other nonsense is ignored.
-                // null seems pointless as controller should reject it, but oh well.
-                case null, default -> new Content.NoContent();
-            };
-
-            level.putObjectLayer(update.position(), new Box(box.gid(), box.pos(), content));
+            case SnailPropertyUpdateDTO snailUpdate -> 
+                level.updateSnailHiding(dto.position(), snailUpdate.isHiding());
         }
+
         return levelRepository.save(level);
     }
 }
