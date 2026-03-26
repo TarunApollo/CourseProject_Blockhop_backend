@@ -25,7 +25,8 @@ public class EditorService {
     private final GameObjectFactory gameObjectFactory;
 
     @Autowired
-    public EditorService(LevelRepository levelRepository, TileSetService tileSetService, GameObjectFactory gameObjectFactory) {
+    public EditorService(LevelRepository levelRepository, TileSetService tileSetService,
+            GameObjectFactory gameObjectFactory) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
@@ -35,26 +36,33 @@ public class EditorService {
     ///
     /// Tile operations:
     /// - If gid > 0 and the position is empty, a tile is added (put operation)
-    /// - If gid > 0 and the position already contains a tile, that tile is replaced (put operation)
-    /// - If gid == 0, the tile at that position is removed (remove operation); if no tile exists, this is a no-op
+    /// - If gid > 0 and the position already contains a tile, that tile is replaced
+    ///   (put operation)
+    /// - If gid == 0, the tile at that position is removed (remove operation); if no
+    ///   tile exists, this is a no-op
     ///
     /// Security enforcement:
-    /// - Only the level creator can edit (throws ForbiddenUserException resulting in 403 FORBIDDEN)
-    /// - Only unpublished levels can be edited (throws LevelPublishedException resulting in 403 FORBIDDEN)
-    /// - Coordinates must be within level bounds: 0 ≤ x < width, 0 ≤ y < height (returns 400 BAD_REQUEST otherwise)
+    /// - Only the level creator can edit (throws ForbiddenUserException resulting in
+    ///   403 FORBIDDEN)
+    /// - Only unpublished levels can be edited (throws LevelPublishedException
+    ///   resulting in 403 FORBIDDEN)
+    /// - Coordinates must be within level bounds: 0 ≤ x < width, 0 ≤ y < height
+    ///   (returns 400 BAD_REQUEST otherwise)
     ///
     /// @spec.requires dto contains a non-null position and a valid gid.
-    /// @spec.modifies the world layer of the level identified by levelId in the repository.
-    /// @spec.effects if gid > 0, adds or replaces the ground object at the target position.
-    ///               If gid == 0, removes the ground object at the target position if one exists.
-    ///               Saves the updated level to the repository.
-    /// @param userId the authenticated user's ID
+    /// @spec.modifies the world layer of the level identified by levelId in the
+    ///                repository.
+    /// @spec.effects if gid > 0, adds or replaces the ground object at the target
+    ///               position. If gid == 0, removes the ground object at the target
+    ///               position if one exists. Saves the updated level to the
+    ///               repository.
+    /// @param userId  the authenticated user's ID
     /// @param levelId the level to edit
-    /// @param dto contains the target position and gid
+    /// @param dto     contains the target position and gid
     /// @return the updated level
-    /// @throws LevelNotFoundException if level not found
-    /// @throws ForbiddenUserException if not level owner
-    /// @throws LevelPublishedException if level is published
+    /// @throws LevelNotFoundException   if level not found
+    /// @throws ForbiddenUserException   if not level owner
+    /// @throws LevelPublishedException  if level is published
     /// @throws IllegalArgumentException if position out of bounds or gid invalid
     public Level editWorldLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
@@ -64,22 +72,24 @@ public class EditorService {
         level.ensureModifiable();
 
         TileObjectId gid = dto.gid() == 0
-        ? TileObjectId.remove()
-        : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
+                ? TileObjectId.remove()
+                : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
         return levelRepository.save(level);
     }
 
     /// Batch updates multiple tiles in the world layer of a level.
-    /// @param userId the authenticated user's ID
+    /// 
+    /// @param userId  the authenticated user's ID
     /// @param levelId the level to edit
-    /// @param dto contains the list of positions and gids to apply
+    /// @param dto     contains the list of positions and gids to apply
     /// @return the updated level
-    /// @throws LevelNotFoundException if level not found
-    /// @throws ForbiddenUserException if not level owner
-    /// @throws LevelPublishedException if level is published
-    /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
+    /// @throws LevelNotFoundException   if level not found
+    /// @throws ForbiddenUserException   if not level owner
+    /// @throws LevelPublishedException  if level is published
+    /// @throws IllegalArgumentException if any position is out of bounds or any gid
+    ///                                  is invalid
     public Level updateWorldLayer(String userId, String levelId, UpdateWorldLayerDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
@@ -88,7 +98,7 @@ public class EditorService {
         level.ensureModifiable();
 
         Map<Position, TileObjectId> tiles = new HashMap<>();
-        for(EditorLevelDTO object : dto.tiles()){
+        for (EditorLevelDTO object : dto.tiles()) {
             TileObjectId gid = new TileObjectId(object.gid(), tileSetService::isGroundGID);
             tiles.put(object.position(), gid);
         }
@@ -97,16 +107,20 @@ public class EditorService {
 
         return levelRepository.save(level);
     }
+
     /// Edits a single tile in the object layer of a level.
-    /// @param userId the authenticated user's ID
+    /// 
+    /// @param userId  the authenticated user's ID
     /// @param levelId the level to edit
-    /// @param dto contains the target position and gid
+    /// @param dto     contains the target position and gid
     /// @return the updated level
-    /// @throws LevelNotFoundException if level not found
-    /// @throws ForbiddenUserException if not level owner
-    /// @throws LevelPublishedException if level is published
-    /// @throws IllegalArgumentException if position is out of bounds or gid is invalid
-    /// @throws ObjectPlacementConflictException if the object cannot be placed at the target position
+    /// @throws LevelNotFoundException           if level not found
+    /// @throws ForbiddenUserException           if not level owner
+    /// @throws LevelPublishedException          if level is published
+    /// @throws IllegalArgumentException         if position is out of bounds or gid
+    ///                                          is invalid
+    /// @throws ObjectPlacementConflictException if the object cannot be placed at
+    ///                                          the target position
     public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
@@ -120,12 +134,7 @@ public class EditorService {
         if (tileId.isRemoval()) {
             level.removeObjectLayer(dto.position());
         } else {
-            if (level.getWorldLayer().containsKey(dto.position())) {
-                throw new ObjectPlacementConflictException();
-            }
-            if (level.getObjectLayer().containsKey(dto.position())) {
-                throw new ObjectPlacementConflictException();
-            }
+            level.ensureObjectCanBePlacedAt(dto.position());
             level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
         }
         return levelRepository.save(level);

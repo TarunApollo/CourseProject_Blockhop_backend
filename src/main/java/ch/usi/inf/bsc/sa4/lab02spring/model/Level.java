@@ -7,11 +7,12 @@ import java.util.Map;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
+
 
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
@@ -230,6 +231,14 @@ public class Level {
         }
     }
 
+    public void ensureObjectCanBePlacedAt(Position position)
+    {
+        this.ensureWithinBounds(position);
+        if(this.worldLayer.containsKey(position) || this.objectLayer.containsKey(position)){
+            throw new ObjectPlacementConflictException();
+        }
+    }
+
     // TODO: docs
     public void updateWorldLayerTile(Position position, TileObjectId gid) {
         this.ensureWithinBounds(position);
@@ -259,4 +268,6 @@ public class Level {
             }
         }
     }
+
+
 }
