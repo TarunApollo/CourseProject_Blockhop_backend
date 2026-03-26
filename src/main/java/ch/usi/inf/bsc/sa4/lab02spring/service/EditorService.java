@@ -90,7 +90,8 @@ public class EditorService {
         level.ensureModifiable();
 
         Map<Position, TileObjectId> tiles = new HashMap<>();
-        for(EditorLevelDTO object : dto.tiles()){
+        for (EditorLevelDTO object : dto.tiles()) {
+            level.ensureWithinBounds(object.position());
             TileObjectId gid = new TileObjectId(object.gid(), tileSetService::isGroundGID);
             tiles.put(object.position(), gid);
         }
