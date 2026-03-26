@@ -4,7 +4,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.AllTimeDateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -68,10 +67,6 @@ public class LevelService {
                 .map(level -> levelRepository.save(level.cloneFor(user)));
     }
 
-    /// @return a list of all levels
-    public List<Level> getAllLevels() {
-        return levelRepository.findAll();
-    }
 
     /// Retrieves all levels created by the given user, mapped to DTOs.
     /// 

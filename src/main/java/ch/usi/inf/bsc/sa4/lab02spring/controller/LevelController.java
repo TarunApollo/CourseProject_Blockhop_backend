@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 
 import java.util.List;
@@ -55,27 +54,16 @@ public class LevelController {
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
-    /// Returns a list of all levels present in the collection.
-    /// 
-    /// @return a list of all levels as LevelDTOs
-
-    @GetMapping()
-    public List<LevelDTO> getLevels() {
-        var levels = this.levelService.getAllLevels();
-        return levels.stream().map(LevelDTO::new).toList();
-    }
-
     /// Returns all published levels as summaries, sorted by the given criteria.
-    /// @spec.requires authentication is not null, sortBy is not null.
-    /// @param authentication abstract token for authentication
-    /// @param sortBy sorting strategy (required): CLEAR_RATE or POPULARITY
-    /// @param period time range for popularity calculation (optional, default ALL_TIME):
-    ///              ALL_TIME, TODAY, LAST_7_DAYS, LAST_30_DAYS, LAST_365_DAYS.
-    ///              Only relevant when sortBy is POPULARITY; ignored for CLEAR_RATE.
+    /// 
+    /// @param sortBy         sorting strategy (required): CLEAR_RATE or POPULARITY
+    /// @param period         time range for popularity calculation (optional,
+    ///                       default ALL_TIME): ALL_TIME, TODAY, LAST_7_DAYS,
+    ///                       LAST_30_DAYS, LAST_365_DAYS. Only relevant when sortBy
+    ///                       is POPULARITY; ignored for CLEAR_RATE.
     /// @return a list of published levels sorted by the specified criteria
     @GetMapping("/published")
     public List<LevelSummaryDto> getPublishedLevels(
-            Authentication authentication,
             @RequestParam PublishedLevelSortBy sortBy,
             @RequestParam(defaultValue = "ALL_TIME") DateRangePreset period) {
         return this.levelService.getPublishedLevels(sortBy, period);
