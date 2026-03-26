@@ -48,4 +48,9 @@ public class AttemptService {
             this.attemptRepository.save(attemptList.getFirst().setCompleted(false));
         }
     }
+
+    public boolean hasCompleted(User user, Level level){
+        List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
+        return !attemptList.isEmpty() && attemptList.getFirst().completed();
+    }
 }

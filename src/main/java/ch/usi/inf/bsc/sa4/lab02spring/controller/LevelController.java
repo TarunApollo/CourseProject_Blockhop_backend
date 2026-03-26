@@ -8,11 +8,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +50,24 @@ public class LevelController {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
+
+    @PutMapping("/{levelId}/publish")
+    public ResponseEntity<LevelDTO> publishLevel(Authentication authentication,
+                                                 @PathVariable String levelId){
+        String userId = getUserIdFromAuth(authentication);
+        try {
+            return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
+        }
+        catch(UserNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        catch(LevelNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        catch(ForbiddenLevelActionException e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    };
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 

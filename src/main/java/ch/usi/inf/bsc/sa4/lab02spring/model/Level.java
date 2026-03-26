@@ -176,11 +176,10 @@ public class Level {
     /// @param description the new description of this level.
     public void setDescription(String description) { this.description = description; }
 
-    /// Sets the published status of this level.
+    /// Sets the published status of this level to true.
     /// @spec.modifies this.
-    /// @spec.effects sets the published status of this level to the given value.
-    /// @param published the new published status of this level.
-    public void setPublished(boolean published) { this.published = published; }
+    /// @spec.effects sets the published status of this level to true.
+    public void publish() { this.published = true; }
 
     /// Sets the clear condition of this level.
     /// @spec.requires clearCondition is not null.

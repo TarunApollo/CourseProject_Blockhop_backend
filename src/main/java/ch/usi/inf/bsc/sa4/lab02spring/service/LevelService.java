@@ -3,13 +3,9 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -23,6 +19,8 @@ public class LevelService {
     private final LevelRepository levelRepository;
     private final UserService userService;
     private final AttemptRepository attemptRepository;
+    private final UserRepository userRepository;
+    private final AttemptService attemptService;
 
     /// Constructs a new LevelService with the given dependencies.
     /// 
@@ -30,10 +28,12 @@ public class LevelService {
     /// @param userService       the service for accessing user data
     /// @param attemptRepository the repository for accessing attempt data
     @Autowired
-    public LevelService(LevelRepository levelRepository, UserService userService, AttemptRepository attemptRepository) {
+    public LevelService(LevelRepository levelRepository, UserService userService, AttemptRepository attemptRepository, UserRepository userRepository, AttemptService attemptService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
+        this.userRepository = userRepository;
+        this.attemptService = attemptService;
     }
 
     /// Creates a level for the given user id
@@ -142,5 +142,15 @@ public class LevelService {
                     .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
                     .toList();
         };
+    }
+
+    public Level publish(String userId, String levelId){
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        // Throw ForbiddenLevelActionException if the User is not the owner or the level has not been completed yet.
+        if(level.isOwnedBy(user) || !this.attemptService.hasCompleted(user, level)) throw new ForbiddenLevelActionException("Can't publish this level.");
+        level.publish();
+        return this.levelRepository.save(level);
     }
 }
