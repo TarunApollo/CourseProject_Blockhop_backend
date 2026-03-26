@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +25,16 @@ public class EditorService {
     private final LevelRepository levelRepository;
     private final TileSetService tileSetService;
     private final GameObjectFactory gameObjectFactory;
+    private final UserRepository userRepository;
+    private final AttemptService attemptService;
 
     @Autowired
-    public EditorService(LevelRepository levelRepository, TileSetService tileSetService, GameObjectFactory gameObjectFactory) {
+    public EditorService(LevelRepository levelRepository, TileSetService tileSetService, GameObjectFactory gameObjectFactory, UserRepository userRepository, AttemptService attemptService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
+        this.userRepository = userRepository;
+        this.attemptService = attemptService;
     }
 
     /// Edits a single tile in the world layer of a level.
@@ -52,12 +59,14 @@ public class EditorService {
     /// @param dto contains the target position and gid
     /// @return the updated level
     /// @throws NoSuchElementException if level not found
+    /// @throws UserNotFoundException if user not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if position out of bounds or gid invalid
     public Level editWorldLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+        User user = this.userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
@@ -67,6 +76,7 @@ public class EditorService {
         : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
+        this.attemptService.setAttemptUncompleted(user, level);
         return levelRepository.save(level);
     }
 
@@ -76,12 +86,14 @@ public class EditorService {
     /// @param dto contains the list of positions and gids to apply
     /// @return the updated level
     /// @throws NoSuchElementException if level not found
+    /// @throws UserNotFoundException if user not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
     public Level updateWorldLayer(String userId, String levelId, UpdateWorldLayerDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level not found"));
+        User user = this.userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
@@ -94,11 +106,13 @@ public class EditorService {
 
         level.updateWorldLayerBatch(tiles);
 
+        this.attemptService.setAttemptUncompleted(user, level);
         return levelRepository.save(level);
     }
     public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+        User user = this.userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
@@ -117,6 +131,7 @@ public class EditorService {
             }
             level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
         }
+        this.attemptService.setAttemptUncompleted(user, level);
         return levelRepository.save(level);
     }
 }

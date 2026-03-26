@@ -15,4 +15,5 @@ public interface AttemptRepository extends MongoRepository<Attempt, String> {
     long countByLevel(Level level);
     long countByLevelAndCompletedTrue(Level level);
     long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
+    List<Attempt> findByUserAndLevel(User user, Level level);
 }

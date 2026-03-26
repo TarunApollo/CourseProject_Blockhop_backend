@@ -18,4 +18,15 @@ public record Attempt(
         Level level,
         boolean completed,
         Duration timeTaken)
-{}
+{
+        public Attempt setCompleted(boolean completed){
+                return new Attempt(
+                        this.id(),
+                        this.user(),
+                        this.timestamp(),
+                        this.level(),
+                        completed,
+                        this.timeTaken()
+                );
+        }
+}

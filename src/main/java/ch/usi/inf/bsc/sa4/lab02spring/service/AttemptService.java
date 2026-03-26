@@ -1,9 +1,13 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AttemptService {
@@ -36,5 +40,12 @@ public class AttemptService {
                 .map(attempt -> attempt.level().getId())
                 .distinct()
                 .count();
+    }
+
+    public void setAttemptUncompleted(User user, Level level){
+        List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
+        if(!attemptList.isEmpty()){
+            this.attemptRepository.save(attemptList.getFirst().setCompleted(false));
+        }
     }
 }

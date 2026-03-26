@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import java.util.NoSuchElementException;
 
+import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class EditorController {
     /// Constructs a new EditorController with the given dependency.
     /// @param editorService the service for handling level editing operations
     @Autowired
-    public EditorController(EditorService editorService) {
+    public EditorController(EditorService editorService, AttemptService attemptService) {
         this.editorService = editorService;
     }
 

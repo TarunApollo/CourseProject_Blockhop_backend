@@ -6,6 +6,7 @@ import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
@@ -32,7 +33,7 @@ public class LevelController {
     /// @param levelService the service for managing level operations
     /// @param userService  the service for accessing user data
     @Autowired
-    public LevelController(LevelService levelService, UserService userService) {
+    public LevelController(LevelService levelService, UserService userService, AttemptService attemptService) {
         this.levelService = levelService;
         this.userService = userService;
     }
