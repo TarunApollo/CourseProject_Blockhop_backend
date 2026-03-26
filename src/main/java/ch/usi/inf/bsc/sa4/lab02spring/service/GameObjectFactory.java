@@ -8,6 +8,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Shell;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
@@ -32,14 +33,14 @@ public class GameObjectFactory {
         return switch (type) {
             case "Decoration", "ExclamationMark" -> new Decoration(gid, pos);
             case "Enemy_Slime_Normal" -> new Slime(gid, pos);
-            case "Enemy_Snail" -> new Snail(gid, pos, false);
+            case "Enemy_Snail" -> new Snail(gid, pos);
             case "Box", "BoxDouble" -> createBox(gid, pos, properties);
             case "Start_Flag", "Start_Flag_B" -> new StartFlag(gid, pos);
             case "Door_Closed", "Door_Open" -> new ExitDoor(gid, pos);
             case "Item_Coin_Gold", "Item_Coin_Gold_Side",
                  "Item_Coin_Silver", "Item_Coin_Silver_Side",
                  "Item_Coin_Bronze", "Item_Coin_Bronze_Side" -> createCoin(gid, pos, type);
-            case "Item_Shell" -> new Snail(gid, pos, true);
+            case "Item_Shell" -> new Shell(gid, pos);
             default -> throw new IllegalArgumentException("Unknown object type: " + type);
         };
     }
@@ -49,11 +50,9 @@ public class GameObjectFactory {
     }
 
     private Coin createCoin(int gid, Position pos, String type) {
-        //TODO: think of some better way to deal with _Side
         String baseType = type.endsWith("_Side") 
             ? type.substring(0, type.length() - 5) 
             : type;
-        int value = ContentType.fromValue(baseType).coinValue();
-        return new Coin(gid, pos, value);
+        return new Coin(gid, pos, ContentType.fromValue(baseType));
     }
 }

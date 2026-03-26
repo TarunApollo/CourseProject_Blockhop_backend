@@ -2,5 +2,5 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("coin")
-public record Coin(int gid, Position pos, ContentType type) implements Item {}
+@TypeAlias("shell")
+public record Shell(int gid, Position pos) implements Item {}

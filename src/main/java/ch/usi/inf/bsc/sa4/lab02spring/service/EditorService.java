@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.BoxPropertyUpdateDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CoinPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SnailPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -154,12 +152,6 @@ public class EditorService {
         switch (dto) {
             case BoxPropertyUpdateDTO boxUpdate -> 
                 level.updateBoxContent(dto.position(), boxUpdate.content());
-            case CoinPropertyUpdateDTO coinUpdate -> {
-                int newGid = coinUpdate.coinType().gid();
-                level.updateCoinType(dto.position(), newGid, coinUpdate.coinType().coinValue());
-            }
-            case SnailPropertyUpdateDTO snailUpdate -> 
-                level.updateSnailHiding(dto.position(), snailUpdate.isHiding());
         }
 
         return levelRepository.save(level);

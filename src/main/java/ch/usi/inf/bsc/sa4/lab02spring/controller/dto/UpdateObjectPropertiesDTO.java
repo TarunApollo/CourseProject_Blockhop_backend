@@ -12,12 +12,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 // Pretty neat.
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = BoxPropertyUpdateDTO.class, name = "box"),
-    @JsonSubTypes.Type(value = CoinPropertyUpdateDTO.class, name = "coin"),
-    @JsonSubTypes.Type(value = SnailPropertyUpdateDTO.class, name = "snail")
+    @JsonSubTypes.Type(value = BoxPropertyUpdateDTO.class, name = "box")
 })
 public sealed interface UpdateObjectPropertiesDTO 
-    permits BoxPropertyUpdateDTO, CoinPropertyUpdateDTO, SnailPropertyUpdateDTO {
+    permits BoxPropertyUpdateDTO {
     
     Position position();
 }
