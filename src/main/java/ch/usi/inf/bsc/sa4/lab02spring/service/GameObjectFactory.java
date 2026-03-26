@@ -10,6 +10,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,7 +37,7 @@ public class GameObjectFactory {
             case "Item_Coin_Silver", "Item_Coin_Silver_Side" -> new Coin(gid, pos, 25);
             case "Item_Coin_Bronze", "Item_Coin_Bronze_Side" -> new Coin(gid, pos, 5);
             case "Item_Shell" -> new Snail(gid, pos, true);
-            default -> throw new IllegalArgumentException("Unknown object type: " + type);
+            default -> throw new UnknownObjectTypeException();
         };
     }
 }

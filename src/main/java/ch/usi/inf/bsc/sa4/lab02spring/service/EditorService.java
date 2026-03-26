@@ -2,7 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
 @Service
 public class EditorService {
@@ -51,13 +52,13 @@ public class EditorService {
     /// @param levelId the level to edit
     /// @param dto contains the target position and gid
     /// @return the updated level
-    /// @throws NoSuchElementException if level not found
+    /// @throws LevelNotFoundException if level not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if position out of bounds or gid invalid
     public Level editWorldLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
-                .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+                .orElseThrow(LevelNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
@@ -75,13 +76,13 @@ public class EditorService {
     /// @param levelId the level to edit
     /// @param dto contains the list of positions and gids to apply
     /// @return the updated level
-    /// @throws NoSuchElementException if level not found
+    /// @throws LevelNotFoundException if level not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
     public Level updateWorldLayer(String userId, String levelId, UpdateWorldLayerDTO dto) {
         Level level = levelRepository.findById(levelId)
-                .orElseThrow(() -> new NoSuchElementException("Level not found"));
+                .orElseThrow(LevelNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
@@ -96,9 +97,19 @@ public class EditorService {
 
         return levelRepository.save(level);
     }
+    /// Edits a single tile in the object layer of a level.
+    /// @param userId the authenticated user's ID
+    /// @param levelId the level to edit
+    /// @param dto contains the target position and gid
+    /// @return the updated level
+    /// @throws LevelNotFoundException if level not found
+    /// @throws ForbiddenUserException if not level owner
+    /// @throws LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if position is out of bounds or gid is invalid
+    /// @throws ObjectPlacementConflictException if the object cannot be placed at the target position
     public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
         Level level = levelRepository.findById(levelId)
-                .orElseThrow(() -> new NoSuchElementException("Level was not found!"));
+                .orElseThrow(LevelNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
@@ -110,10 +121,10 @@ public class EditorService {
             level.removeObjectLayer(dto.position());
         } else {
             if (level.getWorldLayer().containsKey(dto.position())) {
-                throw new IllegalArgumentException("Cannot place object on ground tile");
+                throw new ObjectPlacementConflictException();
             }
             if (level.getObjectLayer().containsKey(dto.position())) {
-                throw new IllegalArgumentException("Tile already has an object");
+                throw new ObjectPlacementConflictException();
             }
             level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
         }
