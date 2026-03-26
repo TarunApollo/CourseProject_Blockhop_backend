@@ -3,7 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
-import ch.usi.inf.bsc.sa4.lab02spring.model.ContentType;
+import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
@@ -49,6 +49,6 @@ public class GameObjectFactory {
         String baseType = type.endsWith("_Side") 
             ? type.substring(0, type.length() - 5) 
             : type;
-        return new Coin(gid, pos, ContentType.fromValue(baseType));
+        return new Coin(gid, pos, CoinType.fromValue(baseType));
     }
 }
