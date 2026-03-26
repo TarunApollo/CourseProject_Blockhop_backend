@@ -144,6 +144,19 @@ public class LevelService {
         };
     }
 
+    /// Publishes the specified level if the given user is its creator and has
+    /// completed it at least once.
+    ///
+    /// @spec.requires userId and levelId are not null.
+    /// @spec.modifies the level identified by levelId in the repository.
+    /// @spec.effects sets the level's published status to true.
+    /// @param userId  the unique identifier of the user requesting the publish
+    /// @param levelId the id of the level to publish
+    /// @return the published and saved Level
+    /// @throws LevelNotFoundException        if no level with the given id exists
+    /// @throws UserNotFoundException         if no user with the given id exists
+    /// @throws ForbiddenLevelActionException if the user is not the owner of the
+    ///                                       level or has not completed it
     public Level publish(String userId, String levelId){
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);

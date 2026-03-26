@@ -42,6 +42,14 @@ public class AttemptService {
                 .count();
     }
 
+    /// Sets the first attempt of the given user on the given level to uncompleted.
+    ///
+    /// @spec.requires user and level are not null.
+    /// @spec.modifies the first attempt of the user on the level in the repository.
+    /// @spec.effects sets the attempt's completed status to false if an attempt exists;
+    ///               does nothing otherwise.
+    /// @param user  the user whose attempt to mark as uncompleted
+    /// @param level the level on which to mark the attempt as uncompleted
     public void setAttemptUncompleted(User user, Level level){
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
         if(!attemptList.isEmpty()){
@@ -49,6 +57,13 @@ public class AttemptService {
         }
     }
 
+    /// Checks whether the given user has a completed attempt on the given level.
+    ///
+    /// @spec.requires user and level are not null.
+    /// @param user  the user to check
+    /// @param level the level to check
+    /// @return true if the user has at least one completed attempt on the level,
+    ///         false otherwise
     public boolean hasCompleted(User user, Level level){
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
         return !attemptList.isEmpty() && attemptList.getFirst().completed();

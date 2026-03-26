@@ -51,15 +51,23 @@ public class LevelController {
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
+    /// Publishes the specified level if the authenticated user is its creator.
+    ///
+    /// @spec.requires authentication and levelId are not null.
+    /// @spec.modifies the level identified by levelId in the repository.
+    /// @spec.effects sets the level's published status to true.
+    /// @param authentication abstract token for authentication
+    /// @param levelId        the id of the level to publish
+    /// @return a 200 OK response containing the published level as a LevelDTO, a 404
+    ///         Not Found response if the level does not exist, or a 403 Forbidden
+    ///         response if the level does not belong to the authenticated user
+    /// @throws UserNotFoundException if the authenticated user does not exist
     @PutMapping("/{levelId}/publish")
     public ResponseEntity<LevelDTO> publishLevel(Authentication authentication,
                                                  @PathVariable String levelId){
         String userId = getUserIdFromAuth(authentication);
         try {
             return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
-        }
-        catch(UserNotFoundException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         catch(LevelNotFoundException e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
