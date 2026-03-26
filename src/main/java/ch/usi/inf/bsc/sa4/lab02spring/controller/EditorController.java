@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
@@ -99,10 +100,11 @@ public class EditorController {
     ///
     /// JSON examples:
     /// - Create box with gold coin: {"position": {"x": 1, "y": 2}, "gid": 42, "content": {"type": "Item_Coin_Gold"}}
-    /// - Create empty box: {"position": {"x": 1, "y": 2}, "gid": 42}
-    /// - Create empty box (explicit): {"position": {"x": 1, "y": 2}, "gid": 42, "content": {}}
+    /// - Create empty box (content omitted): {"position": {"x": 1, "y": 2}, "gid": 42}
     /// - Create non-box object: {"position": {"x": 1, "y": 2}, "gid": 50}
     /// - Remove object: {"position": {"x": 1, "y": 2}, "gid": 0}
+    ///
+    /// Note: "content" is optional and defaults to empty. Only boxes use it.
     ///
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level to edit
@@ -119,6 +121,44 @@ public class EditorController {
         String userId = getUserIdFromAuth(authentication);
         try {
             Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    /// Batch creates or removes multiple objects in the object layer of an unpublished level.
+    ///
+    /// JSON example:
+    /// {
+    ///   "objects": [
+    ///     {"position": {"x": 1, "y": 2}, "gid": 42, "content": {"type": "Item_Coin_Gold"}},
+    ///     {"position": {"x": 3, "y": 4}, "gid": 42},
+    ///     {"position": {"x": 5, "y": 6}, "gid": 50}
+    ///   ]
+    /// }
+    ///
+    /// Note: "content" is optional per object. Only boxes use it.
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level to edit
+    /// @param dto contains the list of objects with position, gid, and optional content
+    /// @return 200 OK with the updated object layer,
+    ///         400 BAD_REQUEST if any position is out of bounds or gid is invalid,
+    ///         403 FORBIDDEN if user is not the level creator,
+    ///         404 NOT_FOUND if level doesn't exist
+    @PutMapping("/{levelId}/object-layer/batch")
+    public ResponseEntity<ObjectLayerResponseDTO> updateObjectLayer(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateObjectLayerDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+        try {
+            Level updated = editorService.updateObjectLayer(userId, levelId, dto);
             return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();

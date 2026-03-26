@@ -15,4 +15,9 @@ public record EditorLevelDTO(Position position, int gid, Content content) {
         return new EditorLevelDTO(position, gid, 
             content != null ? content : new Content.NoContent());
     }
+    
+    //convenience overload
+    public static EditorLevelDTO create(Position position, int gid) {
+        return new EditorLevelDTO(position, gid, new Content.NoContent());
+    }
 }

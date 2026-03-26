@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.BoxPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -130,6 +131,41 @@ public class EditorService {
             level.putObjectLayer(dto.position(), 
                 gameObjectFactory.createGameObject(tileId.value(), dto.position(), dto.content()));
         }
+        return levelRepository.save(level);
+    }
+
+    /// Batch updates multiple objects in the object layer of a level.
+    /// @param userId the authenticated user's ID
+    /// @param levelId the level to edit
+    /// @param dto contains the list of objects with position, gid, and optional content
+    /// @return the updated level
+    /// @throws NoSuchElementException if level not found
+    /// @throws ForbiddenUserException if not level owner
+    /// @throws LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if any position is out of bounds, gid invalid, or placement rules violated
+    public Level updateObjectLayer(String userId, String levelId, UpdateObjectLayerDTO dto) {
+        Level level = levelRepository.findById(levelId)
+                .orElseThrow(() -> new NoSuchElementException("Level not found"));
+
+        level.ensureOwnedBy(userId);
+        level.ensureModifiable();
+
+        for (EditorLevelDTO object : dto.objects()) {
+            level.ensureWithinBounds(object.position());
+
+            TileObjectId tileId = new TileObjectId(object.gid(), tileSetService::isObjectGID);
+
+            if (tileId.isRemoval()) {
+                level.removeObjectLayer(object.position());
+            } else {
+                if (level.getWorldLayer().containsKey(object.position())) {
+                    throw new IllegalArgumentException("Cannot place object on ground tile");
+                }
+                level.putObjectLayer(object.position(), 
+                    gameObjectFactory.createGameObject(tileId.value(), object.position(), object.content()));
+            }
+        }
+
         return levelRepository.save(level);
     }
 
