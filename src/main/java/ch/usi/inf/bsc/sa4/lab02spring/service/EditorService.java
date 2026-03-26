@@ -128,7 +128,7 @@ public class EditorService {
                 throw new IllegalArgumentException("Tile already has an object");
             }
             level.putObjectLayer(dto.position(), 
-                gameObjectFactory.createGameObject(tileId.value(), dto.position(), dto.getProperties()));
+                gameObjectFactory.createGameObject(tileId.value(), dto.position(), dto.content()));
         }
         return levelRepository.save(level);
     }

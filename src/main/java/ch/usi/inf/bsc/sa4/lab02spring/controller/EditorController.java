@@ -95,6 +95,22 @@ public class EditorController {
         }
     }
 
+    /// Creates or removes an object in the object layer of an unpublished level.
+    ///
+    /// JSON examples:
+    /// - Create box with gold coin: {"position": {"x": 1, "y": 2}, "gid": 42, "content": {"type": "Item_Coin_Gold"}}
+    /// - Create empty box: {"position": {"x": 1, "y": 2}, "gid": 42}
+    /// - Create empty box (explicit): {"position": {"x": 1, "y": 2}, "gid": 42, "content": {}}
+    /// - Create non-box object: {"position": {"x": 1, "y": 2}, "gid": 50}
+    /// - Remove object: {"position": {"x": 1, "y": 2}, "gid": 0}
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level to edit
+    /// @param dto contains the target position, gid, and optional content for boxes
+    /// @return 200 OK with the updated object layer,
+    ///         400 BAD_REQUEST if position is out of bounds or gid is invalid,
+    ///         403 FORBIDDEN if user is not the level creator,
+    ///         404 NOT_FOUND if level doesn't exist
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
             Authentication authentication,
@@ -113,17 +129,11 @@ public class EditorController {
         }
     }
 
-    //TODO: LLM generated docs - needs checking
     /// Updates the properties of an existing object in the object layer.
     ///
-    /// Uses polymorphic DTOs based on "type" field:
-    /// - Box: {"type": "box", "position": {...}, "content": "bronze_coin"}
-    /// - Coin: {"type": "coin", "position": {...}, "coinType": "gold"}
-    /// - Snail: {"type": "snail", "position": {...}, "isHiding": true}
-    ///
-    /// Security checks are delegated to the EditorService, which enforces:
-    /// - Only the level creator can edit
-    /// - Only unpublished levels can be edited
+    /// JSON examples:
+    /// - Update box content: {"position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
+    /// - Empty box content: {"position": {"x": 1, "y": 2}, "content": {}}
     ///
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level containing the object

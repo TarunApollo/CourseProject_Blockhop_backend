@@ -263,11 +263,11 @@ public class Level {
 
     /// Updates the content of a box at the given position.
     /// @param position the position of the box to update
-    /// @param boxContentType the new content type for the box
+    /// @param content the new content for the box
     /// @throws IllegalArgumentException if position is out of bounds
     /// @throws NoSuchElementException if no object exists at the position
     /// @throws IllegalArgumentException if the object at the position is not a Box
-    public void updateBoxContent(Position position, BoxContentType boxContentType) {
+    public void updateBoxContent(Position position, Content content) {
         this.ensureWithinBounds(position);
         GameObject existing = this.objectLayer.get(position);
         if (existing == null) {
@@ -276,6 +276,6 @@ public class Level {
         if (!(existing instanceof Box box)) {
             throw new IllegalArgumentException("Only boxes have editable content properties");
         }
-        this.objectLayer.put(position, box.withContent(boxContentType.toContent()));
+        this.objectLayer.put(position, box.withContent(content));
     }
 }
