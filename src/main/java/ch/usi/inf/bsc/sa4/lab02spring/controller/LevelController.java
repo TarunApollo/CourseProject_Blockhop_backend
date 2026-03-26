@@ -8,8 +8,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +54,11 @@ public class LevelController {
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 
-    /// @param sortBy         sorting strategy (required): CLEAR_RATE or POPULARITY
-    /// @param period         time range for popularity calculation (optional,
-    ///                       default ALL_TIME): ALL_TIME, TODAY, LAST_7_DAYS,
-    ///                       LAST_30_DAYS, LAST_365_DAYS. Only relevant when sortBy
-    ///                       is POPULARITY; ignored for CLEAR_RATE.
+    /// @param sortBy sorting strategy (required): CLEAR_RATE or POPULARITY
+    /// @param period time range for popularity calculation (optional, default
+    ///               ALL_TIME): ALL_TIME, TODAY, LAST_7_DAYS, LAST_30_DAYS,
+    ///               LAST_365_DAYS. Only relevant when sortBy is POPULARITY; ignored
+    ///               for CLEAR_RATE.
     /// @return a list of published levels sorted by the specified criteria
     @GetMapping("/published")
     public List<LevelSummaryDto> getPublishedLevels(
@@ -112,12 +110,6 @@ public class LevelController {
             @RequestBody UpdateLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        try {
-            return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
-        } catch (ForbiddenUserException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (LevelPublishedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
     }
 }
