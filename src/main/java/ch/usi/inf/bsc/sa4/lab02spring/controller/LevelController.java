@@ -7,8 +7,10 @@ import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -66,16 +68,16 @@ public class LevelController {
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// @spec.requires authentication is not null, sortBy is not null.
     /// @param authentication abstract token for authentication
-    /// @param sortBy sorting strategy (required): "clearRate" or "popularity"
+    /// @param sortBy sorting strategy (required): CLEAR_RATE or POPULARITY
     /// @param period time range for popularity calculation (optional, default ALL_TIME):
     ///              ALL_TIME, TODAY, LAST_7_DAYS, LAST_30_DAYS, LAST_365_DAYS.
-    ///              Only relevant when sortBy is "popularity"; ignored for "clearRate".
+    ///              Only relevant when sortBy is POPULARITY; ignored for CLEAR_RATE.
     /// @return a list of published levels sorted by the specified criteria
     @GetMapping("/published")
     public List<LevelSummaryDto> getPublishedLevels(
             Authentication authentication,
-            @RequestParam String sortBy,
-            @RequestParam(defaultValue = "ALL_TIME") LevelService.DateRangePreset period) {
+            @RequestParam PublishedLevelSortBy sortBy,
+            @RequestParam(defaultValue = "ALL_TIME") DateRangePreset period) {
         return this.levelService.getPublishedLevels(sortBy, period);
     }
 

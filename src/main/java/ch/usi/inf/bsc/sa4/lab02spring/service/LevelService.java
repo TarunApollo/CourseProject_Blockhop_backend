@@ -3,44 +3,24 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.AllTimeDateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class LevelService {
-
-    ///TODO:find a better place for preset
-    ///TODO:think about a better implementation
-    public enum DateRangePreset {
-        ALL_TIME(0),
-        TODAY(1),
-        LAST_7_DAYS(7),
-        LAST_30_DAYS(30),
-        LAST_365_DAYS(365);
-        private final int days;
-        DateRangePreset(int days) { this.days = days; }
-        public boolean isAllTime() { return this == ALL_TIME; }
-        public ZonedDateTime toAfter() {
-            if (this == ALL_TIME) {
-                throw new IllegalStateException("ALL_TIME has no after timestamp");
-            }
-            //the diffrence :
-            // ZonedDateTime.now().minusDays(7) = the time before 7 days ,like 06:07:07
-            // LocalDate.now().minusDays(7-1).atStartOfDay(ZoneOffset.UTC) -> 00:00:00 in six days ago
-            return java.time.LocalDate.now().minusDays(days - 1).atStartOfDay(java.time.ZoneOffset.UTC);
-        }
-    }
-
     private final LevelRepository levelRepository;
     private final UserService userService;
     private final AttemptRepository attemptRepository;
@@ -139,29 +119,33 @@ public class LevelService {
         long playCount = attemptRepository.countByLevel(level);
         long clearCount = attemptRepository.countByLevelAndCompletedTrue(level);
         double clearRate = playCount == 0 ? 0 : (double) clearCount / playCount;
-        long popularity = period.isAllTime() ? playCount : attemptRepository.countByLevelAndTimestampAfter(level, period.toAfter());
+        long popularity;
+        if (period instanceof RelativeDateRangePreset relative) {
+            popularity = attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
+        } else {
+            popularity = playCount;
+        }
         return new LevelSummaryDto(level, playCount, clearRate, popularity);
     }
 
     /// Returns all published levels as summaries, sorted by the given criteria.
-    /// @param sortBy the sorting strategy: "clearRate" sorts by clear rate, anything else sorts by popularity
+    /// @param sortBy the sorting strategy for published level summaries
     /// @param period the time range used to compute popularity; use ALL_TIME to fall back to total play count
     /// @return a sorted list of LevelSummaryDto for all published levels
-    public List<LevelSummaryDto> getPublishedLevels(String sortBy, DateRangePreset period) {
+    public List<LevelSummaryDto> getPublishedLevels(PublishedLevelSortBy sortBy, DateRangePreset period) {
         List<Level> levels = levelRepository.findByPublishedTrue();
 
         List<LevelSummaryDto> dtos = levels.stream()
                 .map(level -> toLevelSummary(level, period))
                 .toList();
 
-        if ("clearRate".equals(sortBy)) {
-            return dtos.stream()
+        return switch (sortBy) {
+            case CLEAR_RATE -> dtos.stream()
                     .sorted(Comparator.comparingDouble(LevelSummaryDto::clearRate).reversed())
                     .toList();
-        } else {
-            return dtos.stream()
+            case POPULARITY -> dtos.stream()
                     .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
                     .toList();
-        }
+        };
     }
 }
