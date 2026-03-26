@@ -51,9 +51,15 @@ public class EditorController {
     /// @param authentication authentication token for the current user
     /// @param levelId        id of the level to edit
     /// @param dto            contains the target position and gid to apply
-    /// @return 200 OK with the updated world layer, 400 BAD_REQUEST if position is
-    ///         out of bounds or gid is invalid, 403 FORBIDDEN if user is not the
-    ///         level creator, 404 NOT_FOUND if level doesn't exist
+    /// @return 200 OK with the updated world layer
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
+    ///         target level does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
+    ///         authenticated user is not the level creator
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
+    ///         target level is already published
+    /// @throws IllegalArgumentException if the requested position is out of bounds
+    ///         or the gid is invalid
     @PutMapping("/{levelId}/world-layer")
     public ResponseEntity<WorldLayerResponseDTO> editWorldLayerTile(
             Authentication authentication,
@@ -64,6 +70,25 @@ public class EditorController {
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
 
+    /// Batch edits tiles in the world layer of an unpublished level.
+    ///
+    /// @spec.requires authentication, levelId, and dto are not null.
+    /// @spec.modifies the world layer of the level identified by levelId in the
+    ///                repository.
+    /// @spec.effects delegates to EditorService to apply the requested batch update
+    ///               and saves the updated level.
+    /// @param authentication authentication token for the current user
+    /// @param levelId        id of the level to edit
+    /// @param dto            contains the batch of tiles to apply
+    /// @return 200 OK with the updated world layer
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
+    ///         target level does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
+    ///         authenticated user is not the level creator
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
+    ///         target level is already published
+    /// @throws IllegalArgumentException if any requested position is out of bounds
+    ///         or any gid is invalid
     @PutMapping("/{levelId}/world-layer/batch")
     public ResponseEntity<WorldLayerResponseDTO> updateWorldLayer(
             Authentication authentication,
@@ -74,6 +99,27 @@ public class EditorController {
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
 
+    /// Edits a tile in the object layer of an unpublished level.
+    ///
+    /// @spec.requires authentication, levelId, and dto are not null.
+    /// @spec.modifies the object layer of the level identified by levelId in the
+    ///                repository.
+    /// @spec.effects delegates to EditorService to add, replace, or remove an
+    ///               object at the requested position, then saves the updated level.
+    /// @param authentication authentication token for the current user
+    /// @param levelId        id of the level to edit
+    /// @param dto            contains the target position and gid to apply
+    /// @return 200 OK with the updated object layer
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
+    ///         target level does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
+    ///         authenticated user is not the level creator
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
+    ///         target level is already published
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException
+    ///         if the requested object placement violates editor rules
+    /// @throws IllegalArgumentException if the requested position is out of bounds
+    ///         or the gid is invalid
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
             Authentication authentication,

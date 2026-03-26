@@ -101,10 +101,14 @@ public class LevelController {
     /// @param levelId        the id of the level to update
     /// @param dto            the DTO containing the optional new values for title,
     ///                       description, and clear condition
-    /// @return a 200 OK response containing the updated level, a 403 Forbidden
-    ///         response if the level does not belong to the authenticated user, or a
-    ///         403 Forbidden response if the level is already published
+    /// @return a 200 OK response containing the updated level
     /// @throws UserNotFoundException if the authenticated user does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
+    ///         target level does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
+    ///         authenticated user does not own the target level
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
+    ///         target level is already published
     @PutMapping("/{levelId}/properties")
     public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId,
             @RequestBody UpdateLevelDTO dto) {
