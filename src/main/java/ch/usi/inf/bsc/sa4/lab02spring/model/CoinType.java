@@ -4,14 +4,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum CoinType {
-    BRONZE("Item_Coin_Bronze"),
-    SILVER("Item_Coin_Silver"),
-    GOLD("Item_Coin_Gold");
+    BRONZE("Item_Coin_Bronze", 129),
+    SILVER("Item_Coin_Silver", 119),
+    GOLD("Item_Coin_Gold", 109);
 
     private final String tileType;
+    private final int gid;
 
-    CoinType(String tileType) {
+    CoinType(String tileType, int gid) {
         this.tileType = tileType;
+        this.gid = gid;
     }
 
     @JsonValue
@@ -21,6 +23,10 @@ public enum CoinType {
 
     public String tileType() {
         return tileType;
+    }
+
+    public int gid() {
+        return gid;
     }
 
     public int coinValue() {

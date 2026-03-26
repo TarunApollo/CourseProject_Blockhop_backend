@@ -155,7 +155,7 @@ public class EditorService {
             case BoxPropertyUpdateDTO boxUpdate -> 
                 level.updateBoxContent(dto.position(), boxUpdate.content());
             case CoinPropertyUpdateDTO coinUpdate -> {
-                int newGid = tileSetService.getGidForTileType(coinUpdate.coinType().tileType());
+                int newGid = coinUpdate.coinType().gid();
                 level.updateCoinType(dto.position(), newGid, coinUpdate.coinType().coinValue());
             }
             case SnailPropertyUpdateDTO snailUpdate -> 

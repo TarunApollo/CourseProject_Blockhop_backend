@@ -19,7 +19,6 @@ import jakarta.annotation.PostConstruct;
 public class TileSetService {
     private Set<Integer> groundGIDs = Set.of();
     private Map<Integer,String> gidToType = Map.of();
-    private Map<String, Integer> typeToGid = Map.of();
     @PostConstruct
     ///
     /// a parameterless void method that extracts gids from a predefined tileset of type Ground and 
@@ -40,13 +39,6 @@ public class TileSetService {
                 tile -> tileSet.firstgid() + tile.id(),
                 tile -> tile.type() != null ? tile.type() : ""
             ));
-            typeToGid = tileSet.tiles().stream()
-                .filter(tile -> tile.type() != null && !tile.type().isEmpty())
-                .collect(Collectors.toUnmodifiableMap(
-                    tile -> tile.type(),
-                    tile -> tileSet.firstgid() + tile.id()
-                ));
-
             
         } catch (IOException e) {
             throw new TileSetNotLoadedException(e);
@@ -63,14 +55,6 @@ public class TileSetService {
 
     public String getObjectTileType(int gid){
         return gidToType.getOrDefault(gid, "");
-    }
-
-    public int getGidForTileType(String tileType) {
-        Integer gid = typeToGid.get(tileType);
-        if (gid == null) {
-            throw new IllegalArgumentException("Unknown tile type: " + tileType);
-        }
-        return gid;
     }
 }
 
