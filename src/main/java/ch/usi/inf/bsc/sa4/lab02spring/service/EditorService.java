@@ -1,6 +1,9 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -12,6 +15,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
@@ -89,14 +94,31 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        Map<Position, TileObjectId> tiles = new HashMap<>();
+        // 1. Pre-validate ALL operations before applying any changes.
+        // This ensures atomicity - if any operation fails validation, no partial
+        // changes are applied to the level entity, preserving aggregate consistency.
+        List<Position> positionsToRemove = new ArrayList<>();
+        Map<Position, Integer> tilesToPut = new LinkedHashMap<>();
+
         for (EditorLevelDTO object : dto.tiles()) {
             level.ensureWithinBounds(object.position());
-            TileObjectId gid = new TileObjectId(object.gid(), tileSetService::isGroundGID);
-            tiles.put(object.position(), gid);
+            TileObjectId tileId = new TileObjectId(object.gid(), tileSetService::isGroundGID);
+            
+            if (tileId.isRemoval()) {
+                positionsToRemove.add(object.position());
+            } else {
+                tilesToPut.put(object.position(), tileId.value());
+            }
         }
 
-        level.updateWorldLayerBatch(tiles);
+        // 2. Apply all validated operations. Only executed if Phase 1 completed
+        // without throwing any exceptions.
+        for (Position pos : positionsToRemove) {
+            level.removeGroundObject(pos);
+        }
+        for (Map.Entry<Position, Integer> entry : tilesToPut.entrySet()) {
+            level.putWorldLayer(entry.getKey(), new GroundObject(entry.getValue()));
+        }
 
         return levelRepository.save(level);
     }
@@ -151,20 +173,39 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
+        // 1. Pre-validate ALL operations before applying any changes.
+        // This ensures atomicity - if any operation fails validation, no partial
+        // changes are applied to the level entity, preserving aggregate consistency.
+        List<Position> positionsToRemove = new ArrayList<>();
+        Map<Position, GameObject> objectsToAdd = new LinkedHashMap<>();
+
         for (EditorLevelDTO object : dto.objects()) {
             level.ensureWithinBounds(object.position());
 
             TileObjectId tileId = new TileObjectId(object.gid(), tileSetService::isObjectGID);
 
             if (tileId.isRemoval()) {
-                level.removeObjectLayer(object.position());
+                positionsToRemove.add(object.position());
             } else {
                 if (level.getWorldLayer().containsKey(object.position())) {
                     throw new IllegalArgumentException("Cannot place object on ground tile");
                 }
-                level.putObjectLayer(object.position(), 
-                    gameObjectFactory.createGameObject(tileId.value(), object.position(), object.content()));
+                if (level.getObjectLayer().containsKey(object.position())) {
+                    throw new IllegalArgumentException("Tile already has an object");
+                }
+                GameObject gameObject = gameObjectFactory.createGameObject(
+                    tileId.value(), object.position(), object.content());
+                objectsToAdd.put(object.position(), gameObject);
             }
+        }
+
+        // 2. Apply all validated operations. Only executed if Phase 1 completed
+        // without throwing any exceptions.
+        for (Position pos : positionsToRemove) {
+            level.removeObjectLayer(pos);
+        }
+        for (Map.Entry<Position, GameObject> entry : objectsToAdd.entrySet()) {
+            level.putObjectLayer(entry.getKey(), entry.getValue());
         }
 
         return levelRepository.save(level);
