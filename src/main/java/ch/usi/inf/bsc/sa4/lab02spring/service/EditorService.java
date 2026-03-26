@@ -189,6 +189,9 @@ public class EditorService {
         switch (dto) {
             case BoxPropertyUpdateDTO boxUpdate -> 
                 level.updateBoxContent(dto.position(), boxUpdate.content());
+            default -> 
+                throw new IllegalArgumentException(
+                    "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
         return levelRepository.save(level);
