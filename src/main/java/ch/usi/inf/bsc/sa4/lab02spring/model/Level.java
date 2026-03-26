@@ -233,7 +233,6 @@ public class Level {
 
     public void ensureObjectCanBePlacedAt(Position position)
     {
-        this.ensureWithinBounds(position);
         if(this.worldLayer.containsKey(position) || this.objectLayer.containsKey(position)){
             throw new ObjectPlacementConflictException();
         }
