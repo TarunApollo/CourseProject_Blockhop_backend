@@ -3,9 +3,9 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -182,6 +182,16 @@ public class Level {
     /// @param published the new published status of this level.
     public void setPublished(boolean published) { this.published = published; }
 
+    /// Set this level unpublished.
+    /// This operation is idempotent.
+    /// @spec.modifies this.
+    /// @spec.effects sets this level's published status to false.
+    /// @param userId the ID of the user requesting to unpublish this level.
+    public void unpublish(String userId) {
+        this.ensureOwnedBy(userId);
+        this.published = false;
+    }
+
     /// Sets the clear condition of this level.
     /// @spec.requires clearCondition is not null.
     /// @spec.modifies this.
@@ -258,5 +268,23 @@ public class Level {
                 this.worldLayer.put(pos, new GroundObject(gid.value()));
             }
         }
+    }
+
+    /// Updates the content of a box at the given position.
+    /// @param position the position of the box to update
+    /// @param content the new content for the box
+    /// @throws IllegalArgumentException if position is out of bounds
+    /// @throws NoSuchElementException if no object exists at the position
+    /// @throws IllegalArgumentException if the object at the position is not a Box
+    public void updateBoxContent(Position position, Content content) {
+        this.ensureWithinBounds(position);
+        GameObject existing = this.objectLayer.get(position);
+        if (existing == null) {
+            throw new NoSuchElementException("No object at position " + position);
+        }
+        if (!(existing instanceof Box box)) {
+            throw new IllegalArgumentException("Only boxes have editable content properties");
+        }
+        this.objectLayer.put(position, box.withContent(content));
     }
 }

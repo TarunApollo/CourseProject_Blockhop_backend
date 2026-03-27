@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -92,14 +95,31 @@ public class EditorController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
+    /// Creates or removes an object in the object layer of an unpublished level.
+    ///
+    /// JSON examples:
+    /// - Create box with gold coin: {"position": {"x": 1, "y": 2}, "gid": 42, "content": {"type": "Item_Coin_Gold"}}
+    /// - Create empty box (content omitted): {"position": {"x": 1, "y": 2}, "gid": 42}
+    /// - Create non-box object: {"position": {"x": 1, "y": 2}, "gid": 50}
+    /// - Remove object: {"position": {"x": 1, "y": 2}, "gid": 0}
+    ///
+    /// Note: "content" is optional and defaults to empty. Only boxes use it.
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level to edit
+    /// @param dto contains the target position, gid, and optional content for boxes
+    /// @return 200 OK with the updated object layer,
+    ///         400 BAD_REQUEST if position is out of bounds or gid is invalid,
+    ///         403 FORBIDDEN if user is not the level creator,
+    ///         404 NOT_FOUND if level doesn't exist
     @PutMapping("/{levelId}/object-layer")
-        public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
+    public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
             Authentication authentication,
             @PathVariable String levelId,
-            @RequestBody EditorLevelDTO dto
-        ){
+            @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-         try {
+        try {
             Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
             return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
         } catch (IllegalArgumentException e) {
@@ -109,5 +129,75 @@ public class EditorController {
         } catch (ForbiddenUserException | LevelPublishedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+    }
+
+    /// Batch creates or removes multiple objects in the object layer of an unpublished level.
+    ///
+    /// JSON example:
+    /// {
+    ///   "objects": [
+    ///     {"position": {"x": 1, "y": 2}, "gid": 42, "content": {"type": "Item_Coin_Gold"}},
+    ///     {"position": {"x": 3, "y": 4}, "gid": 42},
+    ///     {"position": {"x": 5, "y": 6}, "gid": 50}
+    ///   ]
+    /// }
+    ///
+    /// Note: "content" is optional per object. Only boxes use it.
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level to edit
+    /// @param dto contains the list of objects with position, gid, and optional content
+    /// @return 200 OK with the updated object layer,
+    ///         400 BAD_REQUEST if any position is out of bounds or gid is invalid,
+    ///         403 FORBIDDEN if user is not the level creator,
+    ///         404 NOT_FOUND if level doesn't exist
+    @PutMapping("/{levelId}/object-layer/batch")
+    public ResponseEntity<ObjectLayerResponseDTO> updateObjectLayer(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateObjectLayerDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+        try {
+            Level updated = editorService.updateObjectLayer(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
- }
+    }
+
+    /// Updates the properties of an existing object in the object layer.
+    ///
+    /// JSON examples:
+    /// - Update box content: 
+    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
+    /// - Empty box content: 
+    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {}}
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level containing the object
+    /// @param dto polymorphic DTO with position and type-specific properties
+    /// @return 200 OK with the updated object layer,
+    ///         403 FORBIDDEN if user is not the level creator or level is published,
+    ///         404 NOT_FOUND if level or object doesn't exist
+    @PatchMapping("/{levelId}/object-layer/properties")
+    public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateObjectPropertiesDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+        try {
+            Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (ForbiddenUserException | LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+}
