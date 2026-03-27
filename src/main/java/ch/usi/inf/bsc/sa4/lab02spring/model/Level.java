@@ -1,4 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+
 
 import java.util.Collections;
 import java.util.HashMap;

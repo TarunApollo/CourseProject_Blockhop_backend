@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -138,7 +137,7 @@ public class EditorService {
     /// @param levelId the level to edit
     /// @param dto contains the target position, gid, and optional properties
     /// @return the updated level
-    /// @throws NoSuchElementException if level not found
+    /// @throws LevelNotFoundException if level not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if position out of bounds, gid invalid, or placement rules violated
@@ -172,7 +171,7 @@ public class EditorService {
     /// @param levelId the level to edit
     /// @param dto contains the list of objects with position, gid, and optional content
     /// @return the updated level
-    /// @throws NoSuchElementException if level not found
+    /// @throws LevelNotFoundException if level not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if any position is out of bounds, gid invalid, or placement rules violated
@@ -227,7 +226,7 @@ public class EditorService {
     /// @param levelId the level containing the object
     /// @param dto contains the position and properties to update
     /// @return the updated level
-    /// @throws NoSuchElementException if level or object not found
+    /// @throws LevelNotFoundException if level or object not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if property doesn't match object type
