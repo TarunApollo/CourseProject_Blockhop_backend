@@ -10,7 +10,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +56,11 @@ public class LevelController {
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 
-    /// @param sortBy         sorting strategy (required): CLEAR_RATE or POPULARITY
-    /// @param period         time range for popularity calculation (optional,
-    ///                       default ALL_TIME): ALL_TIME, TODAY, LAST_7_DAYS,
-    ///                       LAST_30_DAYS, LAST_365_DAYS. Only relevant when sortBy
-    ///                       is POPULARITY; ignored for CLEAR_RATE.
+    /// @param sortBy sorting strategy (required): CLEAR_RATE or POPULARITY
+    /// @param period time range for popularity calculation (optional, default
+    ///               ALL_TIME): ALL_TIME, TODAY, LAST_7_DAYS, LAST_30_DAYS,
+    ///               LAST_365_DAYS. Only relevant when sortBy is POPULARITY; ignored
+    ///               for CLEAR_RATE.
     /// @return a list of published levels sorted by the specified criteria
     @GetMapping("/published")
     public List<LevelSummaryDto> getPublishedLevels(
@@ -104,22 +103,20 @@ public class LevelController {
     /// @param levelId        the id of the level to update
     /// @param dto            the DTO containing the optional new values for title,
     ///                       description, and clear condition
-    /// @return a 200 OK response containing the updated level, a 403 Forbidden
-    ///         response if the level does not belong to the authenticated user, or a
-    ///         403 Forbidden response if the level is already published
+    /// @return a 200 OK response containing the updated level
     /// @throws UserNotFoundException if the authenticated user does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
+    ///         target level does not exist
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
+    ///         authenticated user does not own the target level
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
+    ///         target level is already published
     @PutMapping("/{levelId}/properties")
     public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId,
             @RequestBody UpdateLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        try {
-            return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
-        } catch (ForbiddenUserException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (LevelPublishedException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
     }
 
     /// Unpublishes a level owned by the authenticated user.
