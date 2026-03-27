@@ -1,4 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
@@ -14,33 +15,38 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.TileSetNotLoadedException;
 import jakarta.annotation.PostConstruct;
 
-
 @Service
 public class TileSetService {
+    
+    /// Ground GIDs - type is always "Ground", so just store GIDs
     private Set<Integer> groundGIDs = Set.of();
-    private Map<Integer,String> gidToType = Map.of();
+    
+    /// Object GIDs mapped to their type string
+    private Map<Integer, String> objectGIDs = Map.of();
+
     @PostConstruct
     ///
-    /// a parameterless void method that extracts gids from a predefined tileset of type Ground and 
-    /// puts them into a set.
-    /// 
+    /// Loads the tileset from JSON and categorizes GIDs into ground and object sets.
+    ///
     public void loadTileSet() {
         try {
             ObjectMapper mapper = new ObjectMapper();
             TileSet tileSet = mapper.readValue(
                 new ClassPathResource("tileset_batch_1.json").getInputStream(),
                 TileSet.class);
+            
             groundGIDs = tileSet.tiles().stream()
                 .filter(tile -> Objects.equals(tile.type(), "Ground"))
                 .map(tile -> tileSet.firstgid() + tile.id())
                 .collect(Collectors.toUnmodifiableSet());
-            gidToType = tileSet.tiles().stream()
-            .collect(Collectors.toUnmodifiableMap(
-                tile -> tileSet.firstgid() + tile.id(),
-                tile -> tile.type() != null ? tile.type() : ""
-            ));
-
             
+            objectGIDs = tileSet.tiles().stream()
+                .filter(tile -> !Objects.equals(tile.type(), "Ground"))
+                .filter(tile -> tile.type() != null && !tile.type().isEmpty())
+                .collect(Collectors.toUnmodifiableMap(
+                    tile -> tileSet.firstgid() + tile.id(),
+                    TileSet.TileData::type
+                ));
         } catch (IOException e) {
             throw new TileSetNotLoadedException(e);
         }
@@ -51,11 +57,10 @@ public class TileSetService {
     }
 
     public boolean isObjectGID(int gid) {
-        return gidToType.containsKey(gid) && !isGroundGID(gid);
+        return objectGIDs.containsKey(gid);
     }
 
-    public String getObjectTileType(int gid){
-        return gidToType.getOrDefault(gid, "");
+    public String getObjectTileType(int gid) {
+        return objectGIDs.getOrDefault(gid, "");
     }
 }
-

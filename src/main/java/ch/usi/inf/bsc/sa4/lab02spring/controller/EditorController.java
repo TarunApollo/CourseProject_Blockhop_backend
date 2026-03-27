@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -126,7 +129,64 @@ public class EditorController {
             @PathVariable String levelId,
             @RequestBody EditorLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-        Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
-        return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+            Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } 
+    
+
+    /// Batch creates or removes multiple objects in the object layer of an unpublished level.
+    ///
+    /// JSON example:
+    /// {
+    ///   "objects": [
+    ///     {"position": {"x": 1, "y": 2}, "gid": 42, "content": {"type": "Item_Coin_Gold"}},
+    ///     {"position": {"x": 3, "y": 4}, "gid": 42},
+    ///     {"position": {"x": 5, "y": 6}, "gid": 50}
+    ///   ]
+    /// }
+    ///
+    /// Note: "content" is optional per object. Only boxes use it.
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level to edit
+    /// @param dto contains the list of objects with position, gid, and optional content
+    /// @return 200 OK with the updated object layer,
+    ///         400 BAD_REQUEST if any position is out of bounds or gid is invalid,
+    ///         403 FORBIDDEN if user is not the level creator,
+    ///         404 NOT_FOUND if level doesn't exist
+    @PutMapping("/{levelId}/object-layer/batch")
+    public ResponseEntity<ObjectLayerResponseDTO> updateObjectLayer(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateObjectLayerDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+        
+            Level updated = editorService.updateObjectLayer(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } 
+
+    /// Updates the properties of an existing object in the object layer.
+    ///
+    /// JSON examples:
+    /// - Update box content: 
+    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
+    /// - Empty box content: 
+    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {}}
+    ///
+    /// @param authentication authentication token for the current user
+    /// @param levelId id of the level containing the object
+    /// @param dto polymorphic DTO with position and type-specific properties
+    /// @return 200 OK with the updated object layer,
+    ///         403 FORBIDDEN if user is not the level creator or level is published,
+    ///         404 NOT_FOUND if level or object doesn't exist
+    @PatchMapping("/{levelId}/object-layer/properties")
+    public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody UpdateObjectPropertiesDTO dto) {
+        String userId = getUserIdFromAuth(authentication);
+       
+            Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+        } 
     }
-}
