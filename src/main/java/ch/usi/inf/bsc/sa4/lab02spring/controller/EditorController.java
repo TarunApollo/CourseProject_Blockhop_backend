@@ -172,8 +172,10 @@ public class EditorController {
     /// Updates the properties of an existing object in the object layer.
     ///
     /// JSON examples:
-    /// - Update box content: {"position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
-    /// - Empty box content: {"position": {"x": 1, "y": 2}, "content": {}}
+    /// - Update box content: 
+    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
+    /// - Empty box content: 
+    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {}}
     ///
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level containing the object
