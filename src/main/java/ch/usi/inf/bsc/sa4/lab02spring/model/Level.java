@@ -182,6 +182,16 @@ public class Level {
     /// @param published the new published status of this level.
     public void setPublished(boolean published) { this.published = published; }
 
+    /// Set this level unpublished.
+    /// This operation is idempotent.
+    /// @spec.modifies this.
+    /// @spec.effects sets this level's published status to false.
+    /// @param userId the ID of the user requesting to unpublish this level.
+    public void unpublish(String userId) {
+        this.ensureOwnedBy(userId);
+        this.published = false;
+    }
+
     /// Sets the clear condition of this level.
     /// @spec.requires clearCondition is not null.
     /// @spec.modifies this.
