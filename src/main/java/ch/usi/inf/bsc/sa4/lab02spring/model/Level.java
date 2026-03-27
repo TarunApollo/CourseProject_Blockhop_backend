@@ -1,4 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,11 +9,12 @@ import java.util.NoSuchElementException;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
+
 
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
@@ -237,6 +240,13 @@ public class Level {
                 String.format("Position (%d, %d) is out of bounds. Valid range: x=[0,%d], y=[0,%d]",
                     position.x(), position.y(), this.width - 1, this.height - 1)
             );
+        }
+    }
+
+    public void ensureObjectCanBePlacedAt(Position position)
+    {
+        if(this.worldLayer.containsKey(position) || this.objectLayer.containsKey(position)){
+            throw new ObjectPlacementConflictException();
         }
     }
 

@@ -10,31 +10,19 @@ public class AttemptService {
     private final AttemptRepository attemptRepository;
 
     /// Constructs a new AttemptService with the given dependency.
+    /// 
     /// @param attemptRepository the repository for accessing attempt data
     @Autowired
     public AttemptService(AttemptRepository attemptRepository) {
         this.attemptRepository = attemptRepository;
     }
 
-    // Returns the number of distinct levels the given user has played.
-    /// @spec.requires user is not null.
-    /// @param user the user whose played levels to count
-    /// @return the number of distinct levels the user has at least one attempt on
     public long getPlayedLevelsCount(User user) {
-        return this.attemptRepository.findByUser(user).stream()
-                .map(attempt -> attempt.level().getId())
-                .distinct()
-                .count();
+        return this.attemptRepository.countDistinctPlayedLevelsByUser(user);
     }
 
-    /// Returns the number of distinct levels the given user has completed.
-    /// @spec.requires user is not null.
-    /// @param user the user whose completed levels to count
-    /// @return the number of distinct levels the user has at least one completed attempt on
     public long getCompletedLevelsCount(User user) {
-        return this.attemptRepository.findByUserAndCompletedTrue(user).stream()
-                .map(attempt -> attempt.level().getId())
-                .distinct()
-                .count();
+        return this.attemptRepository.countDistinctCompletedLevelsByUser(user);
     }
+
 }
