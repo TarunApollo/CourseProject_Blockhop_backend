@@ -146,7 +146,7 @@ public class LevelService {
 
     /// Publishes the specified level if the given user is its creator and has
     /// completed it at least once.
-    ///
+    /// You should update the javadoc here
     /// @spec.requires userId and levelId are not null.
     /// @spec.modifies the level identified by levelId in the repository.
     /// @spec.effects sets the level's published status to true.
@@ -159,11 +159,8 @@ public class LevelService {
     ///                                       level or has not completed it
     public Level publish(String userId, String levelId){
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-
-        // Throw ForbiddenLevelActionException if the User is not the owner or the level has not been completed yet.
-        if(level.isOwnedBy(user) || !this.attemptService.hasCompleted(user, level)) throw new ForbiddenLevelActionException("Can't publish this level.");
-        level.publish();
+        userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        level.publish(userId);
         return this.levelRepository.save(level);
     }
 }

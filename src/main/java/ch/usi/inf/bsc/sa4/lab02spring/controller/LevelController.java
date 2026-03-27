@@ -63,19 +63,13 @@ public class LevelController {
     ///         response if the level does not belong to the authenticated user
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PutMapping("/{levelId}/publish")
-    public ResponseEntity<LevelDTO> publishLevel(Authentication authentication,
-                                                 @PathVariable String levelId){
+    public ResponseEntity<LevelDTO> publishLevel
+            (Authentication authentication,
+            @PathVariable String levelId)
+        {
         String userId = getUserIdFromAuth(authentication);
-        try {
             return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
         }
-        catch(LevelNotFoundException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        catch(ForbiddenLevelActionException e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    };
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 
