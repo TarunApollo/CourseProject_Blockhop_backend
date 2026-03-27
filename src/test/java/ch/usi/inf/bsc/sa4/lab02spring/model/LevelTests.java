@@ -311,4 +311,84 @@ public class LevelTests {
             assertFalse(this.level.getWorldLayer().containsKey(this.worldPosition));
         }
     }
+
+    @Nested
+    @DisplayName("method updateWorldLayerTile")
+    class UpdateWorldLayerTileMethod {
+
+        private Level level;
+        private Position position;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.position = new Position(7, 8);
+        }
+
+        @Test
+        @DisplayName("should add a tile when gid is not a removal marker")
+        public void addsTile() {
+            this.level.updateWorldLayerTile(this.position, new TileObjectId(42));
+            assertEquals(new GroundObject(42), this.level.getWorldLayer().get(this.position));
+        }
+
+        @Test
+        @DisplayName("should remove a tile when gid is a removal marker")
+        public void removesTile() {
+            this.level.putWorldLayer(this.position, new GroundObject(42));
+            this.level.updateWorldLayerTile(this.position, TileObjectId.remove());
+            assertFalse(this.level.getWorldLayer().containsKey(this.position));
+        }
+
+        @Test
+        @DisplayName("should throw when the position is out of bounds")
+        public void outOfBoundsPosition() {
+            assertThrows(IllegalArgumentException.class,
+                () -> this.level.updateWorldLayerTile(new Position(300, 8), new TileObjectId(42)));
+        }
+    }
+
+    @Nested
+    @DisplayName("method updateWorldLayerBatch")
+    class UpdateWorldLayerBatchMethod {
+
+        private Level level;
+        private Position updatedPosition;
+        private Position removedPosition;
+        private Map<Position, TileObjectId> tiles;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.updatedPosition = new Position(1, 2);
+            this.removedPosition = new Position(3, 4);
+            this.tiles = new HashMap<>();
+            this.level.putWorldLayer(this.updatedPosition, new GroundObject(5));
+            this.level.putWorldLayer(this.removedPosition, new GroundObject(6));
+        }
+
+        @Test
+        @DisplayName("should apply all mutations when every position is valid")
+        public void appliesAllMutations() {
+            this.tiles.put(this.updatedPosition, new TileObjectId(9));
+            this.tiles.put(this.removedPosition, TileObjectId.remove());
+            this.level.updateWorldLayerBatch(this.tiles);
+            assertEquals(new GroundObject(9), this.level.getWorldLayer().get(this.updatedPosition));
+            assertFalse(this.level.getWorldLayer().containsKey(this.removedPosition));
+        }
+
+        @Test
+        @DisplayName("should reject the whole batch when one position is out of bounds")
+        public void rejectsWholeBatch() {
+            GroundObject originalUpdated = this.level.getWorldLayer().get(this.updatedPosition);
+            GroundObject originalRemoved = this.level.getWorldLayer().get(this.removedPosition);
+            this.tiles.put(this.updatedPosition, new TileObjectId(9));
+            this.tiles.put(new Position(256, 0), TileObjectId.remove());
+            assertThrows(IllegalArgumentException.class, () -> this.level.updateWorldLayerBatch(this.tiles));
+            assertEquals(originalUpdated, this.level.getWorldLayer().get(this.updatedPosition));
+            assertEquals(originalRemoved, this.level.getWorldLayer().get(this.removedPosition));
+        }
+    }
 }
