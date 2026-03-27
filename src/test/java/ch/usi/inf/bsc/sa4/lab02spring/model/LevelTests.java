@@ -1,9 +1,9 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -286,7 +286,8 @@ public class LevelTests {
         @DisplayName("should add and replace entries in both layers")
         public void addsAndReplacesEntries() {
             StartFlag firstObject = new StartFlag(10, this.objectPosition);
-            Coin replacementObject = new Coin(11, this.objectPosition, 5);
+            Coin replacementObject = new Coin(11, this.objectPosition, CoinType.BRONZE_COIN
+);
             GroundObject firstGround = new GroundObject(20);
             GroundObject replacementGround = new GroundObject(21);
 
@@ -414,7 +415,8 @@ public class LevelTests {
             this.original.setPublished(true);
             this.original.setClearCondition(this.clearCondition);
             this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
-            this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, 10));
+            this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, CoinType.GOLD_COIN
+));
         }
 
         @Test
@@ -432,7 +434,7 @@ public class LevelTests {
             Level cloned = this.original.cloneFor(this.cloneCreator);
             assertEquals(this.original.getTitle(), cloned.getTitle());
             assertEquals(this.original.getDescription(), cloned.getDescription());
-            assertSame(this.clearCondition, cloned.getClearCondition());
+            assertEquals(this.clearCondition, cloned.getClearCondition());
             assertEquals(this.original.getWorldLayer(), cloned.getWorldLayer());
             assertEquals(this.original.getObjectLayer(), cloned.getObjectLayer());
         }
