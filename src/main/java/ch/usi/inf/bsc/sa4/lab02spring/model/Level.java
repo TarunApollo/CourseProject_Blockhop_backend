@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 @SuppressWarnings("NullAway.Init")
@@ -23,6 +24,9 @@ public class Level {
     private String title;
     private String description;
     private boolean published;
+
+    //add a flag for whether can be published
+    private boolean publishEligible = false;
     private final int width = 256;
     private final int height = 14;
     private ClearCondition clearCondition;
@@ -176,10 +180,31 @@ public class Level {
     /// @param description the new description of this level.
     public void setDescription(String description) { this.description = description; }
 
-    /// Sets the published status of this level to true.
-    /// @spec.modifies this.
-    /// @spec.effects sets the published status of this level to true.
-    public void publish() { this.published = true; }
+    ///You should write javadoc here
+    public void publish(String userId)
+    {
+        ensureOwnedBy(userId);
+        if(!this.publishEligible)
+        {
+            throw new ForbiddenLevelActionException("Cannot publish this level");
+        }
+        this.published = true;
+    }
+
+    //You should write javadoc here
+    public void validatePublishEligible(String userId)
+    {
+        ensureOwnedBy(userId);
+        this.publishEligible = true;
+    }
+
+    //You should write javadoc here
+    public void invalidatePublishEligible(String userId)
+    {
+        ensureOwnedBy(userId);
+        this.publishEligible = false;
+    }
+    
 
     /// Sets the clear condition of this level.
     /// @spec.requires clearCondition is not null.
