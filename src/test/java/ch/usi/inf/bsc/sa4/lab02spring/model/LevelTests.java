@@ -391,4 +391,62 @@ public class LevelTests {
             assertEquals(originalRemoved, this.level.getWorldLayer().get(this.removedPosition));
         }
     }
+
+    @Nested
+    @DisplayName("method cloneFor")
+    class CloneForMethod {
+
+        private Level original;
+        private User originalCreator;
+        private User cloneCreator;
+        private Position worldPosition;
+        private Position objectPosition;
+        private ClearCondition clearCondition;
+
+        @BeforeEach
+        void setUp() {
+            this.originalCreator = new User("user-1", "Mario");
+            this.cloneCreator = new User("user-2", "Luigi");
+            this.original = new Level("Original", "Original description", this.originalCreator);
+            this.worldPosition = new Position(3, 4);
+            this.objectPosition = new Position(5, 6);
+            this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
+            this.original.setPublished(true);
+            this.original.setClearCondition(this.clearCondition);
+            this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
+            this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, 10));
+        }
+
+        @Test
+        @DisplayName("should create an unpublished copy for the new creator")
+        public void createsUnpublishedCopy() {
+            Level cloned = this.original.cloneFor(this.cloneCreator);
+            assertFalse(cloned.isPublished());
+            assertTrue(cloned.canBeModified());
+            assertSame(this.cloneCreator, cloned.getCreator());
+        }
+
+        @Test
+        @DisplayName("should copy metadata, condition, and layers")
+        public void copiesState() {
+            Level cloned = this.original.cloneFor(this.cloneCreator);
+            assertEquals(this.original.getTitle(), cloned.getTitle());
+            assertEquals(this.original.getDescription(), cloned.getDescription());
+            assertSame(this.clearCondition, cloned.getClearCondition());
+            assertEquals(this.original.getWorldLayer(), cloned.getWorldLayer());
+            assertEquals(this.original.getObjectLayer(), cloned.getObjectLayer());
+        }
+
+        @Test
+        @DisplayName("should copy the layer maps instead of sharing them")
+        public void copiesLayerMaps() {
+            Level cloned = this.original.cloneFor(this.cloneCreator);
+            Position clonedOnlyWorldPosition = new Position(10, 2);
+            Position clonedOnlyObjectPosition = new Position(11, 3);
+            cloned.putWorldLayer(clonedOnlyWorldPosition, new GroundObject(99));
+            cloned.putObjectLayer(clonedOnlyObjectPosition, new StartFlag(77, clonedOnlyObjectPosition));
+            assertFalse(this.original.getWorldLayer().containsKey(clonedOnlyWorldPosition));
+            assertFalse(this.original.getObjectLayer().containsKey(clonedOnlyObjectPosition));
+        }
+    }
 }
