@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -17,6 +16,15 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @Override
     protected String getDatabaseName() {
         return "test";
+    }
+
+    /// Tells Spring Data MongoDB to scan the model package, discover classes with @TypeAlias annotations
+    /// (e.g., @TypeAlias("box") on Box), and resolve type aliases to their corresponding classes when deserializing.
+    /// Without this, Spring cannot map "_class": "box" back to Box.class.
+    /// So the batch endpoints would fail for example.
+    @Override
+    protected Set<String> getMappingBasePackages() {
+        return Set.of("ch.usi.inf.bsc.sa4.lab02spring.model");
     }
 
     @WritingConverter
