@@ -12,4 +12,5 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 public interface LevelRepository extends MongoRepository<Level, String> {
     // @return list of levels
     List<Level> findByCreator(User user);
+    List<Level> findByPublishedTrue();
 }
