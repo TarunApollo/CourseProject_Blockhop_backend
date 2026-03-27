@@ -120,4 +120,18 @@ public class LevelController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
+    /// Unpublishes a level owned by the authenticated user.
+    /// @param authentication the current authenticated user
+    /// @param levelId the ID of the level to unpublish
+    /// @return 200 OK with the updated level
+    /// @throws LevelNotFoundException if the level does not exist
+    /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
+    @PutMapping("/{levelId}/unpublish")
+    public ResponseEntity<Level> unpublishLevel(
+            Authentication authentication,
+            @PathVariable String levelId) {
+        String userId = getUserIdFromAuth(authentication);
+        return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
+    }
 }
