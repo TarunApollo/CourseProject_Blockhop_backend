@@ -1,9 +1,13 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +16,16 @@ import java.util.List;
 @Service
 public class AttemptService {
     private final AttemptRepository attemptRepository;
+    private final LevelService levelService;
+    private final UserService userService;
 
     /// Constructs a new AttemptService with the given dependency.
     /// @param attemptRepository the repository for accessing attempt data
     @Autowired
-    public AttemptService(AttemptRepository attemptRepository) {
+    public AttemptService(AttemptRepository attemptRepository, LevelService levelService, UserService userService) {
         this.attemptRepository = attemptRepository;
+        this.levelService = levelService;
+        this.userService = userService;
     }
 
     // Returns the number of distinct levels the given user has played.
@@ -67,5 +75,24 @@ public class AttemptService {
     public boolean hasCompleted(User user, Level level){
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
         return !attemptList.isEmpty() && attemptList.getFirst().completed();
+    }
+
+    public Attempt submitAttempt(String levelId, String userId, AttemptDTO dto){
+        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        Level level = this.levelService.getById(levelId).orElseThrow(LevelNotFoundException::new);;
+        @SuppressWarnings("NullAway") Attempt attempt = new Attempt(
+                null,
+                user,
+                dto.timestamp(),
+                level,
+                false,
+                dto.timeTaken()
+        );
+
+        if(this.levelService.validateLevelSubmission(level, dto)){
+            attempt = attempt.setCompleted(true);
+            this.levelService.modifyLevelPublishEligible(level, userId, true);
+        }
+        return this.attemptRepository.save(attempt);
     }
 }

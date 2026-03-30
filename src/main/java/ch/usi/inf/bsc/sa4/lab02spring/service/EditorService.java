@@ -26,15 +26,15 @@ public class EditorService {
     private final TileSetService tileSetService;
     private final GameObjectFactory gameObjectFactory;
     private final UserRepository userRepository;
-    private final AttemptService attemptService;
+    private final LevelService levelService;
 
     @Autowired
-    public EditorService(LevelRepository levelRepository, TileSetService tileSetService, GameObjectFactory gameObjectFactory, UserRepository userRepository, AttemptService attemptService) {
+    public EditorService(LevelRepository levelRepository, TileSetService tileSetService, GameObjectFactory gameObjectFactory, UserRepository userRepository, LevelService levelService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
         this.userRepository = userRepository;
-        this.attemptService = attemptService;
+        this.levelService = levelService;
     }
 
     /// Edits a single tile in the world layer of a level.
@@ -76,7 +76,7 @@ public class EditorService {
         : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
-        this.attemptService.setAttemptUncompleted(user, level);
+        this.levelService.modifyLevelPublishEligible(level, userId, false);
         return levelRepository.save(level);
     }
 
@@ -106,7 +106,7 @@ public class EditorService {
 
         level.updateWorldLayerBatch(tiles);
 
-        this.attemptService.setAttemptUncompleted(user, level);
+        this.levelService.modifyLevelPublishEligible(level, userId, false);
         return levelRepository.save(level);
     }
     public Level editObjectLayerTile(String userId, String levelId, EditorLevelDTO dto) {
@@ -131,7 +131,7 @@ public class EditorService {
             }
             level.putObjectLayer(dto.position(), gameObjectFactory.createGameObject(tileId.value(), dto.position()));
         }
-        this.attemptService.setAttemptUncompleted(user, level);
+        this.levelService.modifyLevelPublishEligible(level, userId, false);
         return levelRepository.save(level);
     }
 }

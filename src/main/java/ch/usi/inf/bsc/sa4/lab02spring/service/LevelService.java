@@ -164,8 +164,7 @@ public class LevelService {
         return this.levelRepository.save(level);
     }
 
-    public boolean validateLevelSubmission(String levelId, String userId, ValidateLevelDTO dto){
-        Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+    public boolean validateLevelSubmission(Level level, AttemptDTO dto){
         if (!level.isPublished()) throw new ForbiddenLevelActionException("Level is not published.");
 
         Map<Position, GroundObject> worldLayer = level.getWorldLayer();
@@ -174,13 +173,31 @@ public class LevelService {
             return entry.getValue().equals(dto.worldLayer().get(key));
         }).toList().isEmpty();
         Boolean isPlayerValid = false;
-        switch(level.getObjectLayer().get(dto.playerPosition())){
-            case ExitDoor door:
-                isPlayerValid = true;
-                break;
-            default:
-                break;
+        if(level.getObjectLayer().containsKey(dto.playerPosition())){
+            switch(level.getObjectLayer().get(dto.playerPosition())){
+                case ExitDoor door:
+                    isPlayerValid = true;
+                    break;
+                default:
+                    break;
+            }
         }
         return isWorldLayerEqual && isPlayerValid;
+    }
+
+    public Optional<Level> getById(String levelId) {
+        return this.levelRepository.findById(levelId);
+    }
+
+    public boolean modifyLevelPublishEligible(Level level, String userId, boolean valid){
+        try{
+            if(valid) level.validatePublishEligible(userId);
+            else level.invalidatePublishEligible(userId);
+            this.levelRepository.save(level);
+            return true;
+        }
+        catch (ForbiddenUserException e){
+            return false;
+        }
     }
 }
