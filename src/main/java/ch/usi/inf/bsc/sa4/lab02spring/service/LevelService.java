@@ -20,7 +20,6 @@ public class LevelService {
     private final UserService userService;
     private final AttemptRepository attemptRepository;
     private final UserRepository userRepository;
-    private final AttemptService attemptService;
 
     /// Constructs a new LevelService with the given dependencies.
     /// 
@@ -28,12 +27,11 @@ public class LevelService {
     /// @param userService       the service for accessing user data
     /// @param attemptRepository the repository for accessing attempt data
     @Autowired
-    public LevelService(LevelRepository levelRepository, UserService userService, AttemptRepository attemptRepository, UserRepository userRepository, AttemptService attemptService) {
+    public LevelService(LevelRepository levelRepository, UserService userService, AttemptRepository attemptRepository, UserRepository userRepository) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
         this.userRepository = userRepository;
-        this.attemptService = attemptService;
     }
 
     /// Creates a level for the given user id
