@@ -165,8 +165,6 @@ public class LevelService {
     }
 
     public boolean validateLevelSubmission(Level level, AttemptDTO dto){
-        if (!level.isPublished()) throw new ForbiddenLevelActionException("Level is not published.");
-
         Map<Position, GroundObject> worldLayer = level.getWorldLayer();
         Boolean isWorldLayerEqual = worldLayer.entrySet().stream().filter((Map.Entry<Position, GroundObject> entry) -> {
             Position key = entry.getKey();

@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import jakarta.annotation.Nullable;
@@ -79,7 +80,8 @@ public class AttemptService {
 
     public Attempt submitAttempt(String levelId, String userId, AttemptDTO dto){
         User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        Level level = this.levelService.getById(levelId).orElseThrow(LevelNotFoundException::new);;
+        Level level = this.levelService.getById(levelId).orElseThrow(LevelNotFoundException::new);
+        if (!level.isPublished()) throw new ForbiddenLevelActionException("Level is not published.");
         @SuppressWarnings("NullAway") Attempt attempt = new Attempt(
                 null,
                 user,
