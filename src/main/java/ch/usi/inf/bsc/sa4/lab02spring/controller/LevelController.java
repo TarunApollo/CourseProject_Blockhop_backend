@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
@@ -23,6 +24,7 @@ import java.util.List;
 public class LevelController {
     private final LevelService levelService;
     private final UserService userService;
+    private final AttemptService attemptService;
 
     /// Constructs a new LevelController with the given dependencies.
     /// 
@@ -32,6 +34,7 @@ public class LevelController {
     public LevelController(LevelService levelService, UserService userService, AttemptService attemptService) {
         this.levelService = levelService;
         this.userService = userService;
+        this.attemptService = attemptService;
     }
 
     /// Creates a new empty level and returns a level DTO.
@@ -134,6 +137,19 @@ public class LevelController {
         } catch (ForbiddenUserException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (LevelPublishedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    @PostMapping("/{levelId}/submit")
+    public ResponseEntity<Attempt> submitAttempt(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody AttemptDTO dto){
+        String userId = getUserIdFromAuth(authentication);
+        try{
+            return ResponseEntity.ok(this.attemptService.submitAttempt(levelId, userId, dto));
+        }catch(Exception e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
