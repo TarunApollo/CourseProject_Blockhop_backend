@@ -1,17 +1,17 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -162,5 +162,25 @@ public class LevelService {
         userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         level.publish(userId);
         return this.levelRepository.save(level);
+    }
+
+    public boolean validateLevelSubmission(String levelId, String userId, ValidateLevelDTO dto){
+        Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        if (!level.isPublished()) throw new ForbiddenLevelActionException("Level is not published.");
+
+        Map<Position, GroundObject> worldLayer = level.getWorldLayer();
+        Boolean isWorldLayerEqual = worldLayer.entrySet().stream().filter((Map.Entry<Position, GroundObject> entry) -> {
+            Position key = entry.getKey();
+            return entry.getValue().equals(dto.worldLayer().get(key));
+        }).toList().isEmpty();
+        Boolean isPlayerValid = false;
+        switch(level.getObjectLayer().get(dto.playerPosition())){
+            case ExitDoor door:
+                isPlayerValid = true;
+                break;
+            default:
+                break;
+        }
+        return isWorldLayerEqual && isPlayerValid;
     }
 }
