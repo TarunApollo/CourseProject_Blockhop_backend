@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 
 import java.util.List;
@@ -98,16 +99,17 @@ public class LevelController {
     }
 
     @GetMapping("/play/{levelId}")
-    public ResponseEntity<Level> playLevel(Authentication authentication,@PathVariable String levelId,@RequestBody PlayLevelDTO dto){
-      String userId = getUserIdFromAuth(authentication);
-      User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-      try {
-            return ResponseEntity.ok(this.levelService.playLevel(user, levelId, dto));
-        } catch (ForbiddenUserException e) {
+    public ResponseEntity<PlayLevelResponseDTO> playLevel(
+            Authentication authentication,
+            @PathVariable String levelId) {
+        String userId = getUserIdFromAuth(authentication);
+        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        try {
+            Level level = this.levelService.playLevel(user, levelId);
+            return ResponseEntity.ok(new PlayLevelResponseDTO(level));
+        } catch (LevelNotPlayableException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } 
-
-
+        }
     }
 
 }

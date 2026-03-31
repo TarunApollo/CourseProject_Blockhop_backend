@@ -11,7 +11,9 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+
 
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
@@ -206,11 +208,12 @@ public class Level {
             throw new LevelPublishedException("Cannot modify a published level");
         }
     }
-    public void isPlayable(){
-        if (!this.published){
-            throw new ForbiddenUserException("Level is Coming Soon and is being built currently");
+    public void ensurePlayable() {
+        if (!this.published) {
+            throw new LevelNotPlayableException();
         }
     }
+    
 
     public void ensureOwnedBy(String userId) {
         if (!isOwnedBy(userId)) {
