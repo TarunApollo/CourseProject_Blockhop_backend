@@ -17,12 +17,14 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class TileSetService {
+    private TileSet tileSet;
     
     /// Ground GIDs - type is always "Ground", so just store GIDs
     private Set<Integer> groundGIDs = Set.of();
     
     /// Object GIDs mapped to their type string
     private Map<Integer, String> objectGIDs = Map.of();
+
 
     @PostConstruct
     ///
@@ -31,7 +33,7 @@ public class TileSetService {
     public void loadTileSet() {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            TileSet tileSet = mapper.readValue(
+            TileSet loadedTileSet = mapper.readValue(
                 new ClassPathResource("tileset_batch_1.json").getInputStream(),
                 TileSet.class);
             
@@ -47,6 +49,7 @@ public class TileSetService {
                     tile -> tileSet.firstgid() + tile.id(),
                     TileSet.TileData::type
                 ));
+            this.tileSet = loadedTileSet;
         } catch (IOException e) {
             throw new TileSetNotLoadedException(e);
         }
@@ -63,4 +66,10 @@ public class TileSetService {
     public String getObjectTileType(int gid) {
         return objectGIDs.getOrDefault(gid, "");
     }
+
+    ///getter 
+    public int getFirstGid() { return tileSet.firstgid(); }
+    public int getColumns() { return tileSet.columns(); }
+    public int getTileWidth() { return tileSet.tilewidth(); }
+    public int getTileHeight() { return tileSet.tileheight(); }
 }

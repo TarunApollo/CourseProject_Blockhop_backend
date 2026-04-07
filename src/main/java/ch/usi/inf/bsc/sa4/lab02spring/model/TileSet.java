@@ -8,8 +8,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /// Jackson ignores extra fields (columns, image, properties, objectgroup, etc.)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TileSet(
+    List<TileData> tiles,
     int firstgid,
-    List<TileData> tiles
+    int columns,
+    int tilewidth,
+    int tileheight
 ) {
     /// Represents minimal tile data: id (relative) and type.
     @JsonIgnoreProperties(ignoreUnknown = true)
