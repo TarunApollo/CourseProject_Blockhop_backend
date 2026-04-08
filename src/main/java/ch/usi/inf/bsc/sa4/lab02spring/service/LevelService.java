@@ -2,7 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
@@ -23,9 +22,8 @@ public class LevelService {
     /// Constructs a new LevelService with the given dependencies.
     /// @param levelRepository the repository for accessing level data
     /// @param userService the service for accessing user data
-    /// @param attemptRepository the repository for accessing attempt data
     @Autowired
-    public LevelService(LevelRepository levelRepository, UserService userService, AttemptRepository attemptRepository) {
+    public LevelService(LevelRepository levelRepository, UserService userService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
     }
