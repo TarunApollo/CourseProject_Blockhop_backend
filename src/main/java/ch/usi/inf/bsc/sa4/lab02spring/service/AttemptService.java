@@ -1,22 +1,73 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateAttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AttemptService {
     private final AttemptRepository attemptRepository;
+    private final LevelRepository levelRepository;
 
-    /// Constructs a new AttemptService with the given dependency.
+    /// Constructs a new AttemptService with the given dependencies.
     /// @param attemptRepository the repository for accessing attempt data
+    /// @param levelRepository the repository for accessing level data
     @Autowired
-    public AttemptService(AttemptRepository attemptRepository) {
+    public AttemptService(AttemptRepository attemptRepository, LevelRepository levelRepository) {
         this.attemptRepository = attemptRepository;
+        this.levelRepository = levelRepository;
     }
 
-    // Returns the number of distinct levels the given user has played.
+    /// Records a new attempt for the given user based on the DTO data.
+    /// @spec.requires user and dto are not null.
+    /// @spec.effects saves a new Attempt to the repository.
+    /// @param user the user making the attempt
+    /// @param dto the DTO containing level ID, completion status, and time taken
+    /// @return the saved Attempt entity
+    /// @throws LevelNotFoundException if no level with the given ID exists
+    @SuppressWarnings("NullAway")
+    public Attempt createAttempt(User user, CreateAttemptDTO dto) {
+        Level level = levelRepository.findById(dto.levelId()).orElseThrow(LevelNotFoundException::new);
+        Attempt attempt = new Attempt(null, user, ZonedDateTime.now(), level, dto.completed(), dto.timeTaken());
+        return attemptRepository.save(attempt);
+    }
+
+    /// Returns all attempts for a given user.
+    /// @param user the user whose attempts to retrieve
+    /// @return the list of attempts for the user
+    public List<Attempt> getAttemptsByUser(User user) {
+        return attemptRepository.findByUser(user);
+    }
+
+    /// Returns all attempts for a given user on a specific level.
+    /// @param user the user whose attempts to retrieve
+    /// @param levelId the ID of the level to filter by
+    /// @return the list of attempts for the user on the given level
+    /// @throws LevelNotFoundException if no level with the given ID exists
+    public List<Attempt> getAttemptsByUserAndLevel(User user, String levelId) {
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        return attemptRepository.findByUserAndLevel(user, level);
+    }
+
+    /// Returns a specific attempt by ID, if it belongs to the given user.
+    /// @param attemptId the ID of the attempt
+    /// @param user the user who should own the attempt
+    /// @return an Optional containing the attempt if found and owned by the user
+    public Optional<Attempt> getAttemptByIdAndUser(String attemptId, User user) {
+        return attemptRepository.findByIdAndUser(attemptId, user);
+    }
+
+    /// Returns the number of distinct levels the given user has played.
     /// @spec.requires user is not null.
     /// @param user the user whose played levels to count
     /// @return the number of distinct levels the user has at least one attempt on
