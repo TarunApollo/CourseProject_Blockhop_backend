@@ -120,6 +120,7 @@ public class Level {
         return clearCondition;
     }
 
+
     /// @return an unmodifiable view of the object layer of this level.
     public Map<Position, GameObject> getObjectLayer() {
         return Collections.unmodifiableMap(objectLayer);
@@ -201,6 +202,7 @@ public class Level {
     /// @spec.effects sets the clear condition of this level to the given value.
     /// @param clearCondition the new clear condition of this level.
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+
 
     public boolean isOwnedBy(String userId) {
         return this.creator.getId().equals(userId);
