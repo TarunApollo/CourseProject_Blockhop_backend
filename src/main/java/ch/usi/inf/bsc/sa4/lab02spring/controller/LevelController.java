@@ -1,11 +1,13 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
@@ -28,15 +30,17 @@ import java.util.List;
 public class LevelController {
     private final LevelService levelService;
     private final UserService userService;
+    private final AttemptService attemptService;
 
     /// Constructs a new LevelController with the given dependencies.
     /// 
     /// @param levelService the service for managing level operations
     /// @param userService  the service for accessing user data
     @Autowired
-    public LevelController(LevelService levelService, UserService userService) {
+    public LevelController(LevelService levelService, UserService userService, AttemptService attemptService) {
         this.levelService = levelService;
         this.userService = userService;
+        this.attemptService = attemptService;
     }
 
     /// Creates a new empty level and returns a level DTO.
@@ -55,6 +59,7 @@ public class LevelController {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
+
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 
@@ -150,26 +155,22 @@ public class LevelController {
         return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
     }
 
-    /// Temporarily accepts a thumbnail upload through the publish route.
-    /// This endpoint currently delegates only to thumbnail persistence and does
-    /// not represent the final publish workflow.
+    /// Publishes the specified level and stores its uploaded thumbnail.
     ///
     /// @spec.requires authentication, levelId, and thumbnail are not null.
-    /// @spec.effects forwards the uploaded thumbnail to the level service so the
-    ///               thumbnail can be stored and linked to the target level.
-    /// Note: Once the real publish workflow is implemented, this endpoint
-    ///           should delegate to the actual publish service method instead of
-    ///           directly calling saveThumbnailForLevel.
+    /// @spec.effects forwards the authenticated user, target level id, and
+    ///               uploaded thumbnail to the level service, which stores the
+    ///               thumbnail and publishes the level.
     /// @param authentication the current authenticated user
     /// @param levelId the id of the target level
     /// @param thumbnail the uploaded thumbnail snapshot
-    /// @return a 200 OK response containing the stored thumbnail's storage id
+    /// @return a 200 OK response containing the published level
     @PutMapping(path = "/{levelId}/publish", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> publishLevel(
+    public ResponseEntity<Level> publishLevel(
             Authentication authentication,
             @PathVariable String levelId,
             @RequestParam("thumbnail") MultipartFile thumbnail) {
         String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(this.levelService.saveThumbnailForLevel(userId, levelId, thumbnail));
+        return ResponseEntity.ok(this.levelService.publish(userId, levelId, thumbnail));
     }
 }

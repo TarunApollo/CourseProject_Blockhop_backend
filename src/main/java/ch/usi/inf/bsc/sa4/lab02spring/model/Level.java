@@ -12,6 +12,7 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
@@ -26,6 +27,9 @@ public class Level {
     private String title;
     private String description;
     private boolean published;
+
+    //add a flag for whether can be published
+    private boolean publishEligible = false;
     private final int width = 256;
     private final int height = 14;
     private ClearCondition clearCondition;
@@ -180,11 +184,48 @@ public class Level {
     /// @param description the new description of this level.
     public void setDescription(String description) { this.description = description; }
 
-    /// Sets the published status of this level.
+    /// Publishes this level on behalf of its creator.
     /// @spec.modifies this.
-    /// @spec.effects sets the published status of this level to the given value.
-    /// @param published the new published status of this level.
-    public void setPublished(boolean published) { this.published = published; }
+    /// @spec.effects marks this level as published if the given user owns the
+    ///               level and the level is already marked as publish eligible.
+    /// @param userId the ID of the user requesting the publish operation.
+    /// @throws ForbiddenUserException if the given user is not the owner of this
+    ///                                level.
+    /// @throws ForbiddenLevelActionException if this level is not currently marked
+    ///                                       as publish eligible.
+    public void publish(String userId)
+    {
+        ensureOwnedBy(userId);
+        if(!this.publishEligible)
+        {
+            throw new ForbiddenLevelActionException("Cannot publish this level");
+        }
+        this.published = true;
+    }
+
+
+    /// Marks this level as eligible for publishing.
+    /// @spec.modifies this.
+    /// @spec.effects sets this level's publishEligible flag to true.
+    /// @param userId the ID of the user requesting to validate publish eligibility.
+    /// @throws ForbiddenUserException if the given user is not the owner of this level.
+    public void validatePublishEligible(String userId)
+    {
+        ensureOwnedBy(userId);
+        this.publishEligible = true;
+    }
+
+    /// Marks this level as not eligible for publishing.
+    /// @spec.modifies this.
+    /// @spec.effects sets this level's publishEligible flag to false.
+    /// @param userId the ID of the user requesting to invalidate publish eligibility.
+    /// @throws ForbiddenUserException if the given user is not the owner of this level.
+    public void invalidatePublishEligible(String userId)
+    {
+        ensureOwnedBy(userId);
+        this.publishEligible = false;
+    }
+    
 
     /// Set this level unpublished.
     /// This operation is idempotent.

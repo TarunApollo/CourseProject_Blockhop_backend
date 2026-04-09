@@ -5,6 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,13 +32,15 @@ public class EditorService {
     private final LevelRepository levelRepository;
     private final TileSetService tileSetService;
     private final GameObjectFactory gameObjectFactory;
+    private final LevelService levelService;
 
     @Autowired
     public EditorService(LevelRepository levelRepository, TileSetService tileSetService,
-            GameObjectFactory gameObjectFactory) {
+            GameObjectFactory gameObjectFactory, LevelService levelService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
+        this.levelService = levelService;
     }
 
     /// Edits a single tile in the world layer of a level.
@@ -82,11 +87,12 @@ public class EditorService {
                 : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
     /// Batch updates multiple tiles in the world layer of a level.
-    /// 
+    ///
     /// @param userId  the authenticated user's ID
     /// @param levelId the level to edit
     /// @param dto     contains the list of positions and gids to apply
@@ -112,7 +118,7 @@ public class EditorService {
         for (EditorLevelDTO object : dto.tiles()) {
             level.ensureWithinBounds(object.position());
             TileObjectId tileId = new TileObjectId(object.gid(), tileSetService::isGroundGID);
-            
+
             if (tileId.isRemoval()) {
                 positionsToRemove.add(object.position());
             } else {
@@ -129,6 +135,7 @@ public class EditorService {
             level.putWorldLayer(entry.getKey(), new GroundObject(entry.getValue()));
         }
 
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -160,9 +167,11 @@ public class EditorService {
             if (level.getObjectLayer().containsKey(dto.position())) {
                 throw new IllegalArgumentException("Tile already has an object");
             }
-            level.putObjectLayer(dto.position(), 
+            level.putObjectLayer(dto.position(),
                 gameObjectFactory.createGameObject(tileId.value(), dto.position(), dto.content()));
         }
+
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -218,6 +227,7 @@ public class EditorService {
             level.putObjectLayer(entry.getKey(), entry.getValue());
         }
 
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -239,13 +249,14 @@ public class EditorService {
         level.ensureModifiable();
 
         switch (dto) {
-            case BoxPropertyUpdateDTO boxUpdate -> 
+            case BoxPropertyUpdateDTO boxUpdate ->
                 level.updateBoxContent(dto.position(), boxUpdate.content());
-            default -> 
+            default ->
                 throw new IllegalArgumentException(
                     "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 }

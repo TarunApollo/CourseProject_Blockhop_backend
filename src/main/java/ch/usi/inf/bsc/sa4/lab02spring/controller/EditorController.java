@@ -26,7 +26,7 @@ public class EditorController {
     private final EditorService editorService;
 
     /// Constructs a new EditorController with the given dependency.
-    /// 
+    ///
     /// @param editorService the service for handling level editing operations
     @Autowired
     public EditorController(EditorService editorService) {
@@ -131,8 +131,8 @@ public class EditorController {
         String userId = getUserIdFromAuth(authentication);
             Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
             return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
-        } 
-    
+        }
+
 
     /// Batch creates or removes multiple objects in the object layer of an unpublished level.
     ///
@@ -160,17 +160,17 @@ public class EditorController {
             @PathVariable String levelId,
             @RequestBody UpdateObjectLayerDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-        
+
             Level updated = editorService.updateObjectLayer(userId, levelId, dto);
             return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
-        } 
+        }
 
     /// Updates the properties of an existing object in the object layer.
     ///
     /// JSON examples:
-    /// - Update box content: 
+    /// - Update box content:
     // {"type": "box", "position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
-    /// - Empty box content: 
+    /// - Empty box content:
     // {"type": "box", "position": {"x": 1, "y": 2}, "content": {}}
     ///
     /// @param authentication authentication token for the current user
@@ -185,8 +185,8 @@ public class EditorController {
             @PathVariable String levelId,
             @RequestBody UpdateObjectPropertiesDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-       
+
             Level updated = editorService.updateObjectProperties(userId, levelId, dto);
             return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
-        } 
+        }
     }

@@ -4,13 +4,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelThumbnail;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +24,7 @@ import java.util.Optional;
 @Service
 public class LevelService {
     private final LevelRepository levelRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
     private final AttemptRepository attemptRepository;
     private final LevelThumbnailRepository levelThumbnailRepository;
@@ -45,12 +42,14 @@ public class LevelService {
             UserService userService,
             AttemptRepository attemptRepository,
             LevelThumbnailRepository levelThumbnailRepository,
-            ThumbnailRepository thumbnailRepository) {
+            ThumbnailRepository thumbnailRepository,
+            UserRepository userRepository) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
         this.levelThumbnailRepository = levelThumbnailRepository;
         this.thumbnailRepository = thumbnailRepository;
+        this.userRepository = userRepository;
     }
 
     /// Creates a level for the given user id
@@ -120,6 +119,7 @@ public class LevelService {
         dto.title().ifPresent(level::setTitle);
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);
+        level.invalidatePublishEligible(user.getId());
         return levelRepository.save(level);
     }
 
@@ -132,18 +132,16 @@ public class LevelService {
     public Level unpublishLevel(String userId, String levelId) {
         Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
+        level.unpublish(userId);
         levelThumbnailRepository.findByLevelId(levelId)
         .ifPresent(oldThumbnail -> {
             thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
             levelThumbnailRepository.deleteByLevelId(levelId);
         });
-        level.unpublish(userId);
         return this.levelRepository.save(level);
     }
 
-    /// Saves a thumbnail upload for a level owned by the given user.
-    /// This is a helper for thumbnail infrastructure and should later be
-    /// integrated into the real publish method
+    /// Stores or replaces the thumbnail associated with the given level.
     ///
     /// @spec.requires userId, levelId, and thumbnail are not null.
     /// @spec.effects reads the uploaded thumbnail, stores it through the thumbnail
@@ -219,6 +217,65 @@ public class LevelService {
         };
     }
 
+    /// Publishes the specified level and stores the uploaded thumbnail.
+    ///
+    /// @spec.requires userId, levelId, and thumbnail are not null.
+    /// @spec.modifies the level identified by levelId, and the thumbnail
+    ///                repositories associated with that level.
+    /// @spec.effects stores the uploaded thumbnail for the target level, marks the
+    ///               level as published, and saves the updated level.
+    /// @param userId  the unique identifier of the user requesting the publish
+    /// @param levelId the id of the level to publish
+    /// @param thumbnail the uploaded thumbnail snapshot for the level
+    /// @return the published and saved Level
+    /// @throws LevelNotFoundException        if no level with the given id exists
+    /// @throws UserNotFoundException         if no user with the given id exists
+    /// @throws ForbiddenLevelActionException if the user is not the owner of the
+    ///                                       level or if the level cannot be
+    ///                                       published in its current state
+    public Level publish(String userId, String levelId,MultipartFile thumbnail){
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        saveThumbnailForLevel(userId, levelId, thumbnail);
+        level.publish(userId);
+        return this.levelRepository.save(level);
+    }
+
+    /// Retrieves a level by its unique identifier.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @param levelId the id of the level to retrieve
+    /// @return a non-empty Optional containing the Level if it exists,
+    ///         an empty Optional otherwise.
+    public Optional<Level> getById(String levelId) {
+        return this.levelRepository.findById(levelId);
+    }
+
+    /// Marks the given level as eligible for publishing on behalf of the given user.
+    ///
+    /// @spec.requires level and userId are not null.
+    /// @spec.modifies the given level in the repository.
+    /// @spec.effects sets the level's publishEligible flag to true and saves it.
+    /// @param level  the level to mark as publish eligible
+    /// @param userId the unique identifier of the user requesting the validation
+    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    public void validateLevelPublishEligible(Level level, String userId){
+        level.validatePublishEligible(userId);
+        this.levelRepository.save(level);
+    }
+
+    /// Marks the given level as not eligible for publishing on behalf of the given user.
+    ///
+    /// @spec.requires level and userId are not null.
+    /// @spec.modifies the given level in the repository.
+    /// @spec.effects sets the level's publishEligible flag to false and saves it.
+    /// @param level  the level to mark as not publish eligible
+    /// @param userId the unique identifier of the user requesting the invalidation
+    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    public void invalidateLevelPublishEligible(Level level, String userId){
+        level.invalidatePublishEligible(userId);
+        this.levelRepository.save(level);
+    }
     /// Returns the stored thumbnail image bytes for the given level.
     ///
     /// @spec.requires levelId is not null.
