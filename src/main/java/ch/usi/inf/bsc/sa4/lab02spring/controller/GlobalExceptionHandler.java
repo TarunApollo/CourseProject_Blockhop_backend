@@ -10,5 +10,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Void> handleIllegalArgument(IllegalArgumentException e) {
         return ResponseEntity.badRequest().build();
     }
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Void> handleIllegalState(IllegalStateException e) {
+        return ResponseEntity.badRequest().build();
+    }
     
 }

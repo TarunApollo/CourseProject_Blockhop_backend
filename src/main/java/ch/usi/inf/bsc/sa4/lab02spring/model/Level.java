@@ -124,6 +124,7 @@ public class Level {
         return clearCondition;
     }
 
+
     /// @return an unmodifiable view of the object layer of this level.
     public Map<Position, GameObject> getObjectLayer() {
         return Collections.unmodifiableMap(objectLayer);
@@ -183,7 +184,15 @@ public class Level {
     /// @param description the new description of this level.
     public void setDescription(String description) { this.description = description; }
 
-    ///You should write javadoc here
+    /// Publishes this level on behalf of its creator.
+    /// @spec.modifies this.
+    /// @spec.effects marks this level as published if the given user owns the
+    ///               level and the level is already marked as publish eligible.
+    /// @param userId the ID of the user requesting the publish operation.
+    /// @throws ForbiddenUserException if the given user is not the owner of this
+    ///                                level.
+    /// @throws ForbiddenLevelActionException if this level is not currently marked
+    ///                                       as publish eligible.
     public void publish(String userId)
     {
         ensureOwnedBy(userId);
@@ -194,10 +203,6 @@ public class Level {
         this.published = true;
     }
 
-    // Only used by some tests which require this method
-    public void setPublished(boolean value){
-        this.published = value;
-    }
 
     /// Marks this level as eligible for publishing.
     /// @spec.modifies this.
@@ -238,6 +243,7 @@ public class Level {
     /// @spec.effects sets the clear condition of this level to the given value.
     /// @param clearCondition the new clear condition of this level.
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+
 
     public boolean isOwnedBy(String userId) {
         return this.creator.getId().equals(userId);

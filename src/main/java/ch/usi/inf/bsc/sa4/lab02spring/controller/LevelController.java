@@ -15,8 +15,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
@@ -58,25 +60,6 @@ public class LevelController {
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
-    /// Publishes the specified level if the authenticated user is its creator.
-    ///
-    /// @spec.requires authentication and levelId are not null.
-    /// @spec.modifies the level identified by levelId in the repository.
-    /// @spec.effects sets the level's published status to true.
-    /// @param authentication abstract token for authentication
-    /// @param levelId        the id of the level to publish
-    /// @return a 200 OK response containing the published level as a LevelDTO, a 404
-    ///         Not Found response if the level does not exist, or a 403 Forbidden
-    ///         response if the level does not belong to the authenticated user
-    /// @throws UserNotFoundException if the authenticated user does not exist
-    @PutMapping("/{levelId}/publish")
-    public ResponseEntity<LevelDTO> publishLevel
-            (Authentication authentication,
-            @PathVariable String levelId)
-        {
-        String userId = getUserIdFromAuth(authentication);
-            return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
-        }
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 
@@ -92,6 +75,21 @@ public class LevelController {
             @RequestParam(defaultValue = "ALL_TIME") DateRangePreset period) {
         return this.levelService.getPublishedLevels(sortBy, period);
     }
+
+    /// Returns the thumbnail image for the given level.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @spec.effects fetches the stored thumbnail bytes for the target level and
+    ///               returns them as an image/png response body.
+    /// @param levelId the id of the level whose thumbnail is requested
+    /// @return a 200 OK response containing the thumbnail image bytes
+    @GetMapping(value = "/{levelId}/thumbnail", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getThumbnail(@PathVariable String levelId) {
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_PNG)
+            .body(this.levelService.getThumbnailForLevel(levelId));
+    }
+
 
     /// Clones the given level if it exists and the authenticated user is its
     /// creator.
@@ -155,5 +153,24 @@ public class LevelController {
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
+    }
+
+    /// Publishes the specified level and stores its uploaded thumbnail.
+    ///
+    /// @spec.requires authentication, levelId, and thumbnail are not null.
+    /// @spec.effects forwards the authenticated user, target level id, and
+    ///               uploaded thumbnail to the level service, which stores the
+    ///               thumbnail and publishes the level.
+    /// @param authentication the current authenticated user
+    /// @param levelId the id of the target level
+    /// @param thumbnail the uploaded thumbnail snapshot
+    /// @return a 200 OK response containing the published level
+    @PutMapping(path = "/{levelId}/publish", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Level> publishLevel(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestParam("thumbnail") MultipartFile thumbnail) {
+        String userId = getUserIdFromAuth(authentication);
+        return ResponseEntity.ok(this.levelService.publish(userId, levelId, thumbnail));
     }
 }
