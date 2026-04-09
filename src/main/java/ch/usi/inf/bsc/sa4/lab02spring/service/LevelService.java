@@ -175,15 +175,37 @@ public class LevelService {
         return this.levelRepository.save(level);
     }
 
+    /// Retrieves a level by its unique identifier.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @param levelId the id of the level to retrieve
+    /// @return a non-empty Optional containing the Level if it exists,
+    ///         an empty Optional otherwise.
     public Optional<Level> getById(String levelId) {
         return this.levelRepository.findById(levelId);
     }
 
+    /// Marks the given level as eligible for publishing on behalf of the given user.
+    ///
+    /// @spec.requires level and userId are not null.
+    /// @spec.modifies the given level in the repository.
+    /// @spec.effects sets the level's publishEligible flag to true and saves it.
+    /// @param level  the level to mark as publish eligible
+    /// @param userId the unique identifier of the user requesting the validation
+    /// @throws ForbiddenUserException if the given user is not the owner of the level
     public void validateLevelPublishEligible(Level level, String userId){
         level.validatePublishEligible(userId);
         this.levelRepository.save(level);
     }
 
+    /// Marks the given level as not eligible for publishing on behalf of the given user.
+    ///
+    /// @spec.requires level and userId are not null.
+    /// @spec.modifies the given level in the repository.
+    /// @spec.effects sets the level's publishEligible flag to false and saves it.
+    /// @param level  the level to mark as not publish eligible
+    /// @param userId the unique identifier of the user requesting the invalidation
+    /// @throws ForbiddenUserException if the given user is not the owner of the level
     public void invalidateLevelPublishEligible(Level level, String userId){
         level.invalidatePublishEligible(userId);
         this.levelRepository.save(level);

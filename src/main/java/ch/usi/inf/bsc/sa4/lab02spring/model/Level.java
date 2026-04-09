@@ -199,14 +199,22 @@ public class Level {
         this.published = value;
     }
 
-    //You should write javadoc here
+    /// Marks this level as eligible for publishing.
+    /// @spec.modifies this.
+    /// @spec.effects sets this level's publishEligible flag to true.
+    /// @param userId the ID of the user requesting to validate publish eligibility.
+    /// @throws ForbiddenUserException if the given user is not the owner of this level.
     public void validatePublishEligible(String userId)
     {
         ensureOwnedBy(userId);
         this.publishEligible = true;
     }
 
-    //You should write javadoc here
+    /// Marks this level as not eligible for publishing.
+    /// @spec.modifies this.
+    /// @spec.effects sets this level's publishEligible flag to false.
+    /// @param userId the ID of the user requesting to invalidate publish eligibility.
+    /// @throws ForbiddenUserException if the given user is not the owner of this level.
     public void invalidatePublishEligible(String userId)
     {
         ensureOwnedBy(userId);
