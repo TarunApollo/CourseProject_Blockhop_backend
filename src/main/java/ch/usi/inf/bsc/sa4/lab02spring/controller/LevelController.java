@@ -142,7 +142,7 @@ public class LevelController {
     /// @spec.requires authentication, levelId, and thumbnail are not null.
     /// @spec.effects forwards the uploaded thumbnail to the level service so the
     ///               thumbnail can be stored and linked to the target level.
-    /// @implNote Once the real publish workflow is implemented, this endpoint
+    /// Note: Once the real publish workflow is implemented, this endpoint
     ///           should delegate to the actual publish service method instead of
     ///           directly calling saveThumbnailForLevel.
     /// @param authentication the current authenticated user
