@@ -194,6 +194,11 @@ public class Level {
         this.published = true;
     }
 
+    // Only used by some tests which require this method
+    public void setPublished(boolean value){
+        this.published = value;
+    }
+
     //You should write javadoc here
     public void validatePublishEligible(String userId)
     {
