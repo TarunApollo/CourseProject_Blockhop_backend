@@ -104,6 +104,19 @@ public class LevelService {
         return levelRepository.save(level);
     }
 
+    /// Unpublishes an existing level owned by the given user.
+    /// @param userId the authenticated user's ID
+    /// @param levelId the ID of the level to unpublish
+    /// @return the updated level
+    /// @throws LevelNotFoundException if the level does not exist
+    /// @throws ForbiddenUserException if the user is not the owner of the level
+    public Level unpublishLevel(String userId, String levelId) {
+        Level level = this.levelRepository.findById(levelId)
+                .orElseThrow(LevelNotFoundException::new);
+        level.unpublish(userId);
+        return this.levelRepository.save(level);
+    }
+
     /// Builds a LevelSummaryDto for the given level, computing play count, clear rate, and popularity.
     /// @param level the level to summarize
     /// @param period the time range used to compute popularity

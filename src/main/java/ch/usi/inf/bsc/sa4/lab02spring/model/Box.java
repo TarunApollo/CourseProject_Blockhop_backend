@@ -10,4 +10,7 @@ import org.springframework.data.annotation.TypeAlias;
 ///
 @TypeAlias("box")
 public record Box(int gid, Position pos, Content content) implements Item {
+    public Box withContent(Content newContent) {
+        return new Box(this.gid(), this.pos(), newContent);
+    }
 }
