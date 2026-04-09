@@ -9,6 +9,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
+
+import com.mongodb.client.gridfs.model.GridFSFile;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
+
+
 @Repository
 public class ThumbnailRepositoryImpl implements ThumbnailRepository {
     private final GridFsTemplate gridFsTemplate;
@@ -31,5 +37,29 @@ public class ThumbnailRepositoryImpl implements ThumbnailRepository {
     public void deleteThumbnail(String storageId) {
         gridFsTemplate.delete(
                 Query.query(Criteria.where("_id").is(new ObjectId(storageId))));
+    }
+
+    @Override
+    public byte[] loadThumbnail(String storageId)
+    {
+        GridFSFile file = gridFsTemplate.findOne(
+             Query.query(Criteria.where("_id").is(new ObjectId(storageId))));
+        
+        if (file == null)
+        {
+            throw new IllegalArgumentException("Thumbnail not found");
+        }
+
+        GridFsResource resource = gridFsTemplate.getResource(file);
+
+        try
+        {
+            return resource.getInputStream().readAllBytes();
+        }
+        catch(IOException e)
+        {
+            throw new IllegalStateException("Failed to read thumbnail");
+        }
+
     }
 }
