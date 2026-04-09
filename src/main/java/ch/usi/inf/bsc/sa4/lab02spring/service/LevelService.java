@@ -175,25 +175,6 @@ public class LevelService {
         return this.levelRepository.save(level);
     }
 
-    public boolean validateLevelSubmission(Level level, AttemptDTO dto){
-        Map<Position, GroundObject> worldLayer = level.getWorldLayer();
-        Boolean isWorldLayerEqual = worldLayer.entrySet().stream().filter((Map.Entry<Position, GroundObject> entry) -> {
-            Position key = entry.getKey();
-            return entry.getValue().equals(dto.worldLayer().get(key));
-        }).toList().isEmpty();
-        Boolean isPlayerValid = false;
-        if(level.getObjectLayer().containsKey(dto.playerPosition())){
-            switch(level.getObjectLayer().get(dto.playerPosition())){
-                case ExitDoor door:
-                    isPlayerValid = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-        return isWorldLayerEqual && isPlayerValid;
-    }
-
     public Optional<Level> getById(String levelId) {
         return this.levelRepository.findById(levelId);
     }

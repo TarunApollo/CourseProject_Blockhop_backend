@@ -156,17 +156,4 @@ public class LevelController {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
     }
-
-    @PostMapping("/{levelId}/submit")
-    public ResponseEntity<Attempt> submitAttempt(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody AttemptDTO dto){
-        String userId = getUserIdFromAuth(authentication);
-        try{
-            return ResponseEntity.ok(this.attemptService.submitAttempt(levelId, userId, dto));
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-    }
 }

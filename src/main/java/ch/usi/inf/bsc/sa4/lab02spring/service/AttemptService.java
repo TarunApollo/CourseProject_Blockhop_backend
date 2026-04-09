@@ -64,24 +64,4 @@ public class AttemptService {
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
         return !attemptList.isEmpty() && attemptList.getFirst().completed();
     }
-
-    public Attempt submitAttempt(String levelId, String userId, AttemptDTO dto){
-        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        Level level = this.levelService.getById(levelId).orElseThrow(LevelNotFoundException::new);
-        if (!level.isPublished()) throw new ForbiddenLevelActionException("Level is not published.");
-        @SuppressWarnings("NullAway") Attempt attempt = new Attempt(
-                null,
-                user,
-                dto.timestamp(),
-                level,
-                false,
-                dto.timeTaken()
-        );
-
-        if(this.levelService.validateLevelSubmission(level, dto)){
-            attempt = attempt.setCompleted(true);
-            this.levelService.validateLevelPublishEligible(level, userId);
-        }
-        return this.attemptRepository.save(attempt);
-    }
 }
