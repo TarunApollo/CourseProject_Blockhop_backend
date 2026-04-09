@@ -84,7 +84,7 @@ public class LevelTests {
     }
 
     @Nested
-    @DisplayName("methods setTitle, setDescription, setPublished, and setClearCondition")
+    @DisplayName("methods setTitle, setDescription, and setClearCondition")
     class Setters {
 
         private Level level;
@@ -102,12 +102,10 @@ public class LevelTests {
         public void updatesMutableFields() {
             this.level.setTitle("New title");
             this.level.setDescription("New description");
-            this.level.setPublished(true);
             this.level.setClearCondition(this.clearCondition);
 
             assertEquals("New title", this.level.getTitle());
             assertEquals("New description", this.level.getDescription());
-            assertTrue(this.level.isPublished());
             assertSame(this.clearCondition, this.level.getClearCondition());
         }
     }
@@ -180,7 +178,8 @@ public class LevelTests {
         @Test
         @DisplayName("should reject modification when published")
         public void rejectsModificationWhenPublished() {
-            this.level.setPublished(true);
+            this.level.validatePublishEligible("user-1");
+            this.level.publish("user-1");
             assertFalse(this.level.canBeModified());
             assertThrows(LevelPublishedException.class, () -> this.level.ensureModifiable());
         }
@@ -412,7 +411,8 @@ public class LevelTests {
             this.worldPosition = new Position(3, 4);
             this.objectPosition = new Position(5, 6);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
-            this.original.setPublished(true);
+            this.original.validatePublishEligible("user-1");
+            this.original.publish("user-1");
             this.original.setClearCondition(this.clearCondition);
             this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
             this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, CoinType.GOLD_COIN
