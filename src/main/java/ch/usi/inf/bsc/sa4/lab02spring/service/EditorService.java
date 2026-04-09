@@ -32,16 +32,14 @@ public class EditorService {
     private final LevelRepository levelRepository;
     private final TileSetService tileSetService;
     private final GameObjectFactory gameObjectFactory;
-    private final UserRepository userRepository;
     private final LevelService levelService;
 
     @Autowired
     public EditorService(LevelRepository levelRepository, TileSetService tileSetService,
-            GameObjectFactory gameObjectFactory, UserRepository userRepository, LevelService levelService) {
+            GameObjectFactory gameObjectFactory, LevelService levelService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
-        this.userRepository = userRepository;
         this.levelService = levelService;
     }
 
@@ -89,7 +87,7 @@ public class EditorService {
                 : new TileObjectId(dto.gid(), tileSetService::isGroundGID);
         level.updateWorldLayerTile(dto.position(), gid);
 
-        this.levelService.modifyLevelPublishEligible(level, userId, false);
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -137,7 +135,7 @@ public class EditorService {
             level.putWorldLayer(entry.getKey(), new GroundObject(entry.getValue()));
         }
 
-        this.levelService.modifyLevelPublishEligible(level, userId, false);
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -172,6 +170,8 @@ public class EditorService {
             level.putObjectLayer(dto.position(),
                 gameObjectFactory.createGameObject(tileId.value(), dto.position(), dto.content()));
         }
+
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -227,7 +227,7 @@ public class EditorService {
             level.putObjectLayer(entry.getKey(), entry.getValue());
         }
 
-        this.levelService.modifyLevelPublishEligible(level, userId, false);
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -256,6 +256,7 @@ public class EditorService {
                     "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
+        this.levelService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 }

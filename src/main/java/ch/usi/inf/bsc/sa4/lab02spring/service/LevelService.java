@@ -198,15 +198,13 @@ public class LevelService {
         return this.levelRepository.findById(levelId);
     }
 
-    public boolean modifyLevelPublishEligible(Level level, String userId, boolean valid){
-        try{
-            if(valid) level.validatePublishEligible(userId);
-            else level.invalidatePublishEligible(userId);
-            this.levelRepository.save(level);
-            return true;
-        }
-        catch (ForbiddenUserException e){
-            return false;
-        }
+    public void validateLevelPublishEligible(Level level, String userId){
+        level.validatePublishEligible(userId);
+        this.levelRepository.save(level);
+    }
+
+    public void invalidateLevelPublishEligible(Level level, String userId){
+        level.invalidatePublishEligible(userId);
+        this.levelRepository.save(level);
     }
 }

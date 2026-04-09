@@ -80,7 +80,7 @@ public class AttemptService {
 
         if(this.levelService.validateLevelSubmission(level, dto)){
             attempt = attempt.setCompleted(true);
-            this.levelService.modifyLevelPublishEligible(level, userId, true);
+            this.levelService.validateLevelPublishEligible(level, userId);
         }
         return this.attemptRepository.save(attempt);
     }
