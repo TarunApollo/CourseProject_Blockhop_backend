@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelThumbnail;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelThumbnailRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
+
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -27,6 +30,7 @@ public class LevelService {
     private final LevelRepository levelRepository;
     private final UserService userService;
     private final AttemptRepository attemptRepository;
+    private final LevelThumbnailRepository levelThumbnailRepository;
     private final ThumbnailRepository thumbnailRepository;
 
 
@@ -40,10 +44,12 @@ public class LevelService {
             LevelRepository levelRepository,
             UserService userService,
             AttemptRepository attemptRepository,
+            LevelThumbnailRepository levelThumbnailRepository,
             ThumbnailRepository thumbnailRepository) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
+        this.levelThumbnailRepository = levelThumbnailRepository;
         this.thumbnailRepository = thumbnailRepository;
     }
 
@@ -126,13 +132,12 @@ public class LevelService {
     public Level unpublishLevel(String userId, String levelId) {
         Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
-        String oldThumbnailStorageId = level.getThumbnailStorageId();
+        levelThumbnailRepository.findByLevelId(levelId)
+        .ifPresent(oldThumbnail -> {
+            thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
+            levelThumbnailRepository.deleteByLevelId(levelId);
+        });
         level.unpublish(userId);
-        level.setThumbnailStorageId(null);
-        if(oldThumbnailStorageId !=null)
-        {
-            thumbnailRepository.deleteThumbnail(oldThumbnailStorageId);
-        }
         return this.levelRepository.save(level);
     }
 
@@ -142,9 +147,8 @@ public class LevelService {
     ///
     /// @spec.requires userId, levelId, and thumbnail are not null.
     /// @spec.effects reads the uploaded thumbnail, stores it through the thumbnail
-    ///               repository, writes the resulting storage id into the target
-    ///               level, and saves the updated level.
-    /// @spec.modifies the target level's thumbnailStorageId in the repository.
+    ///               repository, replaces any previous thumbnail mapping for the
+    ///               target level, and saves the new thumbnail mapping.
     /// @param userId the id of the requesting user
     /// @param levelId the id of the target level
     /// @param thumbnail the uploaded thumbnail snapshot
@@ -161,16 +165,18 @@ public class LevelService {
         }
 
         // delete previous thumbnail at first
-        String oldThumbnailStorageId = level.getThumbnailStorageId();
-        if(oldThumbnailStorageId != null)
-        {
-            thumbnailRepository.deleteThumbnail(oldThumbnailStorageId);
-        }
 
-        String thumbnailStorageId = thumbnailRepository.storeThumbnail(levelId, bytes);
-        level.setThumbnailStorageId(thumbnailStorageId);
-        this.levelRepository.save(level);
-        return thumbnailStorageId;
+        levelThumbnailRepository.findByLevelId(levelId)
+        .ifPresent(oldThumbnail -> {
+            thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
+            levelThumbnailRepository.deleteByLevelId(levelId);
+        });
+
+        // save thumbnail
+        String storageId = thumbnailRepository.storeThumbnail(levelId, bytes);
+        levelThumbnailRepository.save(new LevelThumbnail(null, levelId, storageId));
+
+        return storageId;
     }
 
     /// Builds a LevelSummaryDto for the given level, computing play count, clear rate, and popularity.
