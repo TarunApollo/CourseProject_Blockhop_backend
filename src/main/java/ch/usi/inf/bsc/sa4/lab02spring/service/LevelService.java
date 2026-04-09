@@ -126,13 +126,19 @@ public class LevelService {
     public Level unpublishLevel(String userId, String levelId) {
         Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
+        String oldThumbnailStorageId = level.getThumbnailStorageId();
         level.unpublish(userId);
+        level.setThumbnailStorageId(null);
+        if(oldThumbnailStorageId !=null)
+        {
+            thumbnailRepository.deleteThumbnail(oldThumbnailStorageId);
+        }
         return this.levelRepository.save(level);
     }
 
     /// Saves a thumbnail upload for a level owned by the given user.
-    /// This is a temporary helper for thumbnail infrastructure and should later be
-    /// integrated into the real publish service flow.
+    /// This is a helper for thumbnail infrastructure and should later be
+    /// integrated into the real publish method
     ///
     /// @spec.requires userId, levelId, and thumbnail are not null.
     /// @spec.effects reads the uploaded thumbnail, stores it through the thumbnail
@@ -153,6 +159,14 @@ public class LevelService {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to read uploaded thumbnail", e);
         }
+
+        // delete previous thumbnail at first
+        String oldThumbnailStorageId = level.getThumbnailStorageId();
+        if(oldThumbnailStorageId != null)
+        {
+            thumbnailRepository.deleteThumbnail(oldThumbnailStorageId);
+        }
+
         String thumbnailStorageId = thumbnailRepository.storeThumbnail(levelId, bytes);
         level.setThumbnailStorageId(thumbnailStorageId);
         this.levelRepository.save(level);
