@@ -193,7 +193,9 @@ public class LevelService {
         } else {
             popularity = playCount;
         }
-        return new LevelSummaryDto(level, playCount, clearRate, popularity);
+
+        String thumbnailUrl = "/levels/" + level.getId() + "/thumbnail";
+        return new LevelSummaryDto(level, playCount, clearRate, popularity,thumbnailUrl);
     }
 
     /// Returns all published levels as summaries, sorted by the given criteria.
@@ -215,5 +217,22 @@ public class LevelService {
                     .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
                     .toList();
         };
+    }
+
+    /// Returns the stored thumbnail image bytes for the given level.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @spec.effects looks up the thumbnail mapping for the target level and loads
+    ///               the corresponding thumbnail bytes from the thumbnail repository.
+    /// @param levelId the id of the level whose thumbnail is requested
+    /// @return the stored thumbnail image bytes
+    public byte[] getThumbnailForLevel(String levelId)
+    {
+        LevelThumbnail thumbnail = levelThumbnailRepository.findByLevelId(levelId)
+        .orElseThrow(()->new IllegalArgumentException("Thumbnail not found"));
+
+        String storageId = thumbnail.storageId();
+
+        return thumbnailRepository.loadThumbnail(storageId);
     }
 }
