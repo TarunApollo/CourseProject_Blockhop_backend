@@ -29,6 +29,7 @@ public class Level {
     private final int width = 256;
     private final int height = 14;
     private ClearCondition clearCondition;
+    private String thumbnailStorageId;
     private final Map<Position, GameObject> objectLayer = new HashMap<>();
     private final Map<Position, GroundObject> worldLayer = new HashMap<>();
 
@@ -120,6 +121,10 @@ public class Level {
         return clearCondition;
     }
 
+    public String getThumbnailStorageId() {
+        return thumbnailStorageId;
+    }
+
     /// @return an unmodifiable view of the object layer of this level.
     public Map<Position, GameObject> getObjectLayer() {
         return Collections.unmodifiableMap(objectLayer);
@@ -201,6 +206,8 @@ public class Level {
     /// @spec.effects sets the clear condition of this level to the given value.
     /// @param clearCondition the new clear condition of this level.
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+
+    public void setThumbnailStorageId(String thumbnailStorageId) { this.thumbnailStorageId = thumbnailStorageId; }
 
     public boolean isOwnedBy(String userId) {
         return this.creator.getId().equals(userId);

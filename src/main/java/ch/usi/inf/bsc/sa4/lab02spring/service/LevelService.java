@@ -12,8 +12,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
+
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +27,8 @@ public class LevelService {
     private final LevelRepository levelRepository;
     private final UserService userService;
     private final AttemptRepository attemptRepository;
+    private final ThumbnailRepository thumbnailRepository;
+
 
     /// Constructs a new LevelService with the given dependencies.
     /// 
@@ -30,10 +36,15 @@ public class LevelService {
     /// @param userService       the service for accessing user data
     /// @param attemptRepository the repository for accessing attempt data
     @Autowired
-    public LevelService(LevelRepository levelRepository, UserService userService, AttemptRepository attemptRepository) {
+    public LevelService(
+            LevelRepository levelRepository,
+            UserService userService,
+            AttemptRepository attemptRepository,
+            ThumbnailRepository thumbnailRepository) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
+        this.thumbnailRepository = thumbnailRepository;
     }
 
     /// Creates a level for the given user id
@@ -117,6 +128,35 @@ public class LevelService {
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
         return this.levelRepository.save(level);
+    }
+
+    /// Saves a thumbnail upload for a level owned by the given user.
+    /// This is a temporary helper for thumbnail infrastructure and should later be
+    /// integrated into the real publish service flow.
+    ///
+    /// @spec.requires userId, levelId, and thumbnail are not null.
+    /// @spec.effects reads the uploaded thumbnail, stores it through the thumbnail
+    ///               repository, writes the resulting storage id into the target
+    ///               level, and saves the updated level.
+    /// @spec.modifies the target level's thumbnailStorageId in the repository.
+    /// @param userId the id of the requesting user
+    /// @param levelId the id of the target level
+    /// @param thumbnail the uploaded thumbnail snapshot
+    /// @return the storage id of the stored thumbnail
+    public String saveThumbnailForLevel(String userId, String levelId, MultipartFile thumbnail) {
+        Level level = this.levelRepository.findById(levelId)
+                .orElseThrow(LevelNotFoundException::new);
+        level.ensureOwnedBy(userId);
+        byte[] bytes;
+        try {
+            bytes = thumbnail.getBytes();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read uploaded thumbnail", e);
+        }
+        String thumbnailStorageId = thumbnailRepository.storeThumbnail(levelId, bytes);
+        level.setThumbnailStorageId(thumbnailStorageId);
+        this.levelRepository.save(level);
+        return thumbnailStorageId;
     }
 
     /// Builds a LevelSummaryDto for the given level, computing play count, clear rate, and popularity.
