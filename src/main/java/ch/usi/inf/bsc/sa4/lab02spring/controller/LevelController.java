@@ -13,8 +13,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
@@ -131,5 +133,28 @@ public class LevelController {
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
+    }
+
+    /// Temporarily accepts a thumbnail upload through the publish route.
+    /// This endpoint currently delegates only to thumbnail persistence and does
+    /// not represent the final publish workflow.
+    ///
+    /// @spec.requires authentication, levelId, and thumbnail are not null.
+    /// @spec.effects forwards the uploaded thumbnail to the level service so the
+    ///               thumbnail can be stored and linked to the target level.
+    /// @implNote Once the real publish workflow is implemented, this endpoint
+    ///           should delegate to the actual publish service method instead of
+    ///           directly calling saveThumbnailForLevel.
+    /// @param authentication the current authenticated user
+    /// @param levelId the id of the target level
+    /// @param thumbnail the uploaded thumbnail snapshot
+    /// @return a 200 OK response containing the stored thumbnail's storage id
+    @PutMapping(path = "/{levelId}/publish", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> publishLevel(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestParam("thumbnail") MultipartFile thumbnail) {
+        String userId = getUserIdFromAuth(authentication);
+        return ResponseEntity.ok(this.levelService.saveThumbnailForLevel(userId, levelId, thumbnail));
     }
 }
