@@ -71,6 +71,21 @@ public class LevelController {
         return this.levelService.getPublishedLevels(sortBy, period);
     }
 
+    /// Returns the thumbnail image for the given level.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @spec.effects fetches the stored thumbnail bytes for the target level and
+    ///               returns them as an image/png response body.
+    /// @param levelId the id of the level whose thumbnail is requested
+    /// @return a 200 OK response containing the thumbnail image bytes
+    @GetMapping(value = "/{levelId}/thumbnail", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getThumbnail(@PathVariable String levelId) {
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_PNG)
+            .body(this.levelService.getThumbnailForLevel(levelId));
+    }
+
+
     /// Clones the given level if it exists and the authenticated user is its
     /// creator.
     /// 
