@@ -1,6 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateAttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
@@ -35,64 +35,64 @@ public class AttemptController {
     }
 
     /// Records a new attempt for the authenticated user on a level.
-    /// @spec.requires authentication and createAttemptDTO are not null.
+    /// @spec.requires authentication and createAttemptResponseDTO are not null.
     /// @spec.effects saves a new Attempt to the repository.
     /// @param authentication abstract token for authentication
-    /// @param createAttemptDTO the DTO containing the level ID, completion status, and time taken
-    /// @return a 200 OK response containing the created attempt as an AttemptDTO
+    /// @param createAttemptResponseDTO the DTO containing the level ID, completion status, and time taken
+    /// @return a 200 OK response containing the created attempt as an AttemptResponseDTO
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping
-    public ResponseEntity<AttemptDTO> createAttempt(
+    public ResponseEntity<AttemptResponseDTO> createAttempt(
             Authentication authentication,
-            @RequestBody CreateAttemptDTO createAttemptDTO) {
+            @RequestBody CreateAttemptDTO createAttemptResponseDTO) {
         String userId = getUserIdFromAuth(authentication);
         User user = userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        var attempt = attemptService.createAttempt(user, createAttemptDTO);
-        return ResponseEntity.ok(new AttemptDTO(attempt));
+        var attempt = attemptService.createAttempt(user, createAttemptResponseDTO);
+        return ResponseEntity.ok(new AttemptResponseDTO(attempt));
     }
 
     /// Returns all attempts for the authenticated user.
     /// @param authentication abstract token for authentication
-    /// @return a list of all attempts for the user as AttemptDTOs
+    /// @return a list of all attempts for the user as AttemptResponseDTOs
     /// @throws UserNotFoundException if the authenticated user does not exist
     @GetMapping
-    public List<AttemptDTO> getMyAttempts(Authentication authentication) {
+    public List<AttemptResponseDTO> getMyAttempts(Authentication authentication) {
         String userId = getUserIdFromAuth(authentication);
         User user = userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return attemptService.getAttemptsByUser(user).stream()
-                .map(AttemptDTO::new)
+                .map(AttemptResponseDTO::new)
                 .toList();
     }
 
     /// Returns all attempts for the authenticated user on a specific level.
     /// @param authentication abstract token for authentication
     /// @param levelId the ID of the level to filter attempts by
-    /// @return a list of attempts for the user on the given level as AttemptDTOs
+    /// @return a list of attempts for the user on the given level as AttemptResponseDTOs
     /// @throws UserNotFoundException if the authenticated user does not exist
     @GetMapping("/levels/{levelId}")
-    public List<AttemptDTO> getMyAttemptsForLevel(
+    public List<AttemptResponseDTO> getMyAttemptsForLevel(
             Authentication authentication,
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
         User user = userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return attemptService.getAttemptsByUserAndLevel(user, levelId).stream()
-                .map(AttemptDTO::new)
+                .map(AttemptResponseDTO::new)
                 .toList();
     }
 
     /// Returns a specific attempt by ID, if it belongs to the authenticated user.
     /// @param authentication abstract token for authentication
     /// @param attemptId the ID of the attempt to retrieve
-    /// @return a 200 OK response with the attempt as an AttemptDTO, or 404 if not found
+    /// @return a 200 OK response with the attempt as an AttemptResponseDTO, or 404 if not found
     /// @throws UserNotFoundException if the authenticated user does not exist
     @GetMapping("/{attemptId}")
-    public ResponseEntity<AttemptDTO> getAttempt(
+    public ResponseEntity<AttemptResponseDTO> getAttempt(
             Authentication authentication,
             @PathVariable String attemptId) {
         String userId = getUserIdFromAuth(authentication);
         User user = userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return attemptService.getAttemptByIdAndUser(attemptId, user)
-                .map(AttemptDTO::new)
+                .map(AttemptResponseDTO::new)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

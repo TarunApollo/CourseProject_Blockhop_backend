@@ -8,9 +8,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import java.util.List;
+
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
 
 @Configuration
 @EnableWebSecurity
@@ -30,18 +32,19 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) {
-        return http.csrf(AbstractHttpConfigurer::disable) // TODO: enable CSRF after backend phase
+        return http.csrf(csrf -> csrf
+        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/me").authenticated()
                         .requestMatchers("/users/**").authenticated()
-//                        .requestMatchers("/levels/**").authenticated()
+                        .requestMatchers("/levels/published").authenticated()
+                        // .requestMatchers("/levels/**").authenticated()
                         .anyRequest().permitAll())
                 // .anyRequest().authenticated() // oauth2 for every request (TODO: replace line 19 with this after backend phase)
                 .oauth2Login(auth ->
                         auth.defaultSuccessUrl("http://localhost:3000", true))
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults()))
-                .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .build();
     }

@@ -5,11 +5,23 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import org.springframework.web.multipart.MultipartFile;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelThumbnailRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
+
+
+import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -17,15 +29,33 @@ import java.util.Optional;
 public class LevelService {
     
     private final LevelRepository levelRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
+    private final AttemptRepository attemptRepository;
+    private final LevelThumbnailRepository levelThumbnailRepository;
+    private final ThumbnailRepository thumbnailRepository;
+    private final AttemptService attemptService;
+
 
     /// Constructs a new LevelService with the given dependencies.
     /// @param levelRepository the repository for accessing level data
     /// @param userService the service for accessing user data
     @Autowired
-    public LevelService(LevelRepository levelRepository, UserService userService) {
+    public LevelService(
+            LevelRepository levelRepository,
+            UserService userService,
+            AttemptRepository attemptRepository,
+            LevelThumbnailRepository levelThumbnailRepository,
+            ThumbnailRepository thumbnailRepository,
+            UserRepository userRepository,
+            AttemptService attemptService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
+        this.attemptRepository = attemptRepository;
+        this.levelThumbnailRepository = levelThumbnailRepository;
+        this.thumbnailRepository = thumbnailRepository;
+        this.userRepository = userRepository;
+        this.attemptService = attemptService;
     }
 
     /// Creates a level for the given user id
@@ -92,6 +122,7 @@ public class LevelService {
         dto.title().ifPresent(level::setTitle);
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);
+        level.invalidatePublishEligible(user.getId());
         return levelRepository.save(level);
     }
 
@@ -100,5 +131,238 @@ public class LevelService {
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensurePlayable();
         return level;
+    }
+
+    /// Unpublishes an existing level owned by the given user.
+    /// @param userId the authenticated user's ID
+    /// @param levelId the ID of the level to unpublish
+    /// @return the updated level
+    /// @throws LevelNotFoundException if the level does not exist
+    /// @throws ForbiddenUserException if the user is not the owner of the level
+    public Level unpublishLevel(String userId, String levelId) {
+        Level level = this.levelRepository.findById(levelId)
+                .orElseThrow(LevelNotFoundException::new);
+        level.unpublish(userId);
+        levelThumbnailRepository.findByLevelId(levelId)
+        .ifPresent(oldThumbnail -> {
+            thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
+            levelThumbnailRepository.deleteByLevelId(levelId);
+        });
+        return this.levelRepository.save(level);
+    }
+
+    /// Stores or replaces the thumbnail associated with the given level.
+    ///
+    /// @spec.requires userId, levelId, and thumbnail are not null.
+    /// @spec.effects reads the uploaded thumbnail, stores it through the thumbnail
+    ///               repository, replaces any previous thumbnail mapping for the
+    ///               target level, and saves the new thumbnail mapping.
+    /// @param userId the id of the requesting user
+    /// @param levelId the id of the target level
+    /// @param thumbnail the uploaded thumbnail snapshot
+    /// @return the storage id of the stored thumbnail
+    public String saveThumbnailForLevel(String userId, String levelId, MultipartFile thumbnail) {
+        Level level = this.levelRepository.findById(levelId)
+                .orElseThrow(LevelNotFoundException::new);
+        level.ensureOwnedBy(userId);
+        byte[] bytes;
+        try {
+            bytes = thumbnail.getBytes();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read uploaded thumbnail", e);
+        }
+
+        // delete previous thumbnail at first
+
+        levelThumbnailRepository.findByLevelId(levelId)
+        .ifPresent(oldThumbnail -> {
+            thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
+            levelThumbnailRepository.deleteByLevelId(levelId);
+        });
+
+        // save thumbnail
+        String storageId = thumbnailRepository.storeThumbnail(levelId, bytes);
+        levelThumbnailRepository.save(new LevelThumbnail(null, levelId, storageId));
+
+        return storageId;
+    }
+
+    /// Builds a LevelSummaryDto for the given level, computing play count, clear rate, and popularity.
+    /// @param level the level to summarize
+    /// @param period the time range used to compute popularity
+    /// @return a LevelSummaryDto with computed statistics
+    private LevelSummaryDto toLevelSummary(Level level, DateRangePreset period) {
+        long playCount = attemptRepository.countByLevel(level);
+        long clearCount = attemptRepository.countByLevelAndCompletedTrue(level);
+        double clearRate = playCount == 0 ? 0 : (double) clearCount / playCount;
+        long popularity;
+        if (period instanceof RelativeDateRangePreset relative) {
+            popularity = attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
+        } else {
+            popularity = playCount;
+        }
+
+        String thumbnailUrl = "/levels/" + level.getId() + "/thumbnail";
+        return new LevelSummaryDto(level, playCount, clearRate, popularity,thumbnailUrl);
+    }
+
+    /// Returns all published levels as summaries, sorted by the given criteria.
+    /// @param sortBy the sorting strategy for published level summaries
+    /// @param period the time range used to compute popularity; use ALL_TIME to fall back to total play count
+    /// @return a sorted list of LevelSummaryDto for all published levels
+    public List<LevelSummaryDto> getPublishedLevels(PublishedLevelSortBy sortBy, DateRangePreset period) {
+        List<Level> levels = levelRepository.findByPublishedTrue();
+
+        List<LevelSummaryDto> dtos = levels.stream()
+                .map(level -> toLevelSummary(level, period))
+                .toList();
+
+        return switch (sortBy) {
+            case CLEAR_RATE -> dtos.stream()
+                    .sorted(Comparator.comparingDouble(LevelSummaryDto::clearRate).reversed())
+                    .toList();
+            case POPULARITY -> dtos.stream()
+                    .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
+                    .toList();
+        };
+    }
+
+    /// Publishes the specified level and stores the uploaded thumbnail.
+    ///
+    /// @spec.requires userId, levelId, and thumbnail are not null.
+    /// @spec.modifies the level identified by levelId, and the thumbnail
+    ///                repositories associated with that level.
+    /// @spec.effects stores the uploaded thumbnail for the target level, marks the
+    ///               level as published, and saves the updated level.
+    /// @param userId  the unique identifier of the user requesting the publish
+    /// @param levelId the id of the level to publish
+    /// @param thumbnail the uploaded thumbnail snapshot for the level
+    /// @return the published and saved Level
+    /// @throws LevelNotFoundException        if no level with the given id exists
+    /// @throws UserNotFoundException         if no user with the given id exists
+    /// @throws ForbiddenLevelActionException if the user is not the owner of the
+    ///                                       level or if the level cannot be
+    ///                                       published in its current state
+    public Level publish(String userId, String levelId,MultipartFile thumbnail){
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        saveThumbnailForLevel(userId, levelId, thumbnail);
+        level.publish(userId);
+        return this.levelRepository.save(level);
+    }
+
+    /// Retrieves a level by its unique identifier.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @param levelId the id of the level to retrieve
+    /// @return a non-empty Optional containing the Level if it exists,
+    ///         an empty Optional otherwise.
+    public Optional<Level> getById(String levelId) {
+        return this.levelRepository.findById(levelId);
+    }
+
+    /// Marks the given level as eligible for publishing on behalf of the given user.
+    ///
+    /// @spec.requires level and userId are not null.
+    /// @spec.modifies the given level in the repository.
+    /// @spec.effects sets the level's publishEligible flag to true and saves it.
+    /// @param level  the level to mark as publish eligible
+    /// @param userId the unique identifier of the user requesting the validation
+    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    public void validateLevelPublishEligible(Level level, String userId){
+        level.validatePublishEligible(userId);
+        this.levelRepository.save(level);
+    }
+
+    /// Marks the given level as not eligible for publishing on behalf of the given user.
+    ///
+    /// @spec.requires level and userId are not null.
+    /// @spec.modifies the given level in the repository.
+    /// @spec.effects sets the level's publishEligible flag to false and saves it.
+    /// @param level  the level to mark as not publish eligible
+    /// @param userId the unique identifier of the user requesting the invalidation
+    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    public void invalidateLevelPublishEligible(Level level, String userId){
+        level.invalidatePublishEligible(userId);
+        this.levelRepository.save(level);
+    }
+    /// Returns the stored thumbnail image bytes for the given level.
+    ///
+    /// @spec.requires levelId is not null.
+    /// @spec.effects looks up the thumbnail mapping for the target level and loads
+    ///               the corresponding thumbnail bytes from the thumbnail repository.
+    /// @param levelId the id of the level whose thumbnail is requested
+    /// @return the stored thumbnail image bytes
+    public byte[] getThumbnailForLevel(String levelId)
+    {
+        LevelThumbnail thumbnail = levelThumbnailRepository.findByLevelId(levelId)
+        .orElseThrow(()->new IllegalArgumentException("Thumbnail not found"));
+
+        String storageId = thumbnail.storageId();
+
+        return thumbnailRepository.loadThumbnail(storageId);
+    }
+
+    /// Validates whether the submitted attempt satisfies the level's completion
+    /// criteria.
+    ///
+    /// @spec.requires level and dto are not null.
+    /// @spec.effects compares the submitted world layer against the level's
+    ///               expected world layer and checks whether the player's
+    ///               position corresponds to an ExitDoor in the object layer.
+    /// @param level the level to validate the submission against
+    /// @param dto   the DTO containing the submitted world layer and player
+    ///              position
+    /// @return true if the world layer matches the expected state and the
+    ///         player is positioned on an ExitDoor, false otherwise
+    public boolean validateLevelSubmission(Level level, AttemptDTO dto){
+        Map<Position, GroundObject> worldLayer = level.getWorldLayer();
+        boolean isWorldLayerEqual = worldLayer.entrySet().stream().filter((Map.Entry<Position, GroundObject> entry) -> {
+            Position key = entry.getKey();
+            return entry.getValue().equals(dto.worldLayer().get(key));
+        }).toList().isEmpty();
+        boolean isPlayerValid = false;
+        if(level.getObjectLayer().containsKey(dto.playerPosition())){
+            switch(level.getObjectLayer().get(dto.playerPosition())){
+                case ExitDoor door:
+                    isPlayerValid = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return isWorldLayerEqual && isPlayerValid;
+    }
+
+
+    /// Submits an attempt for the specified level on behalf of the given user.
+    ///
+    /// @spec.requires levelId, userId, and dto are not null.
+    /// @spec.effects validates the attempt against the level state; if the level
+    ///               is unpublished and owned by the given user and the attempt
+    ///               is successful, marks the level as publish eligible;
+    ///               records the attempt through the attempt service.
+    /// @param levelId the id of the level to submit an attempt for
+    /// @param userId  the unique identifier of the user submitting the attempt
+    /// @param dto     the DTO containing the attempt details
+    /// @return a success message indicating the attempt was submitted
+    /// @throws UserNotFoundException if no user with the given userId exists
+    /// @throws LevelNotFoundException if no level with the given levelId exists
+    /// @throws ForbiddenLevelActionException if the level is unpublished and the
+    ///         user is not its creator
+    /// @throws ForbiddenUserException if the user is not the owner of the level
+    ///         when marking it as publish eligible
+    public String submitAttempt(String levelId, String userId, AttemptDTO dto){
+        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        Level level = this.getById(levelId).orElseThrow(LevelNotFoundException::new);
+        boolean completed = this.validateLevelSubmission(level, dto);
+        if(!level.isPublished() && level.isOwnedBy(userId) && completed){
+            this.validateLevelPublishEligible(level, userId);
+        }
+        else if(!level.isPublished() && !level.isOwnedBy(userId)){
+            throw new ForbiddenLevelActionException("Level submission is not valid.");
+        }
+        this.attemptService.submitAttempt(user, level, dto, completed);
+        return "Successful level submission.";
     }
 }
