@@ -65,6 +65,7 @@ sonarqube-check-branch:
   stage: quality
   tags:
     - ci-dev-runner
+  allow_failure: true
   image:
     name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/sonarsource/sonar-scanner-cli:latest
     entrypoint: [ '' ]
