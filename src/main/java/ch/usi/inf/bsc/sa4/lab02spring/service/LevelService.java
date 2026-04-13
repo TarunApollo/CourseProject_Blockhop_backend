@@ -129,7 +129,7 @@ public class LevelService {
 
     public Level playLevel(User user, String levelId) {
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-        level.ensurePlayable();
+        level.ensurePlayable(user.getId());
         return level;
     }
 

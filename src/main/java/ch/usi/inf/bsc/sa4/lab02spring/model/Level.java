@@ -264,8 +264,8 @@ public class Level {
             throw new LevelPublishedException("Cannot modify a published level");
         }
     }
-    public void ensurePlayable() {
-        if (!this.published) {
+    public void ensurePlayable(String userId) {
+        if (!this.published && !this.isOwnedBy(userId)) {
             throw new LevelNotPlayableException();
         }
     }
