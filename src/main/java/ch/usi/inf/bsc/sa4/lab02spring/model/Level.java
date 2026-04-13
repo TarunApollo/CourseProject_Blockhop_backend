@@ -22,7 +22,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
 public class Level {
+    /// Fixed width shared by all levels.
     private static final int DEFAULT_WIDTH = 256;
+    /// Fixed height shared by all levels.
     private static final int DEFAULT_HEIGHT = 14;
 
     @Id

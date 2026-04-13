@@ -45,12 +45,8 @@ public class AttemptController {
     }
 
     /// Records a new attempt for the authenticated user.
-    ///
-    /// @spec.requires authentication and createAttemptDTO are not null.
-    /// @spec.effects saves a new Attempt to the repository.
     /// @param authentication abstract token for authentication
-    /// @param createAttemptDTO contains the level id, completion status, and
-    ///                         elapsed time
+    /// @param createAttemptDTO the level id, completion status, and elapsed time
     /// @return a 200 OK response containing the created attempt
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping

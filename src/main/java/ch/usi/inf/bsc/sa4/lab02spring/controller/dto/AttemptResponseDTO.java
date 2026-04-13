@@ -13,7 +13,9 @@ public record AttemptResponseDTO(
         boolean completed,
         Duration timeTaken
 ) {
-    public AttemptResponseDTO(Attempt attempt) {
+    /// Creates an attempt response DTO from an attempt domain object.
+    /// @param attempt the attempt to map into a response DTO
+    public AttemptResponseDTO(final Attempt attempt) {
         this(
                 attempt.id(),
                 attempt.user().getId(),

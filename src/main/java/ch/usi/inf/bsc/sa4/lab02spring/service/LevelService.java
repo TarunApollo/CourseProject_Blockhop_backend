@@ -2,7 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
@@ -127,8 +126,14 @@ public class LevelService {
     }
 
 
-    public Level playLevel(User user, String levelId) {
-        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+    /// Returns a playable level for the given user if access is allowed.
+    /// @param user the user attempting to play the level
+    /// @param levelId the id of the level to load
+    /// @return the requested playable level
+    /// @throws LevelNotFoundException if no level with the given id exists
+    /// @throws ForbiddenUserException if the user is not allowed to play the level
+    public Level playLevel(final User user, final String levelId) {
+        final Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensurePlayable(user.getId());
         return level;
     }
