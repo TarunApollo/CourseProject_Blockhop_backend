@@ -1,8 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.LevelThumbnail;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
@@ -10,7 +9,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePre
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelThumbnailRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
@@ -19,6 +17,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -29,6 +28,7 @@ public class LevelService {
     private final AttemptRepository attemptRepository;
     private final LevelThumbnailRepository levelThumbnailRepository;
     private final ThumbnailRepository thumbnailRepository;
+    private final AttemptService attemptService;
 
 
     /// Constructs a new LevelService with the given dependencies.
@@ -43,13 +43,15 @@ public class LevelService {
             AttemptRepository attemptRepository,
             LevelThumbnailRepository levelThumbnailRepository,
             ThumbnailRepository thumbnailRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            AttemptService attemptService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
         this.levelThumbnailRepository = levelThumbnailRepository;
         this.thumbnailRepository = thumbnailRepository;
         this.userRepository = userRepository;
+        this.attemptService = attemptService;
     }
 
     /// Creates a level for the given user id
@@ -291,5 +293,39 @@ public class LevelService {
         String storageId = thumbnail.storageId();
 
         return thumbnailRepository.loadThumbnail(storageId);
+    }
+
+    public boolean validateLevelSubmission(Level level, AttemptDTO dto){
+        Map<Position, GroundObject> worldLayer = level.getWorldLayer();
+        boolean isWorldLayerEqual = worldLayer.entrySet().stream().filter((Map.Entry<Position, GroundObject> entry) -> {
+            Position key = entry.getKey();
+            return entry.getValue().equals(dto.worldLayer().get(key));
+        }).toList().isEmpty();
+        boolean isPlayerValid = false;
+        if(level.getObjectLayer().containsKey(dto.playerPosition())){
+            switch(level.getObjectLayer().get(dto.playerPosition())){
+                case ExitDoor door:
+                    isPlayerValid = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        return isWorldLayerEqual && isPlayerValid;
+    }
+
+
+    public String submitAttempt(String levelId, String userId, AttemptDTO dto){
+        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        Level level = this.getById(levelId).orElseThrow(LevelNotFoundException::new);
+        boolean completed = this.validateLevelSubmission(level, dto);
+        if(!level.isPublished() && level.isOwnedBy(userId) && completed){
+            this.validateLevelPublishEligible(level, userId);
+        }
+        else if(!level.isPublished() && !level.isOwnedBy(userId)){
+            throw new ForbiddenLevelActionException("Level submission is not valid.");
+        }
+        this.attemptService.submitAttempt(user, level, dto, completed);
+        return "Successful level submission.";
     }
 }

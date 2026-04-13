@@ -30,17 +30,15 @@ import java.util.List;
 public class LevelController {
     private final LevelService levelService;
     private final UserService userService;
-    private final AttemptService attemptService;
 
     /// Constructs a new LevelController with the given dependencies.
     /// 
     /// @param levelService the service for managing level operations
     /// @param userService  the service for accessing user data
     @Autowired
-    public LevelController(LevelService levelService, UserService userService, AttemptService attemptService) {
+    public LevelController(LevelService levelService, UserService userService) {
         this.levelService = levelService;
         this.userService = userService;
-        this.attemptService = attemptService;
     }
 
     /// Creates a new empty level and returns a level DTO.
@@ -172,5 +170,18 @@ public class LevelController {
             @RequestParam("thumbnail") MultipartFile thumbnail) {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(this.levelService.publish(userId, levelId, thumbnail));
+    }
+
+    @PostMapping("/{levelId}/submit")
+    public ResponseEntity<String> submitAttempt(
+            Authentication authentication,
+            @PathVariable String levelId,
+            @RequestBody AttemptDTO dto){
+        String userId = getUserIdFromAuth(authentication);
+        try{
+            return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 }
