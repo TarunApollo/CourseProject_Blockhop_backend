@@ -1,16 +1,15 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
@@ -172,6 +171,26 @@ public class LevelController {
         return ResponseEntity.ok(this.levelService.publish(userId, levelId, thumbnail));
     }
 
+    /// Submits an attempt for the specified level on behalf of the authenticated
+    /// user.
+    ///
+    /// @spec.requires authentication, levelId, and dto are not null.
+    /// @spec.effects validates the attempt against the level state; if the level
+    ///               is unpublished and owned by the authenticated user and the
+    ///               attempt is successful, marks the level as publish eligible;
+    ///               records the attempt through the attempt service.
+    /// @param authentication abstract token for authentication
+    /// @param levelId        the id of the level to submit an attempt for
+    /// @param dto            the DTO containing the attempt details
+    /// @return a 200 OK response containing the result of the attempt, or a 403
+    ///         Forbidden response if the submission fails
+    /// @throws UserNotFoundException if no user with the authenticated id exists
+    /// @throws LevelNotFoundException if no level with the given levelId exists
+    /// @throws ForbiddenLevelActionException
+    ///         if the level is unpublished and the authenticated user is not
+    ///         its creator
+    /// @throws ForbiddenUserException if the authenticated user is not the
+    ///         owner of the level when marking it as publish eligible
     @PostMapping("/{levelId}/submit")
     public ResponseEntity<String> submitAttempt(
             Authentication authentication,

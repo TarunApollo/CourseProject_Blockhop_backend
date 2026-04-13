@@ -61,6 +61,17 @@ public class AttemptService {
         return !attemptList.isEmpty() && attemptList.getFirst().completed();
     }
 
+    /// Records a new attempt for the given user on the given level.
+    ///
+    /// @spec.requires user, level, and dto are not null.
+    /// @spec.effects creates a new Attempt from the provided data and saves it
+    ///               to the repository; if completed is true, the attempt is
+    ///               marked as completed before saving.
+    /// @param user      the user who performed the attempt
+    /// @param level     the level the attempt was made on
+    /// @param dto       the DTO containing the attempt timestamp and time taken
+    /// @param completed whether the attempt satisfies the level's clear
+    ///                  condition
     public void submitAttempt(User user, Level level, AttemptDTO dto, boolean completed){
         @SuppressWarnings("NullAway") Attempt attempt = new Attempt(
                 null,

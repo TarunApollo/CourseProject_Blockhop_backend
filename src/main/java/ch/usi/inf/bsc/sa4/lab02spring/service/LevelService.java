@@ -295,6 +295,18 @@ public class LevelService {
         return thumbnailRepository.loadThumbnail(storageId);
     }
 
+    /// Validates whether the submitted attempt satisfies the level's completion
+    /// criteria.
+    ///
+    /// @spec.requires level and dto are not null.
+    /// @spec.effects compares the submitted world layer against the level's
+    ///               expected world layer and checks whether the player's
+    ///               position corresponds to an ExitDoor in the object layer.
+    /// @param level the level to validate the submission against
+    /// @param dto   the DTO containing the submitted world layer and player
+    ///              position
+    /// @return true if the world layer matches the expected state and the
+    ///         player is positioned on an ExitDoor, false otherwise
     public boolean validateLevelSubmission(Level level, AttemptDTO dto){
         Map<Position, GroundObject> worldLayer = level.getWorldLayer();
         boolean isWorldLayerEqual = worldLayer.entrySet().stream().filter((Map.Entry<Position, GroundObject> entry) -> {
@@ -315,6 +327,23 @@ public class LevelService {
     }
 
 
+    /// Submits an attempt for the specified level on behalf of the given user.
+    ///
+    /// @spec.requires levelId, userId, and dto are not null.
+    /// @spec.effects validates the attempt against the level state; if the level
+    ///               is unpublished and owned by the given user and the attempt
+    ///               is successful, marks the level as publish eligible;
+    ///               records the attempt through the attempt service.
+    /// @param levelId the id of the level to submit an attempt for
+    /// @param userId  the unique identifier of the user submitting the attempt
+    /// @param dto     the DTO containing the attempt details
+    /// @return a success message indicating the attempt was submitted
+    /// @throws UserNotFoundException if no user with the given userId exists
+    /// @throws LevelNotFoundException if no level with the given levelId exists
+    /// @throws ForbiddenLevelActionException if the level is unpublished and the
+    ///         user is not its creator
+    /// @throws ForbiddenUserException if the user is not the owner of the level
+    ///         when marking it as publish eligible
     public String submitAttempt(String levelId, String userId, AttemptDTO dto){
         User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         Level level = this.getById(levelId).orElseThrow(LevelNotFoundException::new);
