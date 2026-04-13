@@ -17,17 +17,13 @@ import java.util.List;
 @Service
 public class AttemptService {
     private final AttemptRepository attemptRepository;
-    private final LevelService levelService;
-    private final UserService userService;
 
     /// Constructs a new AttemptService with the given dependency.
     ///
     /// @param attemptRepository the repository for accessing attempt data
     @Autowired
-    public AttemptService(AttemptRepository attemptRepository, LevelService levelService, UserService userService) {
+    public AttemptService(AttemptRepository attemptRepository) {
         this.attemptRepository = attemptRepository;
-        this.levelService = levelService;
-        this.userService = userService;
     }
 
     public long getPlayedLevelsCount(User user) {
@@ -63,5 +59,31 @@ public class AttemptService {
     public boolean hasCompleted(User user, Level level){
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
         return !attemptList.isEmpty() && attemptList.getFirst().completed();
+    }
+
+    /// Records a new attempt for the given user on the given level.
+    ///
+    /// @spec.requires user, level, and dto are not null.
+    /// @spec.effects creates a new Attempt from the provided data and saves it
+    ///               to the repository; if completed is true, the attempt is
+    ///               marked as completed before saving.
+    /// @param user      the user who performed the attempt
+    /// @param level     the level the attempt was made on
+    /// @param dto       the DTO containing the attempt timestamp and time taken
+    /// @param completed whether the attempt satisfies the level's clear
+    ///                  condition
+    public void submitAttempt(User user, Level level, AttemptDTO dto, boolean completed){
+        @SuppressWarnings("NullAway") Attempt attempt = new Attempt(
+                null,
+                user,
+                dto.timestamp(),
+                level,
+                false,
+                dto.timeTaken()
+        );
+        if(completed){
+            attempt = attempt.setCompleted(true);
+        }
+        this.attemptRepository.save(attempt);
     }
 }
