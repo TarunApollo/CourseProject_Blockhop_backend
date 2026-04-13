@@ -3,7 +3,7 @@ image: gradle:jdk25
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   SONARQUBE_PROJECT_KEY: sa4-2026-${CI_PROJECT_ID}
-  SONARQUBE_PROJECT_NAME: sa4-2026/lab-04-quality
+  SONARQUBE_PROJECT_NAME: sa4-2026/team-4-backend
 
 stages:
   - build
