@@ -207,14 +207,19 @@ public class LevelController {
         }
     }
 
+    /// Returns the playable data for the requested level.
+    ///
+    /// @param authentication abstract token for authentication
+    /// @param levelId        the id of the level to load for play
+    /// @return a 200 OK response containing the playable level data
     @GetMapping("/play/{levelId}")
     public ResponseEntity<PlayLevelResponseDTO> playLevel(
-            Authentication authentication,
-            @PathVariable String levelId) {
-        String userId = getUserIdFromAuth(authentication);
-        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+            final Authentication authentication,
+            @PathVariable final String levelId) {
+        final String userId = getUserIdFromAuth(authentication);
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         try {
-            Level level = this.levelService.playLevel(user, levelId);
+            final Level level = this.levelService.playLevel(user, levelId);
             return ResponseEntity.ok(new PlayLevelResponseDTO(level));
         } catch (LevelNotPlayableException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
