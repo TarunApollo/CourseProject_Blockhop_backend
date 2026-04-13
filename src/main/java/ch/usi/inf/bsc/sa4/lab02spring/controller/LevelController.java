@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 
 import java.util.List;
@@ -196,15 +195,11 @@ public class LevelController {
     ///         owner of the level when marking it as publish eligible
     @PostMapping("/{levelId}/submit")
     public ResponseEntity<String> submitAttempt(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody AttemptDTO dto){
-        String userId = getUserIdFromAuth(authentication);
-        try{
-            return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final AttemptDTO dto) {
+        final String userId = getUserIdFromAuth(authentication);
+        return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
     }
 
     /// Returns the playable data for the requested level.
@@ -218,12 +213,8 @@ public class LevelController {
             @PathVariable final String levelId) {
         final String userId = getUserIdFromAuth(authentication);
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        try {
-            final Level level = this.levelService.playLevel(user, levelId);
-            return ResponseEntity.ok(new PlayLevelResponseDTO(level));
-        } catch (LevelNotPlayableException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        final Level level = this.levelService.playLevel(user, levelId);
+        return ResponseEntity.ok(new PlayLevelResponseDTO(level));
     }
 
 }
