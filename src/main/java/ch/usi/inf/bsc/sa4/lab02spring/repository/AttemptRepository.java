@@ -15,7 +15,11 @@ import java.util.Optional;
 public interface AttemptRepository extends MongoRepository<Attempt, String>,AttemptStatisticsRepository {
     List<Attempt> findByUser(User user);
     List<Attempt> findByUserAndCompletedTrue(User user);
+
+    /// Returns all attempts of the given user for the given level.
     List<Attempt> findByUserAndLevel(User user, Level level);
+
+    /// Returns the attempt with the given id if it belongs to the given user.
     Optional<Attempt> findByIdAndUser(String id, User user);
     long countByLevel(Level level);
     long countByLevelAndCompletedTrue(Level level);
