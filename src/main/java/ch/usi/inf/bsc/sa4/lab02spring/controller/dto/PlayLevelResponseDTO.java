@@ -1,12 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.*;
-
-import java.util.Map;
-
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
+
+import java.util.Map;
 
 /**
  * DTO returned when a player enters a level through the play flow.
@@ -28,7 +30,7 @@ public record PlayLevelResponseDTO(
 
     /// Constructs a PlayLevelResponseDTO from the given Level entity.
     /// @param level the published level to convert
-    public PlayLevelResponseDTO(Level level) {
+    public PlayLevelResponseDTO(final Level level) {
         this(
             level.getId(),
             level.getTitle(),
