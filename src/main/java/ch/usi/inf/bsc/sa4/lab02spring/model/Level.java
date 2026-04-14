@@ -308,34 +308,14 @@ public class Level {
         }
     }
 
-    // TODO: docs
-    public void updateWorldLayerTile(Position position, TileObjectId gid) {
-        this.ensureWithinBounds(position);
-
-        if (gid.isRemoval()) {
-            this.worldLayer.remove(position);
-        } else {
-            this.worldLayer.put(position, new GroundObject(gid.value()));
-        }
+    public void setWorldLayer(Map<Position, GroundObject> worldLayer) {
+        this.worldLayer.clear();
+        this.worldLayer.putAll(worldLayer);
     }
 
-    // TODO: docs
-    public void updateWorldLayerBatch(Map<Position, TileObjectId> tiles) {
-        for (Position pos : tiles.keySet()) {
-            this.ensureWithinBounds(pos);
-        }
-
-        // All positions valid? --> apply all mutations
-        for (Map.Entry<Position, TileObjectId> entry : tiles.entrySet()) {
-            Position pos = entry.getKey();
-            TileObjectId gid = entry.getValue();
-
-            if (gid.isRemoval()) {
-                this.worldLayer.remove(pos);
-            } else {
-                this.worldLayer.put(pos, new GroundObject(gid.value()));
-            }
-        }
+    public void setObjectLayer(Map<Position, GameObject> objectLayer) {
+        this.objectLayer.clear();
+        this.objectLayer.putAll(objectLayer);
     }
 
     /// Updates the content of a box at the given position.
