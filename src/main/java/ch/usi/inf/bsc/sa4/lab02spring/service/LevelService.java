@@ -244,10 +244,9 @@ public class LevelService {
     /// @throws ForbiddenLevelActionException if the user is not the owner of the
     ///                                       level or if the level cannot be
     ///                                       published in its current state
-    public Level publish(String userId, String levelId,MultipartFile thumbnail){
+    public Level publish(String userId, String levelId){
         Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        saveThumbnailForLevel(userId, levelId, thumbnail);
         level.publish(userId);
         return this.levelRepository.save(level);
     }
