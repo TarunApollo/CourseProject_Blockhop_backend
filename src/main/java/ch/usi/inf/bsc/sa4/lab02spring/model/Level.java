@@ -262,24 +262,24 @@ public class Level {
         }
     }
 
-    public void ensureValidObjectLayer(Map<Position,GameObject> inComingObjectLayer)
+    public void ensureValidObjectLayer(Map<Position,GameObject> incomingObjectLayer)
     {
-        long countFlag = inComingObjectLayer.values().stream()
+        long countFlag = incomingObjectLayer.values().stream()
         .filter(StartFlag.class::isInstance)
         .count();
 
-        long countDoor = inComingObjectLayer.values().stream()
+        long countDoor = incomingObjectLayer.values().stream()
         .filter(ExitDoor.class::isInstance)
         .count(); 
 
         if(countFlag > 1)
         {
-            throw new IllegalArgumentException ("one level can only have a flag");
+            throw new IllegalArgumentException ("One level can only have a flag");
         }
 
          if(countDoor > 1)
         {
-            throw new IllegalArgumentException ("one level can only have a door");
+            throw new IllegalArgumentException ("One level can only have a door");
         }
     }
 
