@@ -12,14 +12,21 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
 
+
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
 public class Level {
+    /// Fixed width shared by all levels.
+    private static final int DEFAULT_WIDTH = 256;
+    /// Fixed height shared by all levels.
+    private static final int DEFAULT_HEIGHT = 14;
+
     @Id
     private String id;
     @DBRef
@@ -30,8 +37,6 @@ public class Level {
 
     //add a flag for whether can be published
     private boolean publishEligible = false;
-    private final int width = 256;
-    private final int height = 14;
     private ClearCondition clearCondition;
     private final Map<Position, GameObject> objectLayer = new HashMap<>();
     private final Map<Position, GroundObject> worldLayer = new HashMap<>();
@@ -151,7 +156,7 @@ public class Level {
 
     /// @return width of the map
     public int getWidth(){
-        return width;
+        return DEFAULT_WIDTH;
     }
 
 
@@ -167,7 +172,7 @@ public class Level {
 
     /// @return height of the map
     public int getHeight(){
-        return height;
+        return DEFAULT_HEIGHT;
     }
 
     /// Sets the title of this level.
@@ -262,6 +267,16 @@ public class Level {
             throw new LevelPublishedException("Cannot modify a published level");
         }
     }
+    /// Ensures that the level can be played by the given user.
+    /// @param userId the id of the user trying to play the level
+    /// @throws LevelNotPlayableException if the level is unpublished and not owned
+    ///         by the given user
+    public void ensurePlayable(final String userId) {
+        if (!this.published && !this.isOwnedBy(userId)) {
+            throw new LevelNotPlayableException();
+        }
+    }
+    
 
     public void ensureOwnedBy(String userId) {
         if (!isOwnedBy(userId)) {
@@ -270,8 +285,8 @@ public class Level {
     }
 
     public boolean isWithinBounds(Position position) {
-        return position.x() >= 0 && position.x() < this.width
-            && position.y() >= 0 && position.y() < this.height;
+        return position.x() >= 0 && position.x() < DEFAULT_WIDTH
+            && position.y() >= 0 && position.y() < DEFAULT_HEIGHT;
     }
 
     public void ensureWithinBounds(Position position) {
@@ -281,7 +296,7 @@ public class Level {
         if (!isWithinBounds(position)) {
             throw new IllegalArgumentException(
                 String.format("Position (%d, %d) is out of bounds. Valid range: x=[0,%d], y=[0,%d]",
-                    position.x(), position.y(), this.width - 1, this.height - 1)
+                    position.x(), position.y(), DEFAULT_WIDTH - 1, DEFAULT_HEIGHT - 1)
             );
         }
     }

@@ -1,14 +1,15 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
-
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
+
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
+
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
@@ -30,31 +31,34 @@ public class LevelController {
     private final LevelService levelService;
     private final UserService userService;
 
-    /// Constructs a new LevelController with the given dependencies.
-    /// 
-    /// @param levelService the service for managing level operations
-    /// @param userService  the service for accessing user data
+  /// Constructs a new LevelController with the given dependencies.
+  /// @param levelService the service for managing level operations
+  /// @param userService the service for accessing user data
     @Autowired
     public LevelController(LevelService levelService, UserService userService) {
         this.levelService = levelService;
         this.userService = userService;
     }
 
-    /// Creates a new empty level and returns a level DTO.
-    /// 
-    /// @spec.requires authentication and createLevelDTO are not null.
-    /// @spec.effects saves a new level to the repository with the authenticated user
-    ///               as creator.
-    /// @param authentication abstract token for authentication
-    /// @param createLevelDTO the DTO containing the necessary information to create
-    ///                       a new level
-    /// @return a 200 OK response containing the created level as a LevelDTO
-    /// @throws UserNotFoundException if the authenticated user does not exist
+  /// Creates a new empty level and returns a level DTO.
+  /// @spec.requires authentication and createLevelDTO are not null.
+  /// @spec.effects saves a new level to the repository with the authenticated user as creator.
+  /// @param authentication abstract token for authentication
+  /// @param createLevelDTO the DTO containing the necessary information to create a new level
+  /// @return a 200 OK response containing the created level as a LevelDTO
+  /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping()
-    public ResponseEntity<LevelDTO> createLevel(Authentication authentication,
-            @RequestBody CreateLevelDTO createLevelDTO) {
+    public ResponseEntity<LevelDTO> createLevel(Authentication authentication, @RequestBody CreateLevelDTO createLevelDTO) {
         String userId = getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
+    }
+
+  /// Returns a list of all levels present in the collection.
+  /// @return a list of all levels as LevelDTOs
+    @GetMapping()
+    public List<LevelDTO> getLevels() {
+        var levels = this.levelService.getAllLevels();
+        return levels.stream().map(LevelDTO::new).toList();
     }
 
 
@@ -101,8 +105,7 @@ public class LevelController {
     ///         the user
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping("/clone")
-    public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication,
-            @RequestBody CloneLevelDTO cloneLevelDTO) {
+    public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication, @RequestBody CloneLevelDTO cloneLevelDTO) {
         String userId = getUserIdFromAuth(authentication);
         User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return this.levelService.cloneLevel(cloneLevelDTO, user)
@@ -131,8 +134,7 @@ public class LevelController {
     /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
     ///         target level is already published
     @PutMapping("/{levelId}/properties")
-    public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId,
-            @RequestBody UpdateLevelDTO dto) {
+    public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
@@ -193,14 +195,26 @@ public class LevelController {
     ///         owner of the level when marking it as publish eligible
     @PostMapping("/{levelId}/submit")
     public ResponseEntity<String> submitAttempt(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody AttemptDTO dto){
-        String userId = getUserIdFromAuth(authentication);
-        try{
-            return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final AttemptDTO dto) {
+        final String userId = getUserIdFromAuth(authentication);
+        return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
     }
+
+    /// Returns the playable data for the requested level.
+    ///
+    /// @param authentication abstract token for authentication
+    /// @param levelId        the id of the level to load for play
+    /// @return a 200 OK response containing the playable level data
+    @GetMapping("/play/{levelId}")
+    public ResponseEntity<PlayLevelResponseDTO> playLevel(
+            final Authentication authentication,
+            @PathVariable final String levelId) {
+        final String userId = getUserIdFromAuth(authentication);
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final Level level = this.levelService.playLevel(user, levelId);
+        return ResponseEntity.ok(new PlayLevelResponseDTO(level));
+    }
+
 }
