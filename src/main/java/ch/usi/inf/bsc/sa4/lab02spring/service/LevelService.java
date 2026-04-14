@@ -148,11 +148,6 @@ public class LevelService {
         Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
-        levelThumbnailRepository.findByLevelId(levelId)
-        .ifPresent(oldThumbnail -> {
-            thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
-            levelThumbnailRepository.deleteByLevelId(levelId);
-        });
         return this.levelRepository.save(level);
     }
 
@@ -170,6 +165,7 @@ public class LevelService {
         Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         level.ensureOwnedBy(userId);
+        level.ensureModifiable();
         byte[] bytes;
         try {
             bytes = thumbnail.getBytes();
