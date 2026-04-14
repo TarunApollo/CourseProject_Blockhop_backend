@@ -1,4 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-public interface Enemy extends GameObject {
+public sealed interface Enemy extends GameObject
+        permits Slime, Snail {
 }
