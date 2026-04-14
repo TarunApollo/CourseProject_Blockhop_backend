@@ -91,6 +91,16 @@ public class LevelController {
             .body(this.levelService.getThumbnailForLevel(levelId));
     }
 
+    @PutMapping(value = "/{levelId}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateThumbnail(
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestParam("thumbnail") final MultipartFile thumbnail) {
+        final String userId = getUserIdFromAuth(authentication);
+        this.levelService.saveThumbnailForLevel(userId, levelId, thumbnail);
+        return ResponseEntity.noContent().build();
+    }
+
 
     /// Clones the given level if it exists and the authenticated user is its
     /// creator.
