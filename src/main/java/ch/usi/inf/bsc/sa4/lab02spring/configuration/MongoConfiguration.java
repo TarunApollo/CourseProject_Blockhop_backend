@@ -8,6 +8,8 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Configuration
@@ -39,14 +41,14 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     @WritingConverter
-    static public class PositionToStringConverter implements Converter<Position, String> {
+    public static class PositionToStringConverter implements Converter<Position, String> {
         public String convert(Position position){
             return position.compactString();
         }
     }
 
     @ReadingConverter
-    static public class StringToPositionConverter implements Converter<String, Position> {
+    public static class StringToPositionConverter implements Converter<String, Position> {
         public Position convert(String string){
             String[] parts = string.split(",");
             int posX = Integer.parseInt(parts[0]);
@@ -55,11 +57,29 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
+    @WritingConverter
+    public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
+        @Override
+        public Date convert(final ZonedDateTime dateTime) {
+            return Date.from(dateTime.toInstant());
+        }
+    }
+
+    @ReadingConverter
+    public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
+        @Override
+        public ZonedDateTime convert(final Date date) {
+            return date.toInstant().atZone(ZoneOffset.UTC);
+        }
+    }
+
     @Override
     public MongoCustomConversions customConversions(){
         List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());
+        custom.add(new ZonedDateTimeToDateConverter());
+        custom.add(new DateToZonedDateTimeConverter());
         return new MongoCustomConversions(custom);
     }
 }
