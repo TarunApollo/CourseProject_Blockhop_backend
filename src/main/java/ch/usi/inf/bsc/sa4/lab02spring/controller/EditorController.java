@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
@@ -25,116 +24,49 @@ import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 public class EditorController {
     private final EditorService editorService;
 
-    /// Constructs a new EditorController with the given dependency.
-    ///
-    /// @param editorService the service for handling level editing operations
     @Autowired
     public EditorController(EditorService editorService) {
         this.editorService = editorService;
     }
 
-    /// Edits a tile in the world layer of an unpublished level.
+    /// Replaces the entire world layer of an unpublished level.
+    /// The request body contains all tiles that should exist in the world layer.
+    /// Tiles not present in the request are implicitly deleted (removed from the layer).
     ///
-    /// Behavior:
-    /// - If gid > 0 and the position is empty, a tile is added
-    /// - If gid > 0 and the position already contains a tile, that tile is replaced
-    /// - If gid == 0, the tile at that position is removed; if no tile exists, the
-    ///   operation is a no-op
-    ///
-    /// Security checks are delegated to the EditorService, which enforces:
+    /// Security checks:
     /// - Only the level creator can edit
     /// - Only unpublished levels can be edited
-    /// - Coordinates must remain within level bounds (0 to width-1, 0 to height-1)
+    /// - All positions must be within level bounds
+    /// - All GIDs must be valid ground tile GIDs
     ///
-    /// @spec.requires authentication, levelId, and dto are not null.
-    /// @spec.modifies the world layer of the level identified by levelId in the
-    ///                repository.
-    /// @spec.effects delegates to EditorService to add, replace, or remove a tile at
-    ///               the target position in the world layer, then saves the level.
     /// @param authentication authentication token for the current user
-    /// @param levelId        id of the level to edit
-    /// @param dto            contains the target position and gid to apply
+    /// @param levelId id of the level to edit
+    /// @param dto contains the list of tiles (position + gid) representing the new world layer state
     /// @return 200 OK with the updated world layer
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
-    ///         target level does not exist
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
-    ///         authenticated user is not the level creator
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
-    ///         target level is already published
-    /// @throws IllegalArgumentException if the requested position is out of bounds
-    ///         or the gid is invalid
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if level not found
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if not level owner
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
     @PutMapping("/{levelId}/world-layer")
-    public ResponseEntity<WorldLayerResponseDTO> editWorldLayerTile(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody EditorLevelDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
-        Level updated = editorService.editWorldLayerTile(userId, levelId, dto);
-        return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
-    }
-
-    /// Batch edits tiles in the world layer of an unpublished level.
-    ///
-    /// @spec.requires authentication, levelId, and dto are not null.
-    /// @spec.modifies the world layer of the level identified by levelId in the
-    ///                repository.
-    /// @spec.effects delegates to EditorService to apply the requested batch update
-    ///               and saves the updated level.
-    /// @param authentication authentication token for the current user
-    /// @param levelId        id of the level to edit
-    /// @param dto            contains the batch of tiles to apply
-    /// @return 200 OK with the updated world layer
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
-    ///         target level does not exist
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
-    ///         authenticated user is not the level creator
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
-    ///         target level is already published
-    /// @throws IllegalArgumentException if any requested position is out of bounds
-    ///         or any gid is invalid
-    @PutMapping("/{levelId}/world-layer/batch")
-    public ResponseEntity<WorldLayerResponseDTO> updateWorldLayer(
+    public ResponseEntity<WorldLayerResponseDTO> replaceWorldLayer(
             Authentication authentication,
             @PathVariable String levelId,
             @RequestBody UpdateWorldLayerDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-        Level updated = editorService.updateWorldLayer(userId, levelId, dto);
+        Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
 
-    /// Edits a tile in the object layer of an unpublished level.
+    /// Replaces the entire object layer of an unpublished level.
+    /// The request body contains all objects that should exist in the object layer.
+    /// Objects not present in the request are implicitly deleted (removed from the layer).
     ///
-    /// @spec.requires authentication, levelId, and dto are not null.
-    /// @spec.modifies the object layer of the level identified by levelId in the
-    ///                repository.
-    /// @spec.effects delegates to EditorService to add, replace, or remove an
-    ///               object at the requested position, then saves the updated level.
-    /// @param authentication authentication token for the current user
-    /// @param levelId        id of the level to edit
-    /// @param dto            contains the target position and gid to apply
-    /// @return 200 OK with the updated object layer
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if the
-    ///         target level does not exist
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if the
-    ///         authenticated user is not the level creator
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
-    ///         target level is already published
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException
-    ///         if the requested object placement violates editor rules
-    /// @throws IllegalArgumentException if the requested position is out of bounds
-    ///         or the gid is invalid
-    @PutMapping("/{levelId}/object-layer")
-    public ResponseEntity<ObjectLayerResponseDTO> editObjectLayer(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody EditorLevelDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
-            Level updated = editorService.editObjectLayerTile(userId, levelId, dto);
-            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
-        }
-
-
-    /// Batch creates or removes multiple objects in the object layer of an unpublished level.
+    /// Security checks:
+    /// - Only the level creator can edit
+    /// - Only unpublished levels can be edited
+    /// - All positions must be within level bounds
+    /// - All GIDs must be valid object GIDs
+    /// - No duplicate positions allowed in the request
     ///
     /// JSON example:
     /// {
@@ -150,43 +82,44 @@ public class EditorController {
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level to edit
     /// @param dto contains the list of objects with position, gid, and optional content
-    /// @return 200 OK with the updated object layer,
-    ///         400 BAD_REQUEST if any position is out of bounds or gid is invalid,
-    ///         403 FORBIDDEN if user is not the level creator,
-    ///         404 NOT_FOUND if level doesn't exist
-    @PutMapping("/{levelId}/object-layer/batch")
-    public ResponseEntity<ObjectLayerResponseDTO> updateObjectLayer(
+    /// @return 200 OK with the updated object layer
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if level not found
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if not level owner
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if any position is out of bounds, gid is invalid, or duplicate positions
+    @PutMapping("/{levelId}/object-layer")
+    public ResponseEntity<ObjectLayerResponseDTO> replaceObjectLayer(
             Authentication authentication,
             @PathVariable String levelId,
             @RequestBody UpdateObjectLayerDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-
-            Level updated = editorService.updateObjectLayer(userId, levelId, dto);
-            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
-        }
+        Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
+        return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
+    }
 
     /// Updates the properties of an existing object in the object layer.
     ///
     /// JSON examples:
     /// - Update box content:
-    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
+    ///   {"type": "box", "position": {"x": 1, "y": 2}, "content": {"type": "Item_Coin_Bronze"}}
     /// - Empty box content:
-    // {"type": "box", "position": {"x": 1, "y": 2}, "content": {}}
+    ///   {"type": "box", "position": {"x": 1, "y": 2}, "content": {}}
     ///
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level containing the object
     /// @param dto polymorphic DTO with position and type-specific properties
-    /// @return 200 OK with the updated object layer,
-    ///         403 FORBIDDEN if user is not the level creator or level is published,
-    ///         404 NOT_FOUND if level or object doesn't exist
+    /// @return 200 OK with the updated object layer
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if level not found
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if not level owner
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if level is published
+    /// @throws IllegalArgumentException if property doesn't match object type
     @PatchMapping("/{levelId}/object-layer/properties")
     public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
             Authentication authentication,
             @PathVariable String levelId,
             @RequestBody UpdateObjectPropertiesDTO dto) {
         String userId = getUserIdFromAuth(authentication);
-
-            Level updated = editorService.updateObjectProperties(userId, levelId, dto);
-            return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
-        }
+        Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+        return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
+}
