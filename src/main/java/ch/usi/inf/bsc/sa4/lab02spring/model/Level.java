@@ -12,8 +12,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import tools.jackson.databind.annotation.JsonSerialize;
-
 
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
@@ -263,6 +261,30 @@ public class Level {
             throw new LevelPublishedException("Cannot modify a published level");
         }
     }
+
+    public void ensureValidObjectLayer(Map<Position,GameObject> incomingObjectLayer)
+    {
+        long countFlag = incomingObjectLayer.values().stream()
+        .filter(StartFlag.class::isInstance)
+        .count();
+
+        long countDoor = incomingObjectLayer.values().stream()
+        .filter(ExitDoor.class::isInstance)
+        .count(); 
+
+        if(countFlag > 1)
+        {
+            throw new IllegalArgumentException ("One level can only have a flag");
+        }
+
+         if(countDoor > 1)
+        {
+            throw new IllegalArgumentException ("One level can only have a door");
+        }
+    }
+
+
+
     /// Ensures that the level can be played by the given user.
     /// @param userId the id of the user trying to play the level
     /// @throws LevelNotPlayableException if the level is unpublished and not owned
