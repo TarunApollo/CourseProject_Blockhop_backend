@@ -5,9 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -113,6 +110,7 @@ public class EditorService {
             newObjectLayer.put(object.position(), gameObject);
         }
 
+        level.ensureValidObjectLayer(newObjectLayer);
         level.setObjectLayer(newObjectLayer);
 
         this.levelService.invalidateLevelPublishEligible(level, userId);
