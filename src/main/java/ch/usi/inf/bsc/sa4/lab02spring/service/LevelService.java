@@ -228,16 +228,14 @@ public class LevelService {
         };
     }
 
-    /// Publishes the specified level and stores the uploaded thumbnail.
+    /// Publishes the specified level.
     ///
-    /// @spec.requires userId, levelId, and thumbnail are not null.
-    /// @spec.modifies the level identified by levelId, and the thumbnail
-    ///                repositories associated with that level.
-    /// @spec.effects stores the uploaded thumbnail for the target level, marks the
-    ///               level as published, and saves the updated level.
+    /// @spec.requires userId and levelId are not null.
+    /// @spec.modifies the level identified by levelId.
+    /// @spec.effects marks the target level as published and saves the updated
+    ///               level.
     /// @param userId  the unique identifier of the user requesting the publish
     /// @param levelId the id of the level to publish
-    /// @param thumbnail the uploaded thumbnail snapshot for the level
     /// @return the published and saved Level
     /// @throws LevelNotFoundException        if no level with the given id exists
     /// @throws UserNotFoundException         if no user with the given id exists
