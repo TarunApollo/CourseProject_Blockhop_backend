@@ -1,4 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 
@@ -11,12 +12,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
-
+import tools.jackson.databind.annotation.JsonSerialize;
 
 
 @SuppressWarnings("NullAway.Init")

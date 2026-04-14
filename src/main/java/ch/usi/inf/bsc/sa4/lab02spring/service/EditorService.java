@@ -188,7 +188,6 @@ public class EditorService {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
-
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 

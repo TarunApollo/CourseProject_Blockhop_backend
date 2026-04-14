@@ -4,4 +4,3 @@ public sealed interface Condition {
     record NoClearCondition() implements Condition {}
     record SomeClearCondition(ClearConditionType target) implements Condition {}
 }
-

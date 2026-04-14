@@ -1,6 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-public sealed interface GameObject permits Item, Enemy {
+public sealed interface GameObject permits Enemy, Item {
     int gid();
 
     Position pos();

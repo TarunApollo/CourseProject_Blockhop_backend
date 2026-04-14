@@ -1,6 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
@@ -25,6 +25,17 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @Override
     protected Set<String> getMappingBasePackages() {
         return Set.of("ch.usi.inf.bsc.sa4.lab02spring.model");
+    }
+
+    @Override
+    protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
+        Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
+        entitySet.addAll(Set.of(
+                StartFlag.class, ExitDoor.class, Coin.class,
+                Box.class, Decoration.class, Shell.class,
+                Snail.class, Slime.class
+        ));
+        return entitySet;
     }
 
     @WritingConverter
