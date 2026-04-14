@@ -1,9 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
@@ -192,15 +189,13 @@ public class LevelService {
     /// @param level the level to summarize
     /// @param period the time range used to compute popularity
     /// @return a LevelSummaryDto with computed statistics
-    private LevelSummaryDto toLevelSummary(Level level, DateRangePreset period) {
+    private LevelSummaryDto toLevelSummary(Level level, PublishedLevelSortBy sortBy,DateRangePreset period) {
         long playCount = attemptRepository.countByLevel(level);
         long clearCount = attemptRepository.countByLevelAndCompletedTrue(level);
         double clearRate = playCount == 0 ? 0 : (double) clearCount / playCount;
-        long popularity;
-        if (period instanceof RelativeDateRangePreset relative) {
+        long popularity = playCount;
+        if (sortBy == PublishedLevelSortBy.POPULARITY && period instanceof RelativeDateRangePreset relative) {
             popularity = attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
-        } else {
-            popularity = playCount;
         }
 
         String thumbnailUrl = "/levels/" + level.getId() + "/thumbnail";
@@ -215,7 +210,7 @@ public class LevelService {
         List<Level> levels = levelRepository.findByPublishedTrue();
 
         List<LevelSummaryDto> dtos = levels.stream()
-                .map(level -> toLevelSummary(level, period))
+                .map(level -> toLevelSummary(level, sortBy,period))
                 .toList();
 
         return switch (sortBy) {
