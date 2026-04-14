@@ -91,6 +91,16 @@ public class LevelController {
             .body(this.levelService.getThumbnailForLevel(levelId));
     }
 
+    @PutMapping(value = "/{levelId}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateThumbnail(
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestParam("thumbnail") final MultipartFile thumbnail) {
+        final String userId = getUserIdFromAuth(authentication);
+        this.levelService.saveThumbnailForLevel(userId, levelId, thumbnail);
+        return ResponseEntity.noContent().build();
+    }
+
 
     /// Clones the given level if it exists and the authenticated user is its
     /// creator.
@@ -154,23 +164,20 @@ public class LevelController {
         return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
     }
 
-    /// Publishes the specified level and stores its uploaded thumbnail.
+    /// Publishes the specified level.
     ///
-    /// @spec.requires authentication, levelId, and thumbnail are not null.
-    /// @spec.effects forwards the authenticated user, target level id, and
-    ///               uploaded thumbnail to the level service, which stores the
-    ///               thumbnail and publishes the level.
+    /// @spec.requires authentication and levelId are not null.
+    /// @spec.effects forwards the authenticated user and target level id to the
+    ///               level service, which publishes the level.
     /// @param authentication the current authenticated user
     /// @param levelId the id of the target level
-    /// @param thumbnail the uploaded thumbnail snapshot
     /// @return a 200 OK response containing the published level
-    @PutMapping(path = "/{levelId}/publish", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(path = "/{levelId}/publish")
     public ResponseEntity<Level> publishLevel(
             Authentication authentication,
-            @PathVariable String levelId,
-            @RequestParam("thumbnail") MultipartFile thumbnail) {
+            @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(this.levelService.publish(userId, levelId, thumbnail));
+        return ResponseEntity.ok(this.levelService.publish(userId, levelId));
     }
 
     /// Submits an attempt for the specified level on behalf of the authenticated
