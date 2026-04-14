@@ -313,82 +313,74 @@ public class LevelTests {
     }
 
     @Nested
-    @DisplayName("method updateWorldLayerTile")
-    class UpdateWorldLayerTileMethod {
+    @DisplayName("method setWorldLayer")
+    class SetWorldLayerMethod {
 
         private Level level;
-        private Position position;
+        private Position pos1;
+        private Position pos2;
 
         @BeforeEach
         void setUp() {
             User creator = new User("user-1", "Mario");
             this.level = new Level("Test level", "A level description", creator);
-            this.position = new Position(7, 8);
+            this.pos1 = new Position(1, 2);
+            this.pos2 = new Position(3, 4);
+            this.level.putWorldLayer(this.pos1, new GroundObject(5));
+            this.level.putWorldLayer(this.pos2, new GroundObject(6));
         }
 
         @Test
-        @DisplayName("should add a tile when gid is not a removal marker")
-        public void addsTile() {
-            this.level.updateWorldLayerTile(this.position, new TileObjectId(42));
-            assertEquals(new GroundObject(42), this.level.getWorldLayer().get(this.position));
+        @DisplayName("should replace the entire world layer")
+        public void replacesEntireLayer() {
+            Position newPos = new Position(7, 8);
+            Map<Position, GroundObject> newLayer = new HashMap<>();
+            newLayer.put(newPos, new GroundObject(10));
+            this.level.setWorldLayer(newLayer);
+            assertFalse(this.level.getWorldLayer().containsKey(this.pos1));
+            assertFalse(this.level.getWorldLayer().containsKey(this.pos2));
+            assertEquals(new GroundObject(10), this.level.getWorldLayer().get(newPos));
         }
 
         @Test
-        @DisplayName("should remove a tile when gid is a removal marker")
-        public void removesTile() {
-            this.level.putWorldLayer(this.position, new GroundObject(42));
-            this.level.updateWorldLayerTile(this.position, TileObjectId.remove());
-            assertFalse(this.level.getWorldLayer().containsKey(this.position));
-        }
-
-        @Test
-        @DisplayName("should throw when the position is out of bounds")
-        public void outOfBoundsPosition() {
-            assertThrows(IllegalArgumentException.class,
-                () -> this.level.updateWorldLayerTile(new Position(300, 8), new TileObjectId(42)));
+        @DisplayName("should clear the world layer when given an empty map")
+        public void clearsLayer() {
+            this.level.setWorldLayer(new HashMap<>());
+            assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
 
     @Nested
-    @DisplayName("method updateWorldLayerBatch")
-    class UpdateWorldLayerBatchMethod {
+    @DisplayName("method setObjectLayer")
+    class SetObjectLayerMethod {
 
         private Level level;
-        private Position updatedPosition;
-        private Position removedPosition;
-        private Map<Position, TileObjectId> tiles;
+        private Position pos;
 
         @BeforeEach
         void setUp() {
             User creator = new User("user-1", "Mario");
             this.level = new Level("Test level", "A level description", creator);
-            this.updatedPosition = new Position(1, 2);
-            this.removedPosition = new Position(3, 4);
-            this.tiles = new HashMap<>();
-            this.level.putWorldLayer(this.updatedPosition, new GroundObject(5));
-            this.level.putWorldLayer(this.removedPosition, new GroundObject(6));
+            this.pos = new Position(1, 2);
+            this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
 
         @Test
-        @DisplayName("should apply all mutations when every position is valid")
-        public void appliesAllMutations() {
-            this.tiles.put(this.updatedPosition, new TileObjectId(9));
-            this.tiles.put(this.removedPosition, TileObjectId.remove());
-            this.level.updateWorldLayerBatch(this.tiles);
-            assertEquals(new GroundObject(9), this.level.getWorldLayer().get(this.updatedPosition));
-            assertFalse(this.level.getWorldLayer().containsKey(this.removedPosition));
+        @DisplayName("should replace the entire object layer")
+        public void replacesEntireLayer() {
+            Position newPos = new Position(5, 6);
+            Map<Position, GameObject> newLayer = new HashMap<>();
+            newLayer.put(newPos, new StartFlag(77, newPos));
+            this.level.setObjectLayer(newLayer);
+            assertFalse(this.level.getObjectLayer().containsKey(this.pos));
+            assertTrue(this.level.getObjectLayer().containsKey(newPos));
         }
 
         @Test
-        @DisplayName("should reject the whole batch when one position is out of bounds")
-        public void rejectsWholeBatch() {
-            GroundObject originalUpdated = this.level.getWorldLayer().get(this.updatedPosition);
-            GroundObject originalRemoved = this.level.getWorldLayer().get(this.removedPosition);
-            this.tiles.put(this.updatedPosition, new TileObjectId(9));
-            this.tiles.put(new Position(256, 0), TileObjectId.remove());
-            assertThrows(IllegalArgumentException.class, () -> this.level.updateWorldLayerBatch(this.tiles));
-            assertEquals(originalUpdated, this.level.getWorldLayer().get(this.updatedPosition));
-            assertEquals(originalRemoved, this.level.getWorldLayer().get(this.removedPosition));
+        @DisplayName("should clear the object layer when given an empty map")
+        public void clearsLayer() {
+            this.level.setObjectLayer(new HashMap<>());
+            assertTrue(this.level.getObjectLayer().isEmpty());
         }
     }
 
