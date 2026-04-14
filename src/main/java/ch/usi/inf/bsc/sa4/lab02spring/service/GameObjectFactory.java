@@ -31,14 +31,14 @@ public class GameObjectFactory {
 
     public GameObject createGameObject(int gid, Position pos, Content content) {
         String type = tileSetService.getObjectTileType(gid);
-        
+        System.out.println(type);
         return switch (type) {
             case "Decoration", "ExclamationMark" -> new Decoration(gid, pos);
             case "Enemy_Slime_Normal" -> new Slime(gid, pos);
             case "Enemy_Snail" -> new Snail(gid, pos);
             case "Box", "BoxDouble" -> new Box(gid, pos, content);
             case "Start_Flag", "Start_Flag_B" -> new StartFlag(gid, pos);
-            case "Door_Closed", "Door_Open" -> new ExitDoor(gid, pos);
+            case "Door_Closed", "Door_Open", "Door_Open_Top", "Door_Closed_Top" -> new ExitDoor(gid, pos);
             case "Item_Coin_Gold", "Item_Coin_Gold_Side",
                  "Item_Coin_Silver", "Item_Coin_Silver_Side",
                  "Item_Coin_Bronze", "Item_Coin_Bronze_Side" -> createCoin(gid, pos, type);

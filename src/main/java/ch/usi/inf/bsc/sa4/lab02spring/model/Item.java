@@ -1,7 +1,4 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import org.springframework.data.annotation.TypeAlias;
-
-@TypeAlias("item")
-public interface Item extends GameObject {
+public sealed interface Item extends GameObject permits StartFlag, ExitDoor, Coin, Box, Decoration, Shell {
 }
