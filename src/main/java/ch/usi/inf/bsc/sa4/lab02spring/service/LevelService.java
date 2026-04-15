@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
+import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
@@ -31,6 +32,8 @@ public class LevelService {
     private final LevelThumbnailRepository levelThumbnailRepository;
     private final ThumbnailRepository thumbnailRepository;
     private final AttemptService attemptService;
+    private final TileSetService tileSetService;
+    private final LayerToTiledMapConverter layerToTiledMapConverter;
 
 
     /// Constructs a new LevelService with the given dependencies.
@@ -44,7 +47,9 @@ public class LevelService {
             LevelThumbnailRepository levelThumbnailRepository,
             ThumbnailRepository thumbnailRepository,
             UserRepository userRepository,
-            AttemptService attemptService) {
+            AttemptService attemptService,
+            TileSetService tileSetService,
+            LayerToTiledMapConverter layerToTiledMapConverter) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
@@ -52,6 +57,8 @@ public class LevelService {
         this.thumbnailRepository = thumbnailRepository;
         this.userRepository = userRepository;
         this.attemptService = attemptService;
+        this.tileSetService = tileSetService;
+        this.layerToTiledMapConverter = layerToTiledMapConverter;
     }
 
     /// Creates a level for the given user id
@@ -122,18 +129,26 @@ public class LevelService {
         return levelRepository.save(level);
     }
 
-
-    /// Returns a playable level for the given user if access is allowed.
-    /// @param user the user attempting to play the level
-    /// @param levelId the id of the level to load
-    /// @return the requested playable level
+    /// Returns a Tiled/Phaser-compatible map representation of a playable level.
+    ///
+    /// @spec.requires user and levelId are not null.
+    /// @spec.effects loads the requested level, verifies that the given user is
+    ///               allowed to play it, retrieves the loaded tileset metadata,
+    ///               and converts the level into a frontend-consumable map
+    ///               structure.
+    /// @param user the user requesting to play the level
+    /// @param levelId the id of the level to export as a playable map
+    /// @return a map JSON structure compatible with the current frontend level player
     /// @throws LevelNotFoundException if no level with the given id exists
-    /// @throws ForbiddenUserException if the user is not allowed to play the level
-    public Level playLevel(final User user, final String levelId) {
+    /// @throws ForbiddenUserException if the given user is not allowed to play the level
+    public Map<String,Object> getPlayableMap(final User user,final String levelId)
+    {
         final Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensurePlayable(user.getId());
-        return level;
+        final TileSet tileSet = this.tileSetService.getTileSet();
+        return this.layerToTiledMapConverter.convertPipeline(level, tileSet);
     }
+
 
     /// Unpublishes an existing level owned by the given user.
     /// @param userId the authenticated user's ID

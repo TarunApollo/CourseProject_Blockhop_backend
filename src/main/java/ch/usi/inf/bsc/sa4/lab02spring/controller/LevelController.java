@@ -24,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/levels")
@@ -209,19 +210,24 @@ public class LevelController {
         return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
     }
 
-    /// Returns the playable data for the requested level.
-    ///
-    /// @param authentication abstract token for authentication
-    /// @param levelId        the id of the level to load for play
-    /// @return a 200 OK response containing the playable level data
-    @GetMapping("/play/{levelId}")
-    public ResponseEntity<PlayLevelResponseDTO> playLevel(
-            final Authentication authentication,
-            @PathVariable final String levelId) {
-        final String userId = getUserIdFromAuth(authentication);
-        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        final Level level = this.levelService.playLevel(user, levelId);
-        return ResponseEntity.ok(new PlayLevelResponseDTO(level));
-    }
 
+    /// Returns a Tiled/Phaser-compatible map for the requested playable level.
+    ///
+    /// @spec.requires authentication and levelId are not null.
+    /// @spec.effects resolves the authenticated user and delegates to the level
+    ///               service to validate access and export the requested level
+    ///               as a frontend-consumable map structure.
+    /// @param authentication abstract token for authentication
+    /// @param levelId the id of the level to load for play
+    /// @return a 200 OK response containing a Tiled/Phaser-compatible map payload
+    /// @throws UserNotFoundException if the authenticated user does not exist
+    @GetMapping("/play/{levelId}/map")
+    public ResponseEntity<Map<String,Object>> getMap(
+        final Authentication authentication,
+        @PathVariable final String levelId)
+        {
+            final String userId = getUserIdFromAuth(authentication);
+            final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+            return ResponseEntity.ok(this.levelService.getPlayableMap(user,levelId));
+        }
 }
