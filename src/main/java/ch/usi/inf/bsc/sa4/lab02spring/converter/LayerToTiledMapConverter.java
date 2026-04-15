@@ -26,7 +26,7 @@ public class LayerToTiledMapConverter {
         "tileheight", 128
 );
 
-    public Map<String, Object> convertPipeline(
+    public static Map<String, Object> convertPipeline(
             Level level,
             TileSet tileSet
     ) 
@@ -43,7 +43,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String, Object> buildWolrdLayer(
+    private static Map<String, Object> buildWolrdLayer(
             Map<Position, GroundObject> worldLayer,
             int width,
             int height
@@ -74,7 +74,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> buildObjectLayer(
+    private static Map<String,Object> buildObjectLayer(
         Map<Position,GameObject> objectLayer
     )
     {
@@ -84,7 +84,7 @@ public class LayerToTiledMapConverter {
             objects.add(toTiledObject(gameObject));
         }
         Map<String,Object> res = new LinkedHashMap<>();
-        res.put("name","Objects");
+        res.put("name","QMLayer");
         res.put("type","objectgroup");
         res.put("draworder","topdown");
         res.put("opacity",1);
@@ -95,7 +95,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledObject(GameObject gameObject)
+    private static Map<String,Object> toTiledObject(GameObject gameObject)
     {
         Position pos = gameObject.pos();
         int tileSize = 128;
@@ -121,7 +121,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private List<Map<String,Object>> buildBoxProperties(Box box)
+    private static List<Map<String,Object>> buildBoxProperties(Box box)
     {
         List<Map<String,Object>> properties = new ArrayList<>();
         if (box.content() instanceof Content.SomeContent someContent) {
@@ -134,7 +134,7 @@ public class LayerToTiledMapConverter {
         return properties;
     }
 
-    private Map<String,Object> buildTileset(TileSet tileSet)
+    private static Map<String,Object> buildTileset(TileSet tileSet)
     {
         List<Map<String,Object>> tiles = new ArrayList<>();
         for(TileSet.TileData tile :tileSet.tiles())
@@ -160,7 +160,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledTile(TileSet.TileData tile)
+    private static Map<String,Object> toTiledTile(TileSet.TileData tile)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("id",tile.id());
@@ -180,7 +180,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledProperty(TileSet.Property property)
+    private static Map<String,Object> toTiledProperty(TileSet.Property property)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("name",property.name());
@@ -189,7 +189,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledObjectGroup(TileSet.ObjectGroup objectGroup)
+    private static Map<String,Object> toTiledObjectGroup(TileSet.ObjectGroup objectGroup)
     {
         List<Map<String,Object>> objects = new ArrayList<>();
         for (TileSet.TileObject object : objectGroup.objects()) {
@@ -208,7 +208,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledTileObject(TileSet.TileObject object)
+    private static Map<String,Object> toTiledTileObject(TileSet.TileObject object)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("id",object.id());
@@ -231,7 +231,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledPoint(TileSet.Point point)
+    private static Map<String,Object> toTiledPoint(TileSet.Point point)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("x",point.x());
