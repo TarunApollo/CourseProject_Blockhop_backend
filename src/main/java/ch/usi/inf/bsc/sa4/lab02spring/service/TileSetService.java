@@ -13,25 +13,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.TileSetNotLoadedException;
-import jakarta.annotation.PostConstruct;
 
 @Service
 public class TileSetService {
     
     /// Ground GIDs - type is always "Ground", so just store GIDs
-    private Set<Integer> groundGIDs = Set.of();
+    private final Set<Integer> groundGIDs;
     
     /// Object GIDs mapped to their type string
-    private Map<Integer, String> objectGIDs = Map.of();
+    private final Map<Integer, String> objectGIDs;
 
-    @PostConstruct
-    ///
-    /// Loads the tileset from JSON and categorizes GIDs into ground and object sets.
-    ///
-    public void loadTileSet() {
+    private final TileSet tileSet;
+
+    /// load the tileset and hold the complete tileSet for building frontend needed json
+    /// store groundGids and objectGids for light-weight usage
+    public TileSetService() {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            TileSet tileSet = mapper.readValue(
+            this.tileSet = mapper.readValue(
                 new ClassPathResource("tileset_batch_1.json").getInputStream(),
                 TileSet.class);
             
@@ -50,6 +49,11 @@ public class TileSetService {
         } catch (IOException e) {
             throw new TileSetNotLoadedException(e);
         }
+    }
+
+    public TileSet getTileSet()
+    {
+        return this.tileSet;
     }
 
     public boolean isGroundGID(int gid) {
