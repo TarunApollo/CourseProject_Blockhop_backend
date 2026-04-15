@@ -7,6 +7,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class LayerToTiledMapConverter {
 
     private static final Map<String, Object> MAP_METADATA = Map.of(
