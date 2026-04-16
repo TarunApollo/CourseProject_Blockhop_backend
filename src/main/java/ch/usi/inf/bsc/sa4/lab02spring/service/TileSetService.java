@@ -34,8 +34,13 @@ public class TileSetService {
                 new ClassPathResource("tileset_batch_1.json").getInputStream(),
                 TileSet.class);
             
+
+            ///tmp fix for unnormalized 
             groundGIDs = tileSet.tiles().stream()
-                .filter(tile -> Objects.equals(tile.type(), "Ground"))
+                .filter(tile ->
+                Objects.equals(tile.type(), "Ground") ||
+                Objects.equals(tile.type(), "Semisolid") ||
+                Objects.equals(tile.type(), "Damage"))
                 .map(tile -> tileSet.firstgid() + tile.id())
                 .collect(Collectors.toUnmodifiableSet());
             
