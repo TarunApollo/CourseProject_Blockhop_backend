@@ -31,7 +31,6 @@ public class GameObjectFactory {
 
     public GameObject createGameObject(int gid, Position pos, Content content) {
         String type = tileSetService.getObjectTileType(gid);
-        System.out.println(type);
         return switch (type) {
             case "Decoration", "ExclamationMark" -> new Decoration(gid, pos);
             case "Enemy_Slime_Normal" -> new Slime(gid, pos);
