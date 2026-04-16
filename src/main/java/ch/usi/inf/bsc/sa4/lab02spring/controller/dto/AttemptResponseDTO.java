@@ -17,12 +17,12 @@ public record AttemptResponseDTO(
     /// @param attempt the attempt to map into a response DTO
     public AttemptResponseDTO(final Attempt attempt) {
         this(
-                attempt.id(),
-                attempt.user().getId(),
-                attempt.level().getId(),
-                attempt.timestamp(),
-                attempt.completed(),
-                attempt.timeTaken()
+                attempt.getId(),
+                attempt.getUser().getId(),
+                attempt.getLevel().getId(),
+                attempt.getTimestamp(),
+                attempt.getCompleted(),
+                attempt.getTimeTaken()
         );
     }
 }

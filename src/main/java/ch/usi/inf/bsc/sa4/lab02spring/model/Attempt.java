@@ -8,8 +8,29 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
+@SuppressWarnings("NullAway.Init")
 @Document(collection = "attempts")
 public class Attempt {
+    public String getId() {
+        return id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public ZonedDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
+    public Duration getTimeTaken() {
+        return timeTaken;
+    }
+
     @Id
     String id;
     @DBRef

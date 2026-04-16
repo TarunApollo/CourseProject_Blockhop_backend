@@ -131,12 +131,12 @@ public class AttemptService {
     /// @param dto       the DTO containing the attempt timestamp and time taken
     /// @param completed whether the attempt satisfies the level's clear
     ///                  condition
-    public void submitAttempt(User user, Level level, AttemptDTO dto, boolean completed){
+    public void submitAttempt(User user, Level level, AttemptDTO dto){
         Attempt attempt = new Attempt(
                 user,
                 dto.timestamp(),
                 level,
-                completed,
+                dto.completed(),
                 dto.timeTaken()
         );
         this.attemptRepository.save(attempt);

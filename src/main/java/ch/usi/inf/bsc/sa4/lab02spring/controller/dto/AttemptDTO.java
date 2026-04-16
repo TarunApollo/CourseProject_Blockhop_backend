@@ -17,6 +17,7 @@ public record AttemptDTO(
         Map<Position, GroundObject> worldLayer,
         Position playerPosition,
         ZonedDateTime timestamp,
-        Duration timeTaken
+        Duration timeTaken,
+        boolean completed
 ) {
 }
