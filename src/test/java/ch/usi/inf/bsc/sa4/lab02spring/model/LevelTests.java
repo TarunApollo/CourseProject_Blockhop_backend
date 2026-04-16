@@ -178,6 +178,10 @@ public class LevelTests {
         @Test
         @DisplayName("should reject modification when published")
         public void rejectsModificationWhenPublished() {
+            Position flagPos = new Position(1, 1);
+            Position doorPos = new Position(2, 1);
+            this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+            this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
             this.level.validatePublishEligible("user-1");
             this.level.publish("user-1");
             assertFalse(this.level.canBeModified());
@@ -403,6 +407,10 @@ public class LevelTests {
             this.worldPosition = new Position(3, 4);
             this.objectPosition = new Position(5, 6);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
+            Position flagPos = new Position(1, 1);
+            Position doorPos = new Position(2, 1);
+            this.original.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+            this.original.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
             this.original.validatePublishEligible("user-1");
             this.original.publish("user-1");
             this.original.setClearCondition(this.clearCondition);
