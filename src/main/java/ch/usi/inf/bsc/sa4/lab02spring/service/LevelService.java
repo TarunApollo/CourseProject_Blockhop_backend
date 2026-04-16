@@ -123,11 +123,6 @@ public class LevelService {
         levelRepository.deleteById(levelId);
     }
 
-    /// @return a list of all levels
-    public List<Level> getAllLevels() {
-        return levelRepository.findAll();
-    }
-
     /// Retrieves all levels created by the given user, mapped to DTOs.
     /// @param creator the user whose levels to retrieve
     /// @return a list of LevelDTOs for the levels created by the given user

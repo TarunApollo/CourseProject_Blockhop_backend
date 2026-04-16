@@ -61,14 +61,6 @@ public class LevelController {
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
-  /// Returns a list of all levels present in the collection.
-  /// @return a list of all levels as LevelDTOs
-    @GetMapping()
-    public List<LevelDTO> getLevels() {
-        var levels = this.levelService.getAllLevels();
-        return levels.stream().map(LevelDTO::new).toList();
-    }
-
 
     /// Returns all published levels as summaries, sorted by the given criteria.
     /// 
