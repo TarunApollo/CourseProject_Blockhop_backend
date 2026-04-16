@@ -198,6 +198,7 @@ public class Level {
     public void publish(String userId)
     {
         ensureOwnedBy(userId);
+        ensurePublishableObjectLayer();
         if(!this.publishEligible)
         {
             throw new ForbiddenLevelActionException("Cannot publish this level");
@@ -285,6 +286,26 @@ public class Level {
             throw new IllegalArgumentException ("One level can only have a door");
         }
     }
+
+    public void ensurePublishableObjectLayer()
+    {
+        long countFlag = this.objectLayer.values().stream()
+        .filter(StartFlag.class::isInstance)
+        .count();
+
+        long countDoor = this.objectLayer.values().stream()
+        .filter(ExitDoor.class::isInstance)
+        .count();
+
+        if (countFlag != 1) {
+            throw new ForbiddenLevelActionException("A published level must have exactly one start flag");
+        }
+
+        if (countDoor != 1) {
+        throw new ForbiddenLevelActionException("A published level must have exactly one exit door");
+        }
+    }
+
 
 
 
