@@ -129,7 +129,6 @@ public class AttemptService {
     /// @param user      the user who performed the attempt
     /// @param level     the level the attempt was made on
     /// @param dto       the DTO containing the attempt timestamp and time taken
-    /// @param completed whether the attempt satisfies the level's clear
     ///                  condition
     public void submitAttempt(User user, Level level, AttemptDTO dto){
         Attempt attempt = new Attempt(
