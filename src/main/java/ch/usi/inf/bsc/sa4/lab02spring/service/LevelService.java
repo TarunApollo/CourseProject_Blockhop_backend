@@ -213,8 +213,7 @@ public class LevelService {
             popularity = attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
         }
 
-        String thumbnailUrl = "/levels/" + level.getId() + "/thumbnail";
-        return new LevelSummaryDto(level, playCount, clearRate, popularity,thumbnailUrl);
+        return new LevelSummaryDto(level, playCount, clearRate, popularity);
     }
 
     /// Returns all published levels as summaries, sorted by the given criteria.
