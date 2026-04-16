@@ -325,8 +325,8 @@ public class LevelService {
     ///         player is positioned on an ExitDoor, false otherwise
     public boolean validateLevelSubmission(Level level, AttemptDTO dto){
         boolean isWorldLayerEqual = level.getWorldLayer().equals(dto.worldLayer());
-        boolean isPlayerValid = level.getObjectLayer().get(dto.playerPosition()) instanceof ExitDoor;
-        return isWorldLayerEqual && isPlayerValid;
+        // boolean isPlayerValid = level.getObjectLayer().get(dto.playerPosition()) instanceof ExitDoor;
+        return isWorldLayerEqual;
     }
 
 
@@ -350,14 +350,14 @@ public class LevelService {
     public String submitAttempt(String levelId, String userId, AttemptDTO dto){
         User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         Level level = this.getById(levelId).orElseThrow(LevelNotFoundException::new);
-        boolean completed = this.validateLevelSubmission(level, dto);
-        if(!level.isPublished() && level.isOwnedBy(userId) && completed){
+        // boolean completed = this.validateLevelSubmission(level, dto);
+        if(!level.isPublished() && level.isOwnedBy(userId)){
             this.validateLevelPublishEligible(level, userId);
         }
-        else if(!level.isPublished() && !level.isOwnedBy(userId)){
+        if(!level.isPublished() && !level.isOwnedBy(userId)){
             throw new ForbiddenLevelActionException("Level submission is not valid.");
         }
-        this.attemptService.submitAttempt(user, level, dto, completed);
+        this.attemptService.submitAttempt(user, level, dto);
         return "Successful level submission.";
     }
 }

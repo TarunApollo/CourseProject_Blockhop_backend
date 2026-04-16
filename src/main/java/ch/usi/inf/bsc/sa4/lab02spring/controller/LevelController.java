@@ -5,7 +5,9 @@ import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
+import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
+import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
 
 import java.util.List;
 import java.util.Map;
@@ -31,14 +34,18 @@ import java.util.Map;
 public class LevelController {
     private final LevelService levelService;
     private final UserService userService;
+    private final TileSetService tileSetService;
+    private final LayerToTiledMapConverter layerToTiledMapConverter;
 
   /// Constructs a new LevelController with the given dependencies.
   /// @param levelService the service for managing level operations
   /// @param userService the service for accessing user data
     @Autowired
-    public LevelController(LevelService levelService, UserService userService) {
+    public LevelController(LevelService levelService, UserService userService, TileSetService tileSetService, LayerToTiledMapConverter layerToTiledMapConverter) {
         this.levelService = levelService;
         this.userService = userService;
+        this.tileSetService = tileSetService;
+        this.layerToTiledMapConverter = layerToTiledMapConverter;
     }
 
   /// Creates a new empty level and returns a level DTO.

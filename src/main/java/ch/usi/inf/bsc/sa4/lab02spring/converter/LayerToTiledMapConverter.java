@@ -1,12 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.converter;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,12 +20,21 @@ import java.util.Map;
 @Component
 public class LayerToTiledMapConverter {
 
+    private final TileSetService tileSetService;
+
+    public LayerToTiledMapConverter(TileSetService tileSetService) {
+        this.tileSetService = tileSetService;
+    }
+
     private static final Map<String, Object> MAP_METADATA = Map.of(
         "type", "map",
         "orientation", "orthogonal",
         "renderorder", "right-down",
         "tilewidth", 128,
-        "tileheight", 128
+        "tileheight", 128,
+        "version", "1.10",
+        "tiledversion", "1.10.1",
+        "compressionlevel", -1
 );
 
     public Map<String, Object> convertPipeline(
@@ -40,15 +51,43 @@ public class LayerToTiledMapConverter {
         res.put("height",level.getHeight());
         res.put("layers",List.of(worldLayer,objectLayer));
         res.put("tilesets",List.of(tilesetMap));
+        res.put("nextlayerid", 3);
+        res.put("nextobjectid", level.getObjectLayer().size() + 1);
+        res.put("infinite", false);
+        res.put("doorOpen", level.getClearCondition().condition() instanceof Condition.NoClearCondition);
+
+        // Add clear condition as map property
+        List<Map<String, Object>> mapProperties = new ArrayList<>();
+        Map<String, Object> condProp = new LinkedHashMap<>();
+        condProp.put("name", "ClearConditionType");
+        condProp.put("type", "string");
+        
+        String condType = "NONE";
+        if (level.getClearCondition().condition() instanceof Condition.SomeClearCondition some) {
+            condType = some.target().name();
+        }
+        condProp.put("value", condType);
+        mapProperties.add(condProp);
+
+        Map<String, Object> amountProp = new LinkedHashMap<>();
+        amountProp.put("name", "ClearConditionAmount");
+        amountProp.put("type", "int");
+        amountProp.put("value", level.getClearCondition().targetAmount());
+        mapProperties.add(amountProp);
+
+        res.put("properties", mapProperties);
+
         return res;
     }
 
-    private Map<String, Object> buildWolrdLayer(
+    private static Map<String, Object> buildWolrdLayer(
             Map<Position, GroundObject> worldLayer,
             int width,
             int height
     ) {
         List<Integer> data = new ArrayList<>(Collections.nCopies(width * height, 0));
+        
+        // Add ground objects
         for (Map.Entry<Position, GroundObject> entry : worldLayer.entrySet()) {
             Position pos = entry.getKey();
             GroundObject groundObject = entry.getValue();
@@ -62,6 +101,7 @@ public class LayerToTiledMapConverter {
         }
 
         Map<String, Object> res = new LinkedHashMap<>();
+        res.put("id", 1);
         res.put("name", "World");
         res.put("type", "tilelayer");
         res.put("width", width);
@@ -79,12 +119,14 @@ public class LayerToTiledMapConverter {
     )
     {
         List<Map<String,Object>> objects = new ArrayList<>();
+        int idCounter = 1;
         for(GameObject gameObject :objectLayer.values())
         {
-            objects.add(toTiledObject(gameObject));
+            objects.add(toTiledObject(gameObject, idCounter++));
         }
         Map<String,Object> res = new LinkedHashMap<>();
-        res.put("name","Objects");
+        res.put("id", 2);
+        res.put("name","QMLayer");
         res.put("type","objectgroup");
         res.put("draworder","topdown");
         res.put("opacity",1);
@@ -95,13 +137,14 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledObject(GameObject gameObject)
+    private Map<String,Object> toTiledObject(GameObject gameObject, int id)
     {
         Position pos = gameObject.pos();
         int tileSize = 128;
         int x = pos.x() * tileSize;
         int y = (pos.y()+1) * tileSize;
         Map<String,Object> res = new LinkedHashMap<>();
+        res.put("id", id);
         res.put("gid",gameObject.gid());
         res.put("x",x);
         res.put("y",y);
@@ -110,7 +153,8 @@ public class LayerToTiledMapConverter {
         res.put("visible",true);
         res.put("rotation",0);
         res.put("name","");
-        res.put("type","");
+        res.put("type", tileSetService.getObjectTileType(gameObject.gid()));
+
         if(gameObject instanceof Box box)
         {
             List<Map<String,Object>> properties = buildBoxProperties(box);
@@ -121,7 +165,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private List<Map<String,Object>> buildBoxProperties(Box box)
+    private static List<Map<String,Object>> buildBoxProperties(Box box)
     {
         List<Map<String,Object>> properties = new ArrayList<>();
         if (box.content() instanceof Content.SomeContent someContent) {
@@ -134,37 +178,47 @@ public class LayerToTiledMapConverter {
         return properties;
     }
 
-    private Map<String,Object> buildTileset(TileSet tileSet)
-    {
-        List<Map<String,Object>> tiles = new ArrayList<>();
-        for(TileSet.TileData tile :tileSet.tiles())
-        {
-            tiles.add(toTiledTile(tile));
+    private static Map<String, Object> buildTileset(TileSet tileSet) {
+        Map<Integer, Map<String, Object>> tilesMap = new LinkedHashMap<>();
+        for (TileSet.TileData tile : tileSet.tiles()) {
+            tilesMap.put(tile.id(), toTiledTile(tile));
         }
 
-        Map<String,Object> res = new LinkedHashMap<>();
-        res.put("firstgid",tileSet.firstgid());
-        res.put("name",tileSet.name());
-        res.put("tilewidth",tileSet.tilewidth());
-        res.put("tileheight",tileSet.tileheight());
-        res.put("tilecount",tileSet.tilecount());
-        res.put("columns",tileSet.columns());
-        /// tileset only store the imgae filename
-        /// prefix write fixed thing in frontend path
-        res.put("image","/assets/" + tileSet.image());
-        res.put("imagewidth",tileSet.imagewidth());
-        res.put("imageheight",tileSet.imageheight());
-        res.put("margin",tileSet.margin());
-        res.put("spacing",tileSet.spacing());
-        res.put("tiles",tiles);
+        List<Map<String, Object>> tiles = new ArrayList<>();
+        // Tiled IDs are 0-based. tilecount is the total number of tiles.
+        for (int i = 0; i < tileSet.tilecount(); i++) {
+            if (tilesMap.containsKey(i)) {
+                tiles.add(tilesMap.get(i));
+            } else {
+                Map<String, Object> defaultTile = new LinkedHashMap<>();
+                defaultTile.put("id", i);
+                defaultTile.put("type", "");
+                tiles.add(defaultTile);
+            }
+        }
+
+        Map<String, Object> res = new LinkedHashMap<>();
+        res.put("firstgid", tileSet.firstgid());
+        res.put("name", tileSet.name());
+        res.put("tilewidth", tileSet.tilewidth());
+        res.put("tileheight", tileSet.tileheight());
+        res.put("tilecount", tileSet.tilecount());
+        res.put("columns", tileSet.columns());
+        /// Match map1.json: just the image name, no path prefix
+        res.put("image", tileSet.image());
+        res.put("imagewidth", tileSet.imagewidth());
+        res.put("imageheight", tileSet.imageheight());
+        res.put("margin", tileSet.margin());
+        res.put("spacing", tileSet.spacing());
+        res.put("tiles", tiles);
         return res;
     }
 
-    private Map<String,Object> toTiledTile(TileSet.TileData tile)
+    private static Map<String,Object> toTiledTile(TileSet.TileData tile)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("id",tile.id());
-        res.put("type",tile.type());
+        res.put("type",tile.type() != null ? tile.type() : "");
 
         if (tile.properties() != null && !tile.properties().isEmpty()) {
             List<Map<String,Object>> properties = new ArrayList<>();
@@ -180,7 +234,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledProperty(TileSet.Property property)
+    private static Map<String,Object> toTiledProperty(TileSet.Property property)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("name",property.name());
@@ -189,7 +243,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledObjectGroup(TileSet.ObjectGroup objectGroup)
+    private static Map<String,Object> toTiledObjectGroup(TileSet.ObjectGroup objectGroup)
     {
         List<Map<String,Object>> objects = new ArrayList<>();
         for (TileSet.TileObject object : objectGroup.objects()) {
@@ -208,7 +262,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledTileObject(TileSet.TileObject object)
+    private static Map<String,Object> toTiledTileObject(TileSet.TileObject object)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("id",object.id());
@@ -231,7 +285,7 @@ public class LayerToTiledMapConverter {
         return res;
     }
 
-    private Map<String,Object> toTiledPoint(TileSet.Point point)
+    private static Map<String,Object> toTiledPoint(TileSet.Point point)
     {
         Map<String,Object> res = new LinkedHashMap<>();
         res.put("x",point.x());

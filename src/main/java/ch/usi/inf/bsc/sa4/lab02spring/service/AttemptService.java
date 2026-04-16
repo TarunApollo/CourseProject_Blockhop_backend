@@ -101,8 +101,10 @@ public class AttemptService {
     /// @param level the level on which to mark the attempt as uncompleted
     public void setAttemptUncompleted(User user, Level level){
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
+
         if(!attemptList.isEmpty()){
-            this.attemptRepository.save(attemptList.getFirst().setCompleted(false));
+            attemptList.getFirst().setCompleted(false); 
+            this.attemptRepository.save(attemptList.getFirst());
         }
     }
 
@@ -115,7 +117,7 @@ public class AttemptService {
     ///         false otherwise
     public boolean hasCompleted(User user, Level level){
         List<Attempt> attemptList = this.attemptRepository.findByUserAndLevel(user, level);
-        return !attemptList.isEmpty() && attemptList.getFirst().completed();
+        return !attemptList.isEmpty() && attemptList.getFirst().getCompleted();
     }
 
     /// Records a new attempt for the given user on the given level.
@@ -127,20 +129,15 @@ public class AttemptService {
     /// @param user      the user who performed the attempt
     /// @param level     the level the attempt was made on
     /// @param dto       the DTO containing the attempt timestamp and time taken
-    /// @param completed whether the attempt satisfies the level's clear
     ///                  condition
-    public void submitAttempt(User user, Level level, AttemptDTO dto, boolean completed){
-        @SuppressWarnings("NullAway") Attempt attempt = new Attempt(
-                null,
+    public void submitAttempt(User user, Level level, AttemptDTO dto){
+        Attempt attempt = new Attempt(
                 user,
                 dto.timestamp(),
                 level,
-                false,
+                dto.completed(),
                 dto.timeTaken()
         );
-        if(completed){
-            attempt = attempt.setCompleted(true);
-        }
         this.attemptRepository.save(attempt);
     }
 }
