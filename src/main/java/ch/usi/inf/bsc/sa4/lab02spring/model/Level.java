@@ -89,11 +89,14 @@ public class Level {
     /// Creates a copy of the level for a given creator
     /// @spec.requires creator not to be null
     /// @param creator a User instance
-    /// @return a new Level with the same title, description,
+    /// @param title the title for the cloned level
+    /// @return a new Level with the same description,
     ///               clearCondition, objectLayer, and worldLayer as this level,
-    ///               but with the given creator and published set to false.
+    ///               but with the given creator, title, and published set to false.
     ///
-    public Level cloneFor(User creator) { return new Level(this.title, this.description, creator, this.objectLayer, this.worldLayer, this.clearCondition); }
+    public Level cloneFor(User creator, String title) {
+        return new Level(title, this.description, creator, this.objectLayer, this.worldLayer, this.clearCondition);
+    }
 
     /// @return a boolean instance "published"
     public boolean isPublished() { return this.published; }

@@ -18,6 +18,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.Optional;
 
@@ -74,19 +76,51 @@ public class LevelService {
         return levelRepository.save(level);
     }
 
-    /// Clones an existing level for the given user.
+    /// Clones an existing level for the given user with a unique title.
     /// @spec.requires cloneLevelDTO and user are not null.
     /// @spec.effects if a level with the given sourceLevelId exists and belongs
     ///               to the given user, saves a clone of it to the repository
-    ///               with the given user as the new creator.
+    ///               with the given user as the new creator and a unique title
+    ///               like "title (2)", "title (3)", etc.
     /// @param cloneLevelDTO the DTO containing the id of the level to clone.
     /// @param user the user cloning the level.
     /// @return a non-empty Optional containing the cloned Level if the source
     ///          level exists and belongs to the user, an empty Optional otherwise.
     public Optional<Level> cloneLevel(CloneLevelDTO cloneLevelDTO, User user) {
         return this.levelRepository.findById(cloneLevelDTO.sourceLevelId())
-                .filter(level -> level.isOwnedBy(user))  // uses domain method instead of inline check
-                .map(level -> levelRepository.save(level.cloneFor(user)));
+                .filter(level -> level.isOwnedBy(user))
+                .map(level -> {
+                    String baseTitle = level.getTitle();
+                    String uniqueTitle = computeUniqueCloneTitle(baseTitle, user);
+                    return levelRepository.save(level.cloneFor(user, uniqueTitle));
+                });
+    }
+
+    /// Computes a unique title for a cloned level by appending (2), (3), etc.
+    /// @param baseTitle the original title to clone
+    /// @param user the user who will own the clone
+    /// @return a unique title not already used by the user
+    private String computeUniqueCloneTitle(String baseTitle, User user) {
+        Set<String> existingTitles = levelRepository.findByCreator(user).stream()
+                .map(Level::getTitle)
+                .collect(Collectors.toSet());
+
+        String root = baseTitle.replaceAll(" \\(\\d+\\)$", "");
+
+        for (int i = 2; ; i++) {
+            String candidate = root + " (" + i + ")";
+            if (!existingTitles.contains(candidate)) {
+                return candidate;
+            }
+        }
+    }
+
+    // TODO: add jsdoc..
+    public void deleteLevel(String userId, String levelId) {
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        level.ensureOwnedBy(userId);
+        level.ensureModifiable();
+        levelRepository.deleteById(levelId);
     }
 
     /// @return a list of all levels
@@ -213,8 +247,7 @@ public class LevelService {
             popularity = attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
         }
 
-        String thumbnailUrl = "/levels/" + level.getId() + "/thumbnail";
-        return new LevelSummaryDto(level, playCount, clearRate, popularity,thumbnailUrl);
+        return new LevelSummaryDto(level, playCount, clearRate, popularity);
     }
 
     /// Returns all published levels as summaries, sorted by the given criteria.
