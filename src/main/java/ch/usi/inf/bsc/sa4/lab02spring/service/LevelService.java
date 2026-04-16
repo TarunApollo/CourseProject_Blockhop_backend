@@ -115,6 +115,14 @@ public class LevelService {
         }
     }
 
+    // TODO: add jsdoc..
+    public void deleteLevel(String userId, String levelId) {
+        Level level = levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        level.ensureOwnedBy(userId);
+        level.ensureModifiable();
+        levelRepository.deleteById(levelId);
+    }
+
     /// @return a list of all levels
     public List<Level> getAllLevels() {
         return levelRepository.findAll();

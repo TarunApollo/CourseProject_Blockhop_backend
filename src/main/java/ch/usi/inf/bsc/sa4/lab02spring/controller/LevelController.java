@@ -151,6 +151,16 @@ public class LevelController {
         return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
     }
 
+    // TODO: add jsdoc...
+    @DeleteMapping("/{levelId}")
+    public ResponseEntity<Void> deleteLevel(
+            Authentication authentication,
+            @PathVariable String levelId) {
+        String userId = getUserIdFromAuth(authentication);
+        this.levelService.deleteLevel(userId, levelId);
+        return ResponseEntity.noContent().build();
+    }
+
     /// Unpublishes a level owned by the authenticated user.
     /// @param authentication the current authenticated user
     /// @param levelId the ID of the level to unpublish
