@@ -1,21 +1,21 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-/// Sealed interface for the level clear condition.
-/// JSON examples:
-/// - No condition (reach exit): {}
-/// - Collect coins: {"target": "coin"}
-public sealed interface Condition {
+// By using polymorphism with (@JsonTypeInfo), the API accepts
+// exactly what it needs for the specific clear condition type.
+// eg: A some condition contains the target type.
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = Condition.NoClearCondition.class, name = "none"),
+    @JsonSubTypes.Type(value = Condition.SomeClearCondition.class, name = "some")
+})
+public sealed interface Condition 
+    permits Condition.NoClearCondition, Condition.SomeClearCondition {
+
+    // door is open by default
     record NoClearCondition() implements Condition {}
-    record SomeClearCondition(ClearConditionType target) implements Condition {}
 
-    @JsonCreator
-    static Condition fromJson(@JsonProperty("target") String target) {
-        if (target == null || target.isEmpty()) {
-            return new NoClearCondition();
-        }
-        return new SomeClearCondition(ClearConditionType.fromValue(target));
-    }
+    record SomeClearCondition(ClearConditionType target) implements Condition {}
 }
