@@ -383,8 +383,7 @@ public class LevelService {
     public String submitAttempt(String levelId, String userId, AttemptDTO dto){
         User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         Level level = this.getById(levelId).orElseThrow(LevelNotFoundException::new);
-        // boolean completed = this.validateLevelSubmission(level, dto);
-        if(!level.isPublished() && level.isOwnedBy(userId)){
+        if(!level.isPublished() && level.isOwnedBy(userId) && dto.completed()){
             this.validateLevelPublishEligible(level, userId);
         }
         if(!level.isPublished() && !level.isOwnedBy(userId)){
