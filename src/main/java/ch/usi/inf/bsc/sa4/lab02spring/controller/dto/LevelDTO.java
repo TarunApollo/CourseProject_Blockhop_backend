@@ -14,6 +14,7 @@ public record LevelDTO(
         String description,
         User creator,
         boolean published,
+        ClearCondition clearCondition,
         @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
         Map<Position, GameObject> objectLayer,
         @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
@@ -29,6 +30,7 @@ public record LevelDTO(
                 level.getDescription(),
                 level.getCreator(),
                 level.isPublished(),
+                level.getClearCondition(),
                 level.getObjectLayer(),
                 level.getWorldLayer()
         );
