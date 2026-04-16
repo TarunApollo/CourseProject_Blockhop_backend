@@ -414,16 +414,17 @@ public class LevelTests {
         @Test
         @DisplayName("should create an unpublished copy for the new creator")
         public void createsUnpublishedCopy() {
-            Level cloned = this.original.cloneFor(this.cloneCreator);
+            Level cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
             assertFalse(cloned.isPublished());
             assertTrue(cloned.canBeModified());
             assertSame(this.cloneCreator, cloned.getCreator());
+            assertEquals("Cloned Title", cloned.getTitle());
         }
 
         @Test
         @DisplayName("should copy metadata, condition, and layers")
         public void copiesState() {
-            Level cloned = this.original.cloneFor(this.cloneCreator);
+            Level cloned = this.original.cloneFor(this.cloneCreator, this.original.getTitle());
             assertEquals(this.original.getTitle(), cloned.getTitle());
             assertEquals(this.original.getDescription(), cloned.getDescription());
             assertEquals(this.clearCondition, cloned.getClearCondition());
@@ -434,7 +435,7 @@ public class LevelTests {
         @Test
         @DisplayName("should copy the layer maps instead of sharing them")
         public void copiesLayerMaps() {
-            Level cloned = this.original.cloneFor(this.cloneCreator);
+            Level cloned = this.original.cloneFor(this.cloneCreator, "Copy");
             Position clonedOnlyWorldPosition = new Position(10, 2);
             Position clonedOnlyObjectPosition = new Position(11, 3);
             cloned.putWorldLayer(clonedOnlyWorldPosition, new GroundObject(99));
