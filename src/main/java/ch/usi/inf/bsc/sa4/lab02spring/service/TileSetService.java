@@ -45,7 +45,9 @@ public class TileSetService {
                 .collect(Collectors.toUnmodifiableSet());
             
             objectGIDs = tileSet.tiles().stream()
-                .filter(tile -> !Objects.equals(tile.type(), "Ground"))
+                .filter(tile -> !Objects.equals(tile.type(), "Ground")&&
+                !Objects.equals(tile.type(),"Semisolid")&&
+                !Objects.equals(tile.type(),"Damage"))
                 .filter(tile -> tile.type() != null && !tile.type().isEmpty())
                 .collect(Collectors.toUnmodifiableMap(
                     tile -> tileSet.firstgid() + tile.id(),
