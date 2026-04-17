@@ -146,10 +146,10 @@ public class LevelController {
     /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
     ///         target level is already published
     @PutMapping("/{levelId}/properties")
-    public ResponseEntity<Level> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
+    public ResponseEntity<LevelDTO> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        return ResponseEntity.ok(this.levelService.updateLevelProperties(creator, levelId, dto));
+        return ResponseEntity.ok(new LevelDTO(this.levelService.updateLevelProperties(creator, levelId, dto)));
     }
 
     // TODO: add jsdoc...
@@ -169,11 +169,11 @@ public class LevelController {
     /// @throws LevelNotFoundException if the level does not exist
     /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
     @PutMapping("/{levelId}/unpublish")
-    public ResponseEntity<Level> unpublishLevel(
+    public ResponseEntity<LevelDTO> unpublishLevel(
             Authentication authentication,
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(this.levelService.unpublishLevel(userId, levelId));
+        return ResponseEntity.ok(new LevelDTO(this.levelService.unpublishLevel(userId, levelId)));
     }
 
     /// Publishes the specified level.
@@ -185,11 +185,11 @@ public class LevelController {
     /// @param levelId the id of the target level
     /// @return a 200 OK response containing the published level
     @PutMapping(path = "/{levelId}/publish")
-    public ResponseEntity<Level> publishLevel(
+    public ResponseEntity<LevelDTO> publishLevel(
             Authentication authentication,
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(this.levelService.publish(userId, levelId));
+        return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
     }
 
     /// Submits an attempt for the specified level on behalf of the authenticated
