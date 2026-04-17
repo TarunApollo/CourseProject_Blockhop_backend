@@ -1,23 +1,20 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /// Sealed interface for box content.
 /// JSON examples:
-/// - Empty: {}
-/// - Gold coin: {"type": "Item_Coin_Gold"}
-public sealed interface Content {
+/// - Empty: {"type": "none"}
+/// - Gold coin: {"type": "some", "coinType": "Item_Coin_Gold"}
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = Content.NoContent.class, name = "none"),
+    @JsonSubTypes.Type(value = Content.SomeContent.class, name = "some")
+})
+public sealed interface Content permits Content.NoContent, Content.SomeContent {
     
     record NoContent() implements Content {}
     
-    record SomeContent(CoinType type) implements Content {}
-
-    @JsonCreator
-    static Content fromJson(@JsonProperty("type") String type) {
-        if (type == null || type.isEmpty()) {
-            return new NoContent();
-        }
-        return new SomeContent(CoinType.fromValue(type));
-    }
+    record SomeContent(CoinType coinType) implements Content {}
 }

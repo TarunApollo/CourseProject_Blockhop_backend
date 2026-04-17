@@ -172,7 +172,7 @@ public class LayerToTiledMapConverter {
             Map<String,Object> contentProperty = new LinkedHashMap<>();
             contentProperty.put("name", "Content");
             contentProperty.put("type", "string");
-            contentProperty.put("value", someContent.type().value());
+            contentProperty.put("value", someContent.coinType().value());
             properties.add(contentProperty);
         }
         return properties;
