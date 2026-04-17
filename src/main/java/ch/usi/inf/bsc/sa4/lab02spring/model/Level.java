@@ -101,6 +101,8 @@ public class Level {
     /// @return a boolean instance "published"
     public boolean isPublished() { return this.published; }
 
+    public boolean isPublishEligible() { return this.publishEligible; }
+
     /// @return the unique identifier of this level.
     public String getId() {
         return id;
