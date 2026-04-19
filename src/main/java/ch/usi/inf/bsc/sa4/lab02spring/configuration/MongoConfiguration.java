@@ -12,6 +12,12 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+/**
+ * MongoDB configuration for the application.
+ * <p>
+ * Registers MongoDB mapping packages, entity classes, and custom converters
+ * used to persist and read domain objects.
+ */
 @Configuration
 public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
@@ -40,6 +46,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         return entitySet;
     }
 
+    /**
+     * Converts a {@link Position} to its compact string representation.
+     */
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
         public String convert(Position position){
@@ -47,6 +56,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
+    /**
+     * Converts a compact string representation to a {@link Position}.
+     */
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
         public Position convert(String string){
@@ -57,6 +69,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
+    /**
+     * Converts a {@link ZonedDateTime} to a {@link Date} for MongoDB storage.
+     */
     @WritingConverter
     public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
         @Override
@@ -65,6 +80,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
+    /**
+     * Converts a {@link Date} read from MongoDB to a {@link ZonedDateTime}.
+     */
     @ReadingConverter
     public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
         @Override
