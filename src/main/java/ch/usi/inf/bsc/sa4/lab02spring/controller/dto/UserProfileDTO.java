@@ -14,7 +14,7 @@ public record UserProfileDTO(
     /// @param user the user whose profile to represent
     /// @param playedLevelsCount the number of distinct levels the user has played
     /// @param completedLevelsCount the number of distinct levels the user has completed
-    /// @param createdLevels the list of levels created by the user as LevelDTOs
+    /// @param createdLevels the list of created levels enriched with profile statistics
     public UserProfileDTO(User user, long playedLevelsCount, long completedLevelsCount, List<CreatedLevelProfileDTO> createdLevels) {
         this(
                 user.getName(),
