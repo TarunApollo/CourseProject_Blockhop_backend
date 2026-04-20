@@ -29,7 +29,6 @@ public class LevelPublishService {
     ///               level.
     /// @param userId  the unique identifier of the user requesting the publish
     /// @param levelId the id of the level to publish
-    /// @return the published and saved Level
     /// @throws LevelNotFoundException        if no level with the given id exists
     /// @throws UserNotFoundException         if no user with the given id exists
     /// @throws ForbiddenLevelActionException if the user is not the owner of the
@@ -44,7 +43,6 @@ public class LevelPublishService {
     /// Unpublishes an existing level owned by the given user.
     /// @param userId the authenticated user's ID
     /// @param levelId the ID of the level to unpublish
-    /// @return the updated level
     /// @throws LevelNotFoundException if the level does not exist
     /// @throws ForbiddenUserException if the user is not the owner of the level
     public void unpublishLevel(String userId, String levelId) {
