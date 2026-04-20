@@ -11,7 +11,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 @Component
 public class DateRangePresetConverter implements Converter<String, DateRangePreset> {
     @Override
-    public DateRangePreset convert(String source) {
+    public DateRangePreset convert(final String source) {
         return DateRangePreset.fromValue(source);
     }
 }

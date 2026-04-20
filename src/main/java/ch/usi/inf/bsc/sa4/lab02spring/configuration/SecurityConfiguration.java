@@ -39,7 +39,7 @@ public class SecurityConfiguration {
     /// @param http the HTTP security configuration
     /// @return the configured security filter chain
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(final HttpSecurity http) {
         return http.csrf(csrf -> csrf
         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(auth -> auth

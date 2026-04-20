@@ -40,7 +40,7 @@ public class UserService {
   /// @return the newly created user.
   /// @spec.requires <code>createUserDTO != null</code>
   /// 
-  public User createUser(CreateUserDTO dto) {
+  public User createUser(final CreateUserDTO dto) {
     User newUser = new User(dto.id(), dto.fullName());
     return this.userRepository.save(newUser);
   }

@@ -35,7 +35,7 @@ public class EditorController {
     ///@param editorService service used to apply editor updates
     ///
     @Autowired
-    public EditorController(EditorService editorService) {
+    public EditorController(final EditorService editorService) {
         this.editorService = editorService;
     }
 
@@ -59,9 +59,9 @@ public class EditorController {
     /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
     @PutMapping("/{levelId}/world-layer")
     public ResponseEntity<WorldLayerResponseDTO> replaceWorldLayer(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody UpdateWorldLayerDTO dto) {
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final UpdateWorldLayerDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
@@ -99,9 +99,9 @@ public class EditorController {
     /// @throws IllegalArgumentException if any position is out of bounds, gid is invalid, or duplicate positions
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> replaceObjectLayer(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody UpdateObjectLayerDTO dto) {
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final UpdateObjectLayerDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
@@ -125,9 +125,9 @@ public class EditorController {
     /// @throws IllegalArgumentException if property doesn't match object type
     @PatchMapping("/{levelId}/object-layer/properties")
     public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody UpdateObjectPropertiesDTO dto) {
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final UpdateObjectPropertiesDTO dto) {
         String userId = getUserIdFromAuth(authentication);
         Level updated = editorService.updateObjectProperties(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));

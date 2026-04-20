@@ -49,7 +49,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     ///
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
-        public String convert(Position position){
+        public String convert(final Position position){
             return position.compactString();
         }
     }
@@ -59,7 +59,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     ///
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
-        public Position convert(String string){
+        public Position convert(final String string){
             String[] parts = string.split(",");
             int posX = Integer.parseInt(parts[0]);
             int posY = Integer.parseInt(parts[1]);

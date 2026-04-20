@@ -24,12 +24,12 @@ public class FieldSerializer {
             this(Map.class);
         }
 
-        protected LevelDTOObjectLayerSerializer(Class<?> t) {
+        protected LevelDTOObjectLayerSerializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Map<Position, GameObject> value, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
+        public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
             for (Map.Entry<Position, GameObject> element: value.entrySet()) {
                 var key = element.getKey().compactString();
@@ -46,12 +46,12 @@ public class FieldSerializer {
             this(Map.class);
         }
 
-        protected LevelDTOWorldLayerSerializer(Class<?> t) {
+        protected LevelDTOWorldLayerSerializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Map<Position, GroundObject> value, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
+        public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
             for (Map.Entry<Position, GroundObject> element: value.entrySet()) {
                 var key = element.getKey().compactString();
@@ -68,12 +68,12 @@ public class FieldSerializer {
             this(Map.class);
         }
 
-        protected WorldLayerDeserializer(Class<?> t) {
+        protected WorldLayerDeserializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public Map<Position, GroundObject> deserialize(JsonParser p, DeserializationContext context) {
+        public Map<Position, GroundObject> deserialize(final JsonParser p, DeserializationContext context) {
             Map<Position, GroundObject> map = new HashMap<>();
 
             while (p.nextToken() != JsonToken.END_OBJECT) {

@@ -45,8 +45,8 @@ public class EditorService {
     /// @param gameObjectFactory factory for creating game objects
     /// @param levelService service for level validation/update logic
     @Autowired
-    public EditorService(LevelRepository levelRepository, TileSetService tileSetService,
-            GameObjectFactory gameObjectFactory, LevelService levelService) {
+    public EditorService(final LevelRepository levelRepository, final TileSetService tileSetService,
+            final GameObjectFactory gameObjectFactory, final LevelService levelService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
@@ -65,7 +65,7 @@ public class EditorService {
     /// @throws ForbiddenUserException   if not level owner
     /// @throws LevelPublishedException  if level is published
     /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
-    public Level replaceWorldLayer(String userId, String levelId, UpdateWorldLayerDTO dto) {
+    public Level replaceWorldLayer(final String userId, final String levelId, final UpdateWorldLayerDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
@@ -98,7 +98,7 @@ public class EditorService {
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if any position is out of bounds, gid invalid, or placement rules violated
-    public Level replaceObjectLayer(String userId, String levelId, UpdateObjectLayerDTO dto) {
+    public Level replaceObjectLayer(final String userId, final String levelId, final UpdateObjectLayerDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
@@ -139,7 +139,7 @@ public class EditorService {
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if property doesn't match object type
-    public Level updateObjectProperties(String userId, String levelId, UpdateObjectPropertiesDTO dto) {
+    public Level updateObjectProperties(final String userId, final String levelId, final UpdateObjectPropertiesDTO dto) {
         Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 

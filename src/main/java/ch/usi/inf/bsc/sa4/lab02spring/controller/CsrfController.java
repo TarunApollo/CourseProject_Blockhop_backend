@@ -13,7 +13,7 @@ public class CsrfController {
     /// @param csrfToken the injected CSRF token
     /// @return the current CSRF token
     @GetMapping("/csrf")
-    public CsrfToken csrf(CsrfToken csrfToken) {
+    public CsrfToken csrf(final CsrfToken csrfToken) {
         return csrfToken;
     }
 }

@@ -14,7 +14,7 @@ public final class AuthUtils {
     /// @param authentication the current authentication object
     /// @return the authenticated user's subject/id
     /// @throws ResponseStatusException if authentication is missing or unsupported
-    public static String getUserIdFromAuth(Authentication authentication) {
+    public static String getUserIdFromAuth(final Authentication authentication) {
         if (authentication == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         } else {
@@ -35,7 +35,7 @@ public final class AuthUtils {
     /// @param authentication the current authentication object
     /// @return the authenticated user's name
     /// @throws ResponseStatusException if the name is unavailable
-    public static String getUserNameFromAuth(Authentication authentication) {
+    public static String getUserNameFromAuth(final Authentication authentication) {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof Jwt jwt) {

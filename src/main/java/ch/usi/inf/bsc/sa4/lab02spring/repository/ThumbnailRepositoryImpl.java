@@ -23,12 +23,12 @@ public class ThumbnailRepositoryImpl implements ThumbnailRepository {
 
     /// Creates a thumbnail repository backed by the given GridFS template.
     /// @param gridFsTemplate the template used for thumbnail storage
-    public ThumbnailRepositoryImpl(GridFsTemplate gridFsTemplate) {
+    public ThumbnailRepositoryImpl(final GridFsTemplate gridFsTemplate) {
         this.gridFsTemplate = gridFsTemplate;
     }
 
     @Override
-    public String storeThumbnail(String levelId, byte[] pngBytes) {
+    public String storeThumbnail(final String levelId, final byte[] pngBytes) {
         ObjectId fileId = gridFsTemplate.store(
                 new ByteArrayInputStream(pngBytes),
                 "level-" + levelId + ".png",
@@ -38,13 +38,13 @@ public class ThumbnailRepositoryImpl implements ThumbnailRepository {
     }
 
     @Override
-    public void deleteThumbnail(String storageId) {
+    public void deleteThumbnail(final String storageId) {
         gridFsTemplate.delete(
                 Query.query(Criteria.where("_id").is(new ObjectId(storageId))));
     }
 
     @Override
-    public byte[] loadThumbnail(String storageId)
+    public byte[] loadThumbnail(final String storageId)
     {
         GridFSFile file = gridFsTemplate.findOne(
              Query.query(Criteria.where("_id").is(new ObjectId(storageId))));

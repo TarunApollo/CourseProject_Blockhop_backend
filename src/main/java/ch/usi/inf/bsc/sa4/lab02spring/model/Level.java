@@ -63,7 +63,7 @@ public class Level {
     /// @param title a string that represents the name of the level
     /// @param description short description of the level
     /// @param user the user instance of the user creating the level
-    public Level(String title, String description, User user) {
+    public Level(final String title, final String description, final User user) {
         this.title = title;
         this.description = description;
         this.published = false;
@@ -80,7 +80,7 @@ public class Level {
     /// @param objectLayer a map of positions to game objects in the object layer
     /// @param worldLayer a map of positions to ground objects in the world layer
     @PersistenceCreator
-    public Level(User creator, String title, String description, boolean published, ClearCondition clearCondition, Map<Position, GameObject> objectLayer, Map<Position, GroundObject>  worldLayer) {
+    public Level(final User creator, final String title, final String description, final boolean published, final ClearCondition clearCondition, final Map<Position, GameObject> objectLayer, final Map<Position, GroundObject>  worldLayer) {
         this.creator = creator;
         this.title = title;
         this.description = description;
@@ -90,7 +90,7 @@ public class Level {
         this.worldLayer.putAll(worldLayer);
     }
 
-
+    // Javadoc misses parameter clearCondition
     /// Creates a new unpublished level with pre-existing object and world layers.
     /// @param title the name of the level
     /// @param description a short description of the level
@@ -98,7 +98,7 @@ public class Level {
     /// @param objectLayer a map of positions to game objects to copy into the object layer
     /// @param worldLayer a map of positions to ground objects to copy into the world layer
     ///
-    private Level(String title, String description, User creator,  Map<Position, GameObject> objectLayer, Map<Position, GroundObject> worldLayer, ClearCondition clearCondition) {
+    private Level(final String title, final String description, final User creator,  final Map<Position, GameObject> objectLayer, final Map<Position, GroundObject> worldLayer, final ClearCondition clearCondition) {
         this(title, description, creator);
         this.clearCondition = clearCondition;
         this.objectLayer.putAll(objectLayer);
@@ -113,7 +113,7 @@ public class Level {
     ///               clearCondition, objectLayer, and worldLayer as this level,
     ///               but with the given creator, title, and published set to false.
     ///
-    public Level cloneFor(User creator, String title) {
+    public Level cloneFor(final User creator, final String title) {
         return new Level(title, this.description, creator, this.objectLayer, this.worldLayer, this.clearCondition);
     }
 
@@ -161,14 +161,14 @@ public class Level {
     /// Adds or replaces a game object at the given position in the object layer.
     /// @param pos the position at which to place the game object
     /// @param gameObject the game object to place
-    public void putObjectLayer(Position pos, GameObject gameObject) {
+    public void putObjectLayer(final Position pos, final GameObject gameObject) {
         this.objectLayer.put(pos, gameObject);
     }
 
     /// Adds or replaces a ground object at the given position in the world layer.
     /// @param pos the position at which to place the ground object
     /// @param groundObject the ground object to place
-    public void putWorldLayer(Position pos, GroundObject groundObject) {
+    public void putWorldLayer(final Position pos, final GroundObject groundObject) {
         this.worldLayer.put(pos, groundObject);
     }
 
@@ -179,12 +179,12 @@ public class Level {
 
 
     /// remove a ground object from the world layer.
-    public void removeGroundObject(Position pos){
+    public void removeGroundObject(final Position pos){
         this.worldLayer.remove(pos);
     }
 
     /// remove a game object from the objectLayer(why on earth do we call it the object layer if they are all objects??)
-    public void removeObjectLayer(Position pos) {
+    public void removeObjectLayer(final Position pos) {
         this.objectLayer.remove(pos);
     }
 
@@ -198,14 +198,14 @@ public class Level {
     /// @spec.modifies this.
     /// @spec.effects sets the title of this level to the given title.
     /// @param title the new title of this level.
-    public void setTitle(String title) { this.title = title; }
+    public void setTitle(final String title) { this.title = title; }
 
     /// Sets the description of this level.
     /// @spec.requires description is not null.
     /// @spec.modifies this.
     /// @spec.effects sets the description of this level to the given description.
     /// @param description the new description of this level.
-    public void setDescription(String description) { this.description = description; }
+    public void setDescription(final String description) { this.description = description; }
 
     /// Publishes this level on behalf of its creator.
     /// @spec.modifies this.
@@ -216,7 +216,7 @@ public class Level {
     ///                                level.
     /// @throws ForbiddenLevelActionException if this level is not currently marked
     ///                                       as publish eligible.
-    public void publish(String userId)
+    public void publish(final String userId)
     {
         ensureOwnedBy(userId);
         ensurePublishableObjectLayer();
@@ -233,7 +233,7 @@ public class Level {
     /// @spec.effects sets this level's publishEligible flag to true.
     /// @param userId the ID of the user requesting to validate publish eligibility.
     /// @throws ForbiddenUserException if the given user is not the owner of this level.
-    public void validatePublishEligible(String userId)
+    public void validatePublishEligible(final String userId)
     {
         ensureOwnedBy(userId);
         this.publishEligible = true;
@@ -244,7 +244,7 @@ public class Level {
     /// @spec.effects sets this level's publishEligible flag to false.
     /// @param userId the ID of the user requesting to invalidate publish eligibility.
     /// @throws ForbiddenUserException if the given user is not the owner of this level.
-    public void invalidatePublishEligible(String userId)
+    public void invalidatePublishEligible(final String userId)
     {
         ensureOwnedBy(userId);
         this.publishEligible = false;
@@ -256,7 +256,7 @@ public class Level {
     /// @spec.modifies this.
     /// @spec.effects sets this level's published status to false.
     /// @param userId the ID of the user requesting to unpublish this level.
-    public void unpublish(String userId) {
+    public void unpublish(final String userId) {
         this.ensureOwnedBy(userId);
         this.published = false;
     }
@@ -266,20 +266,20 @@ public class Level {
     /// @spec.modifies this.
     /// @spec.effects sets the clear condition of this level to the given value.
     /// @param clearCondition the new clear condition of this level.
-    public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
+    public void setClearCondition(final ClearCondition clearCondition) { this.clearCondition = clearCondition; }
 
 
     /// Returns whether this level is owned by the given user id.
     /// @param userId the user id to check
     /// @return true if the user owns this level, otherwise false
-    public boolean isOwnedBy(String userId) {
+    public boolean isOwnedBy(final String userId) {
         return this.creator.getId().equals(userId);
     }
 
     /// Returns whether this level is owned by the given user.
     /// @param user the user to check
     /// @return true if the user owns this level, otherwise false
-    public boolean isOwnedBy(User user) {
+    public boolean isOwnedBy(final User user) {
         return this.creator.getId().equals(user.getId());
     }
 
@@ -300,7 +300,7 @@ public class Level {
     /// Ensures that the provided object layer contains at most one start flag and one exit door.
     /// @param incomingObjectLayer the object layer to validate
     /// @throws IllegalArgumentException if more than one start flag or exit door is present
-    public void ensureValidObjectLayer(Map<Position,GameObject> incomingObjectLayer)
+    public void ensureValidObjectLayer(final Map<Position,GameObject> incomingObjectLayer)
     {
         long countFlag = incomingObjectLayer.values().stream()
         .filter(StartFlag.class::isInstance)
@@ -360,7 +360,7 @@ public class Level {
     /// Ensures that the given user id matches the creator of this level.
     /// @param userId the user id to validate
     /// @throws ForbiddenUserException if the user is not the owner of this level
-    public void ensureOwnedBy(String userId) {
+    public void ensureOwnedBy(final String userId) {
         if (!isOwnedBy(userId)) {
             throw new ForbiddenUserException("Only the level owner can perform this action");
         }
@@ -369,7 +369,7 @@ public class Level {
     /// Checks whether a position lies inside the level bounds.
     /// @param position the position to test
     /// @return true if the position is within bounds, otherwise false
-    public boolean isWithinBounds(Position position) {
+    public boolean isWithinBounds(final Position position) {
         return position.x() >= 0 && position.x() < DEFAULT_WIDTH
             && position.y() >= 0 && position.y() < DEFAULT_HEIGHT;
     }
@@ -377,7 +377,7 @@ public class Level {
     /// Ensures that a position is within the level bounds.
     /// @param position the position to validate
     /// @throws IllegalArgumentException if the position is null or out of bounds
-    public void ensureWithinBounds(Position position) {
+    public void ensureWithinBounds(final Position position) {
         if (position == null) {
             throw new IllegalArgumentException("Position cannot be null");
         }
@@ -392,19 +392,19 @@ public class Level {
     /// Ensures that no object or ground tile already occupies the given position.
     /// @param position the position to validate
     /// @throws ObjectPlacementConflictException if the position is already occupied
-    public void ensureObjectCanBePlacedAt(Position position)
+    public void ensureObjectCanBePlacedAt(final Position position)
     {
         if(this.worldLayer.containsKey(position) || this.objectLayer.containsKey(position)){
             throw new ObjectPlacementConflictException();
         }
     }
 
-    public void setWorldLayer(Map<Position, GroundObject> worldLayer) {
+    public void setWorldLayer(final Map<Position, GroundObject> worldLayer) {
         this.worldLayer.clear();
         this.worldLayer.putAll(worldLayer);
     }
 
-    public void setObjectLayer(Map<Position, GameObject> objectLayer) {
+    public void setObjectLayer(final Map<Position, GameObject> objectLayer) {
         this.objectLayer.clear();
         this.objectLayer.putAll(objectLayer);
     }
@@ -415,7 +415,7 @@ public class Level {
     /// @throws IllegalArgumentException if position is out of bounds
     /// @throws NoSuchElementException if no object exists at the position
     /// @throws IllegalArgumentException if the object at the position is not a Box
-    public void updateBoxContent(Position position, Content content) {
+    public void updateBoxContent(final Position position, final Content content) {
         this.ensureWithinBounds(position);
         GameObject existing = this.objectLayer.get(position);
         if (existing == null) {

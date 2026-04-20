@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Can't modify an already published level")
 public class LevelPublishedException extends RuntimeException {
-    public LevelPublishedException(String message){
+    public LevelPublishedException(final String message){
         super(message);
     }
 }

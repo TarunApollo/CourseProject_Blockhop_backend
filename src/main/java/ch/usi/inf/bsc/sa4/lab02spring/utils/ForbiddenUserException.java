@@ -5,5 +5,5 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "The current user is not allowed to do this operation")
 public class ForbiddenUserException extends RuntimeException {
-    public ForbiddenUserException(String message) { super(message); }
+    public ForbiddenUserException(final String message) { super(message); }
 }

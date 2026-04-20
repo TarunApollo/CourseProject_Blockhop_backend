@@ -16,21 +16,21 @@ public class AttemptStatisticsRepositoryImpl implements AttemptStatisticsReposit
 
     /// Creates a statistics repository backed by the provided Mongo template.
     /// @param mongoTemplate the template used to query the database
-    public AttemptStatisticsRepositoryImpl(MongoTemplate mongoTemplate) {
+    public AttemptStatisticsRepositoryImpl(final MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
     @Override
-    public long countDistinctPlayedLevelsByUser(User user) {
+    public long countDistinctPlayedLevelsByUser(final User user) {
         return countDistinctLevelsByUser(user, false);
     }
 
     @Override
-    public long countDistinctCompletedLevelsByUser(User user) {
+    public long countDistinctCompletedLevelsByUser(final User user) {
         return countDistinctLevelsByUser(user, true);
     }
 
-    private long countDistinctLevelsByUser(User user, boolean completedOnly) {
+    private long countDistinctLevelsByUser(final User user, final boolean completedOnly) {
         Criteria criteria = Criteria.where("user.$id").is(user.getId());
         if (completedOnly) {
             criteria = criteria.and("completed").is(true);

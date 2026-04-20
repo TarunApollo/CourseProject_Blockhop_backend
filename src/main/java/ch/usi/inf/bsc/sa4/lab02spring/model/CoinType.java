@@ -14,7 +14,7 @@ public enum CoinType {
     /// External string representation used for JSON serialization.
     private final String value;
 
-    CoinType(String value) {
+    CoinType(final String value) {
         this.value = value;
     }
 
@@ -28,7 +28,7 @@ public enum CoinType {
     /// @return the matching coin type
     /// @throws IllegalArgumentException if the value is not recognized
     @JsonCreator
-    public static CoinType fromValue(String value) {
+    public static CoinType fromValue(final String value) {
         for (CoinType type : values()) {
             if (type.value.equals(value)) {
                 return type;

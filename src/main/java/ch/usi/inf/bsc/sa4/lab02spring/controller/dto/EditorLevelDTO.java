@@ -13,9 +13,9 @@ public record EditorLevelDTO(Position position, int gid, Content content) {
     /// @return a new {@code EditorLevelDTO}
     @JsonCreator
     public static EditorLevelDTO create(
-            @JsonProperty("position") Position position,
-            @JsonProperty("gid") int gid,
-            @JsonProperty("content") Content content) {
+            @JsonProperty("position") final Position position,
+            @JsonProperty("gid") final int gid,
+            @JsonProperty("content") final Content content) {
         return new EditorLevelDTO(position, gid, 
             content != null ? content : new Content.NoContent());
     }
@@ -24,7 +24,7 @@ public record EditorLevelDTO(Position position, int gid, Content content) {
     /// @param position the position of the tile or object
     /// @param gid the global tile id
     /// @return a new {@code EditorLevelDTO} with empty content
-    public static EditorLevelDTO create(Position position, int gid) {
+    public static EditorLevelDTO create(final Position position, final int gid) {
         return new EditorLevelDTO(position, gid, new Content.NoContent());
     }
 }

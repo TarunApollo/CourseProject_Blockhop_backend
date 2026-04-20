@@ -20,7 +20,7 @@ public class User {
     ///               with levelsPlayed and levelsCompleted initialized as empty sets.
     /// @param id the unique identifier of the user (switchEduId).
     /// @param name the display name of the user.
-    public User(String id, String name) {
+    public User(final String id, final String name) {
         this.id = id;
         this.name = name;
     }

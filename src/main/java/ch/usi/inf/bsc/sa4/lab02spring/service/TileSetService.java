@@ -68,21 +68,21 @@ public class TileSetService {
     /// Checks whether the given GID belongs to a ground tile.
     /// @param gid the tile id to check
     /// @return true if the gid is a ground tile, otherwise false
-    public boolean isGroundGID(int gid) {
+    public boolean isGroundGID(final int gid) {
         return groundGIDs.contains(gid);
     }
 
     /// Checks whether the given GID belongs to an object tile.
     /// @param gid the tile id to check
     /// @return true if the gid is an object tile, otherwise false
-    public boolean isObjectGID(int gid) {
+    public boolean isObjectGID(final int gid) {
         return objectGIDs.containsKey(gid);
     }
 
     /// Returns the semantic type associated with an object tile GID.
     /// @param gid the tile id to resolve
     /// @return the object type, or an empty string if unknown
-    public String getObjectTileType(int gid) {
+    public String getObjectTileType(final int gid) {
         return objectGIDs.getOrDefault(gid, "");
     }
 }

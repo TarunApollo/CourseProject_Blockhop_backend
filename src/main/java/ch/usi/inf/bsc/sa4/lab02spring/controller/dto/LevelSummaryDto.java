@@ -28,10 +28,10 @@ public record LevelSummaryDto(
     /// @param playCount the total number of attempts on this level
     /// @param clearRate the ratio of completed attempts to total attempts
     /// @param popularity the number of attempts within a recent time period
-    public LevelSummaryDto(Level level, 
-        long playCount, 
-        double clearRate, 
-        long popularity) {
+    public LevelSummaryDto(final Level level, 
+        final long playCount, 
+        final double clearRate, 
+        final long popularity) {
         this(
                 level.getId(),
                 level.getTitle(),

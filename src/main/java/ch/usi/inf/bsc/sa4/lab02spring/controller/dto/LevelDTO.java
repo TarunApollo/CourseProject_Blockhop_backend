@@ -24,7 +24,7 @@ public record LevelDTO(
 
     /// Constructs a LevelDTO from the given Level entity.
     /// @param level the level to convert into a DTO
-    public LevelDTO(Level level) {
+    public LevelDTO(final Level level) {
         this(
                 level.getId(),
                 level.getTitle(),

@@ -6,7 +6,7 @@ public record UserDTO(String id, String name) {
 
   /// Constructs a UserDTO from the given User entity.
   /// @param user the user to convert into a DTO
-  public UserDTO(User user) {
+  public UserDTO(final User user) {
     this(user.getId(), user.getName());
   }
 

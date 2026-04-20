@@ -9,7 +9,7 @@ import java.util.Locale;
 public sealed interface DateRangePreset
         permits DateRangePreset.AllTimeDateRangePreset, DateRangePreset.RelativeDateRangePreset {
 
-    static DateRangePreset fromValue(String value) {
+    static DateRangePreset fromValue(final String value) {
         String normalized = value.trim().toUpperCase(Locale.ROOT);
 
         if (AllTimeDateRangePreset.ALL_TIME.name().equals(normalized)) {
@@ -31,7 +31,7 @@ public sealed interface DateRangePreset
 
         private final Duration duration;
 
-        RelativeDateRangePreset(Duration duration) {
+        RelativeDateRangePreset(final Duration duration) {
             this.duration = duration;
         }
 

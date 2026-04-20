@@ -16,7 +16,7 @@ public enum ClearConditionType {
     /// External string representation used for JSON serialization.
     private final String value;
 
-    ClearConditionType(String value) {
+    ClearConditionType(final String value) {
         this.value = value;
     }
 
@@ -31,7 +31,7 @@ public enum ClearConditionType {
     /// @return the matching clear-condition type
     /// @throws IllegalArgumentException if the value is not recognized
     @JsonCreator
-    public static ClearConditionType fromValue(String value) {
+    public static ClearConditionType fromValue(final String value) {
         for (ClearConditionType type : values()) {
             if (type.value.equals(value)) {
                 return type;
