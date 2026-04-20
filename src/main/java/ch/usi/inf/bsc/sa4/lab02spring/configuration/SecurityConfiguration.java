@@ -42,7 +42,6 @@ public class SecurityConfiguration {
      *
      * @param http the HTTP security configuration
      * @return the configured security filter chain
-     * @throws Exception if the security configuration cannot be built
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) {
