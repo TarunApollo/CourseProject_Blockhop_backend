@@ -8,8 +8,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 
 import java.util.List;
 import java.util.Optional;

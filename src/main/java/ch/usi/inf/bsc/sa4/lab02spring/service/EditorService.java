@@ -19,6 +19,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
@@ -29,15 +30,18 @@ public class EditorService {
     private final LevelRepository levelRepository;
     private final TileSetService tileSetService;
     private final GameObjectFactory gameObjectFactory;
-    private final LevelService levelService;
+    private final LevelPublishService levelPublishService;
 
     @Autowired
-    public EditorService(LevelRepository levelRepository, TileSetService tileSetService,
-            GameObjectFactory gameObjectFactory, LevelService levelService) {
+    public EditorService(
+            LevelRepository levelRepository,
+            TileSetService tileSetService,
+            GameObjectFactory gameObjectFactory,
+            LevelPublishService levelPublishService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
-        this.levelService = levelService;
+        this.levelPublishService = levelPublishService;
     }
 
     /// Replaces the entire world layer of a level.
@@ -69,7 +73,7 @@ public class EditorService {
 
         level.setWorldLayer(newWorldLayer);
 
-        this.levelService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -113,7 +117,7 @@ public class EditorService {
         level.ensureValidObjectLayer(newObjectLayer);
         level.setObjectLayer(newObjectLayer);
 
-        this.levelService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -142,7 +146,7 @@ public class EditorService {
                     "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
-        this.levelService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 }

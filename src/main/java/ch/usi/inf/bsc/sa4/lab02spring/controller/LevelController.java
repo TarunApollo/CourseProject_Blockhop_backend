@@ -1,28 +1,35 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
-
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
-import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPlayService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
-
-import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
-import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -31,19 +38,29 @@ import java.util.Map;
 @RequestMapping("/levels")
 public class LevelController {
     private final LevelService levelService;
+    private final LevelAggregationService levelAggregationService;
+    private final LevelPublishService levelPublishService;
+    private final LevelPlayService levelPlayService;
     private final UserService userService;
-    private final TileSetService tileSetService;
-    private final LayerToTiledMapConverter layerToTiledMapConverter;
 
-  /// Constructs a new LevelController with the given dependencies.
-  /// @param levelService the service for managing level operations
-  /// @param userService the service for accessing user data
+    /// Constructs a new LevelController with the given dependencies.
+    /// @param levelService the service for managing core level operations
+    /// @param levelAggregationService the service for published level summaries
+    /// @param levelPublishService the service for publish and unpublish actions
+    /// @param levelPlayService the service for play flow and submissions
+    /// @param userService the service for accessing user data
     @Autowired
-    public LevelController(LevelService levelService, UserService userService, TileSetService tileSetService, LayerToTiledMapConverter layerToTiledMapConverter) {
+    public LevelController(
+            final LevelService levelService,
+            final LevelAggregationService levelAggregationService,
+            final LevelPublishService levelPublishService,
+            final LevelPlayService levelPlayService,
+            final UserService userService) {
         this.levelService = levelService;
+        this.levelAggregationService = levelAggregationService;
+        this.levelPublishService = levelPublishService;
+        this.levelPlayService = levelPlayService;
         this.userService = userService;
-        this.tileSetService = tileSetService;
-        this.layerToTiledMapConverter = layerToTiledMapConverter;
     }
 
   /// Creates a new empty level and returns a level DTO.
@@ -72,7 +89,7 @@ public class LevelController {
     public List<LevelSummaryDto> getPublishedLevels(
             @RequestParam PublishedLevelSortBy sortBy,
             @RequestParam(defaultValue = "ALL_TIME") DateRangePreset period) {
-        return this.levelService.getPublishedLevels(sortBy, period);
+        return this.levelAggregationService.getPublishedLevels(sortBy, period);
     }
 
     /// Clones the given level if it exists and the authenticated user is its
@@ -136,15 +153,16 @@ public class LevelController {
     /// Unpublishes a level owned by the authenticated user.
     /// @param authentication the current authenticated user
     /// @param levelId the ID of the level to unpublish
-    /// @return 200 OK with the updated level
+    /// @return 204 No Content when the level is unpublished successfully
     /// @throws LevelNotFoundException if the level does not exist
     /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
     @PutMapping("/{levelId}/unpublish")
-    public ResponseEntity<LevelDTO> unpublishLevel(
+    public ResponseEntity<Void> unpublishLevel(
             Authentication authentication,
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(new LevelDTO(this.levelService.unpublishLevel(userId, levelId)));
+        this.levelPublishService.unpublishLevel(userId, levelId);
+        return ResponseEntity.noContent().build();
     }
 
     /// Publishes the specified level.
@@ -154,13 +172,14 @@ public class LevelController {
     ///               level service, which publishes the level.
     /// @param authentication the current authenticated user
     /// @param levelId the id of the target level
-    /// @return a 200 OK response containing the published level
+    /// @return a 204 No Content response when the level is published successfully
     @PutMapping(path = "/{levelId}/publish")
-    public ResponseEntity<LevelDTO> publishLevel(
+    public ResponseEntity<Void> publishLevel(
             Authentication authentication,
             @PathVariable String levelId) {
         String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
+        this.levelPublishService.publish(userId, levelId);
+        return ResponseEntity.noContent().build();
     }
 
     /// Submits an attempt for the specified level on behalf of the authenticated
@@ -189,7 +208,7 @@ public class LevelController {
             @PathVariable final String levelId,
             @RequestBody final AttemptDTO dto) {
         final String userId = getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(this.levelService.submitAttempt(levelId, userId, dto));
+        return ResponseEntity.ok(this.levelPlayService.handleLevelSubmission(levelId, userId, dto));
     }
 
 
@@ -210,6 +229,6 @@ public class LevelController {
         {
             final String userId = getUserIdFromAuth(authentication);
             final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-            return ResponseEntity.ok(this.levelService.getPlayableMap(user,levelId));
+            return ResponseEntity.ok(this.levelPlayService.getPlayableMap(user, levelId));
         }
 }
