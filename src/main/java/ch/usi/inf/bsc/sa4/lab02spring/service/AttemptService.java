@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-
+/// Service handling creation and querying of player attempts.
 @Service
 public class AttemptService {
     /// Repository handling attempt persistence.
@@ -87,6 +87,9 @@ public class AttemptService {
         return this.attemptRepository.countDistinctPlayedLevelsByUser(user);
     }
 
+    /// Returns the number of distinct levels the given user has completed.
+    /// @param user the user whose completed levels to count
+    /// @return the number of distinct levels the user has completed at least once
     public long getCompletedLevelsCount(User user) {
         return this.attemptRepository.countDistinctCompletedLevelsByUser(user);
     }

@@ -25,19 +25,19 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class UserController {
 
-    /**
-     * Service used to access and manage users.
-     */
+    ///
+    /// Service used to access and manage users.
+    ///
     private final UserService userService;
 
-    /**
-     * Service used to retrieve level data for user profiles.
-     */
+    ///
+    /// Service used to retrieve level data for user profiles.
+    ///
     private final LevelService levelService;
 
-    /**
-     * Service used to retrieve attempt statistics for user profiles.
-     */
+    ///
+    /// Service used to retrieve attempt statistics for user profiles.
+    ///
     private final AttemptService attemptService;
 
     /// Constructs a new UserController with the given dependencies.

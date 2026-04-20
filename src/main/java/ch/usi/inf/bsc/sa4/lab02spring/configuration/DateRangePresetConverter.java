@@ -5,9 +5,9 @@ import org.springframework.stereotype.Component;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 
-/**
- * Converts a string representation into a {@code DateRangePreset}.
- */
+///
+/// Converts a string representation into a {@code DateRangePreset}.
+///
 @Component
 public class DateRangePresetConverter implements Converter<String, DateRangePreset> {
     @Override

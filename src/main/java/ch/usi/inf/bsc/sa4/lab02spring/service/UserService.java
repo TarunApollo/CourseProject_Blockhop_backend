@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 /// 
 @Service
 public class UserService {
+  /// Repository used to persist and query users.
   private final UserRepository userRepository;
 
 

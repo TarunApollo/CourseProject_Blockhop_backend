@@ -14,11 +14,15 @@ import java.io.IOException;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 
-
+/// GridFS-backed implementation of {@link ThumbnailRepository}.
 @Repository
 public class ThumbnailRepositoryImpl implements ThumbnailRepository {
+
+    /// GridFS template used to store, load, and delete thumbnail files.
     private final GridFsTemplate gridFsTemplate;
 
+    /// Creates a thumbnail repository backed by the given GridFS template.
+    /// @param gridFsTemplate the template used for thumbnail storage
     public ThumbnailRepositoryImpl(GridFsTemplate gridFsTemplate) {
         this.gridFsTemplate = gridFsTemplate;
     }

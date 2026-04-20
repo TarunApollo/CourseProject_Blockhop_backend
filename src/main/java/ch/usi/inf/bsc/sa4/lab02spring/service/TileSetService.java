@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.TileSetNotLoadedException;
 
+/// Service that loads and exposes tileset metadata.
 @Service
 public class TileSetService {
     
@@ -23,6 +24,7 @@ public class TileSetService {
     /// Object GIDs mapped to their type string
     private final Map<Integer, String> objectGIDs;
 
+    /// Loaded tileset used to build frontend JSON and resolve tile metadata.
     private final TileSet tileSet;
 
     /// load the tileset and hold the complete tileSet for building frontend needed json
@@ -63,14 +65,23 @@ public class TileSetService {
         return this.tileSet;
     }
 
+    /// Checks whether the given GID belongs to a ground tile.
+    /// @param gid the tile id to check
+    /// @return true if the gid is a ground tile, otherwise false
     public boolean isGroundGID(int gid) {
         return groundGIDs.contains(gid);
     }
 
+    /// Checks whether the given GID belongs to an object tile.
+    /// @param gid the tile id to check
+    /// @return true if the gid is an object tile, otherwise false
     public boolean isObjectGID(int gid) {
         return objectGIDs.containsKey(gid);
     }
 
+    /// Returns the semantic type associated with an object tile GID.
+    /// @param gid the tile id to resolve
+    /// @return the object type, or an empty string if unknown
     public String getObjectTileType(int gid) {
         return objectGIDs.getOrDefault(gid, "");
     }

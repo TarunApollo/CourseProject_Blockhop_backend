@@ -12,7 +12,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-
+/// Represents a playable level stored in the database.
+///
+/// A level contains metadata such as title and description, ownership
+/// information, publication state, a clear condition, and the object and
+/// world layers that define the actual game map.
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "levels")
 public class Level {
@@ -21,18 +25,33 @@ public class Level {
     /// Fixed height shared by all levels.
     private static final int DEFAULT_HEIGHT = 14;
 
+    /// Database identifier of this level.
     @Id
     private String id;
+
+    /// Reference to the user who created this level.
     @DBRef
     private final User creator;
+
+    /// Title shown for this level.
     private String title;
+
+    /// Short description of this level.
     private String description;
+
+    /// Indicates whether this level is publicly available.
     private boolean published;
 
-    //add a flag for whether can be published
+    /// Indicates whether this level currently satisfies the conditions for publishing.
     private boolean publishEligible = false;
+
+    /// The clear condition required to complete this level.
     private ClearCondition clearCondition;
+
+    /// Objects placed in the level's object layer, keyed by position.
     private final Map<Position, GameObject> objectLayer = new HashMap<>();
+
+    /// Ground tiles placed in the level's world layer, keyed by position.
     private final Map<Position, GroundObject> worldLayer = new HashMap<>();
 
     /// Creates a new unpublished level
@@ -250,24 +269,37 @@ public class Level {
     public void setClearCondition(ClearCondition clearCondition) { this.clearCondition = clearCondition; }
 
 
+    /// Returns whether this level is owned by the given user id.
+    /// @param userId the user id to check
+    /// @return true if the user owns this level, otherwise false
     public boolean isOwnedBy(String userId) {
         return this.creator.getId().equals(userId);
     }
 
+    /// Returns whether this level is owned by the given user.
+    /// @param user the user to check
+    /// @return true if the user owns this level, otherwise false
     public boolean isOwnedBy(User user) {
         return this.creator.getId().equals(user.getId());
     }
 
+    /// Returns whether this level can currently be modified.
+    /// @return true if the level is unpublished, otherwise false
     public boolean canBeModified() {
         return !this.published;
     }
 
+    /// Ensures that this level is modifiable.
+    /// @throws LevelPublishedException if the level is already published
     public void ensureModifiable() {
         if (this.published) {
             throw new LevelPublishedException("Cannot modify a published level");
         }
     }
 
+    /// Ensures that the provided object layer contains at most one start flag and one exit door.
+    /// @param incomingObjectLayer the object layer to validate
+    /// @throws IllegalArgumentException if more than one start flag or exit door is present
     public void ensureValidObjectLayer(Map<Position,GameObject> incomingObjectLayer)
     {
         long countFlag = incomingObjectLayer.values().stream()
@@ -289,6 +321,9 @@ public class Level {
         }
     }
 
+    /// Ensures that the current object layer is valid for publishing.
+    /// A published level must contain exactly one start flag and exactly one exit door.
+    /// @throws ForbiddenLevelActionException if the object layer does not satisfy publish requirements
     public void ensurePublishableObjectLayer()
     {
         long countFlag = this.objectLayer.values().stream()
@@ -320,19 +355,28 @@ public class Level {
             throw new LevelNotPlayableException();
         }
     }
-    
 
+
+    /// Ensures that the given user id matches the creator of this level.
+    /// @param userId the user id to validate
+    /// @throws ForbiddenUserException if the user is not the owner of this level
     public void ensureOwnedBy(String userId) {
         if (!isOwnedBy(userId)) {
             throw new ForbiddenUserException("Only the level owner can perform this action");
         }
     }
 
+    /// Checks whether a position lies inside the level bounds.
+    /// @param position the position to test
+    /// @return true if the position is within bounds, otherwise false
     public boolean isWithinBounds(Position position) {
         return position.x() >= 0 && position.x() < DEFAULT_WIDTH
             && position.y() >= 0 && position.y() < DEFAULT_HEIGHT;
     }
 
+    /// Ensures that a position is within the level bounds.
+    /// @param position the position to validate
+    /// @throws IllegalArgumentException if the position is null or out of bounds
     public void ensureWithinBounds(Position position) {
         if (position == null) {
             throw new IllegalArgumentException("Position cannot be null");
@@ -345,6 +389,9 @@ public class Level {
         }
     }
 
+    /// Ensures that no object or ground tile already occupies the given position.
+    /// @param position the position to validate
+    /// @throws ObjectPlacementConflictException if the position is already occupied
     public void ensureObjectCanBePlacedAt(Position position)
     {
         if(this.worldLayer.containsKey(position) || this.objectLayer.containsKey(position)){

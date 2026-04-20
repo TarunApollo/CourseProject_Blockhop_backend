@@ -6,11 +6,14 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.server.ResponseStatusException;
 
+/// Authentication helper methods for extracting user information.
 public final class AuthUtils {
-    ///
-    /// TODO: javadoc!
-    ///
-    ///
+
+    /// Returns the authenticated user's id from the security context.
+    /// Supports both JWT and OAuth2 user principals.
+    /// @param authentication the current authentication object
+    /// @return the authenticated user's subject/id
+    /// @throws ResponseStatusException if authentication is missing or unsupported
     public static String getUserIdFromAuth(Authentication authentication) {
         if (authentication == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -28,6 +31,10 @@ public final class AuthUtils {
         }
     }
 
+    /// Returns the authenticated user's display name from the security context.
+    /// @param authentication the current authentication object
+    /// @return the authenticated user's name
+    /// @throws ResponseStatusException if the name is unavailable
     public static String getUserNameFromAuth(Authentication authentication) {
         Object principal = authentication.getPrincipal();
 

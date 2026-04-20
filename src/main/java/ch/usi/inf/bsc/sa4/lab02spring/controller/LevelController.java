@@ -29,34 +29,31 @@ import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST controller that exposes level management endpoints.
- * <p>
- * Supports creating, updating, deleting, publishing, cloning, and exporting levels,
- * as well as submitting attempts.
- */
+/// REST controller that exposes level management endpoints.
+/// Supports creating, updating, deleting, publishing, cloning, and exporting levels,
+/// as well as submitting attempts.
 @RestController
 @RequestMapping("/levels")
 public class LevelController {
 
-    /**
-     * Service used to manage level operations.
-     */
+    ///
+    /// Service used to manage level operations.
+    ///
     private final LevelService levelService;
 
-    /**
-     * Service used to access user information.
-     */
+    ///
+    /// Service used to access user information.
+    ///
     private final UserService userService;
 
-    /**
-     * Service used to access tileset data.
-     */
+    ///
+    /// Service used to access tileset data.
+    ///
     private final TileSetService tileSetService;
 
-    /**
-     * Converter used to transform level layers into Tiled-compatible maps.
-     */
+    ///
+    /// Converter used to transform level layers into Tiled-compatible maps.
+    ///
     private final LayerToTiledMapConverter layerToTiledMapConverter;
 
   /// Constructs a new LevelController with the given dependencies.
@@ -174,16 +171,13 @@ public class LevelController {
         return ResponseEntity.ok(new LevelDTO(this.levelService.updateLevelProperties(creator, levelId, dto)));
     }
 
-    /**
-     * Deletes a level owned by the authenticated user.
-     *
-     * @param authentication the current authenticated user
-     * @param levelId the id of the level to delete
-     * @return an empty successful response
-     * @throws UserNotFoundException if the authenticated user does not exist
-     * @throws LevelNotFoundException if the level does not exist
-     * @throws ForbiddenUserException if the authenticated user is not the owner of the level
-     */
+    /// Deletes a level owned by the authenticated user.
+    /// @param authentication the current authenticated user
+    /// @param levelId the id of the level to delete
+    /// @return an empty successful response
+    /// @throws UserNotFoundException if the authenticated user does not exist
+    /// @throws LevelNotFoundException if the level does not exist
+    /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
     @DeleteMapping("/{levelId}")
     public ResponseEntity<Void> deleteLevel(
             Authentication authentication,

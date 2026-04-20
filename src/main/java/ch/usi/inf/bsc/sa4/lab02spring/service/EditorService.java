@@ -23,14 +23,27 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
+/// Service for editing level layers and object properties.
 @Service
 public class EditorService {
 
+    /// Repository used to load and persist levels.
     private final LevelRepository levelRepository;
+
+    /// Service used to inspect tile set metadata.
     private final TileSetService tileSetService;
+
+    /// Factory used to create game objects from tile ids.
     private final GameObjectFactory gameObjectFactory;
+
+    /// Service used for level-related validation and state updates.
     private final LevelService levelService;
 
+    /// Creates an editor service with all required collaborators.
+    /// @param levelRepository repository for loading and saving levels
+    /// @param tileSetService service for tile metadata checks
+    /// @param gameObjectFactory factory for creating game objects
+    /// @param levelService service for level validation/update logic
     @Autowired
     public EditorService(LevelRepository levelRepository, TileSetService tileSetService,
             GameObjectFactory gameObjectFactory, LevelService levelService) {

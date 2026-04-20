@@ -7,10 +7,15 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
+/// MongoDB-backed implementation of custom attempt statistics queries.
 @Repository
 public class AttemptStatisticsRepositoryImpl implements AttemptStatisticsRepository {
+
+    /// Spring Data MongoDB template used to run aggregation queries.
     private final MongoTemplate mongoTemplate;
 
+    /// Creates a statistics repository backed by the provided Mongo template.
+    /// @param mongoTemplate the template used to query the database
     public AttemptStatisticsRepositoryImpl(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
