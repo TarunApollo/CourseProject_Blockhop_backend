@@ -17,10 +17,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
@@ -76,33 +74,6 @@ public class LevelController {
             @RequestParam(defaultValue = "ALL_TIME") DateRangePreset period) {
         return this.levelService.getPublishedLevels(sortBy, period);
     }
-
-    /// Returns the thumbnail image for the given level.
-    ///
-    /// @spec.requires levelId is not null.
-    /// @spec.effects fetches the stored thumbnail bytes for the target level and
-    ///               returns them as an image/png response body.
-    /// @param levelId the id of the level whose thumbnail is requested
-    /// @return a 200 OK response containing the thumbnail image bytes
-    /// @deprecated
-    @GetMapping(value = "/{levelId}/thumbnail", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> getThumbnail(@PathVariable String levelId) {
-        return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_PNG)
-            .body(this.levelService.getThumbnailForLevel(levelId));
-    }
-
-    /// @deprecated
-    @PutMapping(value = "/{levelId}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> updateThumbnail(
-            final Authentication authentication,
-            @PathVariable final String levelId,
-            @RequestParam("thumbnail") final MultipartFile thumbnail) {
-        final String userId = getUserIdFromAuth(authentication);
-        this.levelService.saveThumbnailForLevel(userId, levelId, thumbnail);
-        return ResponseEntity.noContent().build();
-    }
-
 
     /// Clones the given level if it exists and the authenticated user is its
     /// creator.

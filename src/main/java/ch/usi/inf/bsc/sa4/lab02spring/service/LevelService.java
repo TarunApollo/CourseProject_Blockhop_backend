@@ -9,13 +9,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelThumbnailRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.ThumbnailRepository;
 
 
-import java.io.IOException;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -31,8 +28,6 @@ public class LevelService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final AttemptRepository attemptRepository;
-    private final LevelThumbnailRepository levelThumbnailRepository;
-    private final ThumbnailRepository thumbnailRepository;
     private final AttemptService attemptService;
     private final TileSetService tileSetService;
     private final LayerToTiledMapConverter layerToTiledMapConverter;
@@ -46,8 +41,6 @@ public class LevelService {
             LevelRepository levelRepository,
             UserService userService,
             AttemptRepository attemptRepository,
-            LevelThumbnailRepository levelThumbnailRepository,
-            ThumbnailRepository thumbnailRepository,
             UserRepository userRepository,
             AttemptService attemptService,
             TileSetService tileSetService,
@@ -55,8 +48,6 @@ public class LevelService {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptRepository = attemptRepository;
-        this.levelThumbnailRepository = levelThumbnailRepository;
-        this.thumbnailRepository = thumbnailRepository;
         this.userRepository = userRepository;
         this.attemptService = attemptService;
         this.tileSetService = tileSetService;
@@ -192,42 +183,7 @@ public class LevelService {
         return this.levelRepository.save(level);
     }
 
-    /// Stores or replaces the thumbnail associated with the given level.
-    ///
-    /// @spec.requires userId, levelId, and thumbnail are not null.
-    /// @spec.effects reads the uploaded thumbnail, stores it through the thumbnail
-    ///               repository, replaces any previous thumbnail mapping for the
-    ///               target level, and saves the new thumbnail mapping.
-    /// @param userId the id of the requesting user
-    /// @param levelId the id of the target level
-    /// @param thumbnail the uploaded thumbnail snapshot
-    /// @return the storage id of the stored thumbnail
-    public String saveThumbnailForLevel(String userId, String levelId, MultipartFile thumbnail) {
-        Level level = this.levelRepository.findById(levelId)
-                .orElseThrow(LevelNotFoundException::new);
-        level.ensureOwnedBy(userId);
-        level.ensureModifiable();
-        byte[] bytes;
-        try {
-            bytes = thumbnail.getBytes();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to read uploaded thumbnail", e);
-        }
 
-        // delete previous thumbnail at first
-
-        levelThumbnailRepository.findByLevelId(levelId)
-        .ifPresent(oldThumbnail -> {
-            thumbnailRepository.deleteThumbnail(oldThumbnail.storageId());
-            levelThumbnailRepository.deleteByLevelId(levelId);
-        });
-
-        // save thumbnail
-        String storageId = thumbnailRepository.storeThumbnail(levelId, bytes);
-        levelThumbnailRepository.save(new LevelThumbnail(null, levelId, storageId));
-
-        return storageId;
-    }
 
     /// Builds a LevelSummaryDto for the given level, computing play count, clear rate, and popularity.
     /// @param level the level to summarize
@@ -322,22 +278,7 @@ public class LevelService {
         level.invalidatePublishEligible(userId);
         this.levelRepository.save(level);
     }
-    /// Returns the stored thumbnail image bytes for the given level.
-    ///
-    /// @spec.requires levelId is not null.
-    /// @spec.effects looks up the thumbnail mapping for the target level and loads
-    ///               the corresponding thumbnail bytes from the thumbnail repository.
-    /// @param levelId the id of the level whose thumbnail is requested
-    /// @return the stored thumbnail image bytes
-    public byte[] getThumbnailForLevel(String levelId)
-    {
-        LevelThumbnail thumbnail = levelThumbnailRepository.findByLevelId(levelId)
-        .orElseThrow(()->new IllegalArgumentException("Thumbnail not found"));
 
-        String storageId = thumbnail.storageId();
-
-        return thumbnailRepository.loadThumbnail(storageId);
-    }
 
     /// Validates whether the submitted attempt satisfies the level's completion
     /// criteria.
