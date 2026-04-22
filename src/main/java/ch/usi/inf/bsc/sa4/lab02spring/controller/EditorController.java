@@ -17,8 +17,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
-import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
-
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 /// REST controller for editing level data in the editor.
 @RestController
 @RequestMapping("/editor")
@@ -60,7 +59,7 @@ public class EditorController {
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final UpdateWorldLayerDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
+        String userId = AuthUtils.getUserIdFromAuth(authentication);
         Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
@@ -100,7 +99,7 @@ public class EditorController {
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final UpdateObjectLayerDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
+        String userId = AuthUtils.getUserIdFromAuth(authentication);
         Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
@@ -126,7 +125,7 @@ public class EditorController {
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final UpdateObjectPropertiesDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
+        String userId = AuthUtils.getUserIdFromAuth(authentication);
         Level updated = editorService.updateObjectProperties(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
