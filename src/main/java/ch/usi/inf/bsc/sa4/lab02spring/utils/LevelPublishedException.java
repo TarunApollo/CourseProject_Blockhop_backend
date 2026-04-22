@@ -4,7 +4,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 
 ///
-/// Signals that an operation was attempted on a level that has already been published.
+/// Signals that an operation was attempted on a level
+/// that has already been published.
 ///
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Can't modify an already published level")
 public class LevelPublishedException extends RuntimeException {

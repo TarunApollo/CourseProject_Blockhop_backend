@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 /// REST controller that exposes level management endpoints.
-/// Supports creating, updating, deleting, publishing, cloning, and exporting levels,
-/// as well as submitting attempts.
 @RestController
 @RequestMapping("/levels")
 public class LevelController {
@@ -103,7 +101,7 @@ public class LevelController {
     ///               returns them as an image/png response body.
     /// @param levelId the id of the level whose thumbnail is requested
     /// @return a 200 OK response containing the thumbnail image bytes
-    /// @deprecated
+    @Deprecated
     @GetMapping(value = "/{levelId}/thumbnail", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getThumbnail(@PathVariable final String levelId) {
         return ResponseEntity.ok()
@@ -175,9 +173,6 @@ public class LevelController {
     /// @param authentication the current authenticated user
     /// @param levelId the id of the level to delete
     /// @return an empty successful response
-    /// @throws UserNotFoundException if the authenticated user does not exist
-    /// @throws LevelNotFoundException if the level does not exist
-    /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
     @DeleteMapping("/{levelId}")
     public ResponseEntity<Void> deleteLevel(
             final Authentication authentication,

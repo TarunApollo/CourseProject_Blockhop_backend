@@ -297,9 +297,10 @@ public class Level {
         }
     }
 
-    /// Ensures that the provided object layer contains at most one start flag and one exit door.
+    /// Ensures that the provided object layer
+    /// contains at most one start flag and one exit door.
     /// @param incomingObjectLayer the object layer to validate
-    /// @throws IllegalArgumentException if more than one start flag or exit door is present
+    /// @throws IllegalArgumentException if more than one start flag or exit door
     public void ensureValidObjectLayer(final Map<Position,GameObject> incomingObjectLayer)
     {
         long countFlag = incomingObjectLayer.values().stream()
@@ -323,7 +324,7 @@ public class Level {
 
     /// Ensures that the current object layer is valid for publishing.
     /// A published level must contain exactly one start flag and exactly one exit door.
-    /// @throws ForbiddenLevelActionException if the object layer does not satisfy publish requirements
+    /// @throws ForbiddenLevelActionException if publish requirements aren't satisfied
     public void ensurePublishableObjectLayer()
     {
         long countFlag = this.objectLayer.values().stream()

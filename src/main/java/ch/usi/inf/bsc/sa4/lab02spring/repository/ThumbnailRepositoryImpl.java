@@ -14,7 +14,7 @@ import java.io.IOException;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 
-/// GridFS-backed implementation of {@link ThumbnailRepository}.
+/// GridFS-backed implementation of ThumbnailRepository.
 @Repository
 public class ThumbnailRepositoryImpl implements ThumbnailRepository {
 

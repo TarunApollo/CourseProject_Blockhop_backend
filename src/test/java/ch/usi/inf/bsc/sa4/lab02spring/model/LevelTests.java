@@ -22,7 +22,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 ///
 /// Verifies creation, mutation, ownership, bounds checking, layer handling,
-/// publication rules, and cloning behavior for {@link Level}.
+/// publication rules, and cloning behavior for Level.
 ///
 @DisplayName("In the Level class")
 @SuppressWarnings("NullAway")
@@ -40,7 +40,7 @@ public class LevelTests {
     }
 
     ///
-    /// Tests the initial state of a newly created {@link Level}.
+    /// Tests the initial state of a newly created Level.
     ///
     @Nested
     @DisplayName("when a level is newly created")
@@ -146,7 +146,7 @@ public class LevelTests {
     }
 
     ///
-    /// Tests ownership-related methods on {@link Level}.
+    /// Tests ownership-related methods on Level.
     ///
     @Nested
     @DisplayName("methods isOwnedBy and ensureOwnedBy")
@@ -211,7 +211,7 @@ public class LevelTests {
     }
 
     ///
-    /// Tests publication-related methods on {@link Level}.
+    /// Tests publication-related methods on Level.
     ///
     @Nested
     @DisplayName("methods canBeModified and ensureModifiable")
@@ -254,7 +254,7 @@ public class LevelTests {
     }
 
     ///
-    /// Tests bounds-related methods on {@link Level}.
+    /// Tests bounds-related methods on Level.
     ///
     @Nested
     @DisplayName("methods isWithinBounds and ensureWithinBounds")
@@ -329,7 +329,7 @@ public class LevelTests {
     }
 
     ///
-    /// Tests the layer getter methods on {@link Level}.
+    /// Tests the layer getter methods on Level.
     ///
     @Nested
     @DisplayName("methods getObjectLayer and getWorldLayer")
@@ -518,7 +518,7 @@ public class LevelTests {
     }
 
     ///
-    /// Tests cloning behavior for {@link Level}.
+    /// Tests cloning behavior for Level.
     ///
     @Nested
     @DisplayName("method cloneFor")

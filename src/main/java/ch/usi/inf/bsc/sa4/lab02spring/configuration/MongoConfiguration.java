@@ -45,20 +45,22 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     ///
-    /// Converts a {@link Position} to its compact string representation.
+    /// Converts a Position to its compact string representation.
     ///
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
+        @Override
         public String convert(final Position position){
             return position.compactString();
         }
     }
 
     ///
-    /// Converts a compact string representation to a {@link Position}.
+    /// Converts a compact string representation to a Position.
     ///
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
+        @Override
         public Position convert(final String string){
             String[] parts = string.split(",");
             int posX = Integer.parseInt(parts[0]);
@@ -68,7 +70,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     ///
-    /// Converts a {@link ZonedDateTime} to a {@link Date} for MongoDB storage.
+    /// Converts a ZonedDateTime to a Date for MongoDB storage.
     ///
     @WritingConverter
     public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
@@ -79,7 +81,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     ///
-    /// Converts a {@link Date} read from MongoDB to a {@link ZonedDateTime}.
+    /// Converts a Date read from MongoDB to a ZonedDateTime.
     ///
     @ReadingConverter
     public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {

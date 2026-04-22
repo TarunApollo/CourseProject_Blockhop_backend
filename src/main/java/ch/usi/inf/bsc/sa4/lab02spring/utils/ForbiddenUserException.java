@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 ///
-/// Signals that the current user is not authorized to perform the requested operation.
+/// Signals that the current user is not authorized.
 ///
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "The current user is not allowed to do this operation")
 public class ForbiddenUserException extends RuntimeException {

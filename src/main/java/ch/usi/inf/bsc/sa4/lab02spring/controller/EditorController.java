@@ -20,8 +20,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
 
 /// REST controller for editing level data in the editor.
-/// ModuleDescriptor.Provides endpoints for replacing the world layer, replacing the object layer,
-/// and updating object properties of an unpublished level.
 @RestController
 @RequestMapping("/editor")
 public class EditorController {

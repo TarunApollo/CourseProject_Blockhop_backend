@@ -11,7 +11,7 @@ public class GlobalExceptionHandler {
 
     /// Handles invalid arguments supplied to controller methods.
     /// @param e the thrown exception
-    /// @return a {@code 400 Bad Request} response
+    /// @return a Bad Request response
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Void> handleIllegalArgument(IllegalArgumentException e) {
         return ResponseEntity.badRequest().build();
@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
 
     /// Handles invalid state encountered during request processing.
     /// @param e the thrown exception
-    /// @return a {@code 400 Bad Request} response
+    /// @return a Bad Request response
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Void> handleIllegalState(IllegalStateException e) {
         return ResponseEntity.badRequest().build();

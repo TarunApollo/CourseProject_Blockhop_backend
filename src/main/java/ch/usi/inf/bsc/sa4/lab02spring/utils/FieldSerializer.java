@@ -86,7 +86,7 @@ public class FieldSerializer {
     }
 
     ///
-    /// Deserializes the world layer of a level DTO from a JSON object keyed by position.
+    /// Deserializes the world layer of a level DTO.
     ///
     static public class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
 

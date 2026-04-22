@@ -14,13 +14,13 @@ import java.util.List;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 ///
-/// Configures application security, including CORS, CSRF, authentication, and authorization rules.
+/// Configures application security.
 ///
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
     /// Creates the CORS configuration used by the application.
-    /// @return the configured {@link CorsConfigurationSource}
+    /// @return the configured CorsConfigurationSource
     ///
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
