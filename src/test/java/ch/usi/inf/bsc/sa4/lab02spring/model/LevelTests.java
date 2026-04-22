@@ -20,10 +20,17 @@ import org.junit.jupiter.api.function.Executable;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
+///
+/// Verifies creation, mutation, ownership, bounds checking, layer handling,
+/// publication rules, and cloning behavior for {@link Level}.
+///
 @DisplayName("In the Level class")
 @SuppressWarnings("NullAway")
 public class LevelTests {
 
+    ///
+    /// Verifies that a level can be created with title, description, and creator.
+    ///
     @Test
     @DisplayName("can be created with title, description, and creator")
     public void creatorTest() {
@@ -32,11 +39,16 @@ public class LevelTests {
         assertDoesNotThrow(codeToExecute);
     }
 
+    ///
+    /// Tests the initial state of a newly created {@link Level}.
+    ///
     @Nested
     @DisplayName("when a level is newly created")
     class NewlyCreatedLevel {
 
+        /// The level under test.
         private Level level;
+        /// The creator of the level.
         private User creator;
 
         @BeforeEach
@@ -45,6 +57,9 @@ public class LevelTests {
             this.level = new Level("Test level", "A level description", this.creator);
         }
 
+        ///
+        /// Verifies that the provided metadata is stored correctly.
+        ///
         @Test
         @DisplayName("should store the provided metadata")
         public void storesProvidedMetadata() {
@@ -53,6 +68,9 @@ public class LevelTests {
             assertSame(this.creator, this.level.getCreator());
         }
 
+        ///
+        /// Verifies that a new level starts unpublished and modifiable.
+        ///
         @Test
         @DisplayName("should be unpublished")
         public void isUnpublished() {
@@ -60,6 +78,9 @@ public class LevelTests {
             assertTrue(this.level.canBeModified());
         }
 
+        ///
+        /// Verifies that the level exposes its fixed dimensions.
+        ///
         @Test
         @DisplayName("should expose the fixed dimensions")
         public void hasFixedDimensions() {
@@ -67,6 +88,9 @@ public class LevelTests {
             assertEquals(14, this.level.getHeight());
         }
 
+        ///
+        /// Verifies that the default clear condition is present.
+        ///
         @Test
         @DisplayName("should start with the default clear condition")
         public void hasDefaultClearCondition() {
@@ -75,6 +99,9 @@ public class LevelTests {
             assertEquals(0, clearCondition.targetAmount());
         }
 
+        ///
+        /// Verifies that both layers start empty.
+        ///
         @Test
         @DisplayName("should start with empty layers")
         public void startsWithEmptyLayers() {
@@ -83,11 +110,16 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests the mutator methods for title, description, and clear condition.
+    ///
     @Nested
     @DisplayName("methods setTitle, setDescription, and setClearCondition")
     class Setters {
 
+        /// The level under test.
         private Level level;
+        /// The clear condition to assign.
         private ClearCondition clearCondition;
 
         @BeforeEach
@@ -97,6 +129,9 @@ public class LevelTests {
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.SLIME), 2);
         }
 
+        ///
+        /// Verifies that mutable fields are updated correctly.
+        ///
         @Test
         @DisplayName("should update the mutable fields")
         public void updatesMutableFields() {
@@ -110,10 +145,14 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests ownership-related methods on {@link Level}.
+    ///
     @Nested
     @DisplayName("methods isOwnedBy and ensureOwnedBy")
     class OwnershipMethods {
 
+        /// The level under test.
         private Level level;
 
         @BeforeEach
@@ -122,6 +161,9 @@ public class LevelTests {
             this.level = new Level("Test level", "A level description", creator);
         }
 
+        ///
+        /// Verifies ownership checks using a user id.
+        ///
         @Test
         @DisplayName("should report ownership for the matching user id")
         public void matchesUserId() {
@@ -129,6 +171,9 @@ public class LevelTests {
             assertFalse(this.level.isOwnedBy("other-id"));
         }
 
+        ///
+        /// Verifies ownership checks using a user instance.
+        ///
         @Test
         @DisplayName("should report ownership for the matching user")
         public void matchesUser() {
@@ -136,10 +181,16 @@ public class LevelTests {
             assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
         }
 
+        ///
+        /// Tests the method that enforces ownership.
+        ///
         @Nested
         @DisplayName("method ensureOwnedBy")
         class EnsureOwnedByMethod {
 
+            ///
+            /// Verifies that a non-owner triggers a forbidden exception.
+            ///
             @Test
             @DisplayName("throws ForbiddenUserException")
             public void throwsForbiddenUserException() {
@@ -147,6 +198,9 @@ public class LevelTests {
                 assertThrows(ForbiddenUserException.class, codeToExecute);
             }
 
+            ///
+            /// Verifies that the owner is allowed to perform the operation.
+            ///
             @Test
             @DisplayName("should not throw when the user owns the level")
             public void allowsOwner() {
@@ -156,10 +210,14 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests publication-related methods on {@link Level}.
+    ///
     @Nested
     @DisplayName("methods canBeModified and ensureModifiable")
     class PublicationMethods {
 
+        /// The level under test.
         private Level level;
 
         @BeforeEach
@@ -168,6 +226,9 @@ public class LevelTests {
             this.level = new Level("Test level", "A level description", creator);
         }
 
+        ///
+        /// Verifies that an unpublished level can be modified.
+        ///
         @Test
         @DisplayName("should allow modification when unpublished")
         public void allowsModificationWhenUnpublished() {
@@ -175,6 +236,9 @@ public class LevelTests {
             assertDoesNotThrow(() -> this.level.ensureModifiable());
         }
 
+        ///
+        /// Verifies that a published level rejects modifications.
+        ///
         @Test
         @DisplayName("should reject modification when published")
         public void rejectsModificationWhenPublished() {
@@ -189,10 +253,14 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests bounds-related methods on {@link Level}.
+    ///
     @Nested
     @DisplayName("methods isWithinBounds and ensureWithinBounds")
     class BoundsMethods {
 
+        /// The level under test.
         private Level level;
 
         @BeforeEach
@@ -201,6 +269,9 @@ public class LevelTests {
             this.level = new Level("Test level", "A level description", creator);
         }
 
+        ///
+        /// Verifies that boundary positions are accepted.
+        ///
         @Test
         @DisplayName("should accept positions on the borders")
         public void acceptsBorderPositions() {
@@ -208,6 +279,9 @@ public class LevelTests {
             assertTrue(this.level.isWithinBounds(new Position(255, 13)));
         }
 
+        ///
+        /// Verifies that positions outside the valid range are rejected.
+        ///
         @Test
         @DisplayName("should reject positions outside the valid range")
         public void rejectsOutOfBoundsPositions() {
@@ -217,16 +291,25 @@ public class LevelTests {
             assertFalse(this.level.isWithinBounds(new Position(0, 14)));
         }
 
+        ///
+        /// Tests the bounds-enforcement method.
+        ///
         @Nested
         @DisplayName("method ensureWithinBounds")
         class EnsureWithinBoundsMethod {
 
+            ///
+            /// Verifies that a null position is rejected.
+            ///
             @Test
             @DisplayName("throws IllegalArgumentException when position is null")
             public void nullPosition() {
                 assertThrows(IllegalArgumentException.class, () -> BoundsMethods.this.level.ensureWithinBounds(null));
             }
 
+            ///
+            /// Verifies that an out-of-bounds position is rejected.
+            ///
             @Test
             @DisplayName("throws IllegalArgumentException when position is out of bounds")
             public void outOfBoundsPosition() {
@@ -234,6 +317,9 @@ public class LevelTests {
                     () -> BoundsMethods.this.level.ensureWithinBounds(new Position(256, 14)));
             }
 
+            ///
+            /// Verifies that a valid position is accepted.
+            ///
             @Test
             @DisplayName("should not throw when position is valid")
             public void validPosition() {
@@ -242,11 +328,16 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests the layer getter methods on {@link Level}.
+    ///
     @Nested
     @DisplayName("methods getObjectLayer and getWorldLayer")
     class LayerGetters {
 
+        /// The level under test.
         private Level level;
+        /// A reference position used in the layer setup.
         private Position position;
 
         @BeforeEach
@@ -258,6 +349,9 @@ public class LevelTests {
             this.level.putObjectLayer(this.position, new StartFlag(9, this.position));
         }
 
+        ///
+        /// Verifies that the returned layer views cannot be modified directly.
+        ///
         @Test
         @DisplayName("should return unmodifiable views")
         public void returnsUnmodifiableViews() {
@@ -269,12 +363,18 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests mutation methods for the object and world layers.
+    ///
     @Nested
     @DisplayName("methods putObjectLayer, putWorldLayer, removeObjectLayer, and removeGroundObject")
     class LayerMutationMethods {
 
+        /// The level under test.
         private Level level;
+        /// The position used for object-layer operations.
         private Position objectPosition;
+        /// The position used for world-layer operations.
         private Position worldPosition;
 
         @BeforeEach
@@ -285,6 +385,9 @@ public class LevelTests {
             this.worldPosition = new Position(4, 5);
         }
 
+        ///
+        /// Verifies that entries can be added and replaced in both layers.
+        ///
         @Test
         @DisplayName("should add and replace entries in both layers")
         public void addsAndReplacesEntries() {
@@ -303,6 +406,9 @@ public class LevelTests {
             assertEquals(replacementGround, this.level.getWorldLayer().get(this.worldPosition));
         }
 
+        ///
+        /// Verifies that entries can be removed from both layers.
+        ///
         @Test
         @DisplayName("should remove existing entries from both layers")
         public void removesEntries() {
@@ -316,12 +422,18 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests replacing the full world layer at once.
+    ///
     @Nested
     @DisplayName("method setWorldLayer")
     class SetWorldLayerMethod {
 
+        /// The level under test.
         private Level level;
+        /// The first position used during setup.
         private Position pos1;
+        /// The second position used during setup.
         private Position pos2;
 
         @BeforeEach
@@ -334,6 +446,9 @@ public class LevelTests {
             this.level.putWorldLayer(this.pos2, new GroundObject(6));
         }
 
+        ///
+        /// Verifies that the entire world layer is replaced.
+        ///
         @Test
         @DisplayName("should replace the entire world layer")
         public void replacesEntireLayer() {
@@ -346,6 +461,9 @@ public class LevelTests {
             assertEquals(new GroundObject(10), this.level.getWorldLayer().get(newPos));
         }
 
+        ///
+        /// Verifies that an empty map clears the world layer.
+        ///
         @Test
         @DisplayName("should clear the world layer when given an empty map")
         public void clearsLayer() {
@@ -354,11 +472,16 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests replacing the full object layer at once.
+    ///
     @Nested
     @DisplayName("method setObjectLayer")
     class SetObjectLayerMethod {
 
+        /// The level under test.
         private Level level;
+        /// The position used during setup.
         private Position pos;
 
         @BeforeEach
@@ -369,6 +492,9 @@ public class LevelTests {
             this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
 
+        ///
+        /// Verifies that the entire object layer is replaced.
+        ///
         @Test
         @DisplayName("should replace the entire object layer")
         public void replacesEntireLayer() {
@@ -380,6 +506,9 @@ public class LevelTests {
             assertTrue(this.level.getObjectLayer().containsKey(newPos));
         }
 
+        ///
+        /// Verifies that an empty map clears the object layer.
+        ///
         @Test
         @DisplayName("should clear the object layer when given an empty map")
         public void clearsLayer() {
@@ -388,15 +517,24 @@ public class LevelTests {
         }
     }
 
+    ///
+    /// Tests cloning behavior for {@link Level}.
+    ///
     @Nested
     @DisplayName("method cloneFor")
     class CloneForMethod {
 
+        /// The original level used as the source for cloning.
         private Level original;
+        /// The original creator of the source level.
         private User originalCreator;
+        /// The user that should receive the cloned level.
         private User cloneCreator;
+        /// A position used for world-layer setup.
         private Position worldPosition;
+        /// A position used for object-layer setup.
         private Position objectPosition;
+        /// The clear condition assigned to the original level.
         private ClearCondition clearCondition;
 
         @BeforeEach
@@ -419,6 +557,9 @@ public class LevelTests {
 ));
         }
 
+        ///
+        /// Verifies that cloning creates an unpublished copy for the new creator.
+        ///
         @Test
         @DisplayName("should create an unpublished copy for the new creator")
         public void createsUnpublishedCopy() {
@@ -429,6 +570,9 @@ public class LevelTests {
             assertEquals("Cloned Title", cloned.getTitle());
         }
 
+        ///
+        /// Verifies that cloning copies metadata, clear condition, and layers.
+        ///
         @Test
         @DisplayName("should copy metadata, condition, and layers")
         public void copiesState() {
@@ -440,6 +584,9 @@ public class LevelTests {
             assertEquals(this.original.getObjectLayer(), cloned.getObjectLayer());
         }
 
+        ///
+        /// Verifies that cloning copies layer contents without sharing the same maps.
+        ///
         @Test
         @DisplayName("should copy the layer maps instead of sharing them")
         public void copiesLayerMaps() {

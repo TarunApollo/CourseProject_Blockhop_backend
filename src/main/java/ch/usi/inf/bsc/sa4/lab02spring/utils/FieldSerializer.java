@@ -16,14 +16,27 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+///
+/// Jackson serializers and deserializers for map-based level fields.
+///
 public class FieldSerializer {
 
+    ///
+    /// Serializes the object layer of a level DTO as a JSON object keyed by position.
+    ///
     static public class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
 
+        ///
+        /// Creates a serializer for object-layer maps.
+        ///
         public LevelDTOObjectLayerSerializer() {
             this(Map.class);
         }
 
+        ///
+        /// Creates a serializer for object-layer maps.
+        /// @param t the handled type
+        ///
         protected LevelDTOObjectLayerSerializer(final Class<?> t) {
             super(t);
         }
@@ -40,12 +53,22 @@ public class FieldSerializer {
         }
     }
 
+    ///
+    /// Serializes the world layer of a level DTO as a JSON object keyed by position.
+    ///
     static public class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
 
+        ///
+        /// Creates a serializer for world-layer maps.
+        ///
         public LevelDTOWorldLayerSerializer() {
             this(Map.class);
         }
 
+        ///
+        /// Creates a serializer for world-layer maps.
+        /// @param t the handled type
+        ///
         protected LevelDTOWorldLayerSerializer(final Class<?> t) {
             super(t);
         }
@@ -62,12 +85,22 @@ public class FieldSerializer {
         }
     }
 
+    ///
+    /// Deserializes the world layer of a level DTO from a JSON object keyed by position.
+    ///
     static public class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
 
+        ///
+        /// Creates a deserializer for world-layer maps.
+        ///
         public WorldLayerDeserializer() {
             this(Map.class);
         }
 
+        ///
+        /// Creates a deserializer for world-layer maps.
+        /// @param t the handled type
+        ///
         protected WorldLayerDeserializer(final Class<?> t) {
             super(t);
         }
