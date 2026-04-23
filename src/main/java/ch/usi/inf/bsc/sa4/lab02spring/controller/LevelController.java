@@ -40,10 +40,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("/levels")
 public class LevelController {
+    /// Handles level creation, publication, and play-related endpoints.
     private final LevelService levelService;
+    /// Produces sorted summaries for published levels.
     private final LevelAggregationService levelAggregationService;
+    /// Manages publish and unpublish transitions.
     private final LevelPublishService levelPublishService;
+    /// Handles playable map retrieval and attempt submission.
     private final LevelPlayService levelPlayService;
+    /// Resolves authenticated users for controller actions.
     private final UserService userService;
 
     /// Constructs a new LevelController with the given dependencies.

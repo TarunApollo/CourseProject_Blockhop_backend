@@ -7,13 +7,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/// Maps tileset domain objects into Tiled-compatible structures.
 final class TiledTilesetMapper {
     private TiledTilesetMapper() {
     }
 
     static Map<String, Object> buildTileset(final TileSet tileSet) {
         final Map<Integer, Map<String, Object>> tilesById = new LinkedHashMap<>();
-        for (TileSet.TileData tile : tileSet.tiles()) {
+        for (final TileSet.TileData tile : tileSet.tiles()) {
             tilesById.put(tile.id(), toTiledTile(tile));
         }
 
@@ -53,7 +54,7 @@ final class TiledTilesetMapper {
 
         if (tile.properties() != null && !tile.properties().isEmpty()) {
             final List<Map<String, Object>> properties = new ArrayList<>();
-            for (TileSet.Property property : tile.properties()) {
+            for (final TileSet.Property property : tile.properties()) {
                 properties.add(toTiledProperty(property));
             }
             tiledTile.put("properties", properties);
@@ -75,7 +76,7 @@ final class TiledTilesetMapper {
 
     private static Map<String, Object> toTiledObjectGroup(final TileSet.ObjectGroup objectGroup) {
         final List<Map<String, Object>> objects = new ArrayList<>();
-        for (TileSet.TileObject object : objectGroup.objects()) {
+        for (final TileSet.TileObject object : objectGroup.objects()) {
             objects.add(toTiledTileObject(object));
         }
 
@@ -105,7 +106,7 @@ final class TiledTilesetMapper {
 
         if (object.polygon() != null && !object.polygon().isEmpty()) {
             final List<Map<String, Object>> polygon = new ArrayList<>();
-            for (TileSet.Point point : object.polygon()) {
+            for (final TileSet.Point point : object.polygon()) {
                 polygon.add(toTiledPoint(point));
             }
             tiledObject.put("polygon", polygon);

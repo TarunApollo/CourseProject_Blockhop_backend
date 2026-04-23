@@ -19,15 +19,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+/// Provides core CRUD-style operations for levels.
 public class LevelService {
+    /// Persists and loads level entities.
     private final LevelRepository levelRepository;
+    /// Resolves users involved in level operations.
     private final UserService userService;
 
     /// Constructs a new LevelService with the given dependencies.
     /// @param levelRepository the repository for accessing level data
     /// @param userService the service for accessing user data
     @Autowired
-    public LevelService(LevelRepository levelRepository, UserService userService) {
+    public LevelService(final LevelRepository levelRepository, final UserService userService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
     }
@@ -36,12 +39,13 @@ public class LevelService {
     /// @spec.requires createLevelDTO and userId are not null.
     /// @spec.effects saves a new Level to the repository with the given title,
     ///               description, and creatorId set to userId.
-    /// @param createLevelDTO the DTO containing the title and description of the new level
+    /// @param createLevelDTO the DTO containing the new level title and
+    ///                       description
     /// @param userId the unique identifier of the user
     /// @return the newly created and saved Level
-    public Level createLevel(CreateLevelDTO createLevelDTO, String userId) {
-        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        Level level = new Level(createLevelDTO.title(), createLevelDTO.description(), user);
+    public Level createLevel(final CreateLevelDTO createLevelDTO, final String userId) {
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final Level level = new Level(createLevelDTO.title(), createLevelDTO.description(), user);
         return this.levelRepository.save(level);
     }
 
@@ -55,12 +59,12 @@ public class LevelService {
     /// @param user the user cloning the level
     /// @return a non-empty Optional containing the cloned Level if the source
     ///         level exists and belongs to the user, an empty Optional otherwise
-    public Optional<Level> cloneLevel(CloneLevelDTO cloneLevelDTO, User user) {
+    public Optional<Level> cloneLevel(final CloneLevelDTO cloneLevelDTO, final User user) {
         return this.levelRepository.findById(cloneLevelDTO.sourceLevelId())
                 .filter(level -> level.isOwnedBy(user))
                 .map(level -> {
-                    String baseTitle = level.getTitle();
-                    String uniqueTitle = computeUniqueCloneTitle(baseTitle, user);
+                    final String baseTitle = level.getTitle();
+                    final String uniqueTitle = computeUniqueCloneTitle(baseTitle, user);
                     return this.levelRepository.save(level.cloneFor(user, uniqueTitle));
                 });
     }
@@ -69,24 +73,32 @@ public class LevelService {
     /// @param baseTitle the original title to clone
     /// @param user the user who will own the clone
     /// @return a unique title not already used by the user
-    private String computeUniqueCloneTitle(String baseTitle, User user) {
-        Set<String> existingTitles = this.levelRepository.findByCreator(user).stream()
+    private String computeUniqueCloneTitle(final String baseTitle, final User user) {
+        final Set<String> existingTitles = this.levelRepository.findByCreator(user).stream()
                 .map(Level::getTitle)
                 .collect(Collectors.toSet());
 
-        String root = baseTitle.replaceAll(" \\(\\d+\\)$", "");
+        final String root = baseTitle.replaceAll(" \\(\\d+\\)$", "");
 
         for (int i = 2; ; i++) {
-            String candidate = root + " (" + i + ")";
+            final String candidate = root + " (" + i + ")";
             if (!existingTitles.contains(candidate)) {
                 return candidate;
             }
         }
     }
 
-    // TODO: add jsdoc..
-    public void deleteLevel(String userId, String levelId) {
-        Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+    /// Deletes an unpublished level owned by the given user.
+    ///
+    /// @spec.requires userId and levelId are not null.
+    /// @spec.modifies removes the referenced level from the repository.
+    /// @spec.effects validates ownership and modifiability, then deletes the
+    ///               level.
+    /// @param userId the unique identifier of the user requesting deletion
+    /// @param levelId the id of the level to delete
+    /// @throws LevelNotFoundException if the target level does not exist
+    public void deleteLevel(final String userId, final String levelId) {
+        final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
         this.levelRepository.deleteById(levelId);
@@ -95,13 +107,13 @@ public class LevelService {
     /// Retrieves all levels created by the given user, mapped to DTOs.
     /// @param creator the user whose levels to retrieve
     /// @return a list of LevelDTOs for the levels created by the given user
-    public List<LevelDTO> getCreatedLevelsByUser(User creator) {
+    public List<LevelDTO> getCreatedLevelsByUser(final User creator) {
         return this.levelRepository.findByCreator(creator).stream()
                 .map(LevelDTO::new)
                 .toList();
     }
 
-    /// Updates the properties of an existing unpublished level owned by the given user.
+    /// Updates the properties of an existing unpublished level.
     /// Only the fields present in the DTO will be updated.
     /// @spec.requires user, levelId, and dto are not null.
     /// @spec.modifies the level with the given levelId in the repository.
@@ -109,10 +121,11 @@ public class LevelService {
     ///               of the level if present in the dto, then saves the updated level.
     /// @param user the user requesting the update
     /// @param levelId the id of the level to update
-    /// @param dto the DTO containing the optional new values for title, description, and clear condition
+    /// @param dto the DTO containing optional title, description, and clear
+    ///            condition updates
     /// @return the updated and saved level
-    public Level updateLevelProperties(User user, String levelId, UpdateLevelDTO dto) {
-        Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+    public Level updateLevelProperties(final User user, final String levelId, final UpdateLevelDTO dto) {
+        final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensureOwnedBy(user.getId());
         level.ensureModifiable();
 
@@ -128,7 +141,7 @@ public class LevelService {
     /// @param levelId the id of the level to retrieve
     /// @return a non-empty Optional containing the Level if it exists,
     ///         an empty Optional otherwise
-    public Optional<Level> getById(String levelId) {
+    public Optional<Level> getById(final String levelId) {
         return this.levelRepository.findById(levelId);
     }
 

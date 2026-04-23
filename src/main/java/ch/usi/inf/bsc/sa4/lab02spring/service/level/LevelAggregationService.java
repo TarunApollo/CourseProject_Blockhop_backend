@@ -14,26 +14,37 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+/// Builds aggregated views of published levels.
 public class LevelAggregationService {
+    /// Loads published levels for aggregation.
     private final LevelRepository levelRepository;
+    /// Provides attempt statistics used in summaries.
     private final AttemptRepository attemptRepository;
 
+    /// Creates an aggregation service with repository dependencies.
+    ///
+    /// @param levelRepository loads levels to summarize
+    /// @param attemptRepository provides attempt statistics
     @Autowired
     public LevelAggregationService(
-            LevelRepository levelRepository,
-            AttemptRepository attemptRepository) {
+            final LevelRepository levelRepository,
+            final AttemptRepository attemptRepository) {
         this.levelRepository = levelRepository;
         this.attemptRepository = attemptRepository;
     }
 
-    /// Builds a LevelSummaryDto for the given level, computing play count, clear rate, and popularity.
+    /// Builds a summary for the given level.
+    /// Computes play count, clear rate, and popularity.
     /// @param level the level to summarize
     /// @param period the time range used to compute popularity
     /// @return a LevelSummaryDto with computed statistics
-    private LevelSummaryDto toLevelSummary(Level level, PublishedLevelSortBy sortBy, DateRangePreset period) {
-        long playCount = this.attemptRepository.countByLevel(level);
-        long clearCount = this.attemptRepository.countByLevelAndCompletedTrue(level);
-        double clearRate = playCount == 0 ? 0 : (double) clearCount / playCount;
+    private LevelSummaryDto toLevelSummary(
+            final Level level,
+            final PublishedLevelSortBy sortBy,
+            final DateRangePreset period) {
+        final long playCount = this.attemptRepository.countByLevel(level);
+        final long clearCount = this.attemptRepository.countByLevelAndCompletedTrue(level);
+        final double clearRate = playCount == 0 ? 0 : (double) clearCount / playCount;
         long popularity = playCount;
         if (sortBy == PublishedLevelSortBy.POPULARITY && period instanceof RelativeDateRangePreset relative) {
             popularity = this.attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
@@ -42,14 +53,18 @@ public class LevelAggregationService {
         return new LevelSummaryDto(level, playCount, clearRate, popularity);
     }
 
-    /// Returns all published levels as summaries, sorted by the given criteria.
+    /// Returns all published levels as summaries.
+    /// Applies the requested sorting strategy.
     /// @param sortBy the sorting strategy for published level summaries
-    /// @param period the time range used to compute popularity; use ALL_TIME to fall back to total play count
+    /// @param period the time range used for popularity; use ALL_TIME to fall
+    ///               back to total play count
     /// @return a sorted list of LevelSummaryDto for all published levels
-    public List<LevelSummaryDto> getPublishedLevels(PublishedLevelSortBy sortBy, DateRangePreset period) {
-        List<Level> levels = this.levelRepository.findByPublishedTrue();
+    public List<LevelSummaryDto> getPublishedLevels(
+            final PublishedLevelSortBy sortBy,
+            final DateRangePreset period) {
+        final List<Level> levels = this.levelRepository.findByPublishedTrue();
 
-        List<LevelSummaryDto> dtos = levels.stream()
+        final List<LevelSummaryDto> dtos = levels.stream()
                 .map(level -> toLevelSummary(level, sortBy, period))
                 .toList();
 

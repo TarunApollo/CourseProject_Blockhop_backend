@@ -11,12 +11,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+/// Handles level publication state transitions.
 public class LevelPublishService {
+    /// Persists publication-state updates on levels.
     private final LevelRepository levelRepository;
+    /// Verifies that referenced users exist.
     private final UserRepository userRepository;
 
+    /// Creates a publish service with repository dependencies.
+    ///
+    /// @param levelRepository persists level publication state
+    /// @param userRepository resolves users involved in publication
     @Autowired
-    public LevelPublishService(LevelRepository levelRepository, UserRepository userRepository) {
+    public LevelPublishService(final LevelRepository levelRepository, final UserRepository userRepository) {
         this.levelRepository = levelRepository;
         this.userRepository = userRepository;
     }
@@ -34,8 +41,8 @@ public class LevelPublishService {
     /// @throws ForbiddenLevelActionException if the user is not the owner of the
     ///                                       level or if the level cannot be
     ///                                       published in its current state
-    public void publish(String userId, String levelId) {
-        Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+    public void publish(final String userId, final String levelId) {
+        final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         this.userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         level.publish(userId);
     }
@@ -45,8 +52,8 @@ public class LevelPublishService {
     /// @param levelId the ID of the level to unpublish
     /// @throws LevelNotFoundException if the level does not exist
     /// @throws ForbiddenUserException if the user is not the owner of the level
-    public void unpublishLevel(String userId, String levelId) {
-        Level level = this.levelRepository.findById(levelId)
+    public void unpublishLevel(final String userId, final String levelId) {
+        final Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
     }
@@ -59,12 +66,13 @@ public class LevelPublishService {
     /// @param level  the level to mark as publish eligible
     /// @param userId the unique identifier of the user requesting the validation
     /// @throws ForbiddenUserException if the given user is not the owner of the level
-    public void validateLevelPublishEligible(Level level, String userId) {
+    public void validateLevelPublishEligible(final Level level, final String userId) {
         level.validatePublishEligible(userId);
         this.levelRepository.save(level);
     }
 
-    /// Marks the given level as not eligible for publishing on behalf of the given user.
+    /// Marks the given level as not eligible for publishing.
+    /// Applies the change on behalf of the given user.
     ///
     /// @spec.requires level and userId are not null.
     /// @spec.modifies the given level in the repository.
@@ -72,7 +80,7 @@ public class LevelPublishService {
     /// @param level  the level to mark as not publish eligible
     /// @param userId the unique identifier of the user requesting the invalidation
     /// @throws ForbiddenUserException if the given user is not the owner of the level
-    public void invalidateLevelPublishEligible(Level level, String userId) {
+    public void invalidateLevelPublishEligible(final Level level, final String userId) {
         level.invalidatePublishEligible(userId);
         this.levelRepository.save(level);
     }

@@ -19,22 +19,37 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 @Service
+/// Coordinates playable map retrieval and attempt submission.
 public class LevelPlayService {
+    /// Loads levels for play requests.
     private final LevelRepository levelRepository;
+    /// Resolves the active user for play operations.
     private final UserService userService;
+    /// Persists submitted attempts.
     private final AttemptService attemptService;
+    /// Loads the tileset used in exported maps.
     private final TileSetService tileSetService;
+    /// Converts domain levels into Tiled-compatible payloads.
     private final LayerToTiledMapConverter layerToTiledMapConverter;
+    /// Updates publish eligibility after successful submissions.
     private final LevelPublishService levelPublishService;
 
+    /// Creates a level play service with its collaborators.
+    ///
+    /// @param levelRepository loads levels involved in play flows
+    /// @param userService resolves users by identifier
+    /// @param attemptService stores submitted attempts
+    /// @param tileSetService loads tileset metadata
+    /// @param layerToTiledMapConverter exports playable maps
+    /// @param levelPublishService updates publish eligibility
     @Autowired
     public LevelPlayService(
-            LevelRepository levelRepository,
-            UserService userService,
-            AttemptService attemptService,
-            TileSetService tileSetService,
-            LayerToTiledMapConverter layerToTiledMapConverter,
-            LevelPublishService levelPublishService) {
+            final LevelRepository levelRepository,
+            final UserService userService,
+            final AttemptService attemptService,
+            final TileSetService tileSetService,
+            final LayerToTiledMapConverter layerToTiledMapConverter,
+            final LevelPublishService levelPublishService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptService = attemptService;
@@ -60,9 +75,9 @@ public class LevelPlayService {
     ///         user is not its creator
     /// @throws ForbiddenUserException if the user is not the owner of the level
     ///         when marking it as publish eligible
-    public String handleLevelSubmission(String levelId, String userId, AttemptDTO dto) {
-        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+    public String handleLevelSubmission(final String levelId, final String userId, final AttemptDTO dto) {
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         if (!level.isPublished() && level.isOwnedBy(userId) && dto.completed()) {
             this.levelPublishService.validateLevelPublishEligible(level, userId);
         }
@@ -82,9 +97,10 @@ public class LevelPlayService {
     ///               structure.
     /// @param user the user requesting to play the level
     /// @param levelId the id of the level to export as a playable map
-    /// @return a map JSON structure compatible with the current frontend level player
+    /// @return a map JSON structure for the current frontend level player
     /// @throws LevelNotFoundException if no level with the given id exists
-    /// @throws ForbiddenUserException if the given user is not allowed to play the level
+    /// @throws ForbiddenUserException if the given user is not allowed to play
+    ///         the level
     public Map<String, Object> getPlayableMap(final User user, final String levelId) {
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensurePlayable(user.getId());

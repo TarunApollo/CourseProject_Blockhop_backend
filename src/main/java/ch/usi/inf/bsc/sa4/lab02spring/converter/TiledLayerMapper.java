@@ -15,9 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+/// Maps level layers into Tiled-compatible layer structures.
 final class TiledLayerMapper {
+    /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;
 
+    /// Resolves object tile type metadata.
     private final TileSetService tileSetService;
 
     TiledLayerMapper(final TileSetService tileSetService) {
@@ -30,7 +33,7 @@ final class TiledLayerMapper {
             final int height) {
         final List<Integer> data = new ArrayList<>(Collections.nCopies(width * height, 0));
 
-        for (Map.Entry<Position, GroundObject> entry : worldLayer.entrySet()) {
+        for (final Map.Entry<Position, GroundObject> entry : worldLayer.entrySet()) {
             final Position pos = entry.getKey();
             final GroundObject groundObject = entry.getValue();
             final int x = pos.x();
@@ -60,7 +63,7 @@ final class TiledLayerMapper {
     Map<String, Object> buildObjectLayer(final Map<Position, GameObject> objectLayer) {
         final List<Map<String, Object>> objects = new ArrayList<>();
         int idCounter = 1;
-        for (GameObject gameObject : objectLayer.values()) {
+        for (final GameObject gameObject : objectLayer.values()) {
             objects.add(toTiledObject(gameObject, idCounter++));
         }
 

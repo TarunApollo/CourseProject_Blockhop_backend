@@ -9,17 +9,16 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-
-
-/**
- * Facade for exporting a Level and TileSet into a Tiled-compatible map.
- * Delegates layer conversion to TiledLayerMapper and tileset conversion to TiledTilesetMapper.
- */
+/// Exports a level and tileset as a Tiled-compatible map payload.
+/// Delegates layer and tileset conversion to dedicated helpers.
 @Component
 public class LayerToTiledMapConverter {
+    /// Converts world and object layers into Tiled structures.
     private final TiledLayerMapper tiledLayerMapper;
 
+    /// Creates a map converter with its layer conversion helper.
+    ///
+    /// @param tiledLayerMapper converts level layers into Tiled structures
     public LayerToTiledMapConverter(final TiledLayerMapper tiledLayerMapper) {
         this.tiledLayerMapper = tiledLayerMapper;
     }
@@ -35,6 +34,12 @@ public class LayerToTiledMapConverter {
         "compressionlevel", -1
 );
 
+    /// Converts a level and tileset into the map payload expected by the
+    /// frontend.
+    ///
+    /// @param level the level to export
+    /// @param tileSet the tileset metadata referenced by the level
+    /// @return a Tiled-compatible map payload
     public Map<String, Object> convertPipeline(
             final Level level,
             final TileSet tileSet) {
