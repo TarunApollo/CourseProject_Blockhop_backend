@@ -7,6 +7,10 @@ import org.springframework.stereotype.Service;
 /// Validates whether a submitted attempt satisfies a level's completion rules.
 @Service
 public class AttemptValidationService {
+    /// Creates a validation service instance.
+    public AttemptValidationService() {
+    }
+
     /// Validates whether the submitted attempt satisfies the level's completion
     /// criteria.
     ///

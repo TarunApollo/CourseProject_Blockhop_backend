@@ -24,12 +24,12 @@ final class TiledLayerMapper {
     private final TileSetService tileSetService;
 
     /// Package-private constructor used by the converter package and Spring.
-    TiledLayerMapper(final TileSetService tileSetService) {
+    /* package */ TiledLayerMapper(final TileSetService tileSetService) {
         this.tileSetService = tileSetService;
     }
 
     /// Package-private helper that exports the world layer in Tiled format.
-    Map<String, Object> buildWorldLayer(
+    /* package */ Map<String, Object> buildWorldLayer(
             final Map<Position, GroundObject> worldLayer,
             final int width,
             final int height) {
@@ -63,7 +63,7 @@ final class TiledLayerMapper {
     }
 
     /// Package-private helper that exports the object layer in Tiled format.
-    Map<String, Object> buildObjectLayer(final Map<Position, GameObject> objectLayer) {
+    /* package */ Map<String, Object> buildObjectLayer(final Map<Position, GameObject> objectLayer) {
         final List<Map<String, Object>> objects = new ArrayList<>(objectLayer.size());
         int idCounter = 1;
         for (final GameObject gameObject : objectLayer.values()) {

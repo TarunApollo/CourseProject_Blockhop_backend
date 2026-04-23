@@ -13,8 +13,8 @@ final class TiledTilesetMapper {
     }
 
     /// Package-private helper that exports the tileset in Tiled format.
-    static Map<String, Object> buildTileset(final TileSet tileSet) {
-        final Map<Integer, Map<String, Object>> tilesById = new LinkedHashMap<>();
+    /* package */ static Map<String, Object> buildTileset(final TileSet tileSet) {
+        final Map<Integer, Map<String, Object>> tilesById = new LinkedHashMap<>(tileSet.tiles().size());
         for (final TileSet.TileData tile : tileSet.tiles()) {
             tilesById.put(tile.id(), toTiledTile(tile));
         }
