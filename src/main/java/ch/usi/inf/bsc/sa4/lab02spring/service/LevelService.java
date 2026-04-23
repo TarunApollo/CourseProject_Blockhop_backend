@@ -123,12 +123,16 @@ public class LevelService {
         levelRepository.deleteById(levelId);
     }
 
-    /// Retrieves all levels created by the given user, mapped to DTOs.
-    /// @param creator the user whose levels to retrieve
-    /// @return a list of LevelDTOs for the levels created by the given user
-    public List<LevelDTO> getCreatedLevelsByUser(User creator) {
+    /// Retrieves all levels created by the given user, including profile statistics.
+    /// @param creator the user whose created levels to retrieve
+    /// @return a list of created level profile DTOs with play and completion counts
+    public List<CreatedLevelProfileDTO> getCreatedLevelsByUser(User creator) {
         return levelRepository.findByCreator(creator).stream()
-                .map(LevelDTO::new)
+                .map(level -> new CreatedLevelProfileDTO(
+                        level,
+                        attemptRepository.countByLevel(level),
+                        attemptRepository.countByLevelAndCompletedTrue(level)
+                ))
                 .toList();
     }
 
