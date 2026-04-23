@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,8 +18,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
 @DisplayName("In the Level class")
 @SuppressWarnings("NullAway")
@@ -58,6 +62,12 @@ public class LevelTests {
         public void isUnpublished() {
             assertFalse(this.level.isPublished());
             assertTrue(this.level.canBeModified());
+        }
+
+        @Test
+        @DisplayName("should start as not publish eligible")
+        public void isNotPublishEligible() {
+            assertFalse(this.level.isPublishEligible());
         }
 
         @Test
@@ -450,6 +460,467 @@ public class LevelTests {
             cloned.putObjectLayer(clonedOnlyObjectPosition, new StartFlag(77, clonedOnlyObjectPosition));
             assertFalse(this.original.getWorldLayer().containsKey(clonedOnlyWorldPosition));
             assertFalse(this.original.getObjectLayer().containsKey(clonedOnlyObjectPosition));
+        }
+    }
+
+    @Nested
+    @DisplayName("method publish")
+    class PublishMethod {
+
+        private Level level;
+        private Position flagPos;
+        private Position doorPos;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.flagPos = new Position(1, 1);
+            this.doorPos = new Position(2, 1);
+        }
+
+        @Nested
+        @DisplayName("throws ForbiddenUserException")
+        class WhenUserIsNotOwner {
+
+            @Test
+            @DisplayName("when user does not own the level")
+            public void wrongUser() {
+                Executable codeToExecute = () -> PublishMethod.this.level.publish("other-id");
+                assertThrows(ForbiddenUserException.class, codeToExecute);
+            }
+        }
+
+        @Nested
+        @DisplayName("throws ForbiddenLevelActionException")
+        class WhenCannotPublish {
+
+            @Test
+            @DisplayName("when object layer has no start flag")
+            public void noStartFlag() {
+                PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos, new ExitDoor(115, PublishMethod.this.doorPos));
+                PublishMethod.this.level.validatePublishEligible("user-1");
+                Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when object layer has no exit door")
+            public void noExitDoor() {
+                PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos, new StartFlag(68, PublishMethod.this.flagPos));
+                PublishMethod.this.level.validatePublishEligible("user-1");
+                Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when level is not publish eligible")
+            public void notPublishEligible() {
+                PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos, new StartFlag(68, PublishMethod.this.flagPos));
+                PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos, new ExitDoor(115, PublishMethod.this.doorPos));
+                Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+        }
+
+        @Nested
+        @DisplayName("when publishing is valid")
+        class WhenValid {
+
+            @Test
+            @DisplayName("should mark the level as published")
+            public void marksAsPublished() {
+                PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos, new StartFlag(68, PublishMethod.this.flagPos));
+                PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos, new ExitDoor(115, PublishMethod.this.doorPos));
+                PublishMethod.this.level.validatePublishEligible("user-1");
+                PublishMethod.this.level.publish("user-1");
+                assertTrue(PublishMethod.this.level.isPublished());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("method validatePublishEligible")
+    class ValidatePublishEligibleMethod {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Test
+        @DisplayName("throws ForbiddenUserException when user does not own the level")
+        public void wrongUser() {
+            Executable codeToExecute = () -> this.level.validatePublishEligible("other-id");
+            assertThrows(ForbiddenUserException.class, codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should set publish eligible to true")
+        public void setsPublishEligible() {
+            this.level.validatePublishEligible("user-1");
+            assertTrue(this.level.isPublishEligible());
+        }
+    }
+
+    @Nested
+    @DisplayName("method invalidatePublishEligible")
+    class InvalidatePublishEligibleMethod {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.level.validatePublishEligible("user-1");
+        }
+
+        @Test
+        @DisplayName("throws ForbiddenUserException when user does not own the level")
+        public void wrongUser() {
+            Executable codeToExecute = () -> this.level.invalidatePublishEligible("other-id");
+            assertThrows(ForbiddenUserException.class, codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should set publish eligible to false")
+        public void setsPublishIneligible() {
+            this.level.invalidatePublishEligible("user-1");
+            assertFalse(this.level.isPublishEligible());
+        }
+    }
+
+    @Nested
+    @DisplayName("method unpublish")
+    class UnpublishMethod {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            Position flagPos = new Position(1, 1);
+            Position doorPos = new Position(2, 1);
+            this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+            this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+            this.level.validatePublishEligible("user-1");
+            this.level.publish("user-1");
+        }
+
+        @Test
+        @DisplayName("throws ForbiddenUserException when user does not own the level")
+        public void wrongUser() {
+            Executable codeToExecute = () -> this.level.unpublish("other-id");
+            assertThrows(ForbiddenUserException.class, codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should mark the level as unpublished")
+        public void marksAsUnpublished() {
+            this.level.unpublish("user-1");
+            assertFalse(this.level.isPublished());
+        }
+
+        @Test
+        @DisplayName("should be idempotent when called on an already unpublished level")
+        public void isIdempotent() {
+            this.level.unpublish("user-1");
+            Executable codeToExecute = () -> this.level.unpublish("user-1");
+            assertDoesNotThrow(codeToExecute);
+            assertFalse(this.level.isPublished());
+        }
+    }
+
+    @Nested
+    @DisplayName("method ensureValidObjectLayer")
+    class EnsureValidObjectLayerMethod {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Nested
+        @DisplayName("throws IllegalArgumentException")
+        class WhenObjectLayerIsInvalid {
+
+            @Test
+            @DisplayName("when there are more than one start flags")
+            public void moreThanOneFlag() {
+                Position pos1 = new Position(1, 1);
+                Position pos2 = new Position(3, 1);
+                Map<Position, GameObject> layer = new HashMap<>();
+                layer.put(pos1, new StartFlag(68, pos1));
+                layer.put(pos2, new StartFlag(68, pos2));
+                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                assertThrows(IllegalArgumentException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when there are more than one exit doors")
+            public void moreThanOneDoor() {
+                Position pos1 = new Position(1, 1);
+                Position pos2 = new Position(3, 1);
+                Map<Position, GameObject> layer = new HashMap<>();
+                layer.put(pos1, new ExitDoor(115, pos1));
+                layer.put(pos2, new ExitDoor(115, pos2));
+                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                assertThrows(IllegalArgumentException.class, codeToExecute);
+            }
+        }
+
+        @Nested
+        @DisplayName("when object layer is valid")
+        class WhenObjectLayerIsValid {
+
+            @Test
+            @DisplayName("should not throw for an empty layer")
+            public void emptyLayer() {
+                Map<Position, GameObject> layer = new HashMap<>();
+                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                assertDoesNotThrow(codeToExecute);
+            }
+
+            @Test
+            @DisplayName("should not throw for one flag and one door")
+            public void oneFlagOneDoor() {
+                Position flagPos = new Position(1, 1);
+                Position doorPos = new Position(2, 1);
+                Map<Position, GameObject> layer = new HashMap<>();
+                layer.put(flagPos, new StartFlag(68, flagPos));
+                layer.put(doorPos, new ExitDoor(115, doorPos));
+                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                assertDoesNotThrow(codeToExecute);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("method ensurePublishableObjectLayer")
+    class EnsurePublishableObjectLayerMethod {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Nested
+        @DisplayName("throws ForbiddenLevelActionException")
+        class WhenObjectLayerIsNotPublishable {
+
+            @Test
+            @DisplayName("when there are no start flags")
+            public void noFlag() {
+                Position doorPos = new Position(2, 1);
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when there are no exit doors")
+            public void noDoor() {
+                Position flagPos = new Position(1, 1);
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when there are more than one start flags")
+            public void moreThanOneFlag() {
+                Position flagPos1 = new Position(1, 1);
+                Position flagPos2 = new Position(3, 1);
+                Position doorPos = new Position(2, 1);
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos1, new StartFlag(68, flagPos1));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos2, new StartFlag(68, flagPos2));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when there are more than one exit doors")
+            public void moreThanOneDoor() {
+                Position flagPos = new Position(1, 1);
+                Position doorPos1 = new Position(2, 1);
+                Position doorPos2 = new Position(4, 1);
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos1, new ExitDoor(115, doorPos1));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos2, new ExitDoor(115, doorPos2));
+                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                assertThrows(ForbiddenLevelActionException.class, codeToExecute);
+            }
+        }
+
+        @Nested
+        @DisplayName("when object layer is publishable")
+        class WhenObjectLayerIsPublishable {
+
+            @Test
+            @DisplayName("should not throw when there is exactly one flag and one door")
+            public void oneFlagOneDoor() {
+                Position flagPos = new Position(1, 1);
+                Position doorPos = new Position(2, 1);
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                assertDoesNotThrow(codeToExecute);
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("method ensurePlayable")
+    class EnsurePlayableMethod {
+
+        private Level level;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+        }
+
+        @Test
+        @DisplayName("throws LevelNotPlayableException when level is unpublished and user is not the owner")
+        public void unpublishedNotOwner() {
+            Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+            assertThrows(LevelNotPlayableException.class, codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should not throw when level is unpublished but user is the owner")
+        public void unpublishedOwner() {
+            Executable codeToExecute = () -> this.level.ensurePlayable("user-1");
+            assertDoesNotThrow(codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should not throw when level is published regardless of user")
+        public void publishedLevel() {
+            Position flagPos = new Position(1, 1);
+            Position doorPos = new Position(2, 1);
+            this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+            this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+            this.level.validatePublishEligible("user-1");
+            this.level.publish("user-1");
+            Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+            assertDoesNotThrow(codeToExecute);
+        }
+    }
+
+    @Nested
+    @DisplayName("method ensureObjectCanBePlacedAt")
+    class EnsureObjectCanBePlacedAtMethod {
+
+        private Level level;
+        private Position position;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.position = new Position(3, 3);
+        }
+
+        @Nested
+        @DisplayName("throws ObjectPlacementConflictException")
+        class WhenPositionIsOccupied {
+
+            @Test
+            @DisplayName("when world layer has an object at the position")
+            public void worldLayerOccupied() {
+                EnsureObjectCanBePlacedAtMethod.this.level.putWorldLayer(EnsureObjectCanBePlacedAtMethod.this.position, new GroundObject(5));
+                Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level.ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
+                assertThrows(ObjectPlacementConflictException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when object layer has an object at the position")
+            public void objectLayerOccupied() {
+                EnsureObjectCanBePlacedAtMethod.this.level.putObjectLayer(EnsureObjectCanBePlacedAtMethod.this.position, new StartFlag(68, EnsureObjectCanBePlacedAtMethod.this.position));
+                Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level.ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
+                assertThrows(ObjectPlacementConflictException.class, codeToExecute);
+            }
+        }
+
+        @Test
+        @DisplayName("should not throw when both layers are empty at the position")
+        public void bothLayersEmpty() {
+            Executable codeToExecute = () -> this.level.ensureObjectCanBePlacedAt(this.position);
+            assertDoesNotThrow(codeToExecute);
+        }
+    }
+
+    @Nested
+    @DisplayName("method updateBoxContent")
+    class UpdateBoxContentMethod {
+
+        private Level level;
+        private Position validPosition;
+        private Position outOfBoundsPosition;
+
+        @BeforeEach
+        void setUp() {
+            User creator = new User("user-1", "Mario");
+            this.level = new Level("Test level", "A level description", creator);
+            this.validPosition = new Position(5, 5);
+            this.outOfBoundsPosition = new Position(256, 14);
+        }
+
+        @Nested
+        @DisplayName("throws IllegalArgumentException")
+        class WhenPositionOrObjectIsInvalid {
+
+            @Test
+            @DisplayName("when position is out of bounds")
+            public void outOfBounds() {
+                Content content = new Content.NoContent();
+                Executable codeToExecute = () -> UpdateBoxContentMethod.this.level.updateBoxContent(UpdateBoxContentMethod.this.outOfBoundsPosition, content);
+                assertThrows(IllegalArgumentException.class, codeToExecute);
+            }
+
+            @Test
+            @DisplayName("when the object at the position is not a box")
+            public void notABox() {
+                UpdateBoxContentMethod.this.level.putObjectLayer(UpdateBoxContentMethod.this.validPosition, new StartFlag(68, UpdateBoxContentMethod.this.validPosition));
+                Content content = new Content.NoContent();
+                Executable codeToExecute = () -> UpdateBoxContentMethod.this.level.updateBoxContent(UpdateBoxContentMethod.this.validPosition, content);
+                assertThrows(IllegalArgumentException.class, codeToExecute);
+            }
+        }
+
+        @Test
+        @DisplayName("throws NoSuchElementException when no object exists at the position")
+        public void noObjectAtPosition() {
+            Content content = new Content.NoContent();
+            Executable codeToExecute = () -> this.level.updateBoxContent(this.validPosition, content);
+            assertThrows(NoSuchElementException.class, codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should update the content of a box at the given position")
+        public void updatesBoxContent() {
+            Content originalContent = new Content.NoContent();
+            Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
+            Box box = new Box(42, this.validPosition, originalContent);
+            this.level.putObjectLayer(this.validPosition, box);
+            this.level.updateBoxContent(this.validPosition, newContent);
+            GameObject updated = this.level.getObjectLayer().get(this.validPosition);
+            assertTrue(updated instanceof Box);
+            assertEquals(newContent, ((Box) updated).content());
         }
     }
 }
