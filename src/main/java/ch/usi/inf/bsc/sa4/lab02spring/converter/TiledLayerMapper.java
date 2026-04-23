@@ -53,7 +53,7 @@ final class TiledLayerMapper {
         tiledWorldLayer.put("width", width);
         tiledWorldLayer.put("height", height);
         tiledWorldLayer.put("opacity", 1);
-        tiledWorldLayer.put("visible", true);
+        tiledWorldLayer.put("visible", Boolean.TRUE);
         tiledWorldLayer.put("x", 0);
         tiledWorldLayer.put("y", 0);
         tiledWorldLayer.put("data", data);
@@ -61,7 +61,7 @@ final class TiledLayerMapper {
     }
 
     Map<String, Object> buildObjectLayer(final Map<Position, GameObject> objectLayer) {
-        final List<Map<String, Object>> objects = new ArrayList<>();
+        final List<Map<String, Object>> objects = new ArrayList<>(objectLayer.size());
         int idCounter = 1;
         for (final GameObject gameObject : objectLayer.values()) {
             objects.add(toTiledObject(gameObject, idCounter++));
@@ -73,7 +73,7 @@ final class TiledLayerMapper {
         tiledObjectLayer.put("type", "objectgroup");
         tiledObjectLayer.put("draworder", "topdown");
         tiledObjectLayer.put("opacity", 1);
-        tiledObjectLayer.put("visible", true);
+        tiledObjectLayer.put("visible", Boolean.TRUE);
         tiledObjectLayer.put("x", 0);
         tiledObjectLayer.put("y", 0);
         tiledObjectLayer.put("objects", objects);
@@ -92,7 +92,7 @@ final class TiledLayerMapper {
         tiledObject.put("y", y);
         tiledObject.put("width", TILE_SIZE);
         tiledObject.put("height", TILE_SIZE);
-        tiledObject.put("visible", true);
+        tiledObject.put("visible", Boolean.TRUE);
         tiledObject.put("rotation", 0);
         tiledObject.put("name", "");
         tiledObject.put("type", this.tileSetService.getObjectTileType(gameObject.gid()));

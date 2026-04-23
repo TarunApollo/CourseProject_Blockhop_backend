@@ -61,7 +61,7 @@ public class LayerToTiledMapConverter {
         metadata.put("height", level.getHeight());
         metadata.put("nextlayerid", 3);
         metadata.put("nextobjectid", level.getObjectLayer().size() + 1);
-        metadata.put("infinite", false);
+        metadata.put("infinite", Boolean.FALSE);
         metadata.put("doorOpen", level.getClearCondition().condition() instanceof Condition.NoClearCondition);
         metadata.put("properties", buildMapProperties(level));
         return metadata;

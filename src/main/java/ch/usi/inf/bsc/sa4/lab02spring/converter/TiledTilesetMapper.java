@@ -18,7 +18,7 @@ final class TiledTilesetMapper {
             tilesById.put(tile.id(), toTiledTile(tile));
         }
 
-        final List<Map<String, Object>> tiles = new ArrayList<>();
+        final List<Map<String, Object>> tiles = new ArrayList<>(tileSet.tilecount());
         for (int i = 0; i < tileSet.tilecount(); i++) {
             if (tilesById.containsKey(i)) {
                 tiles.add(tilesById.get(i));
@@ -53,7 +53,7 @@ final class TiledTilesetMapper {
         tiledTile.put("type", tile.type() != null ? tile.type() : "");
 
         if (tile.properties() != null && !tile.properties().isEmpty()) {
-            final List<Map<String, Object>> properties = new ArrayList<>();
+            final List<Map<String, Object>> properties = new ArrayList<>(tile.properties().size());
             for (final TileSet.Property property : tile.properties()) {
                 properties.add(toTiledProperty(property));
             }
@@ -75,7 +75,7 @@ final class TiledTilesetMapper {
     }
 
     private static Map<String, Object> toTiledObjectGroup(final TileSet.ObjectGroup objectGroup) {
-        final List<Map<String, Object>> objects = new ArrayList<>();
+        final List<Map<String, Object>> objects = new ArrayList<>(objectGroup.objects().size());
         for (final TileSet.TileObject object : objectGroup.objects()) {
             objects.add(toTiledTileObject(object));
         }
@@ -105,7 +105,7 @@ final class TiledTilesetMapper {
         tiledObject.put("height", object.height());
 
         if (object.polygon() != null && !object.polygon().isEmpty()) {
-            final List<Map<String, Object>> polygon = new ArrayList<>();
+            final List<Map<String, Object>> polygon = new ArrayList<>(object.polygon().size());
             for (final TileSet.Point point : object.polygon()) {
                 polygon.add(toTiledPoint(point));
             }
