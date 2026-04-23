@@ -2,10 +2,11 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreatedLevelProfileDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -23,15 +24,22 @@ import java.util.stream.Collectors;
 public class LevelService {
     /// Persists and loads level entities.
     private final LevelRepository levelRepository;
+    /// Provides play and completion counts for profile summaries.
+    private final AttemptRepository attemptRepository;
     /// Resolves users involved in level operations.
     private final UserService userService;
 
     /// Constructs a new LevelService with the given dependencies.
     /// @param levelRepository the repository for accessing level data
+    /// @param attemptRepository the repository for accessing attempt statistics
     /// @param userService the service for accessing user data
     @Autowired
-    public LevelService(final LevelRepository levelRepository, final UserService userService) {
+    public LevelService(
+            final LevelRepository levelRepository,
+            final AttemptRepository attemptRepository,
+            final UserService userService) {
         this.levelRepository = levelRepository;
+        this.attemptRepository = attemptRepository;
         this.userService = userService;
     }
 
@@ -104,12 +112,15 @@ public class LevelService {
         this.levelRepository.deleteById(levelId);
     }
 
-    /// Retrieves all levels created by the given user, mapped to DTOs.
+    /// Retrieves all levels created by the given user with profile statistics.
     /// @param creator the user whose levels to retrieve
-    /// @return a list of LevelDTOs for the levels created by the given user
-    public List<LevelDTO> getCreatedLevelsByUser(final User creator) {
+    /// @return a list of created level profile DTOs with play and completion counts
+    public List<CreatedLevelProfileDTO> getCreatedLevelsByUser(final User creator) {
         return this.levelRepository.findByCreator(creator).stream()
-                .map(LevelDTO::new)
+                .map(level -> new CreatedLevelProfileDTO(
+                        level,
+                        this.attemptRepository.countByLevel(level),
+                        this.attemptRepository.countByLevelAndCompletedTrue(level)))
                 .toList();
     }
 
