@@ -12,6 +12,7 @@ final class TiledTilesetMapper {
     private TiledTilesetMapper() {
     }
 
+    /// Package-private helper that exports the tileset in Tiled format.
     static Map<String, Object> buildTileset(final TileSet tileSet) {
         final Map<Integer, Map<String, Object>> tilesById = new LinkedHashMap<>();
         for (final TileSet.TileData tile : tileSet.tiles()) {

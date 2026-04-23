@@ -10,8 +10,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
 /// Handles level publication state transitions.
+@Service
 public class LevelPublishService {
     /// Persists publication-state updates on levels.
     private final LevelRepository levelRepository;

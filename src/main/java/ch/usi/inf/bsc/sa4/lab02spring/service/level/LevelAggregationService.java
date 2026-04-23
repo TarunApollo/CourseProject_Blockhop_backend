@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 
-@Service
 /// Builds aggregated views of published levels.
+@Service
 public class LevelAggregationService {
     /// Loads published levels for aggregation.
     private final LevelRepository levelRepository;

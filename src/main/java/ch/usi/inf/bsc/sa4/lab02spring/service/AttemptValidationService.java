@@ -4,8 +4,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import org.springframework.stereotype.Service;
 
-@Service
 /// Validates whether a submitted attempt satisfies a level's completion rules.
+@Service
 public class AttemptValidationService {
     /// Validates whether the submitted attempt satisfies the level's completion
     /// criteria.

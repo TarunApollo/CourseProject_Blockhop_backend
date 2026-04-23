@@ -18,8 +18,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Service
 /// Provides core CRUD-style operations for levels.
+@Service
 public class LevelService {
     /// Persists and loads level entities.
     private final LevelRepository levelRepository;

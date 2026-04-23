@@ -1,8 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
-import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserNameFromAuth;
-
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
@@ -10,6 +7,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +71,7 @@ public class UserController {
     ///         or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
-        String userId = getUserIdFromAuth(authentication);
+        String userId = AuthUtils.getUserIdFromAuth(authentication);
 
         return ResponseEntity.of(this.userService.getById(userId)
                 .map(user -> new UserProfileDTO(
@@ -90,8 +88,8 @@ public class UserController {
     @GetMapping(path = "/me")
     public ResponseEntity<UserDTO> index(Authentication authentication) {
         // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
-        String eduId = getUserIdFromAuth(authentication);
-        String fullName = getUserNameFromAuth(authentication);
+        String eduId = AuthUtils.getUserIdFromAuth(authentication);
+        String fullName = AuthUtils.getUserNameFromAuth(authentication);
 
         Optional<User> optUser = this.userService.getById(eduId);
         return optUser.map(user -> ResponseEntity.ok(new UserDTO(user)))

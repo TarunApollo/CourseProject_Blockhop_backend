@@ -24,8 +24,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
-@Service
 /// Applies editor updates to world and object layers.
+@Service
 public class EditorService {
 
     /// Persists edited levels.

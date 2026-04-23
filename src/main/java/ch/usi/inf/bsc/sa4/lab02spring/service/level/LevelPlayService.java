@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-@Service
 /// Coordinates playable map retrieval and attempt submission.
+@Service
 public class LevelPlayService {
     /// Loads levels for play requests.
     private final LevelRepository levelRepository;

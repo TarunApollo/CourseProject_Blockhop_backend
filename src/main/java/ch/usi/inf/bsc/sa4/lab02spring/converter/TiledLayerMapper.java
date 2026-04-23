@@ -14,8 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 /// Maps level layers into Tiled-compatible layer structures.
+@Component
 final class TiledLayerMapper {
     /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;
@@ -23,10 +23,12 @@ final class TiledLayerMapper {
     /// Resolves object tile type metadata.
     private final TileSetService tileSetService;
 
+    /// Package-private constructor used by the converter package and Spring.
     TiledLayerMapper(final TileSetService tileSetService) {
         this.tileSetService = tileSetService;
     }
 
+    /// Package-private helper that exports the world layer in Tiled format.
     Map<String, Object> buildWorldLayer(
             final Map<Position, GroundObject> worldLayer,
             final int width,
@@ -60,6 +62,7 @@ final class TiledLayerMapper {
         return tiledWorldLayer;
     }
 
+    /// Package-private helper that exports the object layer in Tiled format.
     Map<String, Object> buildObjectLayer(final Map<Position, GameObject> objectLayer) {
         final List<Map<String, Object>> objects = new ArrayList<>(objectLayer.size());
         int idCounter = 1;
