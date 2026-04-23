@@ -434,6 +434,7 @@ class LevelTests {
         }
     }
 
+    /** Tests for the setWorldLayer method. */
     @Nested
     @DisplayName("method setWorldLayer")
     class SetWorldLayerMethod {
@@ -441,8 +442,12 @@ class LevelTests {
         private Level level;
         private Position pos1;
         private Position pos2;
+        /** New position added to the replacement layer. */
         private Position newPos;
+        /** Replacement world layer used in each test. */
         private Map<Position, GroundObject> newLayer;
+
+        SetWorldLayerMethod() {}
 
         @BeforeEach
         void setUp() {
@@ -485,14 +490,19 @@ class LevelTests {
         }
     }
 
+    /** Tests for the setObjectLayer method. */
     @Nested
     @DisplayName("method setObjectLayer")
     class SetObjectLayerMethod {
 
         private Level level;
         private Position pos;
+        /** New position added to the replacement layer. */
         private Position newPos;
+        /** Replacement object layer used in each test. */
         private Map<Position, GameObject> newLayer;
+
+        SetObjectLayerMethod() {}
 
         @BeforeEach
         void setUp() {
@@ -526,6 +536,7 @@ class LevelTests {
         }
     }
 
+    /** Tests for the cloneFor method. */
     @Nested
     @DisplayName("method cloneFor")
     class CloneForMethod {
@@ -535,7 +546,10 @@ class LevelTests {
         private Position worldPosition;
         private Position objectPosition;
         private ClearCondition clearCondition;
+        /** Cloned level created in setUp for use across all tests. */
         private Level cloned;
+
+        CloneForMethod() {}
 
         @BeforeEach
         void setUp() {
