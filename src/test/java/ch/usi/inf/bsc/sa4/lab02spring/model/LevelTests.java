@@ -1,7 +1,15 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import org.junit.jupiter.api.Assertions;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -17,606 +25,595 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
-/// Verifies creation, mutation, ownership, bounds checking, layer handling,
-/// publication rules, and cloning behavior for Level.
-///
 @DisplayName("In the Level class")
 @SuppressWarnings("NullAway")
 class LevelTests {
 
-    /// Default user id used by fixtures.
-    private static final String USER_ID = "user-1";
-    /// Alternate user id used for ownership tests.
-    private static final String OWNER_ID = "owner-id";
-    /// Default user display name used by fixtures.
-    private static final String USER_NAME = "Mario";
-    /// Default level title used by fixtures.
-    private static final String LEVEL_TITLE = "Test level";
-    /// Default level description used by fixtures.
-    private static final String LEVEL_DESC = "A level description";
+    private static User createTestUser() {
+        return new User("user-1", "Mario");
+    }
 
-    /// Verifies that a level can be created with title, description, and creator.
-    ///
+    private static Level createLevelFor(final User creator) {
+        return new Level("Test level", "A level description", creator);
+    }
+
+    private static Level createTestLevel() {
+        return createLevelFor(createTestUser());
+    }
+
+    private static void publishTestLevel(final Level level) {
+        final Position flagPos = new Position(1, 1);
+        final Position doorPos = new Position(2, 1);
+        level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+        level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+        level.validatePublishEligible("user-1");
+        level.publish("user-1");
+    }
+
     @Test
     @DisplayName("can be created with title, description, and creator")
     void creatorTest() {
-        final User creator = new User(USER_ID, USER_NAME);
-        final Level level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
-        Assertions.assertNotNull(level);
+        final Executable codeToExecute = LevelTests::createTestLevel;
+        assertDoesNotThrow(codeToExecute);
     }
 
-    /// Tests the initial state of a newly created Level.
-    ///
     @Nested
     @DisplayName("when a level is newly created")
     class NewlyCreatedLevel {
 
-        /// The level under test.
         private Level level;
-        /// The creator of the level.
         private User creator;
+        private String title;
+        private String description;
 
         @BeforeEach
         void setUp() {
-            this.creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, this.creator);
+            this.title = "Test level";
+            this.description = "A level description";
+            this.creator = createTestUser();
+            this.level = createLevelFor(this.creator);
         }
 
-        /// Verifies that the provided metadata is stored correctly.
-        ///
         @Test
-        @DisplayName("should store the provided metadata")
-        void storesProvidedMetadata() {
-            Assertions.assertEquals(LEVEL_TITLE, this.level.getTitle());
-            Assertions.assertEquals(LEVEL_DESC, this.level.getDescription());
-            Assertions.assertSame(this.creator, this.level.getCreator());
+        @DisplayName("should have the correct title")
+        void hasCorrectTitle() {
+            assertEquals(this.title, this.level.getTitle());
         }
 
-        /// Verifies that a new level starts unpublished and modifiable.
-        ///
+        @Test
+        @DisplayName("should have the correct description")
+        void hasCorrectDescription() {
+            assertEquals(this.description, this.level.getDescription());
+        }
+
+        @Test
+        @DisplayName("should have the correct creator")
+        void hasCorrectCreator() {
+            assertSame(this.creator, this.level.getCreator());
+        }
+
         @Test
         @DisplayName("should be unpublished")
-        void isUnpublished() {
-            Assertions.assertFalse(this.level.isPublished());
-            Assertions.assertTrue(this.level.canBeModified());
+        void isNotPublished() {
+            assertFalse(this.level.isPublished());
         }
 
-        /// Verifies that the level exposes its fixed dimensions.
-        ///
+        @Test
+        @DisplayName("should be modifiable")
+        void isModifiable() {
+            assertTrue(this.level.canBeModified());
+        }
+
         @Test
         @DisplayName("should start as not publish eligible")
-        public void isNotPublishEligible() {
+        void isNotPublishEligible() {
             assertFalse(this.level.isPublishEligible());
         }
 
         @Test
-        @DisplayName("should expose the fixed dimensions")
-        void hasFixedDimensions() {
-            Assertions.assertEquals(256, this.level.getWidth());
-            Assertions.assertEquals(14, this.level.getHeight());
+        @DisplayName("should have the correct width")
+        void hasCorrectWidth() {
+            assertEquals(256, this.level.getWidth());
         }
 
-        /// Verifies that the default clear condition is present.
-        ///
         @Test
-        @DisplayName("should start with the default clear condition")
-        void hasDefaultClearCondition() {
-            final ClearCondition clearCondition = this.level.getClearCondition();
-            Assertions.assertTrue(clearCondition.condition() instanceof Condition.NoClearCondition);
-            Assertions.assertEquals(0, clearCondition.targetAmount());
+        @DisplayName("should have the correct height")
+        void hasCorrectHeight() {
+            assertEquals(14, this.level.getHeight());
         }
 
-        /// Verifies that both layers start empty.
-        ///
         @Test
-        @DisplayName("should start with empty layers")
-        void startsWithEmptyLayers() {
-            Assertions.assertTrue(this.level.getObjectLayer().isEmpty());
-            Assertions.assertTrue(this.level.getWorldLayer().isEmpty());
+        @DisplayName("should start with no clear condition")
+        void hasNoClearCondition() {
+            assertInstanceOf(Condition.NoClearCondition.class, this.level.getClearCondition().condition());
+        }
+
+        @Test
+        @DisplayName("should start with zero target amount")
+        void hasZeroTargetAmount() {
+            assertEquals(0, this.level.getClearCondition().targetAmount());
+        }
+
+        @Test
+        @DisplayName("should start with an empty object layer")
+        void startsWithEmptyObjectLayer() {
+            assertTrue(this.level.getObjectLayer().isEmpty());
+        }
+
+        @Test
+        @DisplayName("should start with an empty world layer")
+        void startsWithEmptyWorldLayer() {
+            assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
 
-    /// Tests the mutator methods for title, description, and clear condition.
-    ///
     @Nested
     @DisplayName("methods setTitle, setDescription, and setClearCondition")
     class Setters {
 
-        /// The level under test.
         private Level level;
-        /// The clear condition to assign.
         private ClearCondition clearCondition;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level("Old title", "Old description", creator);
+            this.level = createTestLevel();
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.SLIME), 2);
         }
 
-        /// Verifies that mutable fields are updated correctly.
-        ///
         @Test
-        @DisplayName("should update the mutable fields")
-        void updatesMutableFields() {
+        @DisplayName("should update the title")
+        void updatesTitle() {
             this.level.setTitle("New title");
-            this.level.setDescription("New description");
-            this.level.setClearCondition(this.clearCondition);
+            assertEquals("New title", this.level.getTitle());
+        }
 
-            Assertions.assertEquals("New title", this.level.getTitle());
-            Assertions.assertEquals("New description", this.level.getDescription());
-            Assertions.assertSame(this.clearCondition, this.level.getClearCondition());
+        @Test
+        @DisplayName("should update the description")
+        void updatesDescription() {
+            this.level.setDescription("New description");
+            assertEquals("New description", this.level.getDescription());
+        }
+
+        @Test
+        @DisplayName("should update the clear condition")
+        void updatesClearCondition() {
+            this.level.setClearCondition(this.clearCondition);
+            assertSame(this.clearCondition, this.level.getClearCondition());
         }
     }
 
-    /// Tests ownership-related methods on Level.
-    ///
     @Nested
     @DisplayName("methods isOwnedBy and ensureOwnedBy")
     class OwnershipMethods {
 
-        /// The level under test.
         private Level level;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(OWNER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
+            this.level = createLevelFor(new User("owner-id", "Mario"));
         }
 
-        /// Verifies ownership checks using a user id.
-        ///
         @Test
-        @DisplayName("should report ownership for the matching user id")
-        void matchesUserId() {
-            Assertions.assertTrue(this.level.isOwnedBy(OWNER_ID));
-            Assertions.assertFalse(this.level.isOwnedBy("other-id"));
+        @DisplayName("should return true when user id matches the owner")
+        void returnsTrueForOwnerId() {
+            assertTrue(this.level.isOwnedBy("owner-id"));
         }
 
-        /// Verifies ownership checks using a user instance.
-        ///
         @Test
-        @DisplayName("should report ownership for the matching user")
-        void matchesUser() {
-            Assertions.assertTrue(this.level.isOwnedBy(new User(OWNER_ID, "Mario clone")));
-            Assertions.assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
+        @DisplayName("should return false when user id does not match the owner")
+        void returnsFalseForOtherId() {
+            assertFalse(this.level.isOwnedBy("other-id"));
         }
 
-        /// Tests the method that enforces ownership.
-        ///
+        @Test
+        @DisplayName("should return true when user matches the owner")
+        void returnsTrueForOwnerUser() {
+            assertTrue(this.level.isOwnedBy(new User("owner-id", "Mario clone")));
+        }
+
+        @Test
+        @DisplayName("should return false when user does not match the owner")
+        void returnsFalseForOtherUser() {
+            assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
+        }
+
         @Nested
         @DisplayName("method ensureOwnedBy")
         class EnsureOwnedByMethod {
 
-            /// Verifies that a non-owner triggers a forbidden exception.
-            ///
             @Test
             @DisplayName("throws ForbiddenUserException")
             void throwsForbiddenUserException() {
                 final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("other-id");
-                Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
+                assertThrows(ForbiddenUserException.class, codeToExecute);
             }
 
-            /// Verifies that the owner is allowed to perform the operation.
-            ///
             @Test
             @DisplayName("should not throw when the user owns the level")
             void allowsOwner() {
-                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy(OWNER_ID);
-                Assertions.assertDoesNotThrow(codeToExecute);
+                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("owner-id");
+                assertDoesNotThrow(codeToExecute);
             }
         }
     }
 
-    /// Tests publication-related methods on Level.
-    ///
     @Nested
     @DisplayName("methods canBeModified and ensureModifiable")
     class PublicationMethods {
 
-        /// The level under test.
         private Level level;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
+            this.level = createTestLevel();
         }
 
-        /// Verifies that an unpublished level can be modified.
-        ///
         @Test
-        @DisplayName("should allow modification when unpublished")
-        void allowsModificationWhenUnpublished() {
-            Assertions.assertTrue(this.level.canBeModified());
-            Assertions.assertDoesNotThrow(() -> this.level.ensureModifiable());
+        @DisplayName("should report modifiable when unpublished")
+        void isModifiableWhenUnpublished() {
+            assertTrue(this.level.canBeModified());
         }
 
-        /// Verifies that a published level rejects modifications.
-        ///
         @Test
-        @DisplayName("should reject modification when published")
-        void rejectsModificationWhenPublished() {
-            final Position flagPos = new Position(1, 1);
-            final Position doorPos = new Position(2, 1);
-            this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-            this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-            this.level.validatePublishEligible(USER_ID);
-            this.level.publish(USER_ID);
-            Assertions.assertFalse(this.level.canBeModified());
-            Assertions.assertThrows(LevelPublishedException.class, () -> this.level.ensureModifiable());
+        @DisplayName("should not throw ensureModifiable when unpublished")
+        void doesNotThrowWhenUnpublished() {
+            assertDoesNotThrow(() -> this.level.ensureModifiable());
+        }
+
+        @Test
+        @DisplayName("should report not modifiable when published")
+        void isNotModifiableWhenPublished() {
+            publishTestLevel(this.level);
+            assertFalse(this.level.canBeModified());
+        }
+
+        @Test
+        @DisplayName("should throw LevelPublishedException when published")
+        void throwsWhenPublished() {
+            publishTestLevel(this.level);
+            assertThrows(LevelPublishedException.class, () -> this.level.ensureModifiable());
         }
     }
 
-    /// Tests bounds-related methods on Level.
-    ///
     @Nested
     @DisplayName("methods isWithinBounds and ensureWithinBounds")
     class BoundsMethods {
 
-        /// The level under test.
         private Level level;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
+            this.level = createTestLevel();
         }
 
-        /// Verifies that boundary positions are accepted.
-        ///
         @Test
-        @DisplayName("should accept positions on the borders")
-        void acceptsBorderPositions() {
-            Assertions.assertTrue(this.level.isWithinBounds(new Position(0, 0)));
-            Assertions.assertTrue(this.level.isWithinBounds(new Position(255, 13)));
+        @DisplayName("should accept position at top-left corner")
+        void acceptsTopLeftCorner() {
+            assertTrue(this.level.isWithinBounds(new Position(0, 0)));
         }
 
-        /// Verifies that positions outside the valid range are rejected.
-        ///
         @Test
-        @DisplayName("should reject positions outside the valid range")
-        void rejectsOutOfBoundsPositions() {
-            Assertions.assertFalse(this.level.isWithinBounds(new Position(-1, 0)));
-            Assertions.assertFalse(this.level.isWithinBounds(new Position(256, 0)));
-            Assertions.assertFalse(this.level.isWithinBounds(new Position(0, -1)));
-            Assertions.assertFalse(this.level.isWithinBounds(new Position(0, 14)));
+        @DisplayName("should accept position at bottom-right corner")
+        void acceptsBottomRightCorner() {
+            assertTrue(this.level.isWithinBounds(new Position(255, 13)));
         }
 
-        /// Tests the bounds-enforcement method.
-        ///
+        @Test
+        @DisplayName("should reject position with negative x")
+        void rejectsNegativeX() {
+            assertFalse(this.level.isWithinBounds(new Position(-1, 0)));
+        }
+
+        @Test
+        @DisplayName("should reject position with x equal to width")
+        void rejectsXEqualToWidth() {
+            assertFalse(this.level.isWithinBounds(new Position(256, 0)));
+        }
+
+        @Test
+        @DisplayName("should reject position with negative y")
+        void rejectsNegativeY() {
+            assertFalse(this.level.isWithinBounds(new Position(0, -1)));
+        }
+
+        @Test
+        @DisplayName("should reject position with y equal to height")
+        void rejectsYEqualToHeight() {
+            assertFalse(this.level.isWithinBounds(new Position(0, 14)));
+        }
+
         @Nested
         @DisplayName("method ensureWithinBounds")
         class EnsureWithinBoundsMethod {
 
-            /// Verifies that a null position is rejected.
-            ///
             @Test
             @DisplayName("throws IllegalArgumentException when position is null")
             void nullPosition() {
-                Assertions.assertThrows(IllegalArgumentException.class,
-                        () -> BoundsMethods.this.level.ensureWithinBounds(null));
+                assertThrows(IllegalArgumentException.class, () -> BoundsMethods.this.level.ensureWithinBounds(null));
             }
 
-            /// Verifies that an out-of-bounds position is rejected.
-            ///
             @Test
             @DisplayName("throws IllegalArgumentException when position is out of bounds")
             void outOfBoundsPosition() {
-                Assertions.assertThrows(IllegalArgumentException.class,
-                        () -> BoundsMethods.this.level.ensureWithinBounds(new Position(256, 14)));
+                final Position pos = new Position(256, 14);
+                final Executable codeToExecute = () -> BoundsMethods.this.level.ensureWithinBounds(pos);
+                assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
-            /// Verifies that a valid position is accepted.
-            ///
             @Test
             @DisplayName("should not throw when position is valid")
             void validPosition() {
-                Assertions.assertDoesNotThrow(() -> BoundsMethods.this.level.ensureWithinBounds(new Position(255, 13)));
+                assertDoesNotThrow(() -> BoundsMethods.this.level.ensureWithinBounds(new Position(255, 13)));
             }
         }
     }
 
-    /// Tests the layer getter methods on Level.
-    ///
     @Nested
     @DisplayName("methods getObjectLayer and getWorldLayer")
     class LayerGetters {
 
-        /// The level under test.
         private Level level;
+        private Position position;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
-            final Position position = new Position(1, 1);
-            this.level.putWorldLayer(position, new GroundObject(8));
-            this.level.putObjectLayer(position, new StartFlag(9, position));
+            this.level = createTestLevel();
+            this.position = new Position(1, 1);
+            this.level.putWorldLayer(this.position, new GroundObject(8));
+            this.level.putObjectLayer(this.position, new StartFlag(9, this.position));
         }
 
-        /// Verifies that the returned layer views cannot be modified directly.
-        ///
         @Test
-        @DisplayName("should return unmodifiable views")
-        void returnsUnmodifiableViews() {
-            final Executable modifyWorldLayer = () -> this.level.getWorldLayer().put(new Position(2, 2),
-                    new GroundObject(3));
-            final Executable modifyObjectLayer = () -> this.level.getObjectLayer().put(new Position(2, 2),
-                    new StartFlag(4, new Position(2, 2)));
+        @DisplayName("should return an unmodifiable world layer")
+        void returnsUnmodifiableWorldLayer() {
+            final Position pos = new Position(2, 2);
+            final GroundObject ground = new GroundObject(3);
+            final Executable modifyWorldLayer = () -> this.level.getWorldLayer().put(pos, ground);
+            assertThrows(UnsupportedOperationException.class, modifyWorldLayer);
+        }
 
-            Assertions.assertThrows(UnsupportedOperationException.class, modifyWorldLayer);
-            Assertions.assertThrows(UnsupportedOperationException.class, modifyObjectLayer);
+        @Test
+        @DisplayName("should return an unmodifiable object layer")
+        void returnsUnmodifiableObjectLayer() {
+            final Position pos = new Position(2, 2);
+            final StartFlag flag = new StartFlag(4, pos);
+            final Executable modifyObjectLayer = () -> this.level.getObjectLayer().put(pos, flag);
+            assertThrows(UnsupportedOperationException.class, modifyObjectLayer);
         }
     }
 
-    /// Tests mutation methods for the object and world layers.
-    ///
     @Nested
     @DisplayName("methods putObjectLayer, putWorldLayer, removeObjectLayer, and removeGroundObject")
     class LayerMutationMethods {
 
-        /// The level under test.
         private Level level;
-        /// The position used for object-layer operations.
         private Position objectPosition;
-        /// The position used for world-layer operations.
         private Position worldPosition;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
+            this.level = createTestLevel();
             this.objectPosition = new Position(2, 3);
             this.worldPosition = new Position(4, 5);
         }
 
-        /// Verifies that entries can be added and replaced in both layers.
-        ///
         @Test
-        @DisplayName("should add and replace entries in both layers")
-        void addsAndReplacesEntries() {
+        @DisplayName("should replace an object layer entry")
+        void replacesObjectLayerEntry() {
             final StartFlag firstObject = new StartFlag(10, this.objectPosition);
             final Coin replacementObject = new Coin(11, this.objectPosition, CoinType.BRONZE_COIN);
-            final GroundObject firstGround = new GroundObject(20);
-            final GroundObject replacementGround = new GroundObject(21);
-
             this.level.putObjectLayer(this.objectPosition, firstObject);
             this.level.putObjectLayer(this.objectPosition, replacementObject);
-            this.level.putWorldLayer(this.worldPosition, firstGround);
-            this.level.putWorldLayer(this.worldPosition, replacementGround);
-
-            Assertions.assertSame(replacementObject, this.level.getObjectLayer().get(this.objectPosition));
-            Assertions.assertEquals(replacementGround, this.level.getWorldLayer().get(this.worldPosition));
+            assertSame(replacementObject, this.level.getObjectLayer().get(this.objectPosition));
         }
 
-        /// Verifies that entries can be removed from both layers.
-        ///
         @Test
-        @DisplayName("should remove existing entries from both layers")
-        void removesEntries() {
-            this.level.putObjectLayer(this.objectPosition, new StartFlag(10, this.objectPosition));
-            this.level.putWorldLayer(this.worldPosition, new GroundObject(20));
+        @DisplayName("should replace a world layer entry")
+        void replacesWorldLayerEntry() {
+            final GroundObject firstGround = new GroundObject(20);
+            final GroundObject replacementGround = new GroundObject(21);
+            this.level.putWorldLayer(this.worldPosition, firstGround);
+            this.level.putWorldLayer(this.worldPosition, replacementGround);
+            assertEquals(replacementGround, this.level.getWorldLayer().get(this.worldPosition));
+        }
 
+        @Test
+        @DisplayName("should remove an object layer entry")
+        void removesObjectLayerEntry() {
+            this.level.putObjectLayer(this.objectPosition, new StartFlag(10, this.objectPosition));
             this.level.removeObjectLayer(this.objectPosition);
+            assertFalse(this.level.getObjectLayer().containsKey(this.objectPosition));
+        }
+
+        @Test
+        @DisplayName("should remove a world layer entry")
+        void removesWorldLayerEntry() {
+            this.level.putWorldLayer(this.worldPosition, new GroundObject(20));
             this.level.removeGroundObject(this.worldPosition);
-            Assertions.assertFalse(this.level.getObjectLayer().containsKey(this.objectPosition));
-            Assertions.assertFalse(this.level.getWorldLayer().containsKey(this.worldPosition));
+            assertFalse(this.level.getWorldLayer().containsKey(this.worldPosition));
         }
     }
 
-    /// Tests replacing the full world layer at once.
-    ///
     @Nested
     @DisplayName("method setWorldLayer")
     class SetWorldLayerMethod {
 
-        /// The level under test.
         private Level level;
-        /// The first position used during setup.
         private Position pos1;
-        /// The second position used during setup.
         private Position pos2;
+        private Position newPos;
+        private Map<Position, GroundObject> newLayer;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
+            this.level = createTestLevel();
             this.pos1 = new Position(1, 2);
             this.pos2 = new Position(3, 4);
+            this.newPos = new Position(7, 8);
+            this.newLayer = new HashMap<>();
+            this.newLayer.put(this.newPos, new GroundObject(10));
             this.level.putWorldLayer(this.pos1, new GroundObject(5));
             this.level.putWorldLayer(this.pos2, new GroundObject(6));
         }
 
-        /// Verifies that the entire world layer is replaced.
-        ///
         @Test
-        @DisplayName("should replace the entire world layer")
-        void replacesEntireLayer() {
-            final Position newPos = new Position(7, 8);
-            final Map<Position, GroundObject> newLayer = Map.of(newPos, new GroundObject(10));
-            this.level.setWorldLayer(newLayer);
-            Assertions.assertFalse(this.level.getWorldLayer().containsKey(this.pos1));
-            Assertions.assertFalse(this.level.getWorldLayer().containsKey(this.pos2));
-            Assertions.assertEquals(new GroundObject(10), this.level.getWorldLayer().get(newPos));
+        @DisplayName("should remove the first old entry from the layer")
+        void removesFirstOldEntry() {
+            this.level.setWorldLayer(this.newLayer);
+            assertFalse(this.level.getWorldLayer().containsKey(this.pos1));
         }
 
-        /// Verifies that an empty map clears the world layer.
-        ///
+        @Test
+        @DisplayName("should remove the second old entry from the layer")
+        void removesSecondOldEntry() {
+            this.level.setWorldLayer(this.newLayer);
+            assertFalse(this.level.getWorldLayer().containsKey(this.pos2));
+        }
+
+        @Test
+        @DisplayName("should contain the new entry in the layer")
+        void containsNewEntry() {
+            this.level.setWorldLayer(this.newLayer);
+            assertEquals(new GroundObject(10), this.level.getWorldLayer().get(this.newPos));
+        }
+
         @Test
         @DisplayName("should clear the world layer when given an empty map")
         void clearsLayer() {
-            this.level.setWorldLayer(Map.of());
-            Assertions.assertTrue(this.level.getWorldLayer().isEmpty());
+            this.level.setWorldLayer(new HashMap<>());
+            assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
 
-    /// Tests replacing the full object layer at once.
-    ///
     @Nested
     @DisplayName("method setObjectLayer")
     class SetObjectLayerMethod {
 
-        /// The level under test.
         private Level level;
-        /// The position used during setup.
         private Position pos;
+        private Position newPos;
+        private Map<Position, GameObject> newLayer;
 
         @BeforeEach
         void setUp() {
-            final User creator = new User(USER_ID, USER_NAME);
-            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
+            this.level = createTestLevel();
             this.pos = new Position(1, 2);
+            this.newPos = new Position(5, 6);
+            this.newLayer = new HashMap<>();
+            this.newLayer.put(this.newPos, new StartFlag(77, this.newPos));
             this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
 
-        /// Verifies that the entire object layer is replaced.
-        ///
         @Test
-        @DisplayName("should replace the entire object layer")
-        void replacesEntireLayer() {
-            final Position newPos = new Position(5, 6);
-            final Map<Position, GameObject> newLayer = Map.of(newPos, new StartFlag(77, newPos));
-            this.level.setObjectLayer(newLayer);
-            Assertions.assertFalse(this.level.getObjectLayer().containsKey(this.pos));
-            Assertions.assertTrue(this.level.getObjectLayer().containsKey(newPos));
+        @DisplayName("should remove the previous entry when replacing")
+        void removesPreviousEntry() {
+            this.level.setObjectLayer(this.newLayer);
+            assertFalse(this.level.getObjectLayer().containsKey(this.pos));
         }
 
-        /// Verifies that an empty map clears the object layer.
-        ///
+        @Test
+        @DisplayName("should contain the new entry after replacing")
+        void containsNewEntry() {
+            this.level.setObjectLayer(this.newLayer);
+            assertTrue(this.level.getObjectLayer().containsKey(this.newPos));
+        }
+
         @Test
         @DisplayName("should clear the object layer when given an empty map")
         void clearsLayer() {
-            this.level.setObjectLayer(Map.of());
-            Assertions.assertTrue(this.level.getObjectLayer().isEmpty());
+            this.level.setObjectLayer(new HashMap<>());
+            assertTrue(this.level.getObjectLayer().isEmpty());
         }
     }
 
-    /// Tests cloning behavior for Level.
-    ///
     @Nested
     @DisplayName("method cloneFor")
     class CloneForMethod {
 
-        /// The original level used as the source for cloning.
         private Level original;
-        /// The user that should receive the cloned level.
         private User cloneCreator;
-        /// The clear condition assigned to the original level.
+        private Position worldPosition;
+        private Position objectPosition;
         private ClearCondition clearCondition;
+        private Level cloned;
 
         @BeforeEach
         void setUp() {
+            final User originalCreator = createTestUser();
             this.cloneCreator = new User("user-2", "Luigi");
-            this.original = new Level("Original", "Original description", new User(USER_ID, USER_NAME));
-            final Position worldPosition = new Position(3, 4);
-            final Position objectPosition = new Position(5, 6);
+            this.original = new Level("Original", "Original description", originalCreator);
+            this.worldPosition = new Position(3, 4);
+            this.objectPosition = new Position(5, 6);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
-            final Position flagPos = new Position(1, 1);
-            final Position doorPos = new Position(2, 1);
-            this.original.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-            this.original.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-            this.original.validatePublishEligible(USER_ID);
-            this.original.publish(USER_ID);
+            publishTestLevel(this.original);
             this.original.setClearCondition(this.clearCondition);
-            this.original.putWorldLayer(worldPosition, new GroundObject(21));
-            this.original.putObjectLayer(objectPosition, new Coin(33, objectPosition, CoinType.GOLD_COIN));
+            this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
+            this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, CoinType.GOLD_COIN));
+            this.cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
         }
 
-        /// Verifies that cloning creates an unpublished copy for the new creator.
-        ///
         @Test
-        @DisplayName("should create an unpublished copy for the new creator")
-        void createsUnpublishedCopy() {
-            final Level cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
-            Assertions.assertFalse(cloned.isPublished());
-            Assertions.assertTrue(cloned.canBeModified());
-            Assertions.assertSame(this.cloneCreator, cloned.getCreator());
-            Assertions.assertEquals("Cloned Title", cloned.getTitle());
+        @DisplayName("should create an unpublished copy")
+        void clonedIsNotPublished() {
+            assertFalse(this.cloned.isPublished());
         }
 
-        /// Verifies that cloning copies metadata, clear condition, and layers.
-        ///
         @Test
-        @DisplayName("should copy metadata, condition, and layers")
-        void copiesState() {
-            final Level cloned = this.original.cloneFor(this.cloneCreator, this.original.getTitle());
-            Assertions.assertEquals(this.original.getTitle(), cloned.getTitle());
-            Assertions.assertEquals(this.original.getDescription(), cloned.getDescription());
-            Assertions.assertEquals(this.clearCondition, cloned.getClearCondition());
-            Assertions.assertEquals(this.original.getWorldLayer(), cloned.getWorldLayer());
-            Assertions.assertEquals(this.original.getObjectLayer(), cloned.getObjectLayer());
+        @DisplayName("should create a modifiable copy")
+        void clonedIsModifiable() {
+            assertTrue(this.cloned.canBeModified());
         }
 
-        /// Verifies that cloning copies layer contents without sharing the same maps.
-        ///
         @Test
-        @DisplayName("should copy the layer maps instead of sharing them")
-        void copiesLayerMaps() {
-            final Level cloned = this.original.cloneFor(this.cloneCreator, "Copy");
-            final Position clonedOnlyWorldPosition = new Position(10, 2);
-            final Position clonedOnlyObjectPosition = new Position(11, 3);
-            cloned.putWorldLayer(clonedOnlyWorldPosition, new GroundObject(99));
-            cloned.putObjectLayer(clonedOnlyObjectPosition, new StartFlag(77, clonedOnlyObjectPosition));
-            Assertions.assertFalse(this.original.getWorldLayer().containsKey(clonedOnlyWorldPosition));
-            Assertions.assertFalse(this.original.getObjectLayer().containsKey(clonedOnlyObjectPosition));
-        }
-    }
-
-    /// Verify that structural constraints regarding the number of flags and doors
-    /// are met.
-    /// 
-    ///
-    @Nested
-    @DisplayName("Structural and Validation Constraints")
-    class StructuralConstraints {
-        /// The level under test.
-        private Level level;
-
-        @BeforeEach
-        void setUp() {
-            level = new Level(LEVEL_TITLE, LEVEL_DESC, new User(USER_ID, USER_NAME));
+        @DisplayName("should assign the new creator to the cloned level")
+        void clonedHasNewCreator() {
+            assertSame(this.cloneCreator, this.cloned.getCreator());
         }
 
-        /// Verifies that ensureValidObjectLayer throws when too many flags are present.
-        ///
         @Test
-        @DisplayName("ensureValidObjectLayer throws when too many flags")
-        void ensureValidObjectLayerTooManyFlags() {
-            final Map<Position, GameObject> invalidLayer = Map.of(
-                    new Position(0, 0), new StartFlag(1, new Position(0, 0)),
-                    new Position(1, 1), new StartFlag(2, new Position(1, 1)));
-            Assertions.assertThrows(IllegalArgumentException.class, () -> level.ensureValidObjectLayer(invalidLayer));
+        @DisplayName("should use the given title for the cloned level")
+        void clonedHasNewTitle() {
+            assertEquals("Cloned Title", this.cloned.getTitle());
         }
 
-        /// Verifies that ensureValidObjectLayer throws when too many doors are present.
-        ///
         @Test
-        @DisplayName("ensureValidObjectLayer throws when too many doors")
-        void ensureValidObjectLayerTooManyDoors() {
-            final Map<Position, GameObject> invalidLayer = Map.of(
-                    new Position(0, 0), new ExitDoor(1, new Position(0, 0)),
-                    new Position(1, 1), new ExitDoor(2, new Position(1, 1)));
-            Assertions.assertThrows(IllegalArgumentException.class, () -> level.ensureValidObjectLayer(invalidLayer));
+        @DisplayName("should copy the description to the cloned level")
+        void clonedHasSameDescription() {
+            assertEquals(this.original.getDescription(), this.cloned.getDescription());
         }
 
-        /// Verifies that ensurePublishableObjectLayer throws when the start flag
-        /// is missing.
-        ///
         @Test
-        @DisplayName("ensurePublishableObjectLayer throws when flag missing")
-        void ensurePublishableObjectLayerNoFlag() {
-            Assertions.assertThrows(ForbiddenLevelActionException.class, () -> level.ensurePublishableObjectLayer());
+        @DisplayName("should copy the clear condition to the cloned level")
+        void clonedHasSameClearCondition() {
+            assertEquals(this.clearCondition, this.cloned.getClearCondition());
         }
 
-        /// Verifies that ensurePublishableObjectLayer throws when the exit door
-        /// is missing.
-        ///
         @Test
-        @DisplayName("ensurePublishableObjectLayer throws when door missing")
-        void ensurePublishableObjectLayerNoDoor() {
-            level.putObjectLayer(new Position(0, 0), new StartFlag(1, new Position(0, 0)));
-            Assertions.assertThrows(ForbiddenLevelActionException.class, () -> level.ensurePublishableObjectLayer());
+        @DisplayName("should copy the world layer to the cloned level")
+        void clonedHasSameWorldLayer() {
+            assertEquals(this.original.getWorldLayer(), this.cloned.getWorldLayer());
+        }
+
+        @Test
+        @DisplayName("should copy the object layer to the cloned level")
+        void clonedHasSameObjectLayer() {
+            assertEquals(this.original.getObjectLayer(), this.cloned.getObjectLayer());
+        }
+
+        @Test
+        @DisplayName("should not share the world layer with the original")
+        void doesNotShareWorldLayer() {
+            final Position clonedOnlyPos = new Position(10, 2);
+            this.cloned.putWorldLayer(clonedOnlyPos, new GroundObject(99));
+            assertFalse(this.original.getWorldLayer().containsKey(clonedOnlyPos));
+        }
+
+        @Test
+        @DisplayName("should not share the object layer with the original")
+        void doesNotShareObjectLayer() {
+            final Position clonedOnlyPos = new Position(11, 3);
+            this.cloned.putObjectLayer(clonedOnlyPos, new StartFlag(77, clonedOnlyPos));
+            assertFalse(this.original.getObjectLayer().containsKey(clonedOnlyPos));
         }
     }
 
@@ -630,8 +627,7 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
             this.flagPos = new Position(1, 1);
             this.doorPos = new Position(2, 1);
         }
@@ -642,8 +638,8 @@ class LevelTests {
 
             @Test
             @DisplayName("when user does not own the level")
-            public void wrongUser() {
-                Executable codeToExecute = () -> PublishMethod.this.level.publish("other-id");
+            void wrongUser() {
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish("other-id");
                 assertThrows(ForbiddenUserException.class, codeToExecute);
             }
         }
@@ -654,28 +650,28 @@ class LevelTests {
 
             @Test
             @DisplayName("when object layer has no start flag")
-            public void noStartFlag() {
+            void noStartFlag() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos, new ExitDoor(115, PublishMethod.this.doorPos));
                 PublishMethod.this.level.validatePublishEligible("user-1");
-                Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when object layer has no exit door")
-            public void noExitDoor() {
+            void noExitDoor() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos, new StartFlag(68, PublishMethod.this.flagPos));
                 PublishMethod.this.level.validatePublishEligible("user-1");
-                Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when level is not publish eligible")
-            public void notPublishEligible() {
+            void notPublishEligible() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos, new StartFlag(68, PublishMethod.this.flagPos));
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos, new ExitDoor(115, PublishMethod.this.doorPos));
-                Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
         }
@@ -686,11 +682,8 @@ class LevelTests {
 
             @Test
             @DisplayName("should mark the level as published")
-            public void marksAsPublished() {
-                PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos, new StartFlag(68, PublishMethod.this.flagPos));
-                PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos, new ExitDoor(115, PublishMethod.this.doorPos));
-                PublishMethod.this.level.validatePublishEligible("user-1");
-                PublishMethod.this.level.publish("user-1");
+            void marksAsPublished() {
+                publishTestLevel(PublishMethod.this.level);
                 assertTrue(PublishMethod.this.level.isPublished());
             }
         }
@@ -704,20 +697,19 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
         }
 
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
-        public void wrongUser() {
-            Executable codeToExecute = () -> this.level.validatePublishEligible("other-id");
+        void wrongUser() {
+            final Executable codeToExecute = () -> this.level.validatePublishEligible("other-id");
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
         @Test
         @DisplayName("should set publish eligible to true")
-        public void setsPublishEligible() {
+        void setsPublishEligible() {
             this.level.validatePublishEligible("user-1");
             assertTrue(this.level.isPublishEligible());
         }
@@ -731,21 +723,20 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
             this.level.validatePublishEligible("user-1");
         }
 
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
-        public void wrongUser() {
-            Executable codeToExecute = () -> this.level.invalidatePublishEligible("other-id");
+        void wrongUser() {
+            final Executable codeToExecute = () -> this.level.invalidatePublishEligible("other-id");
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
         @Test
         @DisplayName("should set publish eligible to false")
-        public void setsPublishIneligible() {
+        void setsPublishIneligible() {
             this.level.invalidatePublishEligible("user-1");
             assertFalse(this.level.isPublishEligible());
         }
@@ -759,36 +750,37 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
-            Position flagPos = new Position(1, 1);
-            Position doorPos = new Position(2, 1);
-            this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-            this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-            this.level.validatePublishEligible("user-1");
-            this.level.publish("user-1");
+            this.level = createTestLevel();
+            publishTestLevel(this.level);
         }
 
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
-        public void wrongUser() {
-            Executable codeToExecute = () -> this.level.unpublish("other-id");
+        void wrongUser() {
+            final Executable codeToExecute = () -> this.level.unpublish("other-id");
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
         @Test
         @DisplayName("should mark the level as unpublished")
-        public void marksAsUnpublished() {
+        void marksAsUnpublished() {
             this.level.unpublish("user-1");
             assertFalse(this.level.isPublished());
         }
 
         @Test
-        @DisplayName("should be idempotent when called on an already unpublished level")
-        public void isIdempotent() {
+        @DisplayName("should not throw when called on an already unpublished level")
+        void doesNotThrowWhenCalledTwice() {
             this.level.unpublish("user-1");
-            Executable codeToExecute = () -> this.level.unpublish("user-1");
+            final Executable codeToExecute = () -> this.level.unpublish("user-1");
             assertDoesNotThrow(codeToExecute);
+        }
+
+        @Test
+        @DisplayName("should remain unpublished after a second unpublish call")
+        void remainsUnpublishedAfterSecondCall() {
+            this.level.unpublish("user-1");
+            this.level.unpublish("user-1");
             assertFalse(this.level.isPublished());
         }
     }
@@ -801,8 +793,7 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
         }
 
         @Nested
@@ -811,25 +802,25 @@ class LevelTests {
 
             @Test
             @DisplayName("when there are more than one start flags")
-            public void moreThanOneFlag() {
-                Position pos1 = new Position(1, 1);
-                Position pos2 = new Position(3, 1);
-                Map<Position, GameObject> layer = new HashMap<>();
+            void moreThanOneFlag() {
+                final Position pos1 = new Position(1, 1);
+                final Position pos2 = new Position(3, 1);
+                final Map<Position, GameObject> layer = new HashMap<>();
                 layer.put(pos1, new StartFlag(68, pos1));
                 layer.put(pos2, new StartFlag(68, pos2));
-                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
                 assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when there are more than one exit doors")
-            public void moreThanOneDoor() {
-                Position pos1 = new Position(1, 1);
-                Position pos2 = new Position(3, 1);
-                Map<Position, GameObject> layer = new HashMap<>();
+            void moreThanOneDoor() {
+                final Position pos1 = new Position(1, 1);
+                final Position pos2 = new Position(3, 1);
+                final Map<Position, GameObject> layer = new HashMap<>();
                 layer.put(pos1, new ExitDoor(115, pos1));
                 layer.put(pos2, new ExitDoor(115, pos2));
-                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
                 assertThrows(IllegalArgumentException.class, codeToExecute);
             }
         }
@@ -840,21 +831,21 @@ class LevelTests {
 
             @Test
             @DisplayName("should not throw for an empty layer")
-            public void emptyLayer() {
-                Map<Position, GameObject> layer = new HashMap<>();
-                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+            void emptyLayer() {
+                final Map<Position, GameObject> layer = new HashMap<>();
+                final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
                 assertDoesNotThrow(codeToExecute);
             }
 
             @Test
             @DisplayName("should not throw for one flag and one door")
-            public void oneFlagOneDoor() {
-                Position flagPos = new Position(1, 1);
-                Position doorPos = new Position(2, 1);
-                Map<Position, GameObject> layer = new HashMap<>();
+            void oneFlagOneDoor() {
+                final Position flagPos = new Position(1, 1);
+                final Position doorPos = new Position(2, 1);
+                final Map<Position, GameObject> layer = new HashMap<>();
                 layer.put(flagPos, new StartFlag(68, flagPos));
                 layer.put(doorPos, new ExitDoor(115, doorPos));
-                Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
+                final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level.ensureValidObjectLayer(layer);
                 assertDoesNotThrow(codeToExecute);
             }
         }
@@ -868,8 +859,7 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
         }
 
         @Nested
@@ -878,45 +868,45 @@ class LevelTests {
 
             @Test
             @DisplayName("when there are no start flags")
-            public void noFlag() {
-                Position doorPos = new Position(2, 1);
+            void noFlag() {
+                final Position doorPos = new Position(2, 1);
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when there are no exit doors")
-            public void noDoor() {
-                Position flagPos = new Position(1, 1);
+            void noDoor() {
+                final Position flagPos = new Position(1, 1);
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when there are more than one start flags")
-            public void moreThanOneFlag() {
-                Position flagPos1 = new Position(1, 1);
-                Position flagPos2 = new Position(3, 1);
-                Position doorPos = new Position(2, 1);
+            void moreThanOneFlag() {
+                final Position flagPos1 = new Position(1, 1);
+                final Position flagPos2 = new Position(3, 1);
+                final Position doorPos = new Position(2, 1);
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos1, new StartFlag(68, flagPos1));
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos2, new StartFlag(68, flagPos2));
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when there are more than one exit doors")
-            public void moreThanOneDoor() {
-                Position flagPos = new Position(1, 1);
-                Position doorPos1 = new Position(2, 1);
-                Position doorPos2 = new Position(4, 1);
+            void moreThanOneDoor() {
+                final Position flagPos = new Position(1, 1);
+                final Position doorPos1 = new Position(2, 1);
+                final Position doorPos2 = new Position(4, 1);
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos1, new ExitDoor(115, doorPos1));
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos2, new ExitDoor(115, doorPos2));
-                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
         }
@@ -927,12 +917,12 @@ class LevelTests {
 
             @Test
             @DisplayName("should not throw when there is exactly one flag and one door")
-            public void oneFlagOneDoor() {
-                Position flagPos = new Position(1, 1);
-                Position doorPos = new Position(2, 1);
+            void oneFlagOneDoor() {
+                final Position flagPos = new Position(1, 1);
+                final Position doorPos = new Position(2, 1);
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
                 EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-                Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
+                final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level.ensurePublishableObjectLayer();
                 assertDoesNotThrow(codeToExecute);
             }
         }
@@ -946,34 +936,28 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
         }
 
         @Test
         @DisplayName("throws LevelNotPlayableException when level is unpublished and user is not the owner")
-        public void unpublishedNotOwner() {
-            Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+        void unpublishedNotOwner() {
+            final Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
             assertThrows(LevelNotPlayableException.class, codeToExecute);
         }
 
         @Test
         @DisplayName("should not throw when level is unpublished but user is the owner")
-        public void unpublishedOwner() {
-            Executable codeToExecute = () -> this.level.ensurePlayable("user-1");
+        void unpublishedOwner() {
+            final Executable codeToExecute = () -> this.level.ensurePlayable("user-1");
             assertDoesNotThrow(codeToExecute);
         }
 
         @Test
         @DisplayName("should not throw when level is published regardless of user")
-        public void publishedLevel() {
-            Position flagPos = new Position(1, 1);
-            Position doorPos = new Position(2, 1);
-            this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-            this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-            this.level.validatePublishEligible("user-1");
-            this.level.publish("user-1");
-            Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+        void publishedLevel() {
+            publishTestLevel(this.level);
+            final Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
             assertDoesNotThrow(codeToExecute);
         }
     }
@@ -987,8 +971,7 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
             this.position = new Position(3, 3);
         }
 
@@ -998,25 +981,25 @@ class LevelTests {
 
             @Test
             @DisplayName("when world layer has an object at the position")
-            public void worldLayerOccupied() {
+            void worldLayerOccupied() {
                 EnsureObjectCanBePlacedAtMethod.this.level.putWorldLayer(EnsureObjectCanBePlacedAtMethod.this.position, new GroundObject(5));
-                Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level.ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
+                final Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level.ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
                 assertThrows(ObjectPlacementConflictException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when object layer has an object at the position")
-            public void objectLayerOccupied() {
+            void objectLayerOccupied() {
                 EnsureObjectCanBePlacedAtMethod.this.level.putObjectLayer(EnsureObjectCanBePlacedAtMethod.this.position, new StartFlag(68, EnsureObjectCanBePlacedAtMethod.this.position));
-                Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level.ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
+                final Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level.ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
                 assertThrows(ObjectPlacementConflictException.class, codeToExecute);
             }
         }
 
         @Test
         @DisplayName("should not throw when both layers are empty at the position")
-        public void bothLayersEmpty() {
-            Executable codeToExecute = () -> this.level.ensureObjectCanBePlacedAt(this.position);
+        void bothLayersEmpty() {
+            final Executable codeToExecute = () -> this.level.ensureObjectCanBePlacedAt(this.position);
             assertDoesNotThrow(codeToExecute);
         }
     }
@@ -1031,8 +1014,7 @@ class LevelTests {
 
         @BeforeEach
         void setUp() {
-            User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            this.level = createTestLevel();
             this.validPosition = new Position(5, 5);
             this.outOfBoundsPosition = new Position(256, 14);
         }
@@ -1043,41 +1025,46 @@ class LevelTests {
 
             @Test
             @DisplayName("when position is out of bounds")
-            public void outOfBounds() {
-                Content content = new Content.NoContent();
-                Executable codeToExecute = () -> UpdateBoxContentMethod.this.level.updateBoxContent(UpdateBoxContentMethod.this.outOfBoundsPosition, content);
+            void outOfBounds() {
+                final Content noContent = new Content.NoContent();
+                final Executable codeToExecute = () -> UpdateBoxContentMethod.this.level.updateBoxContent(UpdateBoxContentMethod.this.outOfBoundsPosition, noContent);
                 assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
             @Test
             @DisplayName("when the object at the position is not a box")
-            public void notABox() {
+            void notABox() {
                 UpdateBoxContentMethod.this.level.putObjectLayer(UpdateBoxContentMethod.this.validPosition, new StartFlag(68, UpdateBoxContentMethod.this.validPosition));
-                Content content = new Content.NoContent();
-                Executable codeToExecute = () -> UpdateBoxContentMethod.this.level.updateBoxContent(UpdateBoxContentMethod.this.validPosition, content);
+                final Content noContent = new Content.NoContent();
+                final Executable codeToExecute = () -> UpdateBoxContentMethod.this.level.updateBoxContent(UpdateBoxContentMethod.this.validPosition, noContent);
                 assertThrows(IllegalArgumentException.class, codeToExecute);
             }
         }
 
         @Test
         @DisplayName("throws NoSuchElementException when no object exists at the position")
-        public void noObjectAtPosition() {
-            Content content = new Content.NoContent();
-            Executable codeToExecute = () -> this.level.updateBoxContent(this.validPosition, content);
+        void noObjectAtPosition() {
+            final Content noContent = new Content.NoContent();
+            final Executable codeToExecute = () -> this.level.updateBoxContent(this.validPosition, noContent);
             assertThrows(NoSuchElementException.class, codeToExecute);
         }
 
         @Test
-        @DisplayName("should update the content of a box at the given position")
-        public void updatesBoxContent() {
-            Content originalContent = new Content.NoContent();
-            Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
-            Box box = new Box(42, this.validPosition, originalContent);
-            this.level.putObjectLayer(this.validPosition, box);
+        @DisplayName("updated object should be a Box")
+        void updatedObjectIsBox() {
+            final Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
+            this.level.putObjectLayer(this.validPosition, new Box(42, this.validPosition, new Content.NoContent()));
             this.level.updateBoxContent(this.validPosition, newContent);
-            GameObject updated = this.level.getObjectLayer().get(this.validPosition);
-            assertTrue(updated instanceof Box);
-            assertEquals(newContent, ((Box) updated).content());
+            assertInstanceOf(Box.class, this.level.getObjectLayer().get(this.validPosition));
+        }
+
+        @Test
+        @DisplayName("updated box should have the new content")
+        void updatedBoxHasNewContent() {
+            final Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
+            this.level.putObjectLayer(this.validPosition, new Box(42, this.validPosition, new Content.NoContent()));
+            this.level.updateBoxContent(this.validPosition, newContent);
+            assertEquals(newContent, ((Box) this.level.getObjectLayer().get(this.validPosition)).content());
         }
     }
 }
