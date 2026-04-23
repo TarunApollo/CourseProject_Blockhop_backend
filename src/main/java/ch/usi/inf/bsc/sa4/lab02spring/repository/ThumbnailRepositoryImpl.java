@@ -29,7 +29,7 @@ public class ThumbnailRepositoryImpl implements ThumbnailRepository {
 
     @Override
     public String storeThumbnail(final String levelId, final byte[] pngBytes) {
-        ObjectId fileId = gridFsTemplate.store(
+        final ObjectId fileId = gridFsTemplate.store(
                 new ByteArrayInputStream(pngBytes),
                 "level-" + levelId + ".png",
                 "image/png",
@@ -46,7 +46,7 @@ public class ThumbnailRepositoryImpl implements ThumbnailRepository {
     @Override
     public byte[] loadThumbnail(final String storageId)
     {
-        GridFSFile file = gridFsTemplate.findOne(
+        final GridFSFile file = gridFsTemplate.findOne(
              Query.query(Criteria.where("_id").is(new ObjectId(storageId))));
         
         if (file == null)
@@ -54,7 +54,7 @@ public class ThumbnailRepositoryImpl implements ThumbnailRepository {
             throw new IllegalArgumentException("Thumbnail not found");
         }
 
-        GridFsResource resource = gridFsTemplate.getResource(file);
+        final GridFsResource resource = gridFsTemplate.getResource(file);
 
         try
         {

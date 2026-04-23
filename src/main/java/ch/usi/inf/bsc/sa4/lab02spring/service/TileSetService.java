@@ -31,7 +31,7 @@ public class TileSetService {
     /// store groundGids and objectGids for light-weight usage
     public TileSetService() {
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            final ObjectMapper mapper = new ObjectMapper();
             this.tileSet = mapper.readValue(
                 new ClassPathResource("tileset_batch_1.json").getInputStream(),
                 TileSet.class);

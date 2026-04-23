@@ -29,7 +29,7 @@ public enum CoinType {
     /// @throws IllegalArgumentException if the value is not recognized
     @JsonCreator
     public static CoinType fromValue(final String value) {
-        for (CoinType type : values()) {
+        for (final CoinType type : values()) {
             if (type.value.equals(value)) {
                 return type;
             }

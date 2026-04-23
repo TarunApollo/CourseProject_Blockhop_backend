@@ -32,7 +32,7 @@ public enum ClearConditionType {
     /// @throws IllegalArgumentException if the value is not recognized
     @JsonCreator
     public static ClearConditionType fromValue(final String value) {
-        for (ClearConditionType type : values()) {
+        for (final ClearConditionType type : values()) {
             if (type.value.equals(value)) {
                 return type;
             }

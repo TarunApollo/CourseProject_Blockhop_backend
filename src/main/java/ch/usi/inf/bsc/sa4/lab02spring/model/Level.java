@@ -303,11 +303,11 @@ public class Level {
     /// @throws IllegalArgumentException if more than one start flag or exit door
     public void ensureValidObjectLayer(final Map<Position,GameObject> incomingObjectLayer)
     {
-        long countFlag = incomingObjectLayer.values().stream()
+        final long countFlag = incomingObjectLayer.values().stream()
         .filter(StartFlag.class::isInstance)
         .count();
 
-        long countDoor = incomingObjectLayer.values().stream()
+        final long countDoor = incomingObjectLayer.values().stream()
         .filter(ExitDoor.class::isInstance)
         .count(); 
 
@@ -327,11 +327,11 @@ public class Level {
     /// @throws ForbiddenLevelActionException if publish requirements aren't satisfied
     public void ensurePublishableObjectLayer()
     {
-        long countFlag = this.objectLayer.values().stream()
+        final long countFlag = this.objectLayer.values().stream()
         .filter(StartFlag.class::isInstance)
         .count();
 
-        long countDoor = this.objectLayer.values().stream()
+        final long countDoor = this.objectLayer.values().stream()
         .filter(ExitDoor.class::isInstance)
         .count();
 
@@ -418,7 +418,7 @@ public class Level {
     /// @throws IllegalArgumentException if the object at the position is not a Box
     public void updateBoxContent(final Position position, final Content content) {
         this.ensureWithinBounds(position);
-        GameObject existing = this.objectLayer.get(position);
+        final GameObject existing = this.objectLayer.get(position);
         if (existing == null) {
             throw new NoSuchElementException("No object at position " + position);
         }

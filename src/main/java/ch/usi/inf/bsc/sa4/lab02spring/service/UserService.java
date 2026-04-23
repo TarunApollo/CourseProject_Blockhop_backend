@@ -41,7 +41,7 @@ public class UserService {
   /// @spec.requires <code>createUserDTO != null</code>
   /// 
   public User createUser(final CreateUserDTO dto) {
-    User newUser = new User(dto.id(), dto.fullName());
+    final User newUser = new User(dto.id(), dto.fullName());
     return this.userRepository.save(newUser);
   }
 

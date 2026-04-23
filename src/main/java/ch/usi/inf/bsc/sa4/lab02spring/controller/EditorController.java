@@ -59,8 +59,8 @@ public class EditorController {
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final UpdateWorldLayerDTO dto) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
-        Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
 
@@ -99,8 +99,8 @@ public class EditorController {
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final UpdateObjectLayerDTO dto) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
-        Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
 
@@ -125,8 +125,8 @@ public class EditorController {
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final UpdateObjectPropertiesDTO dto) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
-        Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final Level updated = editorService.updateObjectProperties(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
 }

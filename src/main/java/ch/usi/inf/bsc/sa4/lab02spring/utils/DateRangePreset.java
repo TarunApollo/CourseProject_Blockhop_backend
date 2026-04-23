@@ -20,7 +20,7 @@ public sealed interface DateRangePreset
     /// @return the matching date range preset
     ///
     static DateRangePreset fromValue(final String value) {
-        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        final String normalized = value.trim().toUpperCase(Locale.ROOT);
 
         if (AllTimeDateRangePreset.ALL_TIME.name().equals(normalized)) {
             return AllTimeDateRangePreset.ALL_TIME;
@@ -61,7 +61,7 @@ public sealed interface DateRangePreset
         /// @return the start of the range in UTC
         ///
         public ZonedDateTime rangeStart() {
-            long days = duration.toDays();
+            final long days = duration.toDays();
             return LocalDate.now().minusDays(days - 1).atStartOfDay(ZoneOffset.UTC);
         }
     }

@@ -35,7 +35,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
     @Override
     protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-        Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
+        final Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
         entitySet.addAll(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
@@ -62,9 +62,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     public static class StringToPositionConverter implements Converter<String, Position> {
         @Override
         public Position convert(final String string){
-            String[] parts = string.split(",");
-            int posX = Integer.parseInt(parts[0]);
-            int posY = Integer.parseInt(parts[1]);
+            final String[] parts = string.split(",");
+            final int posX = Integer.parseInt(parts[0]);
+            final int posY = Integer.parseInt(parts[1]);
             return new Position(posX, posY);
         }
     }
@@ -93,7 +93,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
     @Override
     public MongoCustomConversions customConversions(){
-        List<Converter<?, ?>> custom = new ArrayList<>();
+        final List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToDateConverter());

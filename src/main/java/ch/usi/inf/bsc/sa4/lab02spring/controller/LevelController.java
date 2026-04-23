@@ -74,7 +74,7 @@ public class LevelController {
   /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping()
     public ResponseEntity<LevelDTO> createLevel(final Authentication authentication, @RequestBody final CreateLevelDTO createLevelDTO) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
@@ -136,8 +136,8 @@ public class LevelController {
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping("/clone")
     public ResponseEntity<LevelDTO> cloneLevel(final Authentication authentication, @RequestBody final CloneLevelDTO cloneLevelDTO) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
-        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return this.levelService.cloneLevel(cloneLevelDTO, user)
                 .map(LevelDTO::new)
                 .map(ResponseEntity::ok)
@@ -165,8 +165,8 @@ public class LevelController {
     ///         target level is already published
     @PutMapping("/{levelId}/properties")
     public ResponseEntity<LevelDTO> updateLevel(final Authentication authentication, @PathVariable final String levelId, @RequestBody final UpdateLevelDTO dto) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
-        User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return ResponseEntity.ok(new LevelDTO(this.levelService.updateLevelProperties(creator, levelId, dto)));
     }
 
@@ -178,7 +178,7 @@ public class LevelController {
     public ResponseEntity<Void> deleteLevel(
             final Authentication authentication,
             @PathVariable final String levelId) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelService.deleteLevel(userId, levelId);
         return ResponseEntity.noContent().build();
     }
@@ -193,7 +193,7 @@ public class LevelController {
     public ResponseEntity<LevelDTO> unpublishLevel(
             final Authentication authentication,
             @PathVariable final String levelId) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.unpublishLevel(userId, levelId)));
     }
 
@@ -209,7 +209,7 @@ public class LevelController {
     public ResponseEntity<LevelDTO> publishLevel(
             final Authentication authentication,
             @PathVariable final String levelId) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.publish(userId, levelId)));
     }
 

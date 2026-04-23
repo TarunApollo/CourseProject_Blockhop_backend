@@ -53,7 +53,7 @@ public class UserController {
     /// @return a list of all existing users as UserDTOs
     @GetMapping
     public List<UserDTO> getUsers() {
-        var users = this.userService.getAllUsers();
+        final var users = this.userService.getAllUsers();
         return users.stream().map(UserDTO::new).toList();
     }
 
@@ -84,7 +84,7 @@ public class UserController {
     ///         or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile(final Authentication authentication) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
 
         return ResponseEntity.of(this.userService.getById(userId)
                 .map(user -> new UserProfileDTO(
@@ -101,10 +101,10 @@ public class UserController {
     @GetMapping(path = "/me")
     public ResponseEntity<UserDTO> index(final Authentication authentication) {
         // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
-        String eduId = AuthUtils.getUserIdFromAuth(authentication);
-        String fullName = AuthUtils.getUserNameFromAuth(authentication);
+        final String eduId = AuthUtils.getUserIdFromAuth(authentication);
+        final String fullName = AuthUtils.getUserNameFromAuth(authentication);
 
-        Optional<User> optUser = this.userService.getById(eduId);
+        final Optional<User> optUser = this.userService.getById(eduId);
         return optUser.map(user -> ResponseEntity.ok(new UserDTO(user)))
                 .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
     }

@@ -36,18 +36,18 @@ public class AttemptStatisticsRepositoryImpl implements AttemptStatisticsReposit
             criteria = criteria.and("completed").is(true);
         }
 
-        Aggregation aggregation = Aggregation.newAggregation(
+        final Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(criteria),
                 Aggregation.group("level.$id"),
                 Aggregation.count().as("count")
         );
 
-        Document result = mongoTemplate
+        final Document result = mongoTemplate
                 .aggregate(aggregation, "attempts", Document.class)
                 .getUniqueMappedResult();
 
         if(result == null)return 0;
-        Number count = (Number) result.get("count");
+        final Number count = (Number) result.get("count");
         return count == null ? 0 : count.longValue();
 
     }

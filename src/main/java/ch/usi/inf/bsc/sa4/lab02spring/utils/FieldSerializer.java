@@ -44,8 +44,8 @@ public class FieldSerializer {
         @Override
         public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GameObject> element: value.entrySet()) {
-                var key = element.getKey().compactString();
+            for (final Map.Entry<Position, GameObject> element: value.entrySet()) {
+                final var key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -76,8 +76,8 @@ public class FieldSerializer {
         @Override
         public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GroundObject> element: value.entrySet()) {
-                var key = element.getKey().compactString();
+            for (final Map.Entry<Position, GroundObject> element: value.entrySet()) {
+                final var key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -107,18 +107,18 @@ public class FieldSerializer {
 
         @Override
         public Map<Position, GroundObject> deserialize(final JsonParser p, DeserializationContext context) {
-            Map<Position, GroundObject> map = new HashMap<>();
+            final Map<Position, GroundObject> map = new HashMap<>();
 
             while (p.nextToken() != JsonToken.END_OBJECT) {
-                String name = p.currentName();
+                final String name = p.currentName();
                 p.nextToken();
 
-                String[] coords = name.split(",");
-                Position pos = new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
+                final String[] coords = name.split(",");
+                final Position pos = new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
 
                 // This assumes GameObject has @JsonTypeInfo or similar setup for polymorphism.
                 // If not, you might need to read it as a JsonNode and use your factory.
-                GroundObject obj = p.readValueAs(GroundObject.class);
+                final GroundObject obj = p.readValueAs(GroundObject.class);
                 map.put(pos, obj);
             }
             return map;
