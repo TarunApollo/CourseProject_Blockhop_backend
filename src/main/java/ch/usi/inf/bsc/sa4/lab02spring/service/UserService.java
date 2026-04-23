@@ -22,7 +22,7 @@ public class UserService {
   /// Constructs a new UserService with the given dependency.
   /// @param userRepository the repository for accessing user data
   @Autowired
-  public UserService(UserRepository userRepository) {
+  public UserService(final UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
@@ -51,7 +51,7 @@ public class UserService {
   /// @return an optional which contains the user with the given id if it exists,
   ///         otherwise an empty optional.
   ///
-  public Optional<User> getById(String userId) {
+  public Optional<User> getById(final String userId) {
     return userRepository.findById(userId);
   }
 
@@ -61,7 +61,7 @@ public class UserService {
   /// @return the list of users whose name contains `partialName`.
   /// @spec.requires `partialName != null`
   /// 
-  public List<User> searchUsers(String partialName) {
+  public List<User> searchUsers(final String partialName) {
     return userRepository.findByNameContaining(partialName);
   }
 

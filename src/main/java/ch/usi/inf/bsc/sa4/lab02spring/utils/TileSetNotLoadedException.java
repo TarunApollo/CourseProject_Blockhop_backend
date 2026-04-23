@@ -9,7 +9,7 @@ public class TileSetNotLoadedException extends RuntimeException {
     /// Creates a new exception with the given cause.
     /// @param cause the underlying reason for the tileset loading failure
     ///
-    public TileSetNotLoadedException(Throwable cause) {
+    public TileSetNotLoadedException(final Throwable cause) {
         super("Failed to load tileset", cause);
     }
 }
