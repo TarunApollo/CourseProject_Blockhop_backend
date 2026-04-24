@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for the Attempt model: construction, getters, and setCompleted.
+ * Tests for Attempt model: construction,
+ * getters, and setCompleted.
  */
 /* package */ class AttemptTests {
 
@@ -37,7 +38,7 @@ import org.junit.jupiter.api.Test;
     /** Fixed duration reused across all tests. */
     private static final Duration DURATION = Duration.ofMinutes(5);
 
-    /** Attempt ID used for the six-argument constructor tests. */
+    /** Attempt ID for the six-argument constructor tests. */
     private static final String ATTEMPT_ID = "attempt-1";
 
     /**
@@ -74,10 +75,10 @@ import org.junit.jupiter.api.Test;
         /** The Attempt under test, created in setUp. */
         private Attempt attempt;
 
-        /** The User passed to the constructor, kept for reference comparison. */
+        /** User passed at construction; held for reference comparison. */
         private User user;
 
-        /** The Level passed to the constructor, kept for reference comparison. */
+        /** Level passed at construction; held for reference comparison. */
         private Level level;
 
         /**
@@ -88,17 +89,20 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Creates an Attempt via the five-argument constructor before each test.
+         * Creates an Attempt via the five-arg constructor
+         * before each test.
          */
         @BeforeEach
         /* package */ void setUp() {
             this.user = createTestUser();
             this.level = createTestLevel();
-            this.attempt = new Attempt(this.user, TIMESTAMP, this.level, true, DURATION);
+            this.attempt = new Attempt(
+                    this.user, TIMESTAMP, this.level, true, DURATION);
         }
 
         /**
-         * Verifies that getUser returns the exact user reference passed at construction.
+         * Verifies that getUser returns the exact user
+         * reference passed at construction.
          */
         @Test
         /* package */ void returnsCorrectUser() {
@@ -106,7 +110,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that getTimestamp returns the timestamp passed at construction.
+         * Verifies that getTimestamp returns the timestamp
+         * from construction.
          */
         @Test
         /* package */ void returnsCorrectTimestamp() {
@@ -114,7 +119,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that getLevel returns the exact level reference passed at construction.
+         * Verifies that getLevel returns the exact level
+         * reference passed at construction.
          */
         @Test
         /* package */ void returnsCorrectLevel() {
@@ -122,7 +128,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that getTimeTaken returns the duration passed at construction.
+         * Verifies that getTimeTaken returns the duration
+         * from construction.
          */
         @Test
         /* package */ void returnsCorrectTimeTaken() {
@@ -130,7 +137,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that getCompleted returns true when constructed with true.
+         * Verifies that getCompleted returns true when
+         * constructed with true.
          */
         @Test
         /* package */ void returnsCompletedTrue() {
@@ -139,7 +147,8 @@ import org.junit.jupiter.api.Test;
     }
 
     /**
-     * Tests for the six-argument Attempt constructor, which additionally accepts an ID.
+     * Tests for the six-argument Attempt constructor,
+     * which additionally accepts an ID.
      */
     @Nested
     /* package */ class SixArgConstructor {
@@ -155,13 +164,15 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Creates an Attempt via the six-argument constructor before each test.
+         * Creates an Attempt via the six-argument constructor
+         * before each test.
          */
         @BeforeEach
         /* package */ void setUp() {
             final User user = createTestUser();
             final Level level = createTestLevel();
-            this.attempt = new Attempt(ATTEMPT_ID, user, TIMESTAMP, level, false, DURATION);
+            this.attempt = new Attempt(
+                    ATTEMPT_ID, user, TIMESTAMP, level, false, DURATION);
         }
 
         /**
@@ -173,7 +184,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that getCompleted returns false when constructed with false.
+         * Verifies that getCompleted returns false when
+         * constructed with false.
          */
         @Test
         /* package */ void returnsCompletedFalse() {
@@ -198,7 +210,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Creates an Attempt (initially not completed) before each test.
+         * Creates an Attempt (initially not completed)
+         * before each test.
          */
         @BeforeEach
         /* package */ void setUp() {
@@ -208,7 +221,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that setCompleted(true) causes getCompleted to return true.
+         * Verifies that setCompleted(true) causes
+         * getCompleted to return true.
          */
         @Test
         /* package */ void setsTrueCorrectly() {
@@ -217,7 +231,8 @@ import org.junit.jupiter.api.Test;
         }
 
         /**
-         * Verifies that setCompleted(false) causes getCompleted to return false.
+         * Verifies that setCompleted(false) causes
+         * getCompleted to return false.
          */
         @Test
         /* package */ void setsFalseCorrectly() {

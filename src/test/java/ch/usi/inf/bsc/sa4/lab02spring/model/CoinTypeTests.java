@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 /**
- * Tests for CoinType enum: value() JSON serialisation key and fromValue() deserialization.
+ * Tests for CoinType enum: value() JSON key
+ * and fromValue() deserialization.
  */
 /* package */ class CoinTypeTests {
 
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.function.Executable;
     /** JSON value for the bronze coin variant. */
     private static final String BRONZE_VALUE = "Item_Coin_Bronze";
 
-    /** A string that does not correspond to any CoinType constant. */
+    /** A string that does not map to any CoinType constant. */
     private static final String UNKNOWN_VALUE = "Item_Coin_Unknown";
 
     /**
@@ -83,7 +84,8 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that fromValue returns GOLD_COIN for the gold JSON key.
+         * Verifies that fromValue returns GOLD_COIN
+         * for the gold JSON key.
          */
         @Test
         /* package */ void returnsGoldCoin() {
@@ -91,23 +93,28 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that fromValue returns SILVER_COIN for the silver JSON key.
+         * Verifies that fromValue returns SILVER_COIN
+         * for the silver JSON key.
          */
         @Test
         /* package */ void returnsSilverCoin() {
-            assertEquals(CoinType.SILVER_COIN, CoinType.fromValue(SILVER_VALUE));
+            assertEquals(
+                    CoinType.SILVER_COIN, CoinType.fromValue(SILVER_VALUE));
         }
 
         /**
-         * Verifies that fromValue returns BRONZE_COIN for the bronze JSON key.
+         * Verifies that fromValue returns BRONZE_COIN
+         * for the bronze JSON key.
          */
         @Test
         /* package */ void returnsBronzeCoin() {
-            assertEquals(CoinType.BRONZE_COIN, CoinType.fromValue(BRONZE_VALUE));
+            assertEquals(
+                    CoinType.BRONZE_COIN, CoinType.fromValue(BRONZE_VALUE));
         }
 
         /**
-         * Verifies that fromValue throws IllegalArgumentException for an unrecognised string.
+         * Verifies that fromValue throws
+         * IllegalArgumentException for an unrecognised string.
          */
         @Test
         /* package */ void throwsForUnknownValue() {

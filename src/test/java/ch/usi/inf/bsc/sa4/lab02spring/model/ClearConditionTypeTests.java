@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 /**
- * Tests for ClearConditionType enum: value() JSON serialisation key and fromValue()
- * deserialization.
+ * Tests for ClearConditionType enum: value() JSON key
+ * and fromValue() deserialization.
  */
 /* package */ class ClearConditionTypeTests {
 
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.function.Executable;
     /** JSON value for the SNAIL clear condition. */
     private static final String SNAIL_VALUE = "snail";
 
-    /** A string that does not correspond to any ClearConditionType constant. */
+    /** A string that does not map to any ClearConditionType. */
     private static final String UNKNOWN_VALUE = "unknown";
 
     /**
@@ -95,43 +95,57 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that fromValue returns BOX for the box JSON key.
+         * Verifies that fromValue returns BOX
+         * for the box JSON key.
          */
         @Test
         /* package */ void returnsBox() {
-            assertEquals(ClearConditionType.BOX, ClearConditionType.fromValue(BOX_VALUE));
+            assertEquals(
+                    ClearConditionType.BOX,
+                    ClearConditionType.fromValue(BOX_VALUE));
         }
 
         /**
-         * Verifies that fromValue returns COIN for the coin JSON key.
+         * Verifies that fromValue returns COIN
+         * for the coin JSON key.
          */
         @Test
         /* package */ void returnsCoin() {
-            assertEquals(ClearConditionType.COIN, ClearConditionType.fromValue(COIN_VALUE));
+            assertEquals(
+                    ClearConditionType.COIN,
+                    ClearConditionType.fromValue(COIN_VALUE));
         }
 
         /**
-         * Verifies that fromValue returns SLIME for the slime JSON key.
+         * Verifies that fromValue returns SLIME
+         * for the slime JSON key.
          */
         @Test
         /* package */ void returnsSlime() {
-            assertEquals(ClearConditionType.SLIME, ClearConditionType.fromValue(SLIME_VALUE));
+            assertEquals(
+                    ClearConditionType.SLIME,
+                    ClearConditionType.fromValue(SLIME_VALUE));
         }
 
         /**
-         * Verifies that fromValue returns SNAIL for the snail JSON key.
+         * Verifies that fromValue returns SNAIL
+         * for the snail JSON key.
          */
         @Test
         /* package */ void returnsSnail() {
-            assertEquals(ClearConditionType.SNAIL, ClearConditionType.fromValue(SNAIL_VALUE));
+            assertEquals(
+                    ClearConditionType.SNAIL,
+                    ClearConditionType.fromValue(SNAIL_VALUE));
         }
 
         /**
-         * Verifies that fromValue throws IllegalArgumentException for an unrecognised string.
+         * Verifies that fromValue throws
+         * IllegalArgumentException for an unknown string.
          */
         @Test
         /* package */ void throwsForUnknownValue() {
-            final Executable exec = () -> ClearConditionType.fromValue(UNKNOWN_VALUE);
+            final Executable exec =
+                    () -> ClearConditionType.fromValue(UNKNOWN_VALUE);
             assertThrows(IllegalArgumentException.class, exec);
         }
     }

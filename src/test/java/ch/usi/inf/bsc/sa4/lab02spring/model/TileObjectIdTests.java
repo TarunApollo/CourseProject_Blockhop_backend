@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,15 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
 /**
- * Tests for TileObjectId record: canonical constructor, remove() factory, isRemoval(), and
- * validated constructor.
+ * Tests for TileObjectId: canonical constructor,
+ * remove() factory, isRemoval(), and validated constructor.
  */
 /* package */ class TileObjectIdTests {
 
-    /** A positive GID value accepted by the positive validator. */
+    /** A positive GID value accepted by the validator. */
     private static final int VALID_GID = 5;
 
-    /** A negative GID value rejected by the positive validator. */
+    /** A negative GID value rejected by the validator. */
     private static final int INVALID_GID = -1;
 
     /** Validator that accepts only positive integers. */
@@ -48,7 +47,8 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that the canonical constructor stores the supplied value.
+         * Verifies that the canonical constructor stores
+         * the supplied value.
          */
         @Test
         /* package */ void storesGivenValue() {
@@ -71,7 +71,8 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that remove() returns a TileObjectId whose value is zero.
+         * Verifies that remove() returns a TileObjectId
+         * whose value is zero.
          */
         @Test
         /* package */ void hasValueZero() {
@@ -94,7 +95,8 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that isRemoval() returns true for a TileObjectId created via remove().
+         * Verifies that isRemoval() returns true for a
+         * TileObjectId created via remove().
          */
         @Test
         /* package */ void returnsTrueForZeroValue() {
@@ -103,7 +105,8 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that isRemoval() returns false for a non-zero TileObjectId.
+         * Verifies that isRemoval() returns false for
+         * a non-zero TileObjectId.
          */
         @Test
         /* package */ void returnsFalseForNonZero() {
@@ -126,39 +129,33 @@ import org.junit.jupiter.api.function.Executable;
         }
 
         /**
-         * Verifies that the validated constructor accepts a value that satisfies the validator.
+         * Verifies that a valid GID is accepted and stored.
          */
         @Test
         /* package */ void acceptsValidGid() {
-            final Executable exec = () -> new TileObjectId(VALID_GID, VALIDATOR);
-            assertDoesNotThrow(exec);
+            final TileObjectId tileId = new TileObjectId(VALID_GID, VALIDATOR);
+            assertEquals(VALID_GID, tileId.value());
         }
 
         /**
-         * Verifies that zero bypasses validation (reserved removal marker).
+         * Verifies that zero bypasses validation
+         * (reserved removal marker).
          */
         @Test
         /* package */ void allowsZeroWithoutValidation() {
-            final Executable exec = () -> new TileObjectId(0, VALIDATOR);
-            assertDoesNotThrow(exec);
+            final TileObjectId tileId = new TileObjectId(0, VALIDATOR);
+            assertEquals(0, tileId.value());
         }
 
         /**
-         * Verifies that the validated constructor throws for a value rejected by the validator.
+         * Verifies that an invalid GID throws
+         * IllegalArgumentException.
          */
         @Test
         /* package */ void throwsForInvalidGid() {
-            final Executable exec = () -> new TileObjectId(INVALID_GID, VALIDATOR);
+            final Executable exec =
+                    () -> new TileObjectId(INVALID_GID, VALIDATOR);
             assertThrows(IllegalArgumentException.class, exec);
-        }
-
-        /**
-         * Verifies that the validated constructor stores the accepted value.
-         */
-        @Test
-        /* package */ void storesValidValue() {
-            final TileObjectId tileId = new TileObjectId(VALID_GID, VALIDATOR);
-            assertEquals(VALID_GID, tileId.value());
         }
     }
 }
