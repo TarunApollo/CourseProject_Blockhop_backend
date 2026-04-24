@@ -30,6 +30,9 @@ class LevelTests {
     /** The ID of a level owner. */
     private static final String OWNER_ID = "owner-id";
 
+    /** The ID of another user. */
+    private static final String OTHER_ID = "other-id";
+
     /**
      * Creates a test user.
      * 
@@ -259,7 +262,7 @@ class LevelTests {
         @Test
         @DisplayName("should return false when user id does not match the owner")
         void returnsFalseForOtherId() {
-            Assertions.assertFalse(this.level.isOwnedBy("other-id"));
+            Assertions.assertFalse(this.level.isOwnedBy(OTHER_ID));
         }
 
         /** Verify isOwnedBy with user instance. */
@@ -273,7 +276,7 @@ class LevelTests {
         @Test
         @DisplayName("should return false when user does not match the owner")
         void returnsFalseForOtherUser() {
-            Assertions.assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
+            Assertions.assertFalse(this.level.isOwnedBy(new User(OTHER_ID, "Luigi")));
         }
 
         /** Tests for ensureOwnedBy. */
@@ -285,7 +288,7 @@ class LevelTests {
             @Test
             @DisplayName("throws ForbiddenUserException")
             void throwsForbiddenUserException() {
-                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("other-id");
+                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy(OTHER_ID);
                 Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
             }
 
@@ -409,7 +412,8 @@ class LevelTests {
             @Test
             @DisplayName("throws IllegalArgumentException when position is null")
             void nullPosition() {
-                Assertions.assertThrows(IllegalArgumentException.class, () -> BoundsMethods.this.level.ensureWithinBounds(null));
+                Assertions.assertThrows(IllegalArgumentException.class,
+                        () -> BoundsMethods.this.level.ensureWithinBounds(null));
             }
 
             /** Verify out of bounds position. */
@@ -781,7 +785,7 @@ class LevelTests {
             @Test
             @DisplayName("when user does not own the level")
             void wrongUser() {
-                final Executable codeToExecute = () -> PublishMethod.this.level.publish("other-id");
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish(OTHER_ID);
                 Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
             }
         }
@@ -859,7 +863,7 @@ class LevelTests {
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
-            final Executable codeToExecute = () -> this.level.validatePublishEligible("other-id");
+            final Executable codeToExecute = () -> this.level.validatePublishEligible(OTHER_ID);
             Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
@@ -891,7 +895,7 @@ class LevelTests {
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
-            final Executable codeToExecute = () -> this.level.invalidatePublishEligible("other-id");
+            final Executable codeToExecute = () -> this.level.invalidatePublishEligible(OTHER_ID);
             Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
@@ -923,7 +927,7 @@ class LevelTests {
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
-            final Executable codeToExecute = () -> this.level.unpublish("other-id");
+            final Executable codeToExecute = () -> this.level.unpublish(OTHER_ID);
             Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
@@ -1143,7 +1147,7 @@ class LevelTests {
         @Test
         @DisplayName("throws LevelNotPlayableException when level is unpublished and user is not the owner")
         void unpublishedNotOwner() {
-            final Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+            final Executable codeToExecute = () -> this.level.ensurePlayable(OTHER_ID);
             Assertions.assertThrows(LevelNotPlayableException.class, codeToExecute);
         }
 
@@ -1160,7 +1164,7 @@ class LevelTests {
         @DisplayName("should not throw when level is published regardless of user")
         void publishedLevel() {
             publishTestLevel(this.level);
-            final Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+            final Executable codeToExecute = () -> this.level.ensurePlayable(OTHER_ID);
             Assertions.assertDoesNotThrow(codeToExecute);
         }
     }
