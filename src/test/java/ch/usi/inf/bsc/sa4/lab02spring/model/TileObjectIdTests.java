@@ -23,13 +23,6 @@ import org.junit.jupiter.api.function.Executable;
     private static final IntPredicate VALIDATOR = value -> value > 0;
 
     /**
-     * Instantiates a new TileObjectIdTests.
-     */
-    /* package */ TileObjectIdTests() {
-        // Required by pmd:AtLeastOneConstructor
-    }
-
-    /**
      * Verifies that a TileObjectId with value zero
      * is recognised as a removal marker.
      */
@@ -44,13 +37,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class CanonicalConstructor {
-
-        /**
-         * Instantiates a new CanonicalConstructor.
-         */
-        /* package */ CanonicalConstructor() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that the canonical constructor stores
@@ -70,13 +56,6 @@ import org.junit.jupiter.api.function.Executable;
     /* package */ class RemoveFactory {
 
         /**
-         * Instantiates a new RemoveFactory.
-         */
-        /* package */ RemoveFactory() {
-            // Required by pmd:AtLeastOneConstructor
-        }
-
-        /**
          * Verifies that remove() returns a TileObjectId
          * whose value is zero.
          */
@@ -92,13 +71,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class IsRemovalMethod {
-
-        /**
-         * Instantiates a new IsRemovalMethod.
-         */
-        /* package */ IsRemovalMethod() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that isRemoval() returns true for a
@@ -126,13 +98,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class ValidatedConstructor {
-
-        /**
-         * Instantiates a new ValidatedConstructor.
-         */
-        /* package */ ValidatedConstructor() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that a valid GID is accepted and stored.

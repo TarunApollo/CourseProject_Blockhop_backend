@@ -35,15 +35,8 @@ import org.junit.jupiter.api.Test;
     /** Fixed duration reused across all tests. */
     private static final Duration DURATION = Duration.ofMinutes(5);
 
-    /** Attempt ID for the six-argument constructor tests. */
+    /** ATTEMPT_ID for the six-argument constructor tests. */
     private static final String ATTEMPT_ID = "attempt-1";
-
-    /**
-     * Instantiates a new AttemptTests.
-     */
-    /* package */ AttemptTests() {
-        // Required by pmd:AtLeastOneConstructor
-    }
 
     /**
      * Creates a User for testing.
@@ -90,13 +83,6 @@ import org.junit.jupiter.api.Test;
 
         /** Level passed at construction; held for reference comparison. */
         private Level level;
-
-        /**
-         * Instantiates a new FiveArgConstructor.
-         */
-        /* package */ FiveArgConstructor() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Creates an Attempt via the five-arg constructor
@@ -167,13 +153,6 @@ import org.junit.jupiter.api.Test;
         private Attempt attempt;
 
         /**
-         * Instantiates a new SixArgConstructor.
-         */
-        /* package */ SixArgConstructor() {
-            // Required by pmd:AtLeastOneConstructor
-        }
-
-        /**
          * Creates an Attempt via the six-argument constructor
          * before each test.
          */
@@ -211,13 +190,6 @@ import org.junit.jupiter.api.Test;
 
         /** The Attempt under test, created in setUp. */
         private Attempt attempt;
-
-        /**
-         * Instantiates a new SetCompletedMethod.
-         */
-        /* package */ SetCompletedMethod() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Creates an Attempt (initially not completed)
