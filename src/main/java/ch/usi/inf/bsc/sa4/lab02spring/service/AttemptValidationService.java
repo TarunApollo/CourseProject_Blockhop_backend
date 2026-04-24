@@ -6,11 +6,8 @@ import org.springframework.stereotype.Service;
 
 /// Validates whether a submitted attempt satisfies a level's completion rules.
 @Service
+@SuppressWarnings("PMD.AtLeastOneConstructor")
 public class AttemptValidationService {
-    /// Creates a validation service instance.
-    public AttemptValidationService() {
-    }
-
     /// Validates whether the submitted attempt satisfies the level's completion
     /// criteria.
     ///
@@ -24,7 +21,6 @@ public class AttemptValidationService {
     /// @return true if the world layer matches the expected state and the
     ///         player is positioned on an ExitDoor, false otherwise
     public boolean validateLevelSubmission(final Level level, final AttemptDTO dto) {
-        final boolean isWorldLayerEqual = level.getWorldLayer().equals(dto.worldLayer());
-        return isWorldLayerEqual;
+        return level.getWorldLayer().equals(dto.worldLayer());
     }
 }

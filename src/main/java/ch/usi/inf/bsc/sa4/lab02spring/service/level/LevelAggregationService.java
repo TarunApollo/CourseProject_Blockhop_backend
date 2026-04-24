@@ -68,18 +68,18 @@ public class LevelAggregationService {
                 .map(level -> toLevelSummary(level, sortBy, period))
                 .toList();
 
+        final List<LevelSummaryDto> result;
         if (sortBy == PublishedLevelSortBy.CLEAR_RATE) {
-            return dtos.stream()
+            result = dtos.stream()
                     .sorted(Comparator.comparingDouble(LevelSummaryDto::clearRate).reversed())
                     .toList();
-        }
-
-        if (sortBy == PublishedLevelSortBy.POPULARITY) {
-            return dtos.stream()
+        } else if (sortBy == PublishedLevelSortBy.POPULARITY) {
+            result = dtos.stream()
                     .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
                     .toList();
+        } else {
+            throw new IllegalStateException("Unsupported published level sort: " + sortBy);
         }
-
-        throw new IllegalStateException("Unsupported published level sort: " + sortBy);
+        return result;
     }
 }

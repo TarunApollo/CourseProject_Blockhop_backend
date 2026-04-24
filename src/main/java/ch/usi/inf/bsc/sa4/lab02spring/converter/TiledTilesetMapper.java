@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 /// Maps tileset domain objects into Tiled-compatible structures.
-@SuppressWarnings("PMD.UseConcurrentHashMap")
+@SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
 final class TiledTilesetMapper {
+    private static final String KEY_NAME = "name";
+    private static final String KEY_TYPE = "type";
+
     private TiledTilesetMapper() {
     }
 
@@ -22,20 +25,21 @@ final class TiledTilesetMapper {
 
         final List<Map<String, Object>> tiles = new ArrayList<>(tileSet.tilecount());
         for (int i = 0; i < tileSet.tilecount(); i++) {
-            if (tilesById.containsKey(i)) {
-                tiles.add(tilesById.get(i));
+            final Map<String, Object> existing = tilesById.get(i);
+            if (existing != null) {
+                tiles.add(existing);
                 continue;
             }
 
             final Map<String, Object> defaultTile = new LinkedHashMap<>();
             defaultTile.put("id", i);
-            defaultTile.put("type", "");
+            defaultTile.put(KEY_TYPE, "");
             tiles.add(defaultTile);
         }
 
         final Map<String, Object> tiledTileset = new LinkedHashMap<>();
         tiledTileset.put("firstgid", tileSet.firstgid());
-        tiledTileset.put("name", tileSet.name());
+        tiledTileset.put(KEY_NAME, tileSet.name());
         tiledTileset.put("tilewidth", tileSet.tilewidth());
         tiledTileset.put("tileheight", tileSet.tileheight());
         tiledTileset.put("tilecount", tileSet.tilecount());
@@ -52,7 +56,7 @@ final class TiledTilesetMapper {
     private static Map<String, Object> toTiledTile(final TileSet.TileData tile) {
         final Map<String, Object> tiledTile = new LinkedHashMap<>();
         tiledTile.put("id", tile.id());
-        tiledTile.put("type", tile.type() != null ? tile.type() : "");
+        tiledTile.put(KEY_TYPE, tile.type() != null ? tile.type() : "");
 
         if (tile.properties() != null && !tile.properties().isEmpty()) {
             final List<Map<String, Object>> properties = new ArrayList<>(tile.properties().size());
@@ -70,8 +74,8 @@ final class TiledTilesetMapper {
 
     private static Map<String, Object> toTiledProperty(final TileSet.Property property) {
         final Map<String, Object> tiledProperty = new LinkedHashMap<>();
-        tiledProperty.put("name", property.name());
-        tiledProperty.put("type", property.type());
+        tiledProperty.put(KEY_NAME, property.name());
+        tiledProperty.put(KEY_TYPE, property.type());
         tiledProperty.put("value", property.value());
         return tiledProperty;
     }
@@ -84,9 +88,9 @@ final class TiledTilesetMapper {
 
         final Map<String, Object> tiledObjectGroup = new LinkedHashMap<>();
         tiledObjectGroup.put("draworder", objectGroup.draworder());
-        tiledObjectGroup.put("name", objectGroup.name());
+        tiledObjectGroup.put(KEY_NAME, objectGroup.name());
         tiledObjectGroup.put("opacity", objectGroup.opacity());
-        tiledObjectGroup.put("type", objectGroup.type());
+        tiledObjectGroup.put(KEY_TYPE, objectGroup.type());
         tiledObjectGroup.put("visible", objectGroup.visible());
         tiledObjectGroup.put("x", objectGroup.x());
         tiledObjectGroup.put("y", objectGroup.y());
@@ -97,8 +101,8 @@ final class TiledTilesetMapper {
     private static Map<String, Object> toTiledTileObject(final TileSet.TileObject object) {
         final Map<String, Object> tiledObject = new LinkedHashMap<>();
         tiledObject.put("id", object.id());
-        tiledObject.put("name", object.name());
-        tiledObject.put("type", object.type());
+        tiledObject.put(KEY_NAME, object.name());
+        tiledObject.put(KEY_TYPE, object.type());
         tiledObject.put("visible", object.visible());
         tiledObject.put("rotation", object.rotation());
         tiledObject.put("x", object.x());

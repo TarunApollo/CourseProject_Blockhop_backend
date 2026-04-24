@@ -38,6 +38,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/levels")
+@SuppressWarnings("PMD.ExcessiveImports")
 public class LevelController {
     /// Handles level creation, publication, and play-related endpoints.
     private final LevelService levelService;
@@ -113,8 +114,8 @@ public class LevelController {
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping("/clone")
     public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication, @RequestBody CloneLevelDTO cloneLevelDTO) {
-        String userId = AuthUtils.getUserIdFromAuth(authentication);
-        User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return this.levelService.cloneLevel(cloneLevelDTO, user)
                 .map(LevelDTO::new)
                 .map(ResponseEntity::ok)

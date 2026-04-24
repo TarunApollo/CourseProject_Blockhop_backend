@@ -21,6 +21,10 @@ final class TiledLayerMapper {
     /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;
 
+    private static final String KEY_NAME = "name";
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_VISIBLE = "visible";
+
     /// Resolves object tile type metadata.
     private final TileSetService tileSetService;
 
@@ -51,12 +55,12 @@ final class TiledLayerMapper {
 
         final Map<String, Object> tiledWorldLayer = new LinkedHashMap<>();
         tiledWorldLayer.put("id", 1);
-        tiledWorldLayer.put("name", "World");
-        tiledWorldLayer.put("type", "tilelayer");
+        tiledWorldLayer.put(KEY_NAME, "World");
+        tiledWorldLayer.put(KEY_TYPE, "tilelayer");
         tiledWorldLayer.put("width", width);
         tiledWorldLayer.put("height", height);
         tiledWorldLayer.put("opacity", 1);
-        tiledWorldLayer.put("visible", Boolean.TRUE);
+        tiledWorldLayer.put(KEY_VISIBLE, Boolean.TRUE);
         tiledWorldLayer.put("x", 0);
         tiledWorldLayer.put("y", 0);
         tiledWorldLayer.put("data", data);
@@ -68,16 +72,17 @@ final class TiledLayerMapper {
         final List<Map<String, Object>> objects = new ArrayList<>(objectLayer.size());
         int idCounter = 1;
         for (final GameObject gameObject : objectLayer.values()) {
-            objects.add(toTiledObject(gameObject, idCounter++));
+            objects.add(toTiledObject(gameObject, idCounter));
+            idCounter++;
         }
 
         final Map<String, Object> tiledObjectLayer = new LinkedHashMap<>();
         tiledObjectLayer.put("id", 2);
-        tiledObjectLayer.put("name", "QMLayer");
-        tiledObjectLayer.put("type", "objectgroup");
+        tiledObjectLayer.put(KEY_NAME, "QMLayer");
+        tiledObjectLayer.put(KEY_TYPE, "objectgroup");
         tiledObjectLayer.put("draworder", "topdown");
         tiledObjectLayer.put("opacity", 1);
-        tiledObjectLayer.put("visible", Boolean.TRUE);
+        tiledObjectLayer.put(KEY_VISIBLE, Boolean.TRUE);
         tiledObjectLayer.put("x", 0);
         tiledObjectLayer.put("y", 0);
         tiledObjectLayer.put("objects", objects);
@@ -96,10 +101,10 @@ final class TiledLayerMapper {
         tiledObject.put("y", y);
         tiledObject.put("width", TILE_SIZE);
         tiledObject.put("height", TILE_SIZE);
-        tiledObject.put("visible", Boolean.TRUE);
+        tiledObject.put(KEY_VISIBLE, Boolean.TRUE);
         tiledObject.put("rotation", 0);
-        tiledObject.put("name", "");
-        tiledObject.put("type", this.tileSetService.getObjectTileType(gameObject.gid()));
+        tiledObject.put(KEY_NAME, "");
+        tiledObject.put(KEY_TYPE, this.tileSetService.getObjectTileType(gameObject.gid()));
 
         if (gameObject instanceof Box box) {
             final List<Map<String, Object>> properties = buildBoxProperties(box);
@@ -114,8 +119,8 @@ final class TiledLayerMapper {
         final List<Map<String, Object>> properties = new ArrayList<>();
         if (box.content() instanceof Content.SomeContent someContent) {
             final Map<String, Object> contentProperty = new LinkedHashMap<>();
-            contentProperty.put("name", "Content");
-            contentProperty.put("type", "string");
+            contentProperty.put(KEY_NAME, "Content");
+            contentProperty.put(KEY_TYPE, "string");
             contentProperty.put("value", someContent.coinType().value());
             properties.add(contentProperty);
         }
