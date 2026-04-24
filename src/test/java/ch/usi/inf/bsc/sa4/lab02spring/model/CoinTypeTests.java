@@ -24,13 +24,6 @@ import org.junit.jupiter.api.function.Executable;
     private static final String UNKNOWN_VALUE = "Item_Coin_Unknown";
 
     /**
-     * Instantiates a new CoinTypeTests.
-     */
-    /* package */ CoinTypeTests() {
-        // Required by pmd:AtLeastOneConstructor
-    }
-
-    /**
      * Verifies that fromValue returns the correct constant
      * for the gold coin JSON key.
      */
@@ -44,13 +37,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class ValueMethod {
-
-        /**
-         * Instantiates a new ValueMethod.
-         */
-        /* package */ ValueMethod() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that GOLD_COIN returns the correct JSON key.
@@ -82,13 +68,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class FromValueMethod {
-
-        /**
-         * Instantiates a new FromValueMethod.
-         */
-        /* package */ FromValueMethod() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that fromValue returns GOLD_COIN
