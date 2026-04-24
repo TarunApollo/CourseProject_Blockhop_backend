@@ -16,6 +16,7 @@ import java.util.Map;
 
 /// Maps level layers into Tiled-compatible layer structures.
 @Component
+@SuppressWarnings("PMD.UseConcurrentHashMap")
 final class TiledLayerMapper {
     /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;

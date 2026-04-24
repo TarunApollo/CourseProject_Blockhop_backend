@@ -12,6 +12,7 @@ import java.util.Map;
 /// Exports a level and tileset as a Tiled-compatible map payload.
 /// Delegates layer and tileset conversion to dedicated helpers.
 @Component
+@SuppressWarnings("PMD.UseConcurrentHashMap")
 public class LayerToTiledMapConverter {
     /// Converts world and object layers into Tiled structures.
     private final TiledLayerMapper tiledLayerMapper;

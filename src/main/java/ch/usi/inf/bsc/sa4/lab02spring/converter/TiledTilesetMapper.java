@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /// Maps tileset domain objects into Tiled-compatible structures.
+@SuppressWarnings("PMD.UseConcurrentHashMap")
 final class TiledTilesetMapper {
     private TiledTilesetMapper() {
     }
