@@ -67,6 +67,19 @@ import org.junit.jupiter.api.Test;
     }
 
     /**
+     * Verifies that an Attempt can be constructed and that
+     * getCompleted reflects the value given at construction.
+     */
+    @Test
+    /* package */ void getCompletedReflectsConstructorArg() {
+        final User user = createTestUser();
+        final Level level = createTestLevel();
+        final Attempt attempt =
+                new Attempt(user, TIMESTAMP, level, true, DURATION);
+        assertTrue(attempt.getCompleted());
+    }
+
+    /**
      * Tests for the five-argument Attempt constructor.
      */
     @Nested

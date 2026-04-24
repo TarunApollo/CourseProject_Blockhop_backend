@@ -34,6 +34,16 @@ import org.junit.jupiter.api.function.Executable;
     }
 
     /**
+     * Verifies that a TileObjectId with value zero
+     * is recognised as a removal marker.
+     */
+    @Test
+    /* package */ void zeroValueIsRemoval() {
+        final TileObjectId tileId = new TileObjectId(0);
+        assertTrue(tileId.isRemoval());
+    }
+
+    /**
      * Tests for the canonical single-argument constructor.
      */
     @Nested

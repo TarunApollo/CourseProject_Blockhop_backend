@@ -36,6 +36,17 @@ import org.junit.jupiter.api.function.Executable;
     }
 
     /**
+     * Verifies that fromValue returns the correct constant
+     * for the box JSON key.
+     */
+    @Test
+    /* package */ void fromValueReturnsBox() {
+        assertEquals(
+                ClearConditionType.BOX,
+                ClearConditionType.fromValue(BOX_VALUE));
+    }
+
+    /**
      * Tests for the value() method.
      */
     @Nested

@@ -33,6 +33,15 @@ import org.junit.jupiter.api.function.Executable;
     }
 
     /**
+     * Verifies that fromValue returns the correct constant
+     * for the gold coin JSON key.
+     */
+    @Test
+    /* package */ void fromValueReturnsGoldCoin() {
+        assertEquals(CoinType.GOLD_COIN, CoinType.fromValue(GOLD_VALUE));
+    }
+
+    /**
      * Tests for the value() method.
      */
     @Nested
