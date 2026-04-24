@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
  * Tests for Attempt model: construction,
  * getters, and setCompleted.
  */
+@DisplayName(" In the Attempt class ")
 class AttemptTests {
 
     /** User ID used when building test fixtures. */
@@ -59,6 +61,7 @@ class AttemptTests {
      * Verifies that an Attempt can be constructed and that
      * getCompleted reflects the value given at construction.
      */
+    @DisplayName(" should reflect completion status given at construction ")
     @Test
     /* package */ void verifyCompletedReflectsConstructorArg() {
         final User user = createTestUser();
@@ -70,6 +73,7 @@ class AttemptTests {
     /**
      * Tests for the five-argument Attempt constructor.
      */
+    @DisplayName(" when using the five-argument constructor ")
     @Nested
     /* package */ class FiveArgConstructor {
 
@@ -98,6 +102,7 @@ class AttemptTests {
          * Verifies that getUser returns the exact user
          * reference passed at construction.
          */
+        @DisplayName(" should return the correct user ")
         @Test
         /* package */ void returnsCorrectUser() {
             Assertions.assertSame(this.user, this.attempt.getUser());
@@ -107,6 +112,7 @@ class AttemptTests {
          * Verifies that getTimestamp returns the timestamp
          * from construction.
          */
+        @DisplayName(" should return the correct timestamp ")
         @Test
         /* package */ void returnsCorrectTimestamp() {
             Assertions.assertEquals(TIMESTAMP, this.attempt.getTimestamp());
@@ -116,6 +122,7 @@ class AttemptTests {
          * Verifies that getLevel returns the exact level
          * reference passed at construction.
          */
+        @DisplayName(" should return the correct level ")
         @Test
         /* package */ void returnsCorrectLevel() {
             Assertions.assertSame(this.level, this.attempt.getLevel());
@@ -125,6 +132,7 @@ class AttemptTests {
          * Verifies that getTimeTaken returns the duration
          * from construction.
          */
+        @DisplayName(" should return the correct time taken ")
         @Test
         /* package */ void returnsCorrectTimeTaken() {
             Assertions.assertEquals(DURATION, this.attempt.getTimeTaken());
@@ -134,6 +142,7 @@ class AttemptTests {
          * Verifies that getCompleted returns true when
          * constructed with true.
          */
+        @DisplayName(" should return true for completed ")
         @Test
         /* package */ void returnsCompletedTrue() {
             Assertions.assertTrue(this.attempt.getCompleted());
@@ -144,6 +153,7 @@ class AttemptTests {
      * Tests for the six-argument Attempt constructor,
      * which additionally accepts an ID.
      */
+    @DisplayName(" when using the six-argument constructor ")
     @Nested
     /* package */ class SixArgConstructor {
 
@@ -165,6 +175,7 @@ class AttemptTests {
         /**
          * Verifies that getId returns the ID passed at construction.
          */
+        @DisplayName(" should return the correct ID ")
         @Test
         /* package */ void returnsCorrectId() {
             Assertions.assertEquals(ATTEMPT_ID, this.attempt.getId());
@@ -174,6 +185,7 @@ class AttemptTests {
          * Verifies that getCompleted returns false when
          * constructed with false.
          */
+        @DisplayName(" should return false for not completed ")
         @Test
         /* package */ void returnsCompletedFalse() {
             Assertions.assertFalse(this.attempt.getCompleted());
@@ -183,6 +195,7 @@ class AttemptTests {
     /**
      * Tests for the setCompleted method.
      */
+    @DisplayName(" method setCompleted ")
     @Nested
     /* package */ class SetCompletedMethod {
 
@@ -204,6 +217,7 @@ class AttemptTests {
          * Verifies that setCompleted(true) causes
          * getCompleted to return true.
          */
+        @DisplayName(" should set completed to true ")
         @Test
         /* package */ void setsTrueCorrectly() {
             this.attempt.setCompleted(true);
@@ -214,6 +228,7 @@ class AttemptTests {
          * Verifies that setCompleted(false) causes
          * getCompleted to return false.
          */
+        @DisplayName(" should set completed to false ")
         @Test
         /* package */ void setsFalseCorrectly() {
             this.attempt.setCompleted(false);
