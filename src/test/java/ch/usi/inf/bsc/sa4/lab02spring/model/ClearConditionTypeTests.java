@@ -28,13 +28,6 @@ import org.junit.jupiter.api.function.Executable;
     private static final String UNKNOWN_VALUE = "unknown";
 
     /**
-     * Instantiates a new ClearConditionTypeTests.
-     */
-    /* package */ ClearConditionTypeTests() {
-        // Required by pmd:AtLeastOneConstructor
-    }
-
-    /**
      * Verifies that fromValue returns the correct constant
      * for the box JSON key.
      */
@@ -50,13 +43,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class ValueMethod {
-
-        /**
-         * Instantiates a new ValueMethod.
-         */
-        /* package */ ValueMethod() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that BOX returns the correct JSON key.
@@ -96,13 +82,6 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Nested
     /* package */ class FromValueMethod {
-
-        /**
-         * Instantiates a new FromValueMethod.
-         */
-        /* package */ FromValueMethod() {
-            // Required by pmd:AtLeastOneConstructor
-        }
 
         /**
          * Verifies that fromValue returns BOX
@@ -154,8 +133,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void throwsForUnknownValue() {
-            final Executable exec =
-                    () -> ClearConditionType.fromValue(UNKNOWN_VALUE);
+            final Executable exec = () -> ClearConditionType.fromValue(UNKNOWN_VALUE);
             Assertions.assertThrows(IllegalArgumentException.class, exec);
         }
     }
