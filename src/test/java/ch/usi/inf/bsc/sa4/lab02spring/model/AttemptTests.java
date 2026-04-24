@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
  * Tests for Attempt model: construction,
  * getters, and setCompleted.
  */
-/* package */ class AttemptTests {
+class AttemptTests {
 
     /** User ID used when building test fixtures. */
     private static final String USER_ID = "user-1";
@@ -29,8 +29,7 @@ import org.junit.jupiter.api.Test;
     private static final String LEVEL_DESC = "A test level.";
 
     /** Fixed timestamp reused across all tests. */
-    private static final ZonedDateTime TIMESTAMP =
-            ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    private static final ZonedDateTime TIMESTAMP = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
     /** Fixed duration reused across all tests. */
     private static final Duration DURATION = Duration.ofMinutes(5);
@@ -64,8 +63,7 @@ import org.junit.jupiter.api.Test;
     /* package */ void verifyCompletedReflectsConstructorArg() {
         final User user = createTestUser();
         final Level level = createTestLevel();
-        final Attempt attempt =
-                new Attempt(user, TIMESTAMP, level, true, DURATION);
+        final Attempt attempt = new Attempt(user, TIMESTAMP, level, true, DURATION);
         Assertions.assertTrue(attempt.getCompleted());
     }
 

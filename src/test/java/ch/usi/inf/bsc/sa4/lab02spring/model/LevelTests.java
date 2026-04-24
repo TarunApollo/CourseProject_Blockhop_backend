@@ -1,6 +1,8 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.junit.jupiter.api.Assertions;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -987,7 +989,7 @@ class LevelTests {
                 layer.put(pos1, new StartFlag(68, pos1));
                 layer.put(pos2, new StartFlag(68, pos2));
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
-                        .ensureValidObjectLayer(layer);
+                        .ensureValidObjectLayer(Collections.unmodifiableMap(layer));
                 Assertions.assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
