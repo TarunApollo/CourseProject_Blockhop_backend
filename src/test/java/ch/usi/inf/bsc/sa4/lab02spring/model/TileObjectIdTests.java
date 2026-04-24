@@ -1,9 +1,8 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.function.IntPredicate;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -37,7 +36,7 @@ import org.junit.jupiter.api.function.Executable;
     @Test
     /* package */ void zeroValueIsRemoval() {
         final TileObjectId tileId = new TileObjectId(0);
-        assertTrue(tileId.isRemoval());
+        Assertions.assertTrue(tileId.isRemoval());
     }
 
     /**
@@ -60,7 +59,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void storesGivenValue() {
             final TileObjectId tileId = new TileObjectId(VALID_GID);
-            assertEquals(VALID_GID, tileId.value());
+            Assertions.assertEquals(VALID_GID, tileId.value());
         }
     }
 
@@ -84,7 +83,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void hasValueZero() {
             final TileObjectId removal = TileObjectId.remove();
-            assertEquals(0, removal.value());
+            Assertions.assertEquals(0, removal.value());
         }
     }
 
@@ -108,7 +107,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void returnsTrueForZeroValue() {
             final TileObjectId removal = TileObjectId.remove();
-            assertTrue(removal.isRemoval());
+            Assertions.assertTrue(removal.isRemoval());
         }
 
         /**
@@ -118,7 +117,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void returnsFalseForNonZero() {
             final TileObjectId tileId = new TileObjectId(VALID_GID);
-            assertFalse(tileId.isRemoval());
+            Assertions.assertFalse(tileId.isRemoval());
         }
     }
 
@@ -141,7 +140,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void acceptsValidGid() {
             final TileObjectId tileId = new TileObjectId(VALID_GID, VALIDATOR);
-            assertEquals(VALID_GID, tileId.value());
+            Assertions.assertEquals(VALID_GID, tileId.value());
         }
 
         /**
@@ -151,7 +150,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void allowsZeroWithoutValidation() {
             final TileObjectId tileId = new TileObjectId(0, VALIDATOR);
-            assertEquals(0, tileId.value());
+            Assertions.assertEquals(0, tileId.value());
         }
 
         /**
@@ -162,7 +161,7 @@ import org.junit.jupiter.api.function.Executable;
         /* package */ void throwsForInvalidGid() {
             final Executable exec =
                     () -> new TileObjectId(INVALID_GID, VALIDATOR);
-            assertThrows(IllegalArgumentException.class, exec);
+            Assertions.assertThrows(IllegalArgumentException.class, exec);
         }
     }
 }

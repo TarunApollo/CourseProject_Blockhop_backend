@@ -1,6 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Test
     /* package */ void fromValueReturnsBox() {
-        assertEquals(
+        Assertions.assertEquals(
                 ClearConditionType.BOX,
                 ClearConditionType.fromValue(BOX_VALUE));
     }
@@ -63,7 +63,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void boxReturnsCorrectValue() {
-            assertEquals(BOX_VALUE, ClearConditionType.BOX.value());
+            Assertions.assertEquals(BOX_VALUE, ClearConditionType.BOX.value());
         }
 
         /**
@@ -71,7 +71,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void coinReturnsCorrectValue() {
-            assertEquals(COIN_VALUE, ClearConditionType.COIN.value());
+            Assertions.assertEquals(COIN_VALUE, ClearConditionType.COIN.value());
         }
 
         /**
@@ -79,7 +79,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void slimeReturnsCorrectValue() {
-            assertEquals(SLIME_VALUE, ClearConditionType.SLIME.value());
+            Assertions.assertEquals(SLIME_VALUE, ClearConditionType.SLIME.value());
         }
 
         /**
@@ -87,7 +87,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void snailReturnsCorrectValue() {
-            assertEquals(SNAIL_VALUE, ClearConditionType.SNAIL.value());
+            Assertions.assertEquals(SNAIL_VALUE, ClearConditionType.SNAIL.value());
         }
     }
 
@@ -110,7 +110,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsBox() {
-            assertEquals(
+            Assertions.assertEquals(
                     ClearConditionType.BOX,
                     ClearConditionType.fromValue(BOX_VALUE));
         }
@@ -121,7 +121,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsCoin() {
-            assertEquals(
+            Assertions.assertEquals(
                     ClearConditionType.COIN,
                     ClearConditionType.fromValue(COIN_VALUE));
         }
@@ -132,7 +132,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsSlime() {
-            assertEquals(
+            Assertions.assertEquals(
                     ClearConditionType.SLIME,
                     ClearConditionType.fromValue(SLIME_VALUE));
         }
@@ -143,7 +143,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsSnail() {
-            assertEquals(
+            Assertions.assertEquals(
                     ClearConditionType.SNAIL,
                     ClearConditionType.fromValue(SNAIL_VALUE));
         }
@@ -156,7 +156,7 @@ import org.junit.jupiter.api.function.Executable;
         /* package */ void throwsForUnknownValue() {
             final Executable exec =
                     () -> ClearConditionType.fromValue(UNKNOWN_VALUE);
-            assertThrows(IllegalArgumentException.class, exec);
+            Assertions.assertThrows(IllegalArgumentException.class, exec);
         }
     }
 }

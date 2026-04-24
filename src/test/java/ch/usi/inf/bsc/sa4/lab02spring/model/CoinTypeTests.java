@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -37,7 +36,7 @@ import org.junit.jupiter.api.function.Executable;
      */
     @Test
     /* package */ void fromValueReturnsGoldCoin() {
-        assertEquals(CoinType.GOLD_COIN, CoinType.fromValue(GOLD_VALUE));
+        Assertions.assertEquals(CoinType.GOLD_COIN, CoinType.fromValue(GOLD_VALUE));
     }
 
     /**
@@ -58,7 +57,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void goldCoinReturnsCorrectValue() {
-            assertEquals(GOLD_VALUE, CoinType.GOLD_COIN.value());
+            Assertions.assertEquals(GOLD_VALUE, CoinType.GOLD_COIN.value());
         }
 
         /**
@@ -66,7 +65,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void silverCoinReturnsCorrectValue() {
-            assertEquals(SILVER_VALUE, CoinType.SILVER_COIN.value());
+            Assertions.assertEquals(SILVER_VALUE, CoinType.SILVER_COIN.value());
         }
 
         /**
@@ -74,7 +73,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void bronzeCoinReturnsCorrectValue() {
-            assertEquals(BRONZE_VALUE, CoinType.BRONZE_COIN.value());
+            Assertions.assertEquals(BRONZE_VALUE, CoinType.BRONZE_COIN.value());
         }
     }
 
@@ -97,7 +96,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsGoldCoin() {
-            assertEquals(CoinType.GOLD_COIN, CoinType.fromValue(GOLD_VALUE));
+            Assertions.assertEquals(CoinType.GOLD_COIN, CoinType.fromValue(GOLD_VALUE));
         }
 
         /**
@@ -106,7 +105,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsSilverCoin() {
-            assertEquals(
+            Assertions.assertEquals(
                     CoinType.SILVER_COIN, CoinType.fromValue(SILVER_VALUE));
         }
 
@@ -116,7 +115,7 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void returnsBronzeCoin() {
-            assertEquals(
+            Assertions.assertEquals(
                     CoinType.BRONZE_COIN, CoinType.fromValue(BRONZE_VALUE));
         }
 
@@ -127,7 +126,7 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void throwsForUnknownValue() {
             final Executable exec = () -> CoinType.fromValue(UNKNOWN_VALUE);
-            assertThrows(IllegalArgumentException.class, exec);
+            Assertions.assertThrows(IllegalArgumentException.class, exec);
         }
     }
 }

@@ -1,6 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Assertions;
 
 import java.time.Duration;
 import java.time.ZoneOffset;
@@ -73,7 +73,7 @@ import org.junit.jupiter.api.Test;
         final Level level = createTestLevel();
         final Attempt attempt =
                 new Attempt(user, TIMESTAMP, level, true, DURATION);
-        assertTrue(attempt.getCompleted());
+        Assertions.assertTrue(attempt.getCompleted());
     }
 
     /**
@@ -116,7 +116,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCorrectUser() {
-            assertSame(this.user, this.attempt.getUser());
+            Assertions.assertSame(this.user, this.attempt.getUser());
         }
 
         /**
@@ -125,7 +125,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCorrectTimestamp() {
-            assertEquals(TIMESTAMP, this.attempt.getTimestamp());
+            Assertions.assertEquals(TIMESTAMP, this.attempt.getTimestamp());
         }
 
         /**
@@ -134,7 +134,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCorrectLevel() {
-            assertSame(this.level, this.attempt.getLevel());
+            Assertions.assertSame(this.level, this.attempt.getLevel());
         }
 
         /**
@@ -143,7 +143,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCorrectTimeTaken() {
-            assertEquals(DURATION, this.attempt.getTimeTaken());
+            Assertions.assertEquals(DURATION, this.attempt.getTimeTaken());
         }
 
         /**
@@ -152,7 +152,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCompletedTrue() {
-            assertTrue(this.attempt.getCompleted());
+            Assertions.assertTrue(this.attempt.getCompleted());
         }
     }
 
@@ -190,7 +190,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCorrectId() {
-            assertEquals(ATTEMPT_ID, this.attempt.getId());
+            Assertions.assertEquals(ATTEMPT_ID, this.attempt.getId());
         }
 
         /**
@@ -199,7 +199,7 @@ import org.junit.jupiter.api.Test;
          */
         @Test
         /* package */ void returnsCompletedFalse() {
-            assertFalse(this.attempt.getCompleted());
+            Assertions.assertFalse(this.attempt.getCompleted());
         }
     }
 
@@ -237,7 +237,7 @@ import org.junit.jupiter.api.Test;
         @Test
         /* package */ void setsTrueCorrectly() {
             this.attempt.setCompleted(true);
-            assertTrue(this.attempt.getCompleted());
+            Assertions.assertTrue(this.attempt.getCompleted());
         }
 
         /**
@@ -247,7 +247,7 @@ import org.junit.jupiter.api.Test;
         @Test
         /* package */ void setsFalseCorrectly() {
             this.attempt.setCompleted(false);
-            assertFalse(this.attempt.getCompleted());
+            Assertions.assertFalse(this.attempt.getCompleted());
         }
     }
 }
