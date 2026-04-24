@@ -68,7 +68,7 @@ import org.junit.jupiter.api.Test;
      * getCompleted reflects the value given at construction.
      */
     @Test
-    /* package */ void getCompletedReflectsConstructorArg() {
+    /* package */ void verifyCompletedReflectsConstructorArg() {
         final User user = createTestUser();
         final Level level = createTestLevel();
         final Attempt attempt =
