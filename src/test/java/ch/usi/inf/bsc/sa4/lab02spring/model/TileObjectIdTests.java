@@ -124,9 +124,17 @@ import org.junit.jupiter.api.function.Executable;
          */
         @Test
         /* package */ void throwsForInvalidGid() {
-            final Executable exec =
-                    () -> new TileObjectId(INVALID_GID, VALIDATOR);
+            final Executable exec = ValidatedConstructor::buildInvalidTileId;
             Assertions.assertThrows(IllegalArgumentException.class, exec);
+        }
+
+        /**
+         * Attempts to construct a TileObjectId with an invalid GID.
+         *
+         * @return never returns; throws IllegalArgumentException
+         */
+        private static TileObjectId buildInvalidTileId() {
+            return new TileObjectId(INVALID_GID, VALIDATOR);
         }
     }
 }
