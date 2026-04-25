@@ -353,7 +353,7 @@ class TiledTilesetMapperTest {
         @Test
         @DisplayName("emits a properties list of size 1 for a single source property")
         void propertiesListSize() {
-            final TileSet.Property prop = new TileSet.Property("solid", "bool", true);
+            final TileSet.Property prop = new TileSet.Property("solid", "bool", Boolean.TRUE);
             final TileSet input = tileSet(1, List.of(
                 new TileSet.TileData(0, WALL_TYPE, List.of(prop), null)
             ));
@@ -369,7 +369,7 @@ class TiledTilesetMapperTest {
         @Test
         @DisplayName("emitted property carries name, type, and value from the source")
         void propertyFieldsCopied() {
-            final TileSet.Property prop = new TileSet.Property("solid", "bool", true);
+            final TileSet.Property prop = new TileSet.Property("solid", "bool", Boolean.TRUE);
             final TileSet input = tileSet(1, List.of(
                 new TileSet.TileData(0, WALL_TYPE, List.of(prop), null)
             ));
