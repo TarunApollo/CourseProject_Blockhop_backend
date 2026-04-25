@@ -23,7 +23,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
  * Unit tests for the {@link Level} class.
  */
 @DisplayName(" In the Level class ")
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"PMD.AtLeastOneConstructor", "NullAway"})
 class LevelTests {
 
     /** The ID of a test user. */

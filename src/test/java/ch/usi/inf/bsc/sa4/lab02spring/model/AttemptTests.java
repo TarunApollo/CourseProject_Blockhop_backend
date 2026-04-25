@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
  * getters, and setCompleted.
  */
 @DisplayName(" In the Attempt class ")
+@SuppressWarnings("PMD.AtLeastOneConstructor")
 class AttemptTests {
 
     /** User ID used when building test fixtures. */
