@@ -5,14 +5,13 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /// Exports a level and tileset as a Tiled-compatible map payload.
 /// Delegates layer and tileset conversion to dedicated helpers.
-@SuppressWarnings("PMD.UseConcurrentHashMap")
 public final class LayerToTiledMapConverter {
     private static final Map<String, Object> MAP_METADATA = Map.of(
         "type", "map",
@@ -44,45 +43,46 @@ public final class LayerToTiledMapConverter {
         final Map<String, Object> objectLayer =
                 TiledLayerMapper.buildObjectLayer(level.getObjectLayer(), tileSetService);
         final Map<String, Object> tilesetMap = TiledTilesetMapper.buildTileset(tileSet);
-        final Map<String, Object> res = new LinkedHashMap<>();
-        res.putAll(buildMapMetadata(level));
-        res.put("layers", List.of(worldLayer, objectLayer));
-        res.put("tilesets", List.of(tilesetMap));
-        return res;
+        return Stream.concat(
+            buildMapMetadata(level).entrySet().stream(),
+            Stream.<Map.Entry<String, Object>>of(
+                Map.entry("layers", List.of(worldLayer, objectLayer)),
+                Map.entry("tilesets", List.of(tilesetMap))
+            )
+        ).collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private static Map<String, Object> buildMapMetadata(final Level level) {
-        final Map<String, Object> metadata = new LinkedHashMap<>(MAP_METADATA);
-        metadata.put("width", level.getWidth());
-        metadata.put("height", level.getHeight());
-        metadata.put("nextlayerid", 3);
-        metadata.put("nextobjectid", level.getObjectLayer().size() + 1);
-        metadata.put("infinite", Boolean.FALSE);
-        metadata.put("doorOpen", level.getClearCondition().condition() instanceof Condition.NoClearCondition);
-        metadata.put("properties", buildMapProperties(level));
-        return metadata;
+        return Stream.concat(
+            MAP_METADATA.entrySet().stream(),
+            Stream.<Map.Entry<String, Object>>of(
+                Map.entry("width", level.getWidth()),
+                Map.entry("height", level.getHeight()),
+                Map.entry("nextlayerid", 3),
+                Map.entry("nextobjectid", level.getObjectLayer().size() + 1),
+                Map.entry("infinite", Boolean.FALSE),
+                Map.entry("doorOpen", level.getClearCondition().condition() instanceof Condition.NoClearCondition),
+                Map.entry("properties", buildMapProperties(level))
+            )
+        ).collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private static List<Map<String, Object>> buildMapProperties(final Level level) {
-        final List<Map<String, Object>> properties = new ArrayList<>();
-
-        final Map<String, Object> clearConditionType = new LinkedHashMap<>();
-        clearConditionType.put("name", "ClearConditionType");
-        clearConditionType.put("type", "string");
-
-        String conditionType = "NONE";
-        if (level.getClearCondition().condition() instanceof Condition.SomeClearCondition some) {
-            conditionType = some.target().name();
-        }
-        clearConditionType.put("value", conditionType);
-        properties.add(clearConditionType);
-
-        final Map<String, Object> clearConditionAmount = new LinkedHashMap<>();
-        clearConditionAmount.put("name", "ClearConditionAmount");
-        clearConditionAmount.put("type", "int");
-        clearConditionAmount.put("value", level.getClearCondition().targetAmount());
-        properties.add(clearConditionAmount);
-
-        return properties;
+        final String conditionType =
+            level.getClearCondition().condition() instanceof Condition.SomeClearCondition some
+                ? some.target().name()
+                : "NONE";
+        return List.of(
+            Map.of(
+                "name", "ClearConditionType",
+                "type", "string",
+                "value", conditionType
+            ),
+            Map.of(
+                "name", "ClearConditionAmount",
+                "type", "int",
+                "value", level.getClearCondition().targetAmount()
+            )
+        );
     }
 }
