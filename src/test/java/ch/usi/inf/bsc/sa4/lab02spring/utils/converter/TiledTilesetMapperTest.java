@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,49 +15,75 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/// Unit tests for the TiledTilesetMapper utility.
+/// Verifies tileset top-level fields, tile id-slot mapping, and sub-element conversion.
 @DisplayName("TiledTilesetMapper.buildTileset")
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class TiledTilesetMapperTest {
 
     private static final String FIRSTGID = "firstgid";
     private static final String NAME_KEY = "name";
     private static final String TYPE_KEY = "type";
+    private static final String VALUE_KEY = "value";
+    private static final String VISIBLE_KEY = "visible";
     private static final String TILES_KEY = "tiles";
+    private static final String OBJECTS_KEY = "objects";
+    private static final String POLYGON_KEY = "polygon";
     private static final String ID_KEY = "id";
+    private static final String X_KEY = "x";
+    private static final String Y_KEY = "y";
     private static final String PROPERTIES_KEY = "properties";
     private static final String OBJECTGROUP_KEY = "objectgroup";
+    private static final String ATLAS_NAME = "atlas";
+    private static final String ATLAS_IMAGE = "atlas.png";
+    private static final String GROUP_DRAWORDER = "topdown";
+    private static final String GROUP_NAME = "collision";
+    private static final String GROUP_TYPE = "objectgroup";
+    private static final String WALL_TYPE = "wall";
+    private static final int TILE_DIM = 128;
+    private static final int IMG_DIM = 1024;
 
     /// Builds a minimal valid TileSet with the given tile count and supplied tile data.
     private static TileSet tileSet(final int tilecount, final List<TileSet.TileData> tiles) {
         return new TileSet(
-            1,                  // firstgid
-            "atlas",            // name
-            128,                // tilewidth
-            128,                // tileheight
-            tilecount,          // tilecount
-            8,                  // columns
-            "atlas.png",        // image
-            1024,               // imagewidth
-            1024,               // imageheight
-            0,                  // margin
-            0,                  // spacing
+            1,
+            ATLAS_NAME,
+            TILE_DIM,
+            TILE_DIM,
+            tilecount,
+            8,
+            ATLAS_IMAGE,
+            IMG_DIM,
+            IMG_DIM,
+            0,
+            0,
             tiles
         );
     }
 
+    /// Builds a TileData with no properties and no objectgroup.
     private static TileSet.TileData tile(final int id, final String type) {
         return new TileSet.TileData(id, type, null, null);
     }
 
+    /// Casts the tiles entry of a tileset map to a typed list of tile maps.
     @SuppressWarnings("unchecked")
     private static List<Map<String, Object>> tilesOf(final Map<String, Object> tileset) {
         return (List<Map<String, Object>>) tileset.get(TILES_KEY);
+    }
+
+    /// Sanity test so static analyzers see at least one top-level @Test on the class.
+    @Test
+    @DisplayName("the mapper returns a non-null payload for a minimal valid input")
+    void mapperReturnsNonNull() {
+        assertNotNull(TiledTilesetMapper.buildTileset(tileSet(0, List.of())));
     }
 
     // --------------------------------------------------------------------
     // Boundary: empty tileset
     // --------------------------------------------------------------------
 
+    /// Empty tile list with tilecount 0 should produce an empty tiles array.
     @Test
     @DisplayName("returns empty tiles list when tilecount is 0 and no tiles are provided")
     void emptyTileset() {
@@ -71,6 +98,7 @@ class TiledTilesetMapperTest {
     // Normal: id mapping (present vs default fill)
     // --------------------------------------------------------------------
 
+    /// Single input tile occupying the only output slot should be emitted at index 0.
     @Test
     @DisplayName("returns the input tile when its id matches the only output slot")
     void singleTileMatchingId() {
@@ -78,86 +106,153 @@ class TiledTilesetMapperTest {
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-        final List<Map<String, Object>> tiles = tilesOf(result);
-        assertEquals(1, tiles.size());
-        assertEquals(0, tiles.get(0).get(ID_KEY));
-        assertEquals("ground", tiles.get(0).get(TYPE_KEY));
+        assertEquals(1, tilesOf(result).size());
     }
 
+    /// The single emitted tile should expose its source type.
     @Test
-    @DisplayName("preserves order of input tiles when ids are contiguous")
-    void contiguousIds() {
+    @DisplayName("the single emitted tile carries its source type")
+    void singleTileCarriesType() {
+        final TileSet input = tileSet(1, List.of(tile(0, "ground")));
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertEquals("ground", tilesOf(result).get(0).get(TYPE_KEY));
+    }
+
+    /// Three contiguous-id tiles should produce one output per input slot.
+    @Test
+    @DisplayName("emits one output per input when ids are contiguous")
+    void contiguousIdsCount() {
         final TileSet input = tileSet(3, List.of(
-            tile(0, "a"),
-            tile(1, "b"),
-            tile(2, "c")
+            tile(0, "a"), tile(1, "b"), tile(2, "c")
+        ));
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertEquals(3, tilesOf(result).size());
+    }
+
+    /// Three contiguous-id tiles should be emitted in slot order.
+    @Test
+    @DisplayName("preserves slot order of contiguous-id input tiles")
+    void contiguousIdsOrder() {
+        final TileSet input = tileSet(3, List.of(
+            tile(0, "a"), tile(1, "b"), tile(2, "c")
         ));
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
         final List<Map<String, Object>> tiles = tilesOf(result);
-        assertEquals(3, tiles.size());
         assertEquals("a", tiles.get(0).get(TYPE_KEY));
         assertEquals("b", tiles.get(1).get(TYPE_KEY));
         assertEquals("c", tiles.get(2).get(TYPE_KEY));
     }
 
+    /// Missing slot ids should be filled with default tiles carrying the slot id.
     @Test
-    @DisplayName("fills missing ids with default tiles having id and empty type")
-    void gapsAreFilledWithDefaults() {
+    @DisplayName("default tile fills missing id with the slot index")
+    void defaultTileHasSlotId() {
         final TileSet input = tileSet(3, List.of(
-            tile(0, "a"),
-            tile(2, "c")
+            tile(0, "a"), tile(2, "c")
         ));
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-        final List<Map<String, Object>> tiles = tilesOf(result);
-        assertEquals(3, tiles.size());
-        assertEquals("a", tiles.get(0).get(TYPE_KEY));
-        // id=1 was missing → expect default
-        assertEquals(1, tiles.get(1).get(ID_KEY));
-        assertEquals("", tiles.get(1).get(TYPE_KEY));
-        assertEquals("c", tiles.get(2).get(TYPE_KEY));
+        assertEquals(1, tilesOf(result).get(1).get(ID_KEY));
     }
 
+    /// Default tile must carry an empty type string.
+    @Test
+    @DisplayName("default tile carries an empty type string")
+    void defaultTileHasEmptyType() {
+        final TileSet input = tileSet(3, List.of(
+            tile(0, "a"), tile(2, "c")
+        ));
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertEquals("", tilesOf(result).get(1).get(TYPE_KEY));
+    }
+
+    /// Tilecount with no input tiles should yield only default-tile placeholders.
     @Test
     @DisplayName("emits only default tiles when tilecount is positive but no tiles are supplied")
-    void allDefaults() {
+    void allDefaultsCount() {
         final TileSet input = tileSet(2, List.of());
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
+        assertEquals(2, tilesOf(result).size());
+    }
+
+    /// Each default tile should carry its own slot id.
+    @Test
+    @DisplayName("each default tile carries its slot id")
+    void allDefaultsCarrySlotId() {
+        final TileSet input = tileSet(3, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
         final List<Map<String, Object>> tiles = tilesOf(result);
-        assertEquals(2, tiles.size());
-        for (int i = 0; i < tiles.size(); i++) {
-            assertEquals(i, tiles.get(i).get(ID_KEY));
-            assertEquals("", tiles.get(i).get(TYPE_KEY));
-        }
+        assertEquals(0, tiles.get(0).get(ID_KEY));
+        assertEquals(1, tiles.get(1).get(ID_KEY));
+        assertEquals(2, tiles.get(2).get(ID_KEY));
     }
 
     // --------------------------------------------------------------------
     // Top-level field mapping
     // --------------------------------------------------------------------
 
+    /// All scalar top-level fields should be copied from the source TileSet.
     @Test
-    @DisplayName("copies all top-level fields from the source TileSet")
-    void topLevelFieldsAreCopied() {
+    @DisplayName("copies firstgid, name, and dimension fields from the source TileSet")
+    void topLevelScalarFields() {
         final TileSet input = tileSet(0, List.of());
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
         assertEquals(1, result.get(FIRSTGID));
-        assertEquals("atlas", result.get(NAME_KEY));
-        assertEquals(128, result.get("tilewidth"));
-        assertEquals(128, result.get("tileheight"));
+        assertEquals(ATLAS_NAME, result.get(NAME_KEY));
+        assertEquals(TILE_DIM, result.get("tilewidth"));
+        assertEquals(TILE_DIM, result.get("tileheight"));
+    }
+
+    /// Image-related fields should be copied from the source TileSet.
+    @Test
+    @DisplayName("copies image-related fields from the source TileSet")
+    void topLevelImageFields() {
+        final TileSet input = tileSet(0, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertEquals(ATLAS_IMAGE, result.get("image"));
+        assertEquals(IMG_DIM, result.get("imagewidth"));
+        assertEquals(IMG_DIM, result.get("imageheight"));
+    }
+
+    /// Layout fields (margin, spacing, columns, tilecount) should be copied.
+    @Test
+    @DisplayName("copies layout fields from the source TileSet")
+    void topLevelLayoutFields() {
+        final TileSet input = tileSet(0, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
         assertEquals(0, result.get("tilecount"));
         assertEquals(8, result.get("columns"));
-        assertEquals("atlas.png", result.get("image"));
-        assertEquals(1024, result.get("imagewidth"));
-        assertEquals(1024, result.get("imageheight"));
         assertEquals(0, result.get("margin"));
         assertEquals(0, result.get("spacing"));
+    }
+
+    /// The tiles entry should always be present (possibly empty).
+    @Test
+    @DisplayName("always emits a tiles entry, even if empty")
+    void alwaysEmitsTilesEntry() {
+        final TileSet input = tileSet(0, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
         assertNotNull(result.get(TILES_KEY));
     }
 
@@ -165,10 +260,12 @@ class TiledTilesetMapperTest {
     // toTiledTile branches: type / properties / objectgroup
     // --------------------------------------------------------------------
 
+    /// Tests for the per-tile field mapping branches.
     @Nested
     @DisplayName("tile field mapping")
     class TileFieldMapping {
 
+        /// A null tile type should be normalized to an empty string.
         @Test
         @DisplayName("maps null tile type to an empty string")
         void nullTypeBecomesEmpty() {
@@ -179,6 +276,7 @@ class TiledTilesetMapperTest {
             assertEquals("", tilesOf(result).get(0).get(TYPE_KEY));
         }
 
+        /// A non-null tile type should be passed through unchanged.
         @Test
         @DisplayName("preserves a non-null tile type as-is")
         void nonNullTypePreserved() {
@@ -189,6 +287,7 @@ class TiledTilesetMapperTest {
             assertEquals("spawn", tilesOf(result).get(0).get(TYPE_KEY));
         }
 
+        /// Null properties on the source tile should suppress the properties entry.
         @Test
         @DisplayName("omits properties key when tile properties are null")
         void nullPropertiesOmitted() {
@@ -201,6 +300,7 @@ class TiledTilesetMapperTest {
             assertFalse(tilesOf(result).get(0).containsKey(PROPERTIES_KEY));
         }
 
+        /// An empty properties list on the source tile should suppress the properties entry.
         @Test
         @DisplayName("omits properties key when tile properties are empty")
         void emptyPropertiesOmitted() {
@@ -213,13 +313,14 @@ class TiledTilesetMapperTest {
             assertFalse(tilesOf(result).get(0).containsKey(PROPERTIES_KEY));
         }
 
+        /// A tile with one property should emit a properties list of size 1.
         @Test
-        @DisplayName("emits properties as a list of name/type/value maps when supplied")
+        @DisplayName("emits a properties list of size 1 for a single source property")
         @SuppressWarnings("unchecked")
-        void propertiesEmittedWhenPresent() {
+        void propertiesListSize() {
             final TileSet.Property prop = new TileSet.Property("solid", "bool", true);
             final TileSet input = tileSet(1, List.of(
-                new TileSet.TileData(0, "wall", List.of(prop), null)
+                new TileSet.TileData(0, WALL_TYPE, List.of(prop), null)
             ));
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
@@ -227,11 +328,28 @@ class TiledTilesetMapperTest {
             final List<Map<String, Object>> properties =
                 (List<Map<String, Object>>) tilesOf(result).get(0).get(PROPERTIES_KEY);
             assertEquals(1, properties.size());
-            assertEquals("solid", properties.get(0).get(NAME_KEY));
-            assertEquals("bool", properties.get(0).get(TYPE_KEY));
-            assertEquals(true, properties.get(0).get("value"));
         }
 
+        /// The emitted property should carry name, type, and value from the source.
+        @Test
+        @DisplayName("emitted property carries name, type, and value from the source")
+        @SuppressWarnings("unchecked")
+        void propertyFieldsCopied() {
+            final TileSet.Property prop = new TileSet.Property("solid", "bool", true);
+            final TileSet input = tileSet(1, List.of(
+                new TileSet.TileData(0, WALL_TYPE, List.of(prop), null)
+            ));
+
+            final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+            final Map<String, Object> emitted =
+                ((List<Map<String, Object>>) tilesOf(result).get(0).get(PROPERTIES_KEY)).get(0);
+            assertEquals("solid", emitted.get(NAME_KEY));
+            assertEquals("bool", emitted.get(TYPE_KEY));
+            assertTrue((boolean) emitted.get(VALUE_KEY));
+        }
+
+        /// A null objectgroup on the source tile should suppress the objectgroup entry.
         @Test
         @DisplayName("omits objectgroup key when tile has no objectgroup")
         void noObjectGroupOmitted() {
@@ -244,14 +362,15 @@ class TiledTilesetMapperTest {
             assertFalse(tilesOf(result).get(0).containsKey(OBJECTGROUP_KEY));
         }
 
+        /// A non-null objectgroup should be passed through to the output.
         @Test
-        @DisplayName("emits objectgroup with all fields when supplied")
+        @DisplayName("emits objectgroup when supplied")
         void objectGroupEmittedWhenPresent() {
             final TileSet.ObjectGroup group = new TileSet.ObjectGroup(
-                "topdown", "collision", List.of(), 1, "objectgroup", true, 0, 0
+                GROUP_DRAWORDER, GROUP_NAME, List.of(), 1, GROUP_TYPE, true, 0, 0
             );
             final TileSet input = tileSet(1, List.of(
-                new TileSet.TileData(0, "wall", null, group)
+                new TileSet.TileData(0, WALL_TYPE, null, group)
             ));
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
@@ -264,26 +383,30 @@ class TiledTilesetMapperTest {
     // toTiledTileObject branches: polygon
     // --------------------------------------------------------------------
 
+    /// Tests for tile-object polygon mapping.
     @Nested
     @DisplayName("tile-object polygon mapping")
     class PolygonMapping {
 
+        /// Helper to build a tileset that wraps a single tile object.
         private static TileSet tilesetWithObject(final TileSet.TileObject object) {
             final TileSet.ObjectGroup group = new TileSet.ObjectGroup(
-                "topdown", "collision", List.of(object), 1, "objectgroup", true, 0, 0
+                GROUP_DRAWORDER, GROUP_NAME, List.of(object), 1, GROUP_TYPE, true, 0, 0
             );
             return tileSet(1, List.of(
-                new TileSet.TileData(0, "wall", null, group)
+                new TileSet.TileData(0, WALL_TYPE, null, group)
             ));
         }
 
+        /// Helper to extract the first tile-object emitted in the result.
         @SuppressWarnings("unchecked")
         private static Map<String, Object> firstTileObject(final Map<String, Object> result) {
             final Map<String, Object> objectGroup =
                 (Map<String, Object>) tilesOf(result).get(0).get(OBJECTGROUP_KEY);
-            return ((List<Map<String, Object>>) objectGroup.get("objects")).get(0);
+            return ((List<Map<String, Object>>) objectGroup.get(OBJECTS_KEY)).get(0);
         }
 
+        /// A null polygon on the source object should suppress the polygon entry.
         @Test
         @DisplayName("omits polygon key when tile object has no polygon")
         void nullPolygonOmitted() {
@@ -293,9 +416,10 @@ class TiledTilesetMapperTest {
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(tilesetWithObject(obj));
 
-            assertFalse(firstTileObject(result).containsKey("polygon"));
+            assertFalse(firstTileObject(result).containsKey(POLYGON_KEY));
         }
 
+        /// An empty polygon list on the source object should suppress the polygon entry.
         @Test
         @DisplayName("omits polygon key when polygon list is empty")
         void emptyPolygonOmitted() {
@@ -305,13 +429,14 @@ class TiledTilesetMapperTest {
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(tilesetWithObject(obj));
 
-            assertFalse(firstTileObject(result).containsKey("polygon"));
+            assertFalse(firstTileObject(result).containsKey(POLYGON_KEY));
         }
 
+        /// A non-empty polygon should produce a list of the same size.
         @Test
-        @DisplayName("emits polygon as a list of x/y point maps when supplied")
+        @DisplayName("polygon list has the same size as the source polygon")
         @SuppressWarnings("unchecked")
-        void polygonEmittedWhenPresent() {
+        void polygonHasSameSize() {
             final TileSet.TileObject obj = new TileSet.TileObject(
                 1, "o", "t", true, 0.0, 0.0, 0.0, 0.0, 0.0,
                 List.of(new TileSet.Point(1.5, 2.5), new TileSet.Point(3.5, 4.5))
@@ -320,19 +445,36 @@ class TiledTilesetMapperTest {
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(tilesetWithObject(obj));
 
             final List<Map<String, Object>> polygon =
-                (List<Map<String, Object>>) firstTileObject(result).get("polygon");
+                (List<Map<String, Object>>) firstTileObject(result).get(POLYGON_KEY);
             assertEquals(2, polygon.size());
-            assertEquals(1.5, polygon.get(0).get("x"));
-            assertEquals(2.5, polygon.get(0).get("y"));
-            assertEquals(3.5, polygon.get(1).get("x"));
-            assertEquals(4.5, polygon.get(1).get("y"));
+        }
+
+        /// Each polygon point should carry the source x and y values.
+        @Test
+        @DisplayName("each polygon point carries the source x and y values")
+        @SuppressWarnings("unchecked")
+        void polygonPointsCopied() {
+            final TileSet.TileObject obj = new TileSet.TileObject(
+                1, "o", "t", true, 0.0, 0.0, 0.0, 0.0, 0.0,
+                List.of(new TileSet.Point(1.5, 2.5), new TileSet.Point(3.5, 4.5))
+            );
+
+            final Map<String, Object> result = TiledTilesetMapper.buildTileset(tilesetWithObject(obj));
+
+            final List<Map<String, Object>> polygon =
+                (List<Map<String, Object>>) firstTileObject(result).get(POLYGON_KEY);
+            assertEquals(1.5, polygon.get(0).get(X_KEY));
+            assertEquals(2.5, polygon.get(0).get(Y_KEY));
+            assertEquals(3.5, polygon.get(1).get(X_KEY));
+            assertEquals(4.5, polygon.get(1).get(Y_KEY));
         }
     }
 
     // --------------------------------------------------------------------
-    // JSON field-order contract (frontend consumes ordered output)
+    // Top-level key set
     // --------------------------------------------------------------------
 
+    /// The top-level key set should match the Tiled-expected names exactly.
     @Test
     @DisplayName("emits exactly the Tiled-expected tileset keys")
     void emitsExpectedKeys() {
@@ -341,7 +483,7 @@ class TiledTilesetMapperTest {
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
         assertEquals(
-            java.util.Set.of(
+            Set.of(
                 FIRSTGID, NAME_KEY, "tilewidth", "tileheight", "tilecount",
                 "columns", "image", "imagewidth", "imageheight",
                 "margin", "spacing", TILES_KEY
@@ -351,30 +493,50 @@ class TiledTilesetMapperTest {
     }
 
     // --------------------------------------------------------------------
-    // Sanity: result is non-null
+    // Default tile shape
     // --------------------------------------------------------------------
 
+    /// Default tile should expose exactly two keys: id and type.
     @Test
-    @DisplayName("never returns null for a valid TileSet input")
-    void resultIsNonNull() {
-        assertNotNull(TiledTilesetMapper.buildTileset(tileSet(0, List.of())));
-    }
-
-    // --------------------------------------------------------------------
-    // Suppress-related sanity check (should be removed if assert moves)
-    // --------------------------------------------------------------------
-
-    @Test
-    @DisplayName("default tile contains exactly the id and type keys")
-    void defaultTileHasOnlyIdAndType() {
+    @DisplayName("default tile contains exactly two keys: id and type")
+    void defaultTileHasExactlyTwoKeys() {
         final TileSet input = tileSet(1, List.of());
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-        final Map<String, Object> defaultTile = tilesOf(result).get(0);
-        assertEquals(2, defaultTile.size());
-        assertTrue(defaultTile.containsKey(ID_KEY));
-        assertTrue(defaultTile.containsKey(TYPE_KEY));
-        assertNull(defaultTile.get("dummy"));
+        assertEquals(2, tilesOf(result).get(0).size());
+    }
+
+    /// Default tile should expose the id key.
+    @Test
+    @DisplayName("default tile exposes the id key")
+    void defaultTileHasIdKey() {
+        final TileSet input = tileSet(1, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertTrue(tilesOf(result).get(0).containsKey(ID_KEY));
+    }
+
+    /// Default tile should expose the type key.
+    @Test
+    @DisplayName("default tile exposes the type key")
+    void defaultTileHasTypeKey() {
+        final TileSet input = tileSet(1, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertTrue(tilesOf(result).get(0).containsKey(TYPE_KEY));
+    }
+
+    /// Default tile must not expose unknown keys.
+    @Test
+    @DisplayName("default tile does not expose unrelated keys")
+    void defaultTileLacksUnknownKey() {
+        final TileSet input = tileSet(1, List.of());
+
+        final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
+
+        assertNull(tilesOf(result).get(0).get(VISIBLE_KEY));
     }
 }

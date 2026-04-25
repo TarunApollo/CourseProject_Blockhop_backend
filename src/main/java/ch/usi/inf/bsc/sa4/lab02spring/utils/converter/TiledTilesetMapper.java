@@ -130,7 +130,7 @@ final class TiledTilesetMapper {
             Map.entry("id", object.id()),
             Map.entry(KEY_NAME, object.name()),
             Map.entry(KEY_TYPE, object.type()),
-            Map.entry("visible", object.visible()),
+            Map.entry(KEY_VISIBLE, object.visible()),
             Map.entry("rotation", object.rotation()),
             Map.entry("x", object.x()),
             Map.entry("y", object.y()),

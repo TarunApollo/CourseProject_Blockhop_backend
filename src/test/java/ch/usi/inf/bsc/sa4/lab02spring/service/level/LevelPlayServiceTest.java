@@ -1,11 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
-import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
@@ -38,14 +38,22 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/// Unit tests for the level play service.
+/// Verifies attempt submission rules and playable map generation.
 @DisplayName("LevelPlayService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LevelPlayServiceTest {
 
     private static final String LEVEL_ID = "level-1";
     private static final String OWNER_ID = "owner-1";
     private static final String OTHER_USER_ID = "other-1";
+    private static final String OWNER_NAME = "Mario";
+    private static final String OTHER_NAME = "Luigi";
+    private static final String LEVEL_TITLE = "Title";
+    private static final String LEVEL_DESC = "desc";
+    private static final String SUBMISSION_OK_MSG = "Successful level submission.";
+    private static final String LAYERS_KEY = "layers";
 
     @Mock private LevelRepository levelRepository;
     @Mock private UserService userService;
@@ -58,19 +66,20 @@ class LevelPlayServiceTest {
     private User owner;
     private User otherUser;
 
+    /// Initializes shared user fixtures before each test.
     @BeforeEach
     void setUp() {
-        owner = new User(OWNER_ID, "Mario");
-        otherUser = new User(OTHER_USER_ID, "Luigi");
+        owner = new User(OWNER_ID, OWNER_NAME);
+        otherUser = new User(OTHER_USER_ID, OTHER_NAME);
     }
 
+    /// Builds a basic level owned by the configured owner.
     private Level newLevel() {
-        return new Level("Title", "desc", owner);
+        return new Level(LEVEL_TITLE, LEVEL_DESC, owner);
     }
 
+    /// Builds a level with one start flag and one exit door so that publish() can succeed.
     private Level publishableLevel() {
-        // The level needs exactly one start flag and exit door to be publishable;
-        // construct one so calling publish() works in tests for published flows.
         final Level level = newLevel();
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
@@ -79,22 +88,41 @@ class LevelPlayServiceTest {
         return level;
     }
 
-    private AttemptDTO completedAttempt() {
-        return new AttemptDTO(Map.of(), new Position(0, 0), ZonedDateTime.now(), Duration.ofSeconds(10), true);
+    /// Builds a sample tileset suitable for play-pipeline tests.
+    private static TileSet emptyTileSet() {
+        return new TileSet(1, "atlas", 128, 128, 0, 8,
+            "atlas.png", 1024, 1024, 0, 0, List.of());
     }
 
-    private AttemptDTO unfinishedAttempt() {
-        return new AttemptDTO(Map.of(), new Position(0, 0), ZonedDateTime.now(), Duration.ofSeconds(10), false);
+    /// Builds an AttemptDTO marked as completed.
+    private static AttemptDTO completedAttempt() {
+        return new AttemptDTO(Map.of(), new Position(0, 0),
+            ZonedDateTime.now(), Duration.ofSeconds(10), true);
+    }
+
+    /// Builds an AttemptDTO marked as not completed.
+    private static AttemptDTO unfinishedAttempt() {
+        return new AttemptDTO(Map.of(), new Position(0, 0),
+            ZonedDateTime.now(), Duration.ofSeconds(10), false);
+    }
+
+    /// Sanity test so static analyzers see at least one top-level @Test on the class.
+    @Test
+    @DisplayName("test fixture initializes the service")
+    void serviceWired() {
+        assertNotNull(service);
     }
 
     // ====================================================================
     // getPlayableMap
     // ====================================================================
 
+    /// Tests for the getPlayableMap entry point.
     @Nested
     @DisplayName("getPlayableMap")
     class GetPlayableMap {
 
+        /// Missing level should surface as LevelNotFoundException.
         @Test
         @DisplayName("throws LevelNotFoundException when the level id does not exist")
         void levelNotFound() {
@@ -104,44 +132,40 @@ class LevelPlayServiceTest {
                 () -> service.getPlayableMap(owner, LEVEL_ID));
         }
 
+        /// Non-owner playing an unpublished level should be rejected.
         @Test
         @DisplayName("throws when the user is not allowed to play (unpublished and not owner)")
         void notAllowedToPlay() {
-            final Level level = newLevel(); // unpublished, owner is owner
+            final Level level = newLevel(); // unpublished
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
-            // ensurePlayable is called on the real Level; a non-owner playing an
-            // unpublished level should fail.
             assertThrows(RuntimeException.class,
                 () -> service.getPlayableMap(otherUser, LEVEL_ID));
         }
 
+        /// Published level should produce a Tiled map containing layers.
         @Test
-        @DisplayName("returns a non-null Tiled map for a published level")
+        @DisplayName("returns a Tiled map with layers for a published level")
         void returnsTiledMapForPublishedLevel() {
             final Level level = publishableLevel();
             level.validatePublishEligible(OWNER_ID);
             level.publish(OWNER_ID);
-            final TileSet tileSet = new TileSet(1, "atlas", 128, 128, 0, 8,
-                "atlas.png", 1024, 1024, 0, 0, List.of());
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            when(tileSetService.getTileSet()).thenReturn(tileSet);
+            when(tileSetService.getTileSet()).thenReturn(emptyTileSet());
             when(tileSetService.getObjectTileType(anyInt())).thenReturn("flag");
 
             final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
-            assertNotNull(result);
-            assertNotNull(result.get("layers"));
+            assertNotNull(result.get(LAYERS_KEY));
         }
 
+        /// Owner should always be able to play their own level even if unpublished.
         @Test
         @DisplayName("returns a Tiled map when the owner plays an unpublished level")
         void ownerCanPlayOwnUnpublishedLevel() {
             final Level level = newLevel();
-            final TileSet tileSet = new TileSet(1, "atlas", 128, 128, 0, 8,
-                "atlas.png", 1024, 1024, 0, 0, List.of());
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            when(tileSetService.getTileSet()).thenReturn(tileSet);
+            when(tileSetService.getTileSet()).thenReturn(emptyTileSet());
 
             final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
@@ -153,10 +177,12 @@ class LevelPlayServiceTest {
     // handleLevelSubmission
     // ====================================================================
 
+    /// Tests for the handleLevelSubmission entry point.
     @Nested
     @DisplayName("handleLevelSubmission")
     class HandleSubmission {
 
+        /// Missing user should surface as UserNotFoundException.
         @Test
         @DisplayName("throws UserNotFoundException when the user does not exist")
         void userNotFound() {
@@ -166,6 +192,7 @@ class LevelPlayServiceTest {
                 () -> service.handleLevelSubmission(LEVEL_ID, OWNER_ID, completedAttempt()));
         }
 
+        /// Missing level should surface as LevelNotFoundException.
         @Test
         @DisplayName("throws LevelNotFoundException when the level does not exist")
         void levelNotFound() {
@@ -176,9 +203,22 @@ class LevelPlayServiceTest {
                 () -> service.handleLevelSubmission(LEVEL_ID, OWNER_ID, completedAttempt()));
         }
 
+        /// A non-owner submitting to an unpublished level must throw.
         @Test
         @DisplayName("throws ForbiddenLevelActionException when a non-owner submits to an unpublished level")
-        void nonOwnerOnUnpublished() {
+        void nonOwnerOnUnpublishedThrows() {
+            final Level level = newLevel();
+            when(userService.getById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            assertThrows(ForbiddenLevelActionException.class,
+                () -> service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, completedAttempt()));
+        }
+
+        /// A rejected submission must not reach the attempt service.
+        @Test
+        @DisplayName("does not call submitAttempt when a non-owner submits to an unpublished level")
+        void nonOwnerOnUnpublishedSkipsSubmit() {
             final Level level = newLevel();
             when(userService.getById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
@@ -188,6 +228,7 @@ class LevelPlayServiceTest {
             verify(attemptService, never()).submitAttempt(any(), any(), any());
         }
 
+        /// Owner completing their own unpublished level should validate publish eligibility.
         @Test
         @DisplayName("triggers publish-eligibility validation when owner completes their own unpublished level")
         void ownerCompletesUnpublishedTriggersEligibility() {
@@ -199,9 +240,23 @@ class LevelPlayServiceTest {
             service.handleLevelSubmission(LEVEL_ID, OWNER_ID, dto);
 
             verify(levelPublishService).validateLevelPublishEligible(level, OWNER_ID);
+        }
+
+        /// Owner-completed submission still records the attempt.
+        @Test
+        @DisplayName("records the attempt when owner completes their own unpublished level")
+        void ownerCompletesUnpublishedRecordsAttempt() {
+            final Level level = publishableLevel();
+            final AttemptDTO dto = completedAttempt();
+            when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            service.handleLevelSubmission(LEVEL_ID, OWNER_ID, dto);
+
             verify(attemptService).submitAttempt(owner, level, dto);
         }
 
+        /// Unfinished attempt should skip the eligibility check.
         @Test
         @DisplayName("does not trigger eligibility check when owner submits an unfinished attempt")
         void ownerUnfinishedSkipsEligibility() {
@@ -211,13 +266,25 @@ class LevelPlayServiceTest {
 
             service.handleLevelSubmission(LEVEL_ID, OWNER_ID, unfinishedAttempt());
 
-            verify(levelPublishService, never())
-                .validateLevelPublishEligible(any(), any());
+            verify(levelPublishService, never()).validateLevelPublishEligible(any(), any());
+        }
+
+        /// Unfinished attempt should still be recorded.
+        @Test
+        @DisplayName("records the attempt even when owner submits an unfinished attempt")
+        void ownerUnfinishedRecordsAttempt() {
+            final Level level = newLevel();
+            when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            service.handleLevelSubmission(LEVEL_ID, OWNER_ID, unfinishedAttempt());
+
             verify(attemptService).submitAttempt(any(), any(), any());
         }
 
+        /// Already-published level should skip eligibility validation regardless of submitter.
         @Test
-        @DisplayName("does not trigger eligibility check when level is already published")
+        @DisplayName("does not trigger eligibility check when the level is already published")
         void publishedLevelSkipsEligibility() {
             final Level level = publishableLevel();
             level.validatePublishEligible(OWNER_ID);
@@ -227,11 +294,25 @@ class LevelPlayServiceTest {
 
             service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, completedAttempt());
 
-            verify(levelPublishService, never())
-                .validateLevelPublishEligible(any(), any());
+            verify(levelPublishService, never()).validateLevelPublishEligible(any(), any());
+        }
+
+        /// Already-published level should still record the attempt.
+        @Test
+        @DisplayName("records the attempt when the level is already published")
+        void publishedLevelRecordsAttempt() {
+            final Level level = publishableLevel();
+            level.validatePublishEligible(OWNER_ID);
+            level.publish(OWNER_ID);
+            when(userService.getById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, completedAttempt());
+
             verify(attemptService).submitAttempt(any(), any(), any());
         }
 
+        /// Successful submission should return the canonical success message.
         @Test
         @DisplayName("returns the success message after a valid submission")
         void returnsSuccessMessage() {
@@ -244,8 +325,7 @@ class LevelPlayServiceTest {
             final String result =
                 service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, completedAttempt());
 
-            assertEquals("Successful level submission.", result);
+            assertEquals(SUBMISSION_OK_MSG, result);
         }
     }
-
 }

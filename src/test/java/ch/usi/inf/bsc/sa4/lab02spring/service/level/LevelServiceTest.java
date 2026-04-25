@@ -24,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,14 +42,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/// Unit tests for the level CRUD service.
+/// Verifies create, clone, update, delete, and listing semantics.
 @DisplayName("LevelService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LevelServiceTest {
 
     private static final String LEVEL_ID = "level-1";
     private static final String OWNER_ID = "owner-1";
     private static final String OTHER_USER_ID = "other-1";
+    private static final String OWNER_NAME = "Mario";
+    private static final String OTHER_NAME = "Luigi";
+    private static final String DEFAULT_DESC = "desc";
+    private static final String DEFAULT_TITLE = "title";
 
     @Mock private LevelRepository levelRepository;
     @Mock private AttemptRepository attemptRepository;
@@ -57,18 +66,21 @@ class LevelServiceTest {
     private User owner;
     private User otherUser;
 
+    /// Initializes shared user fixtures before each test.
     @BeforeEach
     void setUp() {
-        owner = new User(OWNER_ID, "Mario");
-        otherUser = new User(OTHER_USER_ID, "Luigi");
+        owner = new User(OWNER_ID, OWNER_NAME);
+        otherUser = new User(OTHER_USER_ID, OTHER_NAME);
     }
 
+    /// Builds a level with the given title owned by the given creator.
     private Level newLevel(final String title, final User creator) {
-        return new Level(title, "desc", creator);
+        return new Level(title, DEFAULT_DESC, creator);
     }
 
+    /// Builds a level with one start flag and one exit door so publish() can succeed.
     private Level publishableLevel() {
-        final Level level = newLevel("title", owner);
+        final Level level = newLevel(DEFAULT_TITLE, owner);
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
         level.putObjectLayer(flag, new StartFlag(68, flag));
@@ -76,14 +88,23 @@ class LevelServiceTest {
         return level;
     }
 
+    /// Sanity test so static analyzers see at least one top-level @Test on the class.
+    @Test
+    @DisplayName("test fixture initializes the service")
+    void serviceWired() {
+        assertNotNull(service);
+    }
+
     // ====================================================================
     // createLevel
     // ====================================================================
 
+    /// Tests for the createLevel entry point.
     @Nested
     @DisplayName("createLevel")
     class CreateLevel {
 
+        /// Missing user should surface as UserNotFoundException.
         @Test
         @DisplayName("throws UserNotFoundException when the user does not exist")
         void userNotFound() {
@@ -93,19 +114,59 @@ class LevelServiceTest {
                 () -> service.createLevel(new CreateLevelDTO("t", "d"), OWNER_ID));
         }
 
+        /// Created level should expose the title from the DTO.
         @Test
-        @DisplayName("persists a new level created by the resolved user")
-        void createsAndSavesLevel() {
+        @DisplayName("the created level has the title from the DTO")
+        void createdLevelHasTitle() {
             when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
-            when(levelRepository.save(org.mockito.ArgumentMatchers.<Level>any()))
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Level result =
                 service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
 
             assertEquals("My Level", result.getTitle());
+        }
+
+        /// Created level should expose the description from the DTO.
+        @Test
+        @DisplayName("the created level has the description from the DTO")
+        void createdLevelHasDescription() {
+            when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+            final Level result =
+                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+
             assertEquals("Description", result.getDescription());
+        }
+
+        /// Created level should be owned by the resolved user.
+        @Test
+        @DisplayName("the created level is owned by the resolved user")
+        void createdLevelHasOwner() {
+            when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+            final Level result =
+                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+
             assertSame(owner, result.getCreator());
+        }
+
+        /// Created level should be persisted via the repository.
+        @Test
+        @DisplayName("persists the new level via the repository")
+        void createdLevelIsPersisted() {
+            when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+            final Level result =
+                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+
             verify(levelRepository).save(result);
         }
     }
@@ -114,10 +175,12 @@ class LevelServiceTest {
     // cloneLevel
     // ====================================================================
 
+    /// Tests for the cloneLevel entry point.
     @Nested
     @DisplayName("cloneLevel")
     class CloneLevel {
 
+        /// Missing source level should yield an empty Optional.
         @Test
         @DisplayName("returns empty when the source level does not exist")
         void sourceNotFound() {
@@ -127,29 +190,52 @@ class LevelServiceTest {
                 service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
             assertTrue(result.isEmpty());
-            verify(levelRepository, never()).save(org.mockito.ArgumentMatchers.<Level>any());
         }
 
+        /// Missing source level should not persist anything.
+        @Test
+        @DisplayName("does not persist when the source level does not exist")
+        void sourceNotFoundSkipsSave() {
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+
+            service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
+
+            verify(levelRepository, never()).save(ArgumentMatchers.<Level>any());
+        }
+
+        /// Source level not owned by the user should yield an empty Optional.
         @Test
         @DisplayName("returns empty when the source level is not owned by the requesting user")
         void notOwnedReturnsEmpty() {
-            final Level source = newLevel("title", owner);
+            final Level source = newLevel(DEFAULT_TITLE, owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
 
             final Optional<Level> result =
                 service.cloneLevel(new CloneLevelDTO(LEVEL_ID), otherUser);
 
             assertTrue(result.isEmpty());
-            verify(levelRepository, never()).save(org.mockito.ArgumentMatchers.<Level>any());
         }
 
+        /// Source level not owned by the user should not persist anything.
+        @Test
+        @DisplayName("does not persist when the source level is not owned by the requesting user")
+        void notOwnedSkipsSave() {
+            final Level source = newLevel(DEFAULT_TITLE, owner);
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
+
+            service.cloneLevel(new CloneLevelDTO(LEVEL_ID), otherUser);
+
+            verify(levelRepository, never()).save(ArgumentMatchers.<Level>any());
+        }
+
+        /// First clone of a level should be titled '<original> (2)'.
         @Test
         @DisplayName("clones with title 'X (2)' when no other clones exist")
         void firstCloneSuffix() {
             final Level source = newLevel("Adventure", owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
-            when(levelRepository.save(org.mockito.ArgumentMatchers.<Level>any()))
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Optional<Level> result =
@@ -159,6 +245,7 @@ class LevelServiceTest {
             assertEquals("Adventure (2)", result.get().getTitle());
         }
 
+        /// Subsequent clones should pick the next free index.
         @Test
         @DisplayName("picks the next free index when previous clones already exist")
         void picksNextAvailableSuffix() {
@@ -167,7 +254,7 @@ class LevelServiceTest {
             final Level clone3 = newLevel("Quest (3)", owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             when(levelRepository.findByCreator(owner)).thenReturn(List.of(source, clone2, clone3));
-            when(levelRepository.save(org.mockito.ArgumentMatchers.<Level>any()))
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Optional<Level> result =
@@ -176,13 +263,14 @@ class LevelServiceTest {
             assertEquals("Quest (4)", result.get().getTitle());
         }
 
+        /// Cloning a level that already has a (n) suffix should strip the suffix first.
         @Test
         @DisplayName("strips an existing (n) suffix from the source title before computing a new one")
         void stripsExistingSuffix() {
             final Level source = newLevel("Maze (5)", owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
-            when(levelRepository.save(org.mockito.ArgumentMatchers.<Level>any()))
+            when(levelRepository.save(ArgumentMatchers.<Level>any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Optional<Level> result =
@@ -197,10 +285,12 @@ class LevelServiceTest {
     // deleteLevel
     // ====================================================================
 
+    /// Tests for the deleteLevel entry point.
     @Nested
     @DisplayName("deleteLevel")
     class DeleteLevel {
 
+        /// Missing level should surface as LevelNotFoundException.
         @Test
         @DisplayName("throws LevelNotFoundException when the level does not exist")
         void levelNotFound() {
@@ -208,13 +298,35 @@ class LevelServiceTest {
 
             assertThrows(LevelNotFoundException.class,
                 () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
+        }
+
+        /// Missing level should skip the delete.
+        @Test
+        @DisplayName("does not delete when the level does not exist")
+        void levelNotFoundSkipsDelete() {
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+
+            assertThrows(LevelNotFoundException.class,
+                () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
             verify(levelRepository, never()).deleteById(LEVEL_ID);
         }
 
+        /// Non-owner cannot delete.
         @Test
         @DisplayName("throws ForbiddenUserException when a non-owner tries to delete")
         void nonOwnerCannotDelete() {
-            final Level level = newLevel("title", owner);
+            final Level level = newLevel(DEFAULT_TITLE, owner);
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            assertThrows(ForbiddenUserException.class,
+                () -> service.deleteLevel(OTHER_USER_ID, LEVEL_ID));
+        }
+
+        /// Non-owner failure should not delete.
+        @Test
+        @DisplayName("does not delete when a non-owner attempt fails")
+        void nonOwnerFailureSkipsDelete() {
+            final Level level = newLevel(DEFAULT_TITLE, owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             assertThrows(ForbiddenUserException.class,
@@ -222,6 +334,7 @@ class LevelServiceTest {
             verify(levelRepository, never()).deleteById(LEVEL_ID);
         }
 
+        /// Published levels cannot be deleted.
         @Test
         @DisplayName("throws LevelPublishedException when the level is published")
         void publishedLevelCannotBeDeleted() {
@@ -232,13 +345,27 @@ class LevelServiceTest {
 
             assertThrows(LevelPublishedException.class,
                 () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
+        }
+
+        /// Published-level failure should not delete.
+        @Test
+        @DisplayName("does not delete when the level is published")
+        void publishedLevelFailureSkipsDelete() {
+            final Level level = publishableLevel();
+            level.validatePublishEligible(OWNER_ID);
+            level.publish(OWNER_ID);
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            assertThrows(LevelPublishedException.class,
+                () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
             verify(levelRepository, never()).deleteById(LEVEL_ID);
         }
 
+        /// Owner can delete their unpublished level.
         @Test
         @DisplayName("deletes an unpublished level owned by the user")
         void ownerDeletesUnpublishedLevel() {
-            final Level level = newLevel("title", owner);
+            final Level level = newLevel(DEFAULT_TITLE, owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             service.deleteLevel(OWNER_ID, LEVEL_ID);
@@ -251,10 +378,12 @@ class LevelServiceTest {
     // getCreatedLevelsByUser
     // ====================================================================
 
+    /// Tests for the getCreatedLevelsByUser entry point.
     @Nested
     @DisplayName("getCreatedLevelsByUser")
     class GetCreatedLevels {
 
+        /// Empty repository should yield an empty list.
         @Test
         @DisplayName("returns an empty list when the user has no levels")
         void noLevels() {
@@ -263,24 +392,49 @@ class LevelServiceTest {
             assertEquals(List.of(), service.getCreatedLevelsByUser(owner));
         }
 
+        /// One DTO should be produced per source level.
         @Test
-        @DisplayName("returns one DTO per level with play and completion counts")
-        void mapsLevelsToDtosWithStats() {
+        @DisplayName("returns one DTO per source level")
+        void oneDtoPerLevel() {
             final Level a = newLevel("a", owner);
             final Level b = newLevel("b", owner);
             when(levelRepository.findByCreator(owner)).thenReturn(List.of(a, b));
-            when(attemptRepository.countByLevel(a)).thenReturn(10L);
-            when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
-            when(attemptRepository.countByLevel(b)).thenReturn(3L);
-            when(attemptRepository.countByLevelAndCompletedTrue(b)).thenReturn(1L);
+            when(attemptRepository.countByLevel(a)).thenReturn(0L);
+            when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(0L);
+            when(attemptRepository.countByLevel(b)).thenReturn(0L);
+            when(attemptRepository.countByLevelAndCompletedTrue(b)).thenReturn(0L);
 
             final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
 
             assertEquals(2, result.size());
+        }
+
+        /// DTOs should carry the per-level play count from the repository.
+        @Test
+        @DisplayName("populates each DTO with the level's play count")
+        void carriesPlayCount() {
+            final Level a = newLevel("a", owner);
+            when(levelRepository.findByCreator(owner)).thenReturn(List.of(a));
+            when(attemptRepository.countByLevel(a)).thenReturn(10L);
+            when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
+
+            final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
+
             assertEquals(10L, result.get(0).playCount());
+        }
+
+        /// DTOs should carry the per-level completion count from the repository.
+        @Test
+        @DisplayName("populates each DTO with the level's completion count")
+        void carriesCompleteCount() {
+            final Level a = newLevel("a", owner);
+            when(levelRepository.findByCreator(owner)).thenReturn(List.of(a));
+            when(attemptRepository.countByLevel(a)).thenReturn(10L);
+            when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
+
+            final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
+
             assertEquals(7L, result.get(0).completeCount());
-            assertEquals(3L, result.get(1).playCount());
-            assertEquals(1L, result.get(1).completeCount());
         }
     }
 
@@ -288,10 +442,12 @@ class LevelServiceTest {
     // updateLevelProperties
     // ====================================================================
 
+    /// Tests for the updateLevelProperties entry point.
     @Nested
     @DisplayName("updateLevelProperties")
     class UpdateLevelProperties {
 
+        /// Missing level should surface as LevelNotFoundException.
         @Test
         @DisplayName("throws LevelNotFoundException when the level does not exist")
         void levelNotFound() {
@@ -302,10 +458,11 @@ class LevelServiceTest {
                     new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty())));
         }
 
+        /// Non-owner cannot update.
         @Test
         @DisplayName("throws ForbiddenUserException when a non-owner tries to update")
         void nonOwnerCannotUpdate() {
-            final Level level = newLevel("title", owner);
+            final Level level = newLevel(DEFAULT_TITLE, owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             assertThrows(ForbiddenUserException.class,
@@ -313,6 +470,7 @@ class LevelServiceTest {
                     new UpdateLevelDTO(Optional.of("new"), Optional.empty(), Optional.empty())));
         }
 
+        /// Published levels cannot be updated.
         @Test
         @DisplayName("throws LevelPublishedException when updating a published level")
         void publishedCannotBeUpdated() {
@@ -326,9 +484,10 @@ class LevelServiceTest {
                     new UpdateLevelDTO(Optional.of("new"), Optional.empty(), Optional.empty())));
         }
 
+        /// A title-only DTO should update the title.
         @Test
-        @DisplayName("updates only fields present in the DTO")
-        void updatesOnlyPresentFields() {
+        @DisplayName("updates the title when a title is present in the DTO")
+        void updatesTitle() {
             final Level level = newLevel("old-title", owner);
             level.setDescription("old-desc");
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
@@ -338,13 +497,27 @@ class LevelServiceTest {
                 new UpdateLevelDTO(Optional.of("new-title"), Optional.empty(), Optional.empty()));
 
             assertEquals("new-title", level.getTitle());
-            // description unchanged
+        }
+
+        /// A title-only DTO must not touch other fields.
+        @Test
+        @DisplayName("leaves the description unchanged when only a title is present")
+        void titleOnlyLeavesDescription() {
+            final Level level = newLevel("old-title", owner);
+            level.setDescription("old-desc");
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+            when(levelRepository.save(level)).thenReturn(level);
+
+            service.updateLevelProperties(owner, LEVEL_ID,
+                new UpdateLevelDTO(Optional.of("new-title"), Optional.empty(), Optional.empty()));
+
             assertEquals("old-desc", level.getDescription());
         }
 
+        /// A full DTO should update the title.
         @Test
-        @DisplayName("updates title, description, and clearCondition when all are present")
-        void updatesAllFields() {
+        @DisplayName("updates the title when all fields are present")
+        void updatesAllFieldsTitle() {
             final Level level = newLevel("old-title", owner);
             final ClearCondition clearCondition = new ClearCondition(
                 new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
@@ -352,20 +525,51 @@ class LevelServiceTest {
             when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(
-                    Optional.of("new-title"),
-                    Optional.of("new-desc"),
+                new UpdateLevelDTO(Optional.of("new-title"), Optional.of("new-desc"),
                     Optional.of(clearCondition)));
 
             assertEquals("new-title", level.getTitle());
+        }
+
+        /// A full DTO should update the description.
+        @Test
+        @DisplayName("updates the description when all fields are present")
+        void updatesAllFieldsDescription() {
+            final Level level = newLevel("old-title", owner);
+            final ClearCondition clearCondition = new ClearCondition(
+                new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+            when(levelRepository.save(level)).thenReturn(level);
+
+            service.updateLevelProperties(owner, LEVEL_ID,
+                new UpdateLevelDTO(Optional.of("new-title"), Optional.of("new-desc"),
+                    Optional.of(clearCondition)));
+
             assertEquals("new-desc", level.getDescription());
+        }
+
+        /// A full DTO should update the clear condition.
+        @Test
+        @DisplayName("updates the clear condition when all fields are present")
+        void updatesAllFieldsClearCondition() {
+            final Level level = newLevel("old-title", owner);
+            final ClearCondition clearCondition = new ClearCondition(
+                new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+            when(levelRepository.save(level)).thenReturn(level);
+
+            service.updateLevelProperties(owner, LEVEL_ID,
+                new UpdateLevelDTO(Optional.of("new-title"), Optional.of("new-desc"),
+                    Optional.of(clearCondition)));
+
             assertEquals(clearCondition, level.getClearCondition());
         }
 
+        /// A successful update should reset the publish-eligible flag.
         @Test
         @DisplayName("invalidates publish eligibility after a successful update")
         void invalidatesPublishEligibility() {
-            final Level level = newLevel("title", owner);
+            final Level level = newLevel(DEFAULT_TITLE, owner);
             level.validatePublishEligible(OWNER_ID); // start eligible
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
@@ -373,13 +577,14 @@ class LevelServiceTest {
             service.updateLevelProperties(owner, LEVEL_ID,
                 new UpdateLevelDTO(Optional.of("x"), Optional.empty(), Optional.empty()));
 
-            assertEquals(false, level.isPublishEligible());
+            assertFalse(level.isPublishEligible());
         }
 
+        /// The saved level instance should be returned.
         @Test
         @DisplayName("returns the saved level")
         void returnsSavedLevel() {
-            final Level level = newLevel("title", owner);
+            final Level level = newLevel(DEFAULT_TITLE, owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
 
@@ -394,22 +599,36 @@ class LevelServiceTest {
     // getById
     // ====================================================================
 
+    /// Tests for the getById entry point.
     @Nested
     @DisplayName("getById")
     class GetById {
 
+        /// Existing level should be returned wrapped in an Optional.
         @Test
         @DisplayName("returns the level when present in the repository")
         void presentLevel() {
-            final Level level = newLevel("title", owner);
+            final Level level = newLevel(DEFAULT_TITLE, owner);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             final Optional<Level> result = service.getById(LEVEL_ID);
 
             assertTrue(result.isPresent());
+        }
+
+        /// The wrapped instance should be the exact one returned by the repository.
+        @Test
+        @DisplayName("wraps the same instance returned by the repository")
+        void wrapsRepositoryInstance() {
+            final Level level = newLevel(DEFAULT_TITLE, owner);
+            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            final Optional<Level> result = service.getById(LEVEL_ID);
+
             assertSame(level, result.get());
         }
 
+        /// Missing level should yield an empty Optional.
         @Test
         @DisplayName("returns empty when the level is missing")
         void missingLevel() {
