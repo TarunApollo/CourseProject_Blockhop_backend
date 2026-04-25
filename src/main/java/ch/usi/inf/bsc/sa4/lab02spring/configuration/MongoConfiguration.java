@@ -58,7 +58,6 @@ public class MongoConfiguration {
      * Converter to transform a Position to a String.
      */
     @WritingConverter
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     public static class PositionToStringConverter implements Converter<Position, String> {
         /**
          * Converts a Position to a compact String representation.
@@ -76,7 +75,6 @@ public class MongoConfiguration {
      * Converter to transform a String to a Position.
      */
     @ReadingConverter
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     public static class StringToPositionConverter implements Converter<String, Position> {
         /**
          * Converts a String representation back to a Position object.
@@ -97,7 +95,6 @@ public class MongoConfiguration {
      * Converter to transform a ZonedDateTime to a Date.
      */
     @WritingConverter
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
         /**
          * Converts a ZonedDateTime to a Date object.
@@ -115,7 +112,6 @@ public class MongoConfiguration {
      * Converter to transform a Date to a ZonedDateTime.
      */
     @ReadingConverter
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
         /**
          * Converts a Date to a ZonedDateTime object at UTC.
