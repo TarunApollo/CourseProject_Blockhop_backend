@@ -10,6 +10,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,16 +24,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 /**
  * Unit tests for the EditorService.
  * Goal: Test layer editing logic in isolation using Mockito.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The Editor Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway", "fb-contrib:FCBL_FIELD_COULD_BE_LOCAL" })
 /* default */ class EditorServiceTests {
 
     /** The mocked level repository. */
@@ -70,9 +68,6 @@ import static org.mockito.Mockito.*;
     /** Default username used in tests. */
     private static final String USER_NAME = "Mario";
 
-    /** The test user. */
-    private User testUser;
-
     /** The test level owned by testUser and unpublished. */
     private Level testLevel;
 
@@ -81,8 +76,8 @@ import static org.mockito.Mockito.*;
      */
     @BeforeEach
     /* default */ void setup() {
-        this.testUser = new User(USER_ID, USER_NAME);
-        this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, this.testUser);
+        final User testUser = new User(USER_ID, USER_NAME);
+        this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, testUser);
     }
 
     /**
@@ -90,7 +85,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when replacing the world layer")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class ReplaceWorldLayer {
 
         /**
@@ -100,10 +94,10 @@ import static org.mockito.Mockito.*;
         @DisplayName("should return the updated level when the tile list is empty")
         /* default */ void testReplaceWorldLayerEmpty() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
             final Level result = editorService.replaceWorldLayer(USER_ID, LEVEL_ID, dto);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
 
         /**
@@ -113,10 +107,10 @@ import static org.mockito.Mockito.*;
         @DisplayName("should save the level after replacing the world layer")
         /* default */ void testReplaceWorldLayerSaves() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
             editorService.replaceWorldLayer(USER_ID, LEVEL_ID, dto);
-            verify(levelRepository).save(testLevel);
+            Mockito.verify(levelRepository).save(testLevel);
         }
 
         /**
@@ -126,8 +120,8 @@ import static org.mockito.Mockito.*;
         @DisplayName("should throw LevelNotFoundException when level does not exist")
         /* default */ void testReplaceWorldLayerNotFound() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
-            assertThrows(LevelNotFoundException.class,
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(LevelNotFoundException.class,
                     () -> editorService.replaceWorldLayer(USER_ID, LEVEL_ID, dto));
         }
 
@@ -139,11 +133,11 @@ import static org.mockito.Mockito.*;
         /* default */ void testReplaceWorldLayerWithTile() {
             final EditorLevelDTO tile = EditorLevelDTO.create(new Position(0, 0), 1);
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(tileSetService.isGroundGID(1)).thenReturn(true);
-            when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isGroundGID(1)).thenReturn(Boolean.TRUE);
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
             final Level result = editorService.replaceWorldLayer(USER_ID, LEVEL_ID, dto);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
     }
 
@@ -152,20 +146,20 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when replacing the object layer")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class ReplaceObjectLayer {
 
         /**
-         * Verifies that an empty object list replaces the object layer and returns the level.
+         * Verifies that an empty object list replaces the object layer
+         * and returns the level.
          */
         @Test
         @DisplayName("should return the updated level when the object list is empty")
         /* default */ void testReplaceObjectLayerEmpty() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
             final Level result = editorService.replaceObjectLayer(USER_ID, LEVEL_ID, dto);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
 
         /**
@@ -175,10 +169,10 @@ import static org.mockito.Mockito.*;
         @DisplayName("should save the level after replacing the object layer")
         /* default */ void testReplaceObjectLayerSaves() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
             editorService.replaceObjectLayer(USER_ID, LEVEL_ID, dto);
-            verify(levelRepository).save(testLevel);
+            Mockito.verify(levelRepository).save(testLevel);
         }
 
         /**
@@ -188,8 +182,8 @@ import static org.mockito.Mockito.*;
         @DisplayName("should throw LevelNotFoundException when level does not exist")
         /* default */ void testReplaceObjectLayerNotFound() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
-            assertThrows(LevelNotFoundException.class,
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(LevelNotFoundException.class,
                     () -> editorService.replaceObjectLayer(USER_ID, LEVEL_ID, dto));
         }
     }
@@ -199,7 +193,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when updating object properties")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class UpdateObjectProperties {
 
         /**
@@ -209,12 +202,12 @@ import static org.mockito.Mockito.*;
         @DisplayName("should update box content and return the level")
         /* default */ void testUpdateBoxPropertiesReturnsLevel() {
             final Level mockLevel = Mockito.mock(Level.class);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
-            when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(
                     new Position(0, 0), new Content.NoContent());
             final Level result = editorService.updateObjectProperties(USER_ID, LEVEL_ID, dto);
-            assertEquals(mockLevel, result);
+            Assertions.assertEquals(mockLevel, result);
         }
 
         /**
@@ -224,12 +217,12 @@ import static org.mockito.Mockito.*;
         @DisplayName("should save the level after updating object properties")
         /* default */ void testUpdateBoxPropertiesSaves() {
             final Level mockLevel = Mockito.mock(Level.class);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
-            when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(
                     new Position(0, 0), new Content.NoContent());
             editorService.updateObjectProperties(USER_ID, LEVEL_ID, dto);
-            verify(levelRepository).save(mockLevel);
+            Mockito.verify(levelRepository).save(mockLevel);
         }
 
         /**
@@ -238,10 +231,10 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should throw LevelNotFoundException when level does not exist")
         /* default */ void testUpdateObjectPropertiesNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(
                     new Position(0, 0), new Content.NoContent());
-            assertThrows(LevelNotFoundException.class,
+            Assertions.assertThrows(LevelNotFoundException.class,
                     () -> editorService.updateObjectProperties(USER_ID, LEVEL_ID, dto));
         }
     }
