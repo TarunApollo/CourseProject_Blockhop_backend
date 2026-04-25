@@ -33,15 +33,22 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LevelAggregationServiceTest {
 
+    /// Default level description used in fixtures.
     private static final String DESC = "desc";
+    /// Default creator display name used in fixtures.
     private static final String CREATOR_NAME = "Mario";
+    /// Default creator id used in fixtures.
     private static final String CREATOR_ID = "user-1";
 
+    /// Mocked level repository providing per-test fixtures.
     @Mock private LevelRepository levelRepository;
+    /// Mocked attempt repository providing aggregation counts.
     @Mock private AttemptRepository attemptRepository;
 
+    /// Service under test, with mocks injected.
     @InjectMocks private LevelAggregationService service;
 
+    /// Shared creator used as the owner of fixture levels.
     private User creator;
 
     /// Initializes the level creator used by all tests.

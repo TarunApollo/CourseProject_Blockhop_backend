@@ -21,26 +21,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class TiledTilesetMapperTest {
 
+    /// JSON key for the Tiled `firstgid` field.
     private static final String FIRSTGID = "firstgid";
+    /// JSON key for the Tiled `name` field.
     private static final String NAME_KEY = "name";
+    /// JSON key for the Tiled `type` field.
     private static final String TYPE_KEY = "type";
+    /// JSON key for the Tiled `value` field on properties.
     private static final String VALUE_KEY = "value";
+    /// JSON key for the Tiled `visible` field.
     private static final String VISIBLE_KEY = "visible";
+    /// JSON key for the Tiled `tiles` array on tilesets.
     private static final String TILES_KEY = "tiles";
+    /// JSON key for the Tiled `objects` array on object groups.
     private static final String OBJECTS_KEY = "objects";
+    /// JSON key for the Tiled `polygon` array on tile objects.
     private static final String POLYGON_KEY = "polygon";
+    /// JSON key for the Tiled `id` field.
     private static final String ID_KEY = "id";
+    /// JSON key for the Tiled `x` field.
     private static final String X_KEY = "x";
+    /// JSON key for the Tiled `y` field.
     private static final String Y_KEY = "y";
+    /// JSON key for the Tiled `properties` array on tiles.
     private static final String PROPERTIES_KEY = "properties";
+    /// JSON key for the Tiled `objectgroup` field on tiles.
     private static final String OBJECTGROUP_KEY = "objectgroup";
+    /// Default tileset name used by fixtures.
     private static final String ATLAS_NAME = "atlas";
+    /// Default tileset image path used by fixtures.
     private static final String ATLAS_IMAGE = "atlas.png";
+    /// Default object-group draw order used by fixtures.
     private static final String GROUP_DRAWORDER = "topdown";
+    /// Default object-group display name used by fixtures.
     private static final String GROUP_NAME = "collision";
+    /// Default object-group type used by fixtures.
     private static final String GROUP_TYPE = "objectgroup";
+    /// Sample tile-type string used in fixtures.
     private static final String WALL_TYPE = "wall";
+    /// Default tile pixel dimension used by fixtures.
     private static final int TILE_DIM = 128;
+    /// Default tileset image pixel dimension used by fixtures.
     private static final int IMG_DIM = 1024;
 
     /// Builds a minimal valid TileSet with the given tile count and supplied tile data.

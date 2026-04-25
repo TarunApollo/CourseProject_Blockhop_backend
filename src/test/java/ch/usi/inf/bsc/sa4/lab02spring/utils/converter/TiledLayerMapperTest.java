@@ -35,29 +35,53 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class TiledLayerMapperTest {
 
+    /// Pixel size of a Tiled tile.
     private static final int TILE_SIZE = 128;
+    /// JSON key for the Tiled `name` field.
     private static final String NAME_KEY = "name";
+    /// JSON key for the Tiled `type` field.
     private static final String TYPE_KEY = "type";
+    /// JSON key for the Tiled `visible` field.
     private static final String VISIBLE_KEY = "visible";
+    /// JSON key for the Tiled `objects` array on object layers.
     private static final String OBJECTS_KEY = "objects";
+    /// JSON key for the Tiled `properties` array on tile objects.
     private static final String PROPERTIES_KEY = "properties";
+    /// JSON key for the Tiled `data` array on tile layers.
     private static final String DATA_KEY = "data";
+    /// JSON key for the Tiled `id` field.
     private static final String ID_KEY = "id";
+    /// JSON key for the Tiled `gid` field.
     private static final String GID_KEY = "gid";
+    /// JSON key for the Tiled `width` field.
     private static final String WIDTH_KEY = "width";
+    /// JSON key for the Tiled `height` field.
     private static final String HEIGHT_KEY = "height";
+    /// JSON key for the Tiled `opacity` field.
     private static final String OPACITY_KEY = "opacity";
+    /// JSON key for the Tiled `x` field.
     private static final String X_KEY = "x";
+    /// JSON key for the Tiled `y` field.
     private static final String Y_KEY = "y";
+    /// JSON key for the Tiled `rotation` field.
     private static final String ROTATION_KEY = "rotation";
+    /// JSON key for the Tiled `draworder` field on object layers.
     private static final String DRAWORDER_KEY = "draworder";
+    /// JSON key for the Tiled `value` field on properties.
     private static final String VALUE_KEY = "value";
+    /// Sample object-tile type used by start-flag fixtures.
     private static final String FLAG_TYPE = "flag";
+    /// Sample object-tile type used by box fixtures.
     private static final String BOX_TYPE = "box";
+    /// Tiled-layer name produced for the world layer.
     private static final String WORLD_LAYER_NAME = "World";
+    /// Tiled-layer name produced for the object layer.
     private static final String OBJECT_LAYER_NAME = "QMLayer";
+    /// Tiled `type` value emitted for tile layers.
     private static final String TILELAYER_TYPE = "tilelayer";
+    /// Tiled `type` value emitted for object layers.
     private static final String OBJECTGROUP_TYPE = "objectgroup";
+    /// Tiled `draworder` value emitted on object layers.
     private static final String DRAWORDER_TOPDOWN = "topdown";
 
     /// Casts the objects entry of an object-layer map to a typed list of object maps.
@@ -333,6 +357,7 @@ class TiledLayerMapperTest {
     @ExtendWith(MockitoExtension.class)
     class BuildObjectLayer {
 
+        /// Mocked tileset service used to look up object-tile types.
         @Mock private TileSetService tileSetService;
 
         /// Empty input should yield an empty objects list.

@@ -37,19 +37,30 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LevelPublishServiceTest {
 
+    /// Identifier of the level under test.
     private static final String LEVEL_ID = "level-1";
+    /// Identifier of the level owner used by fixtures.
     private static final String OWNER_ID = "owner-1";
+    /// Identifier of a non-owner user used by fixtures.
     private static final String OTHER_USER_ID = "other-1";
+    /// Display name of the owner user.
     private static final String OWNER_NAME = "Mario";
+    /// Display name of the non-owner user.
     private static final String OTHER_NAME = "Luigi";
+    /// Default level title used by fixtures.
     private static final String LEVEL_TITLE = "title";
+    /// Default level description used by fixtures.
     private static final String LEVEL_DESC = "desc";
 
+    /// Mocked level repository providing per-test fixtures.
     @Mock private LevelRepository levelRepository;
+    /// Mocked user repository for verifying user existence.
     @Mock private UserRepository userRepository;
 
+    /// Service under test, with mocks injected.
     @InjectMocks private LevelPublishService service;
 
+    /// Shared owner user fixture.
     private User owner;
 
     /// Initializes the shared owner fixture before each test.

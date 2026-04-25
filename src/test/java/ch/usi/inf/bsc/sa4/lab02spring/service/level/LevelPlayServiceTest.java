@@ -45,25 +45,42 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LevelPlayServiceTest {
 
+    /// Identifier of the level under test.
     private static final String LEVEL_ID = "level-1";
+    /// Identifier of the level owner used by fixtures.
     private static final String OWNER_ID = "owner-1";
+    /// Identifier of a non-owner user used by fixtures.
     private static final String OTHER_USER_ID = "other-1";
+    /// Display name of the owner user.
     private static final String OWNER_NAME = "Mario";
+    /// Display name of the non-owner user.
     private static final String OTHER_NAME = "Luigi";
+    /// Default level title used by fixtures.
     private static final String LEVEL_TITLE = "Title";
+    /// Default level description used by fixtures.
     private static final String LEVEL_DESC = "desc";
+    /// Canonical success message returned by handleLevelSubmission.
     private static final String SUBMISSION_OK_MSG = "Successful level submission.";
+    /// JSON key for the layers entry of a Tiled map.
     private static final String LAYERS_KEY = "layers";
 
+    /// Mocked level repository providing per-test fixtures.
     @Mock private LevelRepository levelRepository;
+    /// Mocked user service for resolving submitting users.
     @Mock private UserService userService;
+    /// Mocked attempt service that records submitted attempts.
     @Mock private AttemptService attemptService;
+    /// Mocked tileset service used by playable map generation.
     @Mock private TileSetService tileSetService;
+    /// Mocked publish service that validates publish eligibility.
     @Mock private LevelPublishService levelPublishService;
 
+    /// Service under test, with mocks injected.
     @InjectMocks private LevelPlayService service;
 
+    /// Shared owner user fixture.
     private User owner;
+    /// Shared non-owner user fixture.
     private User otherUser;
 
     /// Initializes shared user fixtures before each test.

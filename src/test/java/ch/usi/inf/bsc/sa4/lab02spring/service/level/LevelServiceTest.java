@@ -49,21 +49,34 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LevelServiceTest {
 
+    /// Identifier of the level under test.
     private static final String LEVEL_ID = "level-1";
+    /// Identifier of the level owner used by fixtures.
     private static final String OWNER_ID = "owner-1";
+    /// Identifier of a non-owner user used by fixtures.
     private static final String OTHER_USER_ID = "other-1";
+    /// Display name of the owner user.
     private static final String OWNER_NAME = "Mario";
+    /// Display name of the non-owner user.
     private static final String OTHER_NAME = "Luigi";
+    /// Default level description used by fixtures.
     private static final String DEFAULT_DESC = "desc";
+    /// Default level title used by fixtures.
     private static final String DEFAULT_TITLE = "title";
 
+    /// Mocked level repository providing per-test fixtures.
     @Mock private LevelRepository levelRepository;
+    /// Mocked attempt repository for play and completion counts.
     @Mock private AttemptRepository attemptRepository;
+    /// Mocked user service for resolving the level creator.
     @Mock private UserService userService;
 
+    /// Service under test, with mocks injected.
     @InjectMocks private LevelService service;
 
+    /// Shared owner user fixture.
     private User owner;
+    /// Shared non-owner user fixture.
     private User otherUser;
 
     /// Initializes shared user fixtures before each test.

@@ -33,30 +33,54 @@ import static org.mockito.Mockito.lenient;
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class LayerToTiledMapConverterTest {
 
+    /// JSON key for the Tiled `name` field.
     private static final String NAME_KEY = "name";
+    /// JSON key for the Tiled `type` field.
     private static final String TYPE_KEY = "type";
+    /// JSON key for the Tiled `value` field on properties.
     private static final String VALUE_KEY = "value";
+    /// JSON key for the Tiled `layers` array.
     private static final String LAYERS_KEY = "layers";
+    /// JSON key for the Tiled `tilesets` array.
     private static final String TILESETS_KEY = "tilesets";
+    /// JSON key for the Tiled `properties` array on the map root.
     private static final String PROPERTIES_KEY = "properties";
+    /// JSON key for the Tiled `width` field.
     private static final String WIDTH_KEY = "width";
+    /// JSON key for the Tiled `height` field.
     private static final String HEIGHT_KEY = "height";
+    /// JSON key for the custom `doorOpen` flag emitted on the map root.
     private static final String DOOR_OPEN_KEY = "doorOpen";
+    /// JSON key for the Tiled `infinite` field.
     private static final String INFINITE_KEY = "infinite";
+    /// JSON key for the Tiled `nextlayerid` field.
     private static final String NEXT_LAYER_ID_KEY = "nextlayerid";
+    /// JSON key for the Tiled `nextobjectid` field.
     private static final String NEXT_OBJECT_ID_KEY = "nextobjectid";
+    /// Property name carrying the level's clear-condition type.
     private static final String CLEAR_CONDITION_TYPE_NAME = "ClearConditionType";
+    /// Property name carrying the level's clear-condition amount.
     private static final String CLEAR_CONDITION_AMOUNT_NAME = "ClearConditionAmount";
+    /// Property value emitted when the level has a NoClearCondition.
     private static final String NONE_VALUE = "NONE";
+    /// Default tileset name used by fixtures.
     private static final String ATLAS_NAME = "atlas";
+    /// Sample object-tile type used by start-flag fixtures.
     private static final String FLAG_TYPE = "flag";
+    /// Default level title used by fixtures.
     private static final String LEVEL_TITLE = "title";
+    /// Default level description used by fixtures.
     private static final String LEVEL_DESC = "description";
+    /// Identifier of the level owner used by fixtures.
     private static final String OWNER_ID = "user-1";
+    /// Display name of the level owner used by fixtures.
     private static final String OWNER_NAME = "Mario";
+    /// Default tile pixel dimension used by fixtures.
     private static final int TILE_DIM = 128;
+    /// Default tileset image pixel dimension used by fixtures.
     private static final int IMG_DIM = 1024;
 
+    /// Mocked tileset service used by the conversion pipeline.
     @Mock private TileSetService tileSetService;
 
     /// Builds a default level for tests.
