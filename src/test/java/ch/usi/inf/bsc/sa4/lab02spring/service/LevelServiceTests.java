@@ -25,7 +25,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,7 +41,7 @@ import java.util.Optional;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The Level Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway", "PMD.ExcessiveImports", "fb-contrib:FCBL_FIELD_COULD_BE_LOCAL" })
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway", "PMD.ExcessiveImports" })
 /* default */ class LevelServiceTests {
 
     /** The mocked level repository. */
@@ -61,28 +60,7 @@ import java.util.Optional;
     @Mock
     private AttemptRepository attemptRepository;
 
-    /** The mocked level thumbnail repository. */
-    @Mock
-    private LevelThumbnailRepository levelThumbnailRepository;
-
-    /** The mocked thumbnail repository. */
-    @Mock
-    private ThumbnailRepository thumbnailRepository;
-
-    /** The mocked attempt service. */
-    @Mock
-    private AttemptService attemptService;
-
-    /** The mocked tileset service. */
-    @Mock
-    private TileSetService tileSetService;
-
-    /** The mocked layer converter. */
-    @Mock
-    private LayerToTiledMapConverter layerToTiledMapConverter;
-
     /** The service under test. */
-    @InjectMocks
     private LevelService levelService;
 
     /** Default user ID used in tests. */
@@ -103,6 +81,9 @@ import java.util.Optional;
     /** Expected success message from submitAttempt. */
     private static final String SUCCESS_MSG = "Successful level submission.";
 
+    /** Shared display name for level-not-found tests. */
+    private static final String LEVEL_NOT_FOUND_DISPLAY = "should throw LevelNotFoundException when level does not exist";
+
     /** The test user. */
     private User testUser;
 
@@ -116,6 +97,16 @@ import java.util.Optional;
     /* default */ void setup() {
         this.testUser = new User(USER_ID, USER_NAME);
         this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, this.testUser);
+        this.levelService = new LevelService(
+                levelRepository,
+                userService,
+                attemptRepository,
+                Mockito.mock(LevelThumbnailRepository.class),
+                Mockito.mock(ThumbnailRepository.class),
+                userRepository,
+                Mockito.mock(AttemptService.class),
+                Mockito.mock(TileSetService.class),
+                Mockito.mock(LayerToTiledMapConverter.class));
     }
 
     /**
@@ -207,7 +198,7 @@ import java.util.Optional;
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testDeleteLevelNotFound() {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
             Assertions.assertThrows(LevelNotFoundException.class, () -> levelService.deleteLevel(USER_ID, LEVEL_ID));
@@ -238,7 +229,7 @@ import java.util.Optional;
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testUpdateLevelNotFound() {
             final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
@@ -286,7 +277,7 @@ import java.util.Optional;
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testPublishLevelNotFound() {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
             Assertions.assertThrows(LevelNotFoundException.class, () -> levelService.publish(USER_ID, LEVEL_ID));
@@ -451,7 +442,7 @@ import java.util.Optional;
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testSubmitAttemptLevelNotFound() {
             Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());

@@ -16,7 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,7 +29,7 @@ import java.util.Optional;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The Editor Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway", "fb-contrib:FCBL_FIELD_COULD_BE_LOCAL" })
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
 /* default */ class EditorServiceTests {
 
     /** The mocked level repository. */
@@ -41,16 +40,7 @@ import java.util.Optional;
     @Mock
     private TileSetService tileSetService;
 
-    /** The mocked game object factory. */
-    @Mock
-    private GameObjectFactory gameObjectFactory;
-
-    /** The mocked level service. */
-    @Mock
-    private LevelService levelService;
-
     /** The service under test. */
-    @InjectMocks
     private EditorService editorService;
 
     /** Default user ID used in tests. */
@@ -78,6 +68,11 @@ import java.util.Optional;
     /* default */ void setup() {
         final User testUser = new User(USER_ID, USER_NAME);
         this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, testUser);
+        this.editorService = new EditorService(
+                levelRepository,
+                tileSetService,
+                Mockito.mock(GameObjectFactory.class),
+                Mockito.mock(LevelService.class));
     }
 
     /**
