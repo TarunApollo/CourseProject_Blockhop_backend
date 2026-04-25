@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /// Maps level layers into Tiled-compatible layer structures.
+@SuppressWarnings("PMD.OnlyOneReturn")
 final class TiledLayerMapper {
     /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;
@@ -23,6 +24,10 @@ final class TiledLayerMapper {
     private static final String KEY_TYPE = "type";
     /// JSON key for the Tiled `visible` field.
     private static final String KEY_VISIBLE = "visible";
+    /// JSON key for the Tiled `width` field.
+    private static final String KEY_WIDTH = "width";
+    /// JSON key for the Tiled `height` field.
+    private static final String KEY_HEIGHT = "height";
 
     private TiledLayerMapper() {
     }
@@ -51,8 +56,8 @@ final class TiledLayerMapper {
             "id", 1,
             KEY_NAME, "World",
             KEY_TYPE, "tilelayer",
-            "width", width,
-            "height", height,
+            KEY_WIDTH, width,
+            KEY_HEIGHT, height,
             "opacity", 1,
             KEY_VISIBLE, Boolean.TRUE,
             "x", 0,
@@ -100,8 +105,8 @@ final class TiledLayerMapper {
                 Map.entry("gid", gameObject.gid()),
                 Map.entry("x", x),
                 Map.entry("y", y),
-                Map.entry("width", TILE_SIZE),
-                Map.entry("height", TILE_SIZE),
+                Map.entry(KEY_WIDTH, TILE_SIZE),
+                Map.entry(KEY_HEIGHT, TILE_SIZE),
                 Map.entry(KEY_VISIBLE, Boolean.TRUE),
                 Map.entry("rotation", 0),
                 Map.entry(KEY_NAME, ""),

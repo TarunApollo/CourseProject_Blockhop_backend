@@ -2,27 +2,31 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /// Maps tileset domain objects into Tiled-compatible structures.
+@SuppressWarnings("PMD.OnlyOneReturn")
 final class TiledTilesetMapper {
     /// JSON key for the Tiled `name` field.
     private static final String KEY_NAME = "name";
     /// JSON key for the Tiled `type` field.
     private static final String KEY_TYPE = "type";
+    /// JSON key for the Tiled `visible` field.
+    private static final String KEY_VISIBLE = "visible";
 
     private TiledTilesetMapper() {
     }
 
     /// Package-private helper that exports the tileset in Tiled format.
     /* package */ static Map<String, Object> buildTileset(final TileSet tileSet) {
-        final Map<Integer, Map<String, Object>> tilesById = new HashMap<>(tileSet.tiles().size());
-        for (final TileSet.TileData tile : tileSet.tiles()) {
-            tilesById.put(tile.id(), toTiledTile(tile));
-        }
+        final Map<Integer, Map<String, Object>> tilesById = tileSet.tiles().stream()
+            .collect(Collectors.toUnmodifiableMap(
+                TileSet.TileData::id,
+                TiledTilesetMapper::toTiledTile
+            ));
 
         final List<Map<String, Object>> tiles = IntStream.range(0, tileSet.tilecount())
             .<Map<String, Object>>mapToObj(i -> {
@@ -97,7 +101,7 @@ final class TiledTilesetMapper {
             KEY_NAME, objectGroup.name(),
             "opacity", objectGroup.opacity(),
             KEY_TYPE, objectGroup.type(),
-            "visible", objectGroup.visible(),
+            KEY_VISIBLE, objectGroup.visible(),
             "x", objectGroup.x(),
             "y", objectGroup.y(),
             "objects", objects
@@ -113,7 +117,7 @@ final class TiledTilesetMapper {
                 Map.entry("id", object.id()),
                 Map.entry(KEY_NAME, object.name()),
                 Map.entry(KEY_TYPE, object.type()),
-                Map.entry("visible", object.visible()),
+                Map.entry(KEY_VISIBLE, object.visible()),
                 Map.entry("rotation", object.rotation()),
                 Map.entry("x", object.x()),
                 Map.entry("y", object.y()),

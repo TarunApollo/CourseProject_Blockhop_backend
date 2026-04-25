@@ -13,15 +13,18 @@ import java.util.stream.Stream;
 /// Exports a level and tileset as a Tiled-compatible map payload.
 /// Delegates layer and tileset conversion to dedicated helpers.
 public final class LayerToTiledMapConverter {
-    private static final Map<String, Object> MAP_METADATA = Map.of(
-        "type", "map",
-        "orientation", "orthogonal",
-        "renderorder", "right-down",
-        "tilewidth", 128,
-        "tileheight", 128,
-        "version", "1.10",
-        "tiledversion", "1.10.1",
-        "compressionlevel", -1
+    /// Static Tiled metadata fields prepended to every exported map payload.
+    /// Stored as an ordered entry list because the values are only ever
+    /// streamed onto the output, never queried by key.
+    private static final List<Map.Entry<String, Object>> MAP_METADATA = List.of(
+        Map.entry("type", "map"),
+        Map.entry("orientation", "orthogonal"),
+        Map.entry("renderorder", "right-down"),
+        Map.entry("tilewidth", 128),
+        Map.entry("tileheight", 128),
+        Map.entry("version", "1.10"),
+        Map.entry("tiledversion", "1.10.1"),
+        Map.entry("compressionlevel", -1)
     );
 
     private LayerToTiledMapConverter() {
@@ -54,7 +57,7 @@ public final class LayerToTiledMapConverter {
 
     private static Map<String, Object> buildMapMetadata(final Level level) {
         return Stream.concat(
-            MAP_METADATA.entrySet().stream(),
+            MAP_METADATA.stream(),
             Stream.<Map.Entry<String, Object>>of(
                 Map.entry("width", level.getWidth()),
                 Map.entry("height", level.getHeight()),
