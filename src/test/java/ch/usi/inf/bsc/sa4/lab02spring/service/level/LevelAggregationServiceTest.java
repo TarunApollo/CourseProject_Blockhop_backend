@@ -39,6 +39,8 @@ class LevelAggregationServiceTest {
     private static final String CREATOR_NAME = "Mario";
     /// Default creator id used in fixtures.
     private static final String CREATOR_ID = "user-1";
+    /// Sample level title used by metadata tests.
+    private static final String SAMPLE_TITLE = "My Title";
 
     /// Mocked level repository providing per-test fixtures.
     @Mock private LevelRepository levelRepository;
@@ -269,7 +271,7 @@ class LevelAggregationServiceTest {
     @Test
     @DisplayName("populates the summary title from the level title")
     void summaryCarriesTitle() {
-        final Level a = publishedLevel("My Title");
+        final Level a = publishedLevel(SAMPLE_TITLE);
         when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
         stubAttempts(a, 0, 0);
 
@@ -277,14 +279,14 @@ class LevelAggregationServiceTest {
             PublishedLevelSortBy.CLEAR_RATE,
             DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
-        assertEquals("My Title", result.get(0).title());
+        assertEquals(SAMPLE_TITLE, result.get(0).title());
     }
 
     /// Each summary should reflect the source level's description.
     @Test
     @DisplayName("populates the summary description from the level description")
     void summaryCarriesDescription() {
-        final Level a = publishedLevel("My Title");
+        final Level a = publishedLevel(SAMPLE_TITLE);
         when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
         stubAttempts(a, 0, 0);
 
@@ -299,7 +301,7 @@ class LevelAggregationServiceTest {
     @Test
     @DisplayName("populates the summary creator name from the level creator")
     void summaryCarriesCreatorName() {
-        final Level a = publishedLevel("My Title");
+        final Level a = publishedLevel(SAMPLE_TITLE);
         when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
         stubAttempts(a, 0, 0);
 

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,7 +28,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
 
 /// Unit tests for the LayerToTiledMapConverter top-level pipeline.
-/// Verifies static metadata, level-derived metadata, ClearCondition properties, and composition.
 @DisplayName("LayerToTiledMapConverter.convertPipeline")
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
@@ -58,9 +58,9 @@ class LayerToTiledMapConverterTest {
     /// JSON key for the Tiled `nextobjectid` field.
     private static final String NEXT_OBJECT_ID_KEY = "nextobjectid";
     /// Property name carrying the level's clear-condition type.
-    private static final String CLEAR_CONDITION_TYPE_NAME = "ClearConditionType";
+    private static final String CC_TYPE_NAME = "ClearConditionType";
     /// Property name carrying the level's clear-condition amount.
-    private static final String CLEAR_CONDITION_AMOUNT_NAME = "ClearConditionAmount";
+    private static final String CC_AMOUNT_NAME = "ClearConditionAmount";
     /// Property value emitted when the level has a NoClearCondition.
     private static final String NONE_VALUE = "NONE";
     /// Default tileset name used by fixtures.
@@ -326,8 +326,10 @@ class LayerToTiledMapConverterTest {
                 LayerToTiledMapConverter.convertPipeline(newLevel(), newTileSet(), tileSetService);
 
             final Map<String, Object> typeProp = propertiesOf(result).get(0);
-            assertEquals(CLEAR_CONDITION_TYPE_NAME, typeProp.get(NAME_KEY));
-            assertEquals("string", typeProp.get(TYPE_KEY));
+            assertAll(
+                () -> assertEquals(CC_TYPE_NAME, typeProp.get(NAME_KEY)),
+                () -> assertEquals("string", typeProp.get(TYPE_KEY))
+            );
         }
 
         /// NoClearCondition should map to value="NONE".
@@ -367,8 +369,10 @@ class LayerToTiledMapConverterTest {
                 LayerToTiledMapConverter.convertPipeline(level, newTileSet(), tileSetService);
 
             final Map<String, Object> amountProp = propertiesOf(result).get(1);
-            assertEquals(CLEAR_CONDITION_AMOUNT_NAME, amountProp.get(NAME_KEY));
-            assertEquals("int", amountProp.get(TYPE_KEY));
+            assertAll(
+                () -> assertEquals(CC_AMOUNT_NAME, amountProp.get(NAME_KEY)),
+                () -> assertEquals("int", amountProp.get(TYPE_KEY))
+            );
         }
 
         /// The amount property should carry the level's targetAmount value.

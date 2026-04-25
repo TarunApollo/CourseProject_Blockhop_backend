@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,7 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /// Unit tests for the level publish service.
-/// Verifies publication state transitions, ownership checks, and persistence side effects.
 @DisplayName("LevelPublishService")
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
@@ -146,9 +146,11 @@ class LevelPublishServiceTest {
             when(userRepository.findById(OTHER_USER_ID))
                 .thenReturn(Optional.of(new User(OTHER_USER_ID, OTHER_NAME)));
 
-            assertThrows(ForbiddenUserException.class,
-                () -> service.publish(OTHER_USER_ID, LEVEL_ID));
-            assertFalse(level.isPublished());
+            assertAll(
+                () -> assertThrows(ForbiddenUserException.class,
+                    () -> service.publish(OTHER_USER_ID, LEVEL_ID)),
+                () -> assertFalse(level.isPublished())
+            );
         }
 
         /// Publishing a level that is not eligible should be rejected.
@@ -220,9 +222,11 @@ class LevelPublishServiceTest {
             level.publish(OWNER_ID);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
-            assertThrows(ForbiddenUserException.class,
-                () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID));
-            assertTrue(level.isPublished());
+            assertAll(
+                () -> assertThrows(ForbiddenUserException.class,
+                    () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID)),
+                () -> assertTrue(level.isPublished())
+            );
         }
 
         /// Owner can unpublish their own published level.
@@ -299,9 +303,11 @@ class LevelPublishServiceTest {
         void nonOwnerFailureLeavesFlagUnchanged() {
             final Level level = newLevel();
 
-            assertThrows(ForbiddenUserException.class,
-                () -> service.validateLevelPublishEligible(level, OTHER_USER_ID));
-            assertFalse(level.isPublishEligible());
+            assertAll(
+                () -> assertThrows(ForbiddenUserException.class,
+                    () -> service.validateLevelPublishEligible(level, OTHER_USER_ID)),
+                () -> assertFalse(level.isPublishEligible())
+            );
         }
 
         /// Non-owner failure must not save anything.
@@ -367,9 +373,11 @@ class LevelPublishServiceTest {
             final Level level = newLevel();
             level.validatePublishEligible(OWNER_ID);
 
-            assertThrows(ForbiddenUserException.class,
-                () -> service.invalidateLevelPublishEligible(level, OTHER_USER_ID));
-            assertTrue(level.isPublishEligible());
+            assertAll(
+                () -> assertThrows(ForbiddenUserException.class,
+                    () -> service.invalidateLevelPublishEligible(level, OTHER_USER_ID)),
+                () -> assertTrue(level.isPublishEligible())
+            );
         }
 
         /// Non-owner failure must not save anything.

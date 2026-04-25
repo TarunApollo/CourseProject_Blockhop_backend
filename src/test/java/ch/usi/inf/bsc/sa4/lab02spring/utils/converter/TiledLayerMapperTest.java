@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,7 +30,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 /// Unit tests for the TiledLayerMapper utility.
-/// Verifies world-layer placement and object-layer construction including service-driven type lookup.
 @DisplayName("TiledLayerMapper")
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
@@ -84,16 +84,20 @@ class TiledLayerMapperTest {
     /// Tiled `draworder` value emitted on object layers.
     private static final String DRAWORDER_TOPDOWN = "topdown";
 
-    /// Casts the objects entry of an object-layer map to a typed list of object maps.
+    /// Centralized unchecked cast for the various nested generic Tiled JSON shapes.
     @SuppressWarnings("unchecked")
+    private static <T> T cast(final Object value) {
+        return (T) value;
+    }
+
+    /// Casts the objects entry of an object-layer map to a typed list of object maps.
     private static List<Map<String, Object>> objectsOf(final Map<String, Object> layer) {
-        return (List<Map<String, Object>>) layer.get(OBJECTS_KEY);
+        return cast(layer.get(OBJECTS_KEY));
     }
 
     /// Casts the data entry of a world-layer map to a list of integer cells.
-    @SuppressWarnings("unchecked")
     private static List<Integer> dataOf(final Map<String, Object> layer) {
-        return (List<Integer>) layer.get(DATA_KEY);
+        return cast(layer.get(DATA_KEY));
     }
 
     /// Sanity test so static analyzers see at least one top-level @Test on the class.
@@ -193,10 +197,12 @@ class TiledLayerMapperTest {
             final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(input, 2, 2);
 
             final List<Integer> data = dataOf(result);
-            assertEquals(1, data.get(0));
-            assertEquals(2, data.get(1));
-            assertEquals(3, data.get(2));
-            assertEquals(0, data.get(3));
+            assertAll(
+                () -> assertEquals(1, data.get(0)),
+                () -> assertEquals(2, data.get(1)),
+                () -> assertEquals(3, data.get(2)),
+                () -> assertEquals(0, data.get(3))
+            );
         }
 
         /// A negative x must not appear in the data.
@@ -296,8 +302,10 @@ class TiledLayerMapperTest {
             final Map<String, Object> result =
                 TiledLayerMapper.buildWorldLayer(Map.of(), 5, 7);
 
-            assertEquals(5, result.get(WIDTH_KEY));
-            assertEquals(7, result.get(HEIGHT_KEY));
+            assertAll(
+                () -> assertEquals(5, result.get(WIDTH_KEY)),
+                () -> assertEquals(7, result.get(HEIGHT_KEY))
+            );
         }
 
         /// Visible should default to TRUE for the world layer.
@@ -307,8 +315,10 @@ class TiledLayerMapperTest {
             final Map<String, Object> result =
                 TiledLayerMapper.buildWorldLayer(Map.of(), 5, 7);
 
-            assertEquals(1, result.get(OPACITY_KEY));
-            assertEquals(Boolean.TRUE, result.get(VISIBLE_KEY));
+            assertAll(
+                () -> assertEquals(1, result.get(OPACITY_KEY)),
+                () -> assertEquals(Boolean.TRUE, result.get(VISIBLE_KEY))
+            );
         }
 
         /// World layer x and y should be 0.
@@ -318,8 +328,10 @@ class TiledLayerMapperTest {
             final Map<String, Object> result =
                 TiledLayerMapper.buildWorldLayer(Map.of(), 5, 7);
 
-            assertEquals(0, result.get(X_KEY));
-            assertEquals(0, result.get(Y_KEY));
+            assertAll(
+                () -> assertEquals(0, result.get(X_KEY)),
+                () -> assertEquals(0, result.get(Y_KEY))
+            );
         }
 
         /// The data entry should always be present.
@@ -417,8 +429,10 @@ class TiledLayerMapperTest {
             final Map<String, Object> result =
                 TiledLayerMapper.buildObjectLayer(Map.of(), tileSetService);
 
-            assertEquals(1, result.get(OPACITY_KEY));
-            assertEquals(Boolean.TRUE, result.get(VISIBLE_KEY));
+            assertAll(
+                () -> assertEquals(1, result.get(OPACITY_KEY)),
+                () -> assertEquals(Boolean.TRUE, result.get(VISIBLE_KEY))
+            );
         }
 
         /// Object layer origin x and y should be 0.
@@ -428,8 +442,10 @@ class TiledLayerMapperTest {
             final Map<String, Object> result =
                 TiledLayerMapper.buildObjectLayer(Map.of(), tileSetService);
 
-            assertEquals(0, result.get(X_KEY));
-            assertEquals(0, result.get(Y_KEY));
+            assertAll(
+                () -> assertEquals(0, result.get(X_KEY)),
+                () -> assertEquals(0, result.get(Y_KEY))
+            );
         }
 
         /// Top-level key set should match the Tiled-expected names.
@@ -497,7 +513,7 @@ class TiledLayerMapperTest {
             assertEquals(3 * TILE_SIZE, objectsOf(result).get(0).get(X_KEY));
         }
 
-        /// y coordinate should be (pos.y() + 1) * TILE_SIZE because Tiled anchors at the bottom-left.
+        /// y coordinate should be (pos.y() + 1) * TILE_SIZE.
         @Test
         @DisplayName("transforms position y to (pos.y() + 1) * TILE_SIZE")
         void yPixelTransform() {
@@ -537,8 +553,10 @@ class TiledLayerMapperTest {
                 TiledLayerMapper.buildObjectLayer(input, tileSetService);
 
             final Map<String, Object> obj = objectsOf(result).get(0);
-            assertEquals(TILE_SIZE, obj.get(WIDTH_KEY));
-            assertEquals(TILE_SIZE, obj.get(HEIGHT_KEY));
+            assertAll(
+                () -> assertEquals(TILE_SIZE, obj.get(WIDTH_KEY)),
+                () -> assertEquals(TILE_SIZE, obj.get(HEIGHT_KEY))
+            );
         }
 
         /// Object type should be the value returned by the TileSetService for that gid.
@@ -635,7 +653,6 @@ class TiledLayerMapperTest {
         /// A Box with SomeContent should produce a properties list of size 1.
         @Test
         @DisplayName("emits a single property for a Box with SomeContent")
-        @SuppressWarnings("unchecked")
         void boxWithSomeContentEmitsOneProperty() {
             when(tileSetService.getObjectTileType(anyInt())).thenReturn(BOX_TYPE);
             final Position pos = new Position(0, 0);
@@ -646,14 +663,13 @@ class TiledLayerMapperTest {
                 TiledLayerMapper.buildObjectLayer(input, tileSetService);
 
             final List<Map<String, Object>> properties =
-                (List<Map<String, Object>>) objectsOf(result).get(0).get(PROPERTIES_KEY);
+                cast(objectsOf(result).get(0).get(PROPERTIES_KEY));
             assertEquals(1, properties.size());
         }
 
         /// The emitted Content property should carry name, type, and the coin type value.
         @Test
         @DisplayName("the emitted Content property carries name='Content', type='string', and the coin value")
-        @SuppressWarnings("unchecked")
         void boxContentPropertyFields() {
             when(tileSetService.getObjectTileType(anyInt())).thenReturn(BOX_TYPE);
             final Position pos = new Position(0, 0);
@@ -663,11 +679,14 @@ class TiledLayerMapperTest {
             final Map<String, Object> result =
                 TiledLayerMapper.buildObjectLayer(input, tileSetService);
 
-            final Map<String, Object> property =
-                ((List<Map<String, Object>>) objectsOf(result).get(0).get(PROPERTIES_KEY)).get(0);
-            assertEquals("Content", property.get(NAME_KEY));
-            assertEquals("string", property.get(TYPE_KEY));
-            assertEquals(CoinType.GOLD_COIN.value(), property.get(VALUE_KEY));
+            final List<Map<String, Object>> properties =
+                cast(objectsOf(result).get(0).get(PROPERTIES_KEY));
+            final Map<String, Object> property = properties.get(0);
+            assertAll(
+                () -> assertEquals("Content", property.get(NAME_KEY)),
+                () -> assertEquals("string", property.get(TYPE_KEY)),
+                () -> assertEquals(CoinType.GOLD_COIN.value(), property.get(VALUE_KEY))
+            );
         }
 
         /// A non-Box object should expose exactly the Tiled-expected key set.

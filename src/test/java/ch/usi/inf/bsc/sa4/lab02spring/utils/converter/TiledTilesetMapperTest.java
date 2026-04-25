@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /// Unit tests for the TiledTilesetMapper utility.
-/// Verifies tileset top-level fields, tile id-slot mapping, and sub-element conversion.
 @DisplayName("TiledTilesetMapper.buildTileset")
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
 class TiledTilesetMapperTest {
@@ -87,10 +87,15 @@ class TiledTilesetMapperTest {
         return new TileSet.TileData(id, type, null, null);
     }
 
-    /// Casts the tiles entry of a tileset map to a typed list of tile maps.
+    /// Centralized unchecked cast for the various nested generic Tiled JSON shapes.
     @SuppressWarnings("unchecked")
+    private static <T> T cast(final Object value) {
+        return (T) value;
+    }
+
+    /// Casts the tiles entry of a tileset map to a typed list of tile maps.
     private static List<Map<String, Object>> tilesOf(final Map<String, Object> tileset) {
-        return (List<Map<String, Object>>) tileset.get(TILES_KEY);
+        return cast(tileset.get(TILES_KEY));
     }
 
     /// Sanity test so static analyzers see at least one top-level @Test on the class.
@@ -165,9 +170,11 @@ class TiledTilesetMapperTest {
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
         final List<Map<String, Object>> tiles = tilesOf(result);
-        assertEquals("a", tiles.get(0).get(TYPE_KEY));
-        assertEquals("b", tiles.get(1).get(TYPE_KEY));
-        assertEquals("c", tiles.get(2).get(TYPE_KEY));
+        assertAll(
+            () -> assertEquals("a", tiles.get(0).get(TYPE_KEY)),
+            () -> assertEquals("b", tiles.get(1).get(TYPE_KEY)),
+            () -> assertEquals("c", tiles.get(2).get(TYPE_KEY))
+        );
     }
 
     /// Missing slot ids should be filled with default tiles carrying the slot id.
@@ -216,9 +223,11 @@ class TiledTilesetMapperTest {
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
         final List<Map<String, Object>> tiles = tilesOf(result);
-        assertEquals(0, tiles.get(0).get(ID_KEY));
-        assertEquals(1, tiles.get(1).get(ID_KEY));
-        assertEquals(2, tiles.get(2).get(ID_KEY));
+        assertAll(
+            () -> assertEquals(0, tiles.get(0).get(ID_KEY)),
+            () -> assertEquals(1, tiles.get(1).get(ID_KEY)),
+            () -> assertEquals(2, tiles.get(2).get(ID_KEY))
+        );
     }
 
     // --------------------------------------------------------------------
@@ -233,10 +242,12 @@ class TiledTilesetMapperTest {
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-        assertEquals(1, result.get(FIRSTGID));
-        assertEquals(ATLAS_NAME, result.get(NAME_KEY));
-        assertEquals(TILE_DIM, result.get("tilewidth"));
-        assertEquals(TILE_DIM, result.get("tileheight"));
+        assertAll(
+            () -> assertEquals(1, result.get(FIRSTGID)),
+            () -> assertEquals(ATLAS_NAME, result.get(NAME_KEY)),
+            () -> assertEquals(TILE_DIM, result.get("tilewidth")),
+            () -> assertEquals(TILE_DIM, result.get("tileheight"))
+        );
     }
 
     /// Image-related fields should be copied from the source TileSet.
@@ -247,9 +258,11 @@ class TiledTilesetMapperTest {
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-        assertEquals(ATLAS_IMAGE, result.get("image"));
-        assertEquals(IMG_DIM, result.get("imagewidth"));
-        assertEquals(IMG_DIM, result.get("imageheight"));
+        assertAll(
+            () -> assertEquals(ATLAS_IMAGE, result.get("image")),
+            () -> assertEquals(IMG_DIM, result.get("imagewidth")),
+            () -> assertEquals(IMG_DIM, result.get("imageheight"))
+        );
     }
 
     /// Layout fields (margin, spacing, columns, tilecount) should be copied.
@@ -260,10 +273,12 @@ class TiledTilesetMapperTest {
 
         final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-        assertEquals(0, result.get("tilecount"));
-        assertEquals(8, result.get("columns"));
-        assertEquals(0, result.get("margin"));
-        assertEquals(0, result.get("spacing"));
+        assertAll(
+            () -> assertEquals(0, result.get("tilecount")),
+            () -> assertEquals(8, result.get("columns")),
+            () -> assertEquals(0, result.get("margin")),
+            () -> assertEquals(0, result.get("spacing"))
+        );
     }
 
     /// The tiles entry should always be present (possibly empty).
@@ -337,7 +352,6 @@ class TiledTilesetMapperTest {
         /// A tile with one property should emit a properties list of size 1.
         @Test
         @DisplayName("emits a properties list of size 1 for a single source property")
-        @SuppressWarnings("unchecked")
         void propertiesListSize() {
             final TileSet.Property prop = new TileSet.Property("solid", "bool", true);
             final TileSet input = tileSet(1, List.of(
@@ -347,14 +361,13 @@ class TiledTilesetMapperTest {
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
             final List<Map<String, Object>> properties =
-                (List<Map<String, Object>>) tilesOf(result).get(0).get(PROPERTIES_KEY);
+                cast(tilesOf(result).get(0).get(PROPERTIES_KEY));
             assertEquals(1, properties.size());
         }
 
         /// The emitted property should carry name, type, and value from the source.
         @Test
         @DisplayName("emitted property carries name, type, and value from the source")
-        @SuppressWarnings("unchecked")
         void propertyFieldsCopied() {
             final TileSet.Property prop = new TileSet.Property("solid", "bool", true);
             final TileSet input = tileSet(1, List.of(
@@ -363,11 +376,14 @@ class TiledTilesetMapperTest {
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(input);
 
-            final Map<String, Object> emitted =
-                ((List<Map<String, Object>>) tilesOf(result).get(0).get(PROPERTIES_KEY)).get(0);
-            assertEquals("solid", emitted.get(NAME_KEY));
-            assertEquals("bool", emitted.get(TYPE_KEY));
-            assertTrue((boolean) emitted.get(VALUE_KEY));
+            final List<Map<String, Object>> properties =
+                cast(tilesOf(result).get(0).get(PROPERTIES_KEY));
+            final Map<String, Object> emitted = properties.get(0);
+            assertAll(
+                () -> assertEquals("solid", emitted.get(NAME_KEY)),
+                () -> assertEquals("bool", emitted.get(TYPE_KEY)),
+                () -> assertEquals(Boolean.TRUE, emitted.get(VALUE_KEY))
+            );
         }
 
         /// A null objectgroup on the source tile should suppress the objectgroup entry.
@@ -420,11 +436,10 @@ class TiledTilesetMapperTest {
         }
 
         /// Helper to extract the first tile-object emitted in the result.
-        @SuppressWarnings("unchecked")
         private static Map<String, Object> firstTileObject(final Map<String, Object> result) {
-            final Map<String, Object> objectGroup =
-                (Map<String, Object>) tilesOf(result).get(0).get(OBJECTGROUP_KEY);
-            return ((List<Map<String, Object>>) objectGroup.get(OBJECTS_KEY)).get(0);
+            final Map<String, Object> objectGroup = cast(tilesOf(result).get(0).get(OBJECTGROUP_KEY));
+            final List<Map<String, Object>> objects = cast(objectGroup.get(OBJECTS_KEY));
+            return objects.get(0);
         }
 
         /// A null polygon on the source object should suppress the polygon entry.
@@ -452,11 +467,9 @@ class TiledTilesetMapperTest {
 
             assertFalse(firstTileObject(result).containsKey(POLYGON_KEY));
         }
-
         /// A non-empty polygon should produce a list of the same size.
         @Test
         @DisplayName("polygon list has the same size as the source polygon")
-        @SuppressWarnings("unchecked")
         void polygonHasSameSize() {
             final TileSet.TileObject obj = new TileSet.TileObject(
                 1, "o", "t", true, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -465,15 +478,13 @@ class TiledTilesetMapperTest {
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(tilesetWithObject(obj));
 
-            final List<Map<String, Object>> polygon =
-                (List<Map<String, Object>>) firstTileObject(result).get(POLYGON_KEY);
+            final List<Map<String, Object>> polygon = cast(firstTileObject(result).get(POLYGON_KEY));
             assertEquals(2, polygon.size());
         }
 
         /// Each polygon point should carry the source x and y values.
         @Test
         @DisplayName("each polygon point carries the source x and y values")
-        @SuppressWarnings("unchecked")
         void polygonPointsCopied() {
             final TileSet.TileObject obj = new TileSet.TileObject(
                 1, "o", "t", true, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -482,12 +493,13 @@ class TiledTilesetMapperTest {
 
             final Map<String, Object> result = TiledTilesetMapper.buildTileset(tilesetWithObject(obj));
 
-            final List<Map<String, Object>> polygon =
-                (List<Map<String, Object>>) firstTileObject(result).get(POLYGON_KEY);
-            assertEquals(1.5, polygon.get(0).get(X_KEY));
-            assertEquals(2.5, polygon.get(0).get(Y_KEY));
-            assertEquals(3.5, polygon.get(1).get(X_KEY));
-            assertEquals(4.5, polygon.get(1).get(Y_KEY));
+            final List<Map<String, Object>> polygon = cast(firstTileObject(result).get(POLYGON_KEY));
+            assertAll(
+                () -> assertEquals(1.5, polygon.get(0).get(X_KEY)),
+                () -> assertEquals(2.5, polygon.get(0).get(Y_KEY)),
+                () -> assertEquals(3.5, polygon.get(1).get(X_KEY)),
+                () -> assertEquals(4.5, polygon.get(1).get(Y_KEY))
+            );
         }
     }
 

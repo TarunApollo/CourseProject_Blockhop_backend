@@ -39,7 +39,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /// Unit tests for the level play service.
-/// Verifies attempt submission rules and playable map generation.
 @DisplayName("LevelPlayService")
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})

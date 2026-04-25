@@ -63,6 +63,16 @@ class LevelServiceTest {
     private static final String DEFAULT_DESC = "desc";
     /// Default level title used by fixtures.
     private static final String DEFAULT_TITLE = "title";
+    /// Sample level title used by createLevel tests.
+    private static final String SAMPLE_TITLE = "My Level";
+    /// Sample level description used by createLevel tests.
+    private static final String SAMPLE_DESC = "Description";
+    /// Old level title used by update tests.
+    private static final String OLD_TITLE = "old-title";
+    /// New level title used by update tests.
+    private static final String NEW_TITLE = "new-title";
+    /// New level description used by update tests.
+    private static final String NEW_DESC = "new-desc";
 
     /// Mocked level repository providing per-test fixtures.
     @Mock private LevelRepository levelRepository;
@@ -136,9 +146,9 @@ class LevelServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Level result =
-                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+                service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
 
-            assertEquals("My Level", result.getTitle());
+            assertEquals(SAMPLE_TITLE, result.getTitle());
         }
 
         /// Created level should expose the description from the DTO.
@@ -150,9 +160,9 @@ class LevelServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Level result =
-                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+                service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
 
-            assertEquals("Description", result.getDescription());
+            assertEquals(SAMPLE_DESC, result.getDescription());
         }
 
         /// Created level should be owned by the resolved user.
@@ -164,7 +174,7 @@ class LevelServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Level result =
-                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+                service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
 
             assertSame(owner, result.getCreator());
         }
@@ -178,7 +188,7 @@ class LevelServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
             final Level result =
-                service.createLevel(new CreateLevelDTO("My Level", "Description"), OWNER_ID);
+                service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
 
             verify(levelRepository).save(result);
         }
@@ -254,8 +264,7 @@ class LevelServiceTest {
             final Optional<Level> result =
                 service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            assertTrue(result.isPresent());
-            assertEquals("Adventure (2)", result.get().getTitle());
+            assertEquals("Adventure (2)", result.orElseThrow().getTitle());
         }
 
         /// Subsequent clones should pick the next free index.
@@ -501,28 +510,28 @@ class LevelServiceTest {
         @Test
         @DisplayName("updates the title when a title is present in the DTO")
         void updatesTitle() {
-            final Level level = newLevel("old-title", owner);
+            final Level level = newLevel(OLD_TITLE, owner);
             level.setDescription("old-desc");
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of("new-title"), Optional.empty(), Optional.empty()));
+                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.empty(), Optional.empty()));
 
-            assertEquals("new-title", level.getTitle());
+            assertEquals(NEW_TITLE, level.getTitle());
         }
 
         /// A title-only DTO must not touch other fields.
         @Test
         @DisplayName("leaves the description unchanged when only a title is present")
         void titleOnlyLeavesDescription() {
-            final Level level = newLevel("old-title", owner);
+            final Level level = newLevel(OLD_TITLE, owner);
             level.setDescription("old-desc");
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of("new-title"), Optional.empty(), Optional.empty()));
+                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.empty(), Optional.empty()));
 
             assertEquals("old-desc", level.getDescription());
         }
@@ -531,48 +540,48 @@ class LevelServiceTest {
         @Test
         @DisplayName("updates the title when all fields are present")
         void updatesAllFieldsTitle() {
-            final Level level = newLevel("old-title", owner);
+            final Level level = newLevel(OLD_TITLE, owner);
             final ClearCondition clearCondition = new ClearCondition(
                 new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of("new-title"), Optional.of("new-desc"),
+                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
                     Optional.of(clearCondition)));
 
-            assertEquals("new-title", level.getTitle());
+            assertEquals(NEW_TITLE, level.getTitle());
         }
 
         /// A full DTO should update the description.
         @Test
         @DisplayName("updates the description when all fields are present")
         void updatesAllFieldsDescription() {
-            final Level level = newLevel("old-title", owner);
+            final Level level = newLevel(OLD_TITLE, owner);
             final ClearCondition clearCondition = new ClearCondition(
                 new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of("new-title"), Optional.of("new-desc"),
+                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
                     Optional.of(clearCondition)));
 
-            assertEquals("new-desc", level.getDescription());
+            assertEquals(NEW_DESC, level.getDescription());
         }
 
         /// A full DTO should update the clear condition.
         @Test
         @DisplayName("updates the clear condition when all fields are present")
         void updatesAllFieldsClearCondition() {
-            final Level level = newLevel("old-title", owner);
+            final Level level = newLevel(OLD_TITLE, owner);
             final ClearCondition clearCondition = new ClearCondition(
                 new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of("new-title"), Optional.of("new-desc"),
+                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
                     Optional.of(clearCondition)));
 
             assertEquals(clearCondition, level.getClearCondition());
