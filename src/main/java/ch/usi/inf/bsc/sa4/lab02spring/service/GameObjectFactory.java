@@ -8,48 +8,153 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Shell;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.springframework.stereotype.Component;
 
+/// Builds GameObject instances from tile types resolved by TileSetService.
 @Component
 public class GameObjectFactory {
 
+    /// Resolves a tile gid to its type string.
     private final TileSetService tileSetService;
 
-    public GameObjectFactory(TileSetService tileSetService) {
+    /// Constructs a factory backed by the given tileset service.
+    /// @param tileSetService the service used to map gids to type strings
+    public GameObjectFactory(final TileSetService tileSetService) {
         this.tileSetService = tileSetService;
     }
 
-    public GameObject createGameObject(int gid, Position pos) {
+    /// Builds a GameObject without content (defaults to NoContent).
+    /// @param gid the tile gid to instantiate
+    /// @param pos the position of the new game object
+    /// @return the constructed GameObject
+    public GameObject createGameObject(final int gid, final Position pos) {
         return createGameObject(gid, pos, new Content.NoContent());
     }
 
-    public GameObject createGameObject(int gid, Position pos, Content content) {
-        String type = tileSetService.getObjectTileType(gid);
-        return switch (type) {
-            case "Decoration", "ExclamationMark" -> new Decoration(gid, pos);
-            case "Enemy_Slime_Normal" -> new Slime(gid, pos);
-            case "Enemy_Snail" -> new Snail(gid, pos);
-            case "Box", "BoxDouble" -> new Box(gid, pos, content);
-            case "Start_Flag", "Start_Flag_B" -> new StartFlag(gid, pos);
-            case "Door_Closed", "Door_Open", "Door_Open_Top", "Door_Closed_Top" -> new ExitDoor(gid, pos);
-            case "Item_Coin_Gold", "Item_Coin_Gold_Side",
-                 "Item_Coin_Silver", "Item_Coin_Silver_Side",
-                 "Item_Coin_Bronze", "Item_Coin_Bronze_Side" -> createCoin(gid, pos, type);
-            case "Item_Shell" -> new Shell(gid, pos);
-            default -> throw new UnknownObjectTypeException();
-        };
+    /// Builds a GameObject for the given gid, dispatching on the resolved tile type.
+    /// @param gid the tile gid to instantiate
+    /// @param pos the position of the new game object
+    /// @param content the optional content carried by the new game object (used by Box)
+    /// @return the constructed GameObject
+    /// @throws UnknownObjectTypeException if the tile type is not registered
+    public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+        final String type = tileSetService.getObjectTileType(gid);
+        return ObjectTypeEnum.fromValue(type).createGameObject(gid, pos, content);
     }
 
-    private Coin createCoin(int gid, Position pos, String type) {
-        String baseType = type.endsWith("_Side") 
-            ? type.substring(0, type.length() - 5) 
-            : type;
-        return new Coin(gid, pos, CoinType.fromValue(baseType));
+    /// Maps each tile-type string to a constructor for the corresponding GameObject.
+    /// New tile types must be registered here so the factory can dispatch them.
+    enum ObjectTypeEnum {
+
+        DECORATION("Decoration") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Decoration(gid, pos);
+            }
+        },
+
+        ENEMY_SLIME_NORMAL("Enemy_Slime_Normal") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Slime(gid, pos);
+            }
+        },
+
+        ENEMY_SNAIL("Enemy_Snail") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Snail(gid, pos);
+            }
+        },
+
+        BOX("Box") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Box(gid, pos, content);
+            }
+        },
+
+        BOX_DOUBLE("BoxDouble") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Box(gid, pos, content);
+            }
+        },
+
+        START_FLAG("Start_Flag") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new StartFlag(gid, pos);
+            }
+        },
+
+        DOOR_CLOSED("Door_Closed") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new ExitDoor(gid, pos);
+            }
+        },
+
+        ITEM_COIN_GOLD("Item_Coin_Gold") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Coin(gid, pos, CoinType.GOLD_COIN);
+            }
+        },
+
+        ITEM_COIN_SILVER("Item_Coin_Silver") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Coin(gid, pos, CoinType.SILVER_COIN);
+            }
+        },
+
+        ITEM_COIN_BRONZE("Item_Coin_Bronze") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Coin(gid, pos, CoinType.BRONZE_COIN);
+            }
+        };
+
+        /// JSON tile-type string carried by this enum constant.
+        private final String value;
+
+        ObjectTypeEnum(final String value) {
+            this.value = value;
+        }
+
+        /// JSON value used to serialize this enum (matches the editor's tile type string).
+        @JsonValue
+        public String value() {
+            return value;
+        }
+
+        /// Constructs the GameObject instance corresponding to this tile type.
+        /// @param gid the tile gid
+        /// @param pos the position of the new game object
+        /// @param content the content carried by the new game object (used by Box)
+        /// @return the constructed GameObject
+        public abstract GameObject createGameObject(int gid, Position pos, Content content);
+
+        /// Resolves the enum constant for the given JSON tile-type string.
+        /// @param value the JSON tile-type string
+        /// @return the corresponding enum constant
+        /// @throws UnknownObjectTypeException if no enum constant is registered for the value
+        @JsonCreator
+        public static ObjectTypeEnum fromValue(final String value) {
+            for (final ObjectTypeEnum type : values()) {
+                if (type.value.equals(value)) {
+                    return type;
+                }
+            }
+            throw new UnknownObjectTypeException();
+        }
     }
 }
