@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -110,12 +111,12 @@ class UserControllerLogicTests {
     @DisplayName("GET /users should return list of users")
     void testGetUsers() {
         final List<UserDTO> expectedUsers = List.of(new UserDTO(user1), new UserDTO(user2));
-        restTestClient.get().uri("/users")
+        assertDoesNotThrow(() -> restTestClient.get().uri("/users")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(new ParameterizedTypeReference<List<UserDTO>>() {
                 })
-                .isEqualTo(expectedUsers);
+                .isEqualTo(expectedUsers));
     }
 
     /**
@@ -135,11 +136,11 @@ class UserControllerLogicTests {
             final UserProfileDTO expectedProfile = new UserProfileDTO(user1.getName(), 5L,
                     3L, Collections.emptyList());
 
-            restTestClient.get().uri("/users/profile")
+            assertDoesNotThrow(() -> restTestClient.get().uri("/users/profile")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserProfileDTO.class)
-                    .isEqualTo(expectedProfile);
+                    .isEqualTo(expectedProfile));
         }
     }
 
@@ -154,11 +155,11 @@ class UserControllerLogicTests {
             mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(any())).thenReturn("Alan Turing");
 
             final UserDTO expectedUserDTO = new UserDTO(user1);
-            restTestClient.get().uri("/users/me")
+            assertDoesNotThrow(() -> restTestClient.get().uri("/users/me")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)
-                    .isEqualTo(expectedUserDTO);
+                    .isEqualTo(expectedUserDTO));
         }
     }
 
@@ -177,11 +178,11 @@ class UserControllerLogicTests {
             when(userService.createUser(any(CreateUserDTO.class))).thenReturn(newUser);
 
             final UserDTO expectedUserDTO = new UserDTO(newUser);
-            restTestClient.get().uri("/users/me")
+            assertDoesNotThrow(() -> restTestClient.get().uri("/users/me")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)
-                    .isEqualTo(expectedUserDTO);
+                    .isEqualTo(expectedUserDTO));
         }
     }
 
