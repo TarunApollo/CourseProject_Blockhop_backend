@@ -20,24 +20,27 @@ import static org.mockito.Mockito.when;
 
 // Black-box tests for AuthUtils.
 @DisplayName(" In the AuthUtils class ")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings("NullAway")
 /* package */ class AuthUtilsTests {
 
-    // The subject claim used in test OAuth2 users.
+    /** The subject claim used in test OAuth2 users. */
     private static final String TEST_USER_ID = "user-123";
 
-    // The name claim used in test OAuth2 users.
+    /** The name claim used in test OAuth2 users. */
     private static final String TEST_USER_NAME = "Test User";
 
-    // Authority required by DefaultOAuth2User.
+    /** Authority required by DefaultOAuth2User. */
     private static final String TEST_AUTHORITY = "ROLE_USER";
+
+    /** Attribute key for the subject claim. */
+    private static final String SUB_KEY = "sub";
 
     // Creates an OAuth2User with the given attributes.
     private static DefaultOAuth2User createOAuth2User(final Map<String, Object> attributes) {
-        return new DefaultOAuth2User(Collections.singleton(() -> TEST_AUTHORITY), attributes, "sub");
+        return new DefaultOAuth2User(Collections.singleton(() -> TEST_AUTHORITY), attributes, SUB_KEY);
     }
 
-    // Tests for the static method getUserIdFromAuth.
+    /** Tests for the static method getUserIdFromAuth. */
     @DisplayName(" method getUserIdFromAuth ")
     @Nested
     class GetUserIdFromAuth {
@@ -45,7 +48,15 @@ import static org.mockito.Mockito.when;
         // Verifies that a 401 UNAUTHORIZED is thrown when authentication is null.
         @DisplayName("should throw UNAUTHORIZED when authentication is null")
         @Test
-        void nullAuthentication() {
+        void nullAuthenticationThrows() {
+            final Executable call = () -> AuthUtils.getUserIdFromAuth(null);
+            Assertions.assertThrows(ResponseStatusException.class, call);
+        }
+
+        // Verifies the status code of the exception when auth is null.
+        @DisplayName("should return 401 status when authentication is null")
+        @Test
+        void nullAuthenticationStatus() {
             final Executable call = () -> AuthUtils.getUserIdFromAuth(null);
             final ResponseStatusException exception =
                     Assertions.assertThrows(ResponseStatusException.class, call);
@@ -57,7 +68,7 @@ import static org.mockito.Mockito.when;
         @Test
         void validOAuth2User() {
             final DefaultOAuth2User oAuth2User =
-                    createOAuth2User(Map.of("sub", TEST_USER_ID, "name", TEST_USER_NAME));
+                    createOAuth2User(Map.of(SUB_KEY, TEST_USER_ID, "name", TEST_USER_NAME));
             final Authentication authentication =
                     new TestingAuthenticationToken(oAuth2User, null);
 
@@ -69,9 +80,22 @@ import static org.mockito.Mockito.when;
         // has a null "sub" attribute.
         @DisplayName("should throw UNAUTHORIZED when OAuth2 user has null sub attribute")
         @Test
-        void nullSubAttribute() {
+        void nullSubAttributeThrows() {
             final OAuth2User oAuth2User = mock(OAuth2User.class);
-            when(oAuth2User.getAttribute("sub")).thenReturn(null);
+            when(oAuth2User.getAttribute(SUB_KEY)).thenReturn(null);
+            final Authentication authentication =
+                    new TestingAuthenticationToken(oAuth2User, null);
+
+            final Executable call = () -> AuthUtils.getUserIdFromAuth(authentication);
+            Assertions.assertThrows(ResponseStatusException.class, call);
+        }
+
+        // Verifies the status code when OAuth2 user has a null sub.
+        @DisplayName("should return 401 status when OAuth2 user has null sub")
+        @Test
+        void nullSubAttributeStatus() {
+            final OAuth2User oAuth2User = mock(OAuth2User.class);
+            when(oAuth2User.getAttribute(SUB_KEY)).thenReturn(null);
             final Authentication authentication =
                     new TestingAuthenticationToken(oAuth2User, null);
 
@@ -85,7 +109,18 @@ import static org.mockito.Mockito.when;
         // is not an OAuth2User.
         @DisplayName("should throw NOT_IMPLEMENTED when principal is not an OAuth2User")
         @Test
-        void nonOAuth2Principal() {
+        void nonOAuth2PrincipalThrows() {
+            final Authentication authentication =
+                    new TestingAuthenticationToken("non-oauth2-principal", null);
+
+            final Executable call = () -> AuthUtils.getUserIdFromAuth(authentication);
+            Assertions.assertThrows(ResponseStatusException.class, call);
+        }
+
+        // Verifies the status code when principal is not an OAuth2User.
+        @DisplayName("should return 501 status when principal is not an OAuth2User")
+        @Test
+        void nonOAuth2PrincipalStatus() {
             final Authentication authentication =
                     new TestingAuthenticationToken("non-oauth2-principal", null);
 
@@ -96,7 +131,7 @@ import static org.mockito.Mockito.when;
         }
     }
 
-    // Tests for the static method getUserNameFromAuth.
+    /** Tests for the static method getUserNameFromAuth. */
     @DisplayName(" method getUserNameFromAuth ")
     @Nested
     class GetUserNameFromAuth {
@@ -106,7 +141,7 @@ import static org.mockito.Mockito.when;
         @Test
         void validOAuth2User() {
             final DefaultOAuth2User oAuth2User =
-                    createOAuth2User(Map.of("sub", TEST_USER_ID, "name", TEST_USER_NAME));
+                    createOAuth2User(Map.of(SUB_KEY, TEST_USER_ID, "name", TEST_USER_NAME));
             final Authentication authentication =
                     new TestingAuthenticationToken(oAuth2User, null);
 
@@ -118,9 +153,22 @@ import static org.mockito.Mockito.when;
         // has no "name" attribute.
         @DisplayName("should throw UNAUTHORIZED when OAuth2 user has no name attribute")
         @Test
-        void missingNameAttribute() {
+        void missingNameAttributeThrows() {
             final DefaultOAuth2User oAuth2User =
-                    createOAuth2User(Map.of("sub", TEST_USER_ID));
+                    createOAuth2User(Map.of(SUB_KEY, TEST_USER_ID));
+            final Authentication authentication =
+                    new TestingAuthenticationToken(oAuth2User, null);
+
+            final Executable call = () -> AuthUtils.getUserNameFromAuth(authentication);
+            Assertions.assertThrows(ResponseStatusException.class, call);
+        }
+
+        // Verifies the status code when OAuth2 user has no name attribute.
+        @DisplayName("should return 401 status when OAuth2 user has no name attribute")
+        @Test
+        void missingNameAttributeStatus() {
+            final DefaultOAuth2User oAuth2User =
+                    createOAuth2User(Map.of(SUB_KEY, TEST_USER_ID));
             final Authentication authentication =
                     new TestingAuthenticationToken(oAuth2User, null);
 
@@ -134,7 +182,18 @@ import static org.mockito.Mockito.when;
         // is not an OAuth2User.
         @DisplayName("should throw UNAUTHORIZED when principal is not an OAuth2User")
         @Test
-        void nonOAuth2Principal() {
+        void nonOAuth2PrincipalThrows() {
+            final Authentication authentication =
+                    new TestingAuthenticationToken("non-oauth2-principal", null);
+
+            final Executable call = () -> AuthUtils.getUserNameFromAuth(authentication);
+            Assertions.assertThrows(ResponseStatusException.class, call);
+        }
+
+        // Verifies the status code when principal is not an OAuth2User.
+        @DisplayName("should return 401 status when principal is not an OAuth2User")
+        @Test
+        void nonOAuth2PrincipalStatus() {
             final Authentication authentication =
                     new TestingAuthenticationToken("non-oauth2-principal", null);
 
