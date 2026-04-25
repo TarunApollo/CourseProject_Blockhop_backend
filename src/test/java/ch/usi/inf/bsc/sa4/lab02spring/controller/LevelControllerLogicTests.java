@@ -44,16 +44,13 @@ import java.util.Optional;
 // Black-box tests for LevelController.
 // Tests HTTP contract: status codes, response bodies, and content types.
 //
-// NOTE: Error Prone crashes when MockedStatic and assertDoesNotThrow
-// are combined with a RestTestClient fluent chain inside the lambda. To work around this,
-// tests that mock AuthUtils use returnResult().getStatus() directly and
-// assert on the status code via assertEquals, rather than wrapping the chain in
-// assertDoesNotThrow.
+// NOTE: Error Prone crashes when MockedStatic and assertDoesNotThrow are
+// combined with a RestTestClient fluent chain. Tests that mock AuthUtils use
+// returnResult().getStatus() directly and assert on status via assertEquals.
 //
-// NOTE: PUT /{levelId}/thumbnail is skipped because it is @Deprecated
-// and requires multipart file upload, which is not supported by RestTestClient
-// (no multipart() method exists). Sending a MockMultipartFile via
-// body() fails with UnknownContentTypeException.
+// NOTE: PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
+// requires multipart upload (not supported by RestTestClient).
+@SuppressWarnings("PMD.ExcessiveImports")
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -61,53 +58,52 @@ import java.util.Optional;
 })
 @AutoConfigureRestTestClient
 @DisplayName("Level Controller Logic Tests")
-@SuppressWarnings("PMD.AtLeastOneConstructor")
 /* package */ class LevelControllerLogicTests {
 
-    // The authenticated user ID used across tests.
+    /** The authenticated user ID used across tests. */
     private static final String USER_ID = "userid1";
 
-    // A fixed timestamp used for attempt tests.
+    /** A fixed timestamp used for attempt tests. */
     private static final java.time.ZonedDateTime FIXED_TIMESTAMP =
             java.time.ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC);
 
-    // A fixed duration used for attempt tests.
+    /** A fixed duration used for attempt tests. */
     private static final java.time.Duration FIXED_DURATION = java.time.Duration.ofSeconds(30);
 
-    // The authenticated user name used across tests.
+    /** The authenticated user name used across tests. */
     private static final String USER_NAME = "Test User";
 
-    // A level ID used across tests.
+    /** A level ID used across tests. */
     private static final String LEVEL_ID = "level-1";
 
-    // The mocked level service.
+    /** The mocked level service. */
     @MockitoBean
     private LevelService levelService;
 
-    // The mocked user service.
+    /** The mocked user service. */
     @MockitoBean
     private UserService userService;
 
-    // The mocked tile set service.
+    /** The mocked tile set service. */
     @MockitoBean
     private TileSetService tileSetService;
 
-    // The mocked attempt service.
+    /** The mocked attempt service. */
     @MockitoBean
     private AttemptService attemptService;
 
-    // The mocked layer to tiled map converter.
+    /** The mocked layer to tiled map converter. */
     @MockitoBean
     private LayerToTiledMapConverter layerToTiledMapConverter;
 
-    // The RestTestClient for performing requests.
+    /** The RestTestClient for performing requests. */
     @Autowired
     private RestTestClient restTestClient;
 
-    // The test user.
+    /** The test user. */
     private static User testUser;
 
-    // A test level owned by the test user.
+    /** A test level owned by the test user. */
     private static Level testLevel;
 
     // Initializes static test data.
@@ -117,7 +113,7 @@ import java.util.Optional;
         testLevel = new Level("Test Level", "A description", testUser);
     }
 
-    // Tests for POST /levels.
+    /** Tests for POST /levels. */
     @Nested
     @DisplayName("POST /levels")
     /* default */ class CreateLevel {
@@ -143,7 +139,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for GET /levels/published.
+    /** Tests for GET /levels/published. */
     @Nested
     @DisplayName("GET /levels/published")
     /* default */ class GetPublishedLevels {
@@ -169,7 +165,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for GET /levels/{levelId}/thumbnail.
+    /** Tests for GET /levels/{levelId}/thumbnail. */
     @Nested
     @DisplayName("GET /levels/{levelId}/thumbnail")
     /* default */ class GetThumbnail {
@@ -190,7 +186,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for POST /levels/clone.
+    /** Tests for POST /levels/clone. */
     @Nested
     @DisplayName("POST /levels/clone")
     /* default */ class CloneLevel {
@@ -240,7 +236,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for PUT /levels/{levelId}/properties.
+    /** Tests for PUT /levels/{levelId}/properties. */
     @Nested
     @DisplayName("PUT /levels/{levelId}/properties")
     /* default */ class UpdateLevelProperties {
@@ -272,7 +268,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for DELETE /levels/{levelId}.
+    /** Tests for DELETE /levels/{levelId}. */
     @Nested
     @DisplayName("DELETE /levels/{levelId}")
     /* default */ class DeleteLevel {
@@ -297,7 +293,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for PUT /levels/{levelId}/unpublish.
+    /** Tests for PUT /levels/{levelId}/unpublish. */
     @Nested
     @DisplayName("PUT /levels/{levelId}/unpublish")
     /* default */ class UnpublishLevel {
@@ -322,7 +318,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for PUT /levels/{levelId}/publish.
+    /** Tests for PUT /levels/{levelId}/publish. */
     @Nested
     @DisplayName("PUT /levels/{levelId}/publish")
     /* default */ class PublishLevel {
@@ -347,7 +343,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for POST /levels/{levelId}/submit.
+    /** Tests for POST /levels/{levelId}/submit. */
     @Nested
     @DisplayName("POST /levels/{levelId}/submit")
     /* default */ class SubmitAttempt {
@@ -377,7 +373,7 @@ import java.util.Optional;
         }
     }
 
-    // Tests for GET /levels/play/{levelId}/map.
+    /** Tests for GET /levels/play/{levelId}/map. */
     @Nested
     @DisplayName("GET /levels/play/{levelId}/map")
     /* default */ class GetPlayableMap {
