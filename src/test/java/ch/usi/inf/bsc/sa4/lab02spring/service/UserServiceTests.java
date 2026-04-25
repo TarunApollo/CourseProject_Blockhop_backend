@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -10,14 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for the UserService.
@@ -61,7 +59,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when getting all users")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class GetAllUsers {
 
         /**
@@ -70,9 +67,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return all users from the repository")
         /* default */ void testGetAllUsersReturnsAll() {
-            when(userRepository.findAll()).thenReturn(List.of(testUser));
+            Mockito.when(userRepository.findAll()).thenReturn(List.of(testUser));
             final List<User> result = userService.getAllUsers();
-            assertEquals(1, result.size());
+            Assertions.assertEquals(1, result.size());
         }
 
         /**
@@ -81,9 +78,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should delegate to the repository")
         /* default */ void testGetAllUsersCallsRepo() {
-            when(userRepository.findAll()).thenReturn(List.of(testUser));
+            Mockito.when(userRepository.findAll()).thenReturn(List.of(testUser));
             userService.getAllUsers();
-            verify(userRepository).findAll();
+            Mockito.verify(userRepository).findAll();
         }
     }
 
@@ -92,7 +89,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when creating a user")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class CreateUser {
 
         /**
@@ -102,9 +98,9 @@ import static org.mockito.Mockito.*;
         @DisplayName("should return the saved user")
         /* default */ void testCreateUserReturnsUser() {
             final CreateUserDTO dto = new CreateUserDTO(USER_ID, USER_NAME);
-            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(testUser);
             final User result = userService.createUser(dto);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
 
         /**
@@ -114,9 +110,9 @@ import static org.mockito.Mockito.*;
         @DisplayName("should return user with the name from the DTO")
         /* default */ void testCreateUserHasCorrectName() {
             final CreateUserDTO dto = new CreateUserDTO(USER_ID, USER_NAME);
-            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(testUser);
             final User result = userService.createUser(dto);
-            assertEquals(USER_NAME, result.getName());
+            Assertions.assertEquals(USER_NAME, result.getName());
         }
 
         /**
@@ -126,9 +122,9 @@ import static org.mockito.Mockito.*;
         @DisplayName("should persist the user via the repository")
         /* default */ void testCreateUserPersists() {
             final CreateUserDTO dto = new CreateUserDTO(USER_ID, USER_NAME);
-            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(testUser);
             userService.createUser(dto);
-            verify(userRepository).save(any(User.class));
+            Mockito.verify(userRepository).save(Mockito.any(User.class));
         }
     }
 
@@ -137,7 +133,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when getting a user by ID")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class GetById {
 
         /**
@@ -146,9 +141,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return a non-empty optional when the user exists")
         /* default */ void testGetByIdFound() {
-            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
             final Optional<User> result = userService.getById(USER_ID);
-            assertTrue(result.isPresent());
+            Assertions.assertTrue(result.isPresent());
         }
 
         /**
@@ -157,9 +152,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return an empty optional when the user does not exist")
         /* default */ void testGetByIdNotFound() {
-            when(userRepository.findById("unknown")).thenReturn(Optional.empty());
+            Mockito.when(userRepository.findById("unknown")).thenReturn(Optional.empty());
             final Optional<User> result = userService.getById("unknown");
-            assertTrue(result.isEmpty());
+            Assertions.assertTrue(result.isEmpty());
         }
     }
 
@@ -168,7 +163,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when searching users by partial name")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class SearchUsers {
 
         /**
@@ -177,9 +171,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return users whose name contains the search term")
         /* default */ void testSearchUsersReturnsMatches() {
-            when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of(testUser));
+            Mockito.when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of(testUser));
             final List<User> result = userService.searchUsers(PARTIAL_NAME);
-            assertEquals(1, result.size());
+            Assertions.assertEquals(1, result.size());
         }
 
         /**
@@ -188,9 +182,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should delegate to the repository with the given partial name")
         /* default */ void testSearchUsersCallsRepo() {
-            when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of());
+            Mockito.when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of());
             userService.searchUsers(PARTIAL_NAME);
-            verify(userRepository).findByNameContaining(PARTIAL_NAME);
+            Mockito.verify(userRepository).findByNameContaining(PARTIAL_NAME);
         }
     }
 }

@@ -1,11 +1,10 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for the TileSetService.
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
     private static final int INVALID_GID = 0;
 
     /** GID unlikely to be present in any valid tileset. */
-    private static final int UNKNOWN_GID = 99999;
+    private static final int UNKNOWN_GID = 99_999;
 
     /** The service under test. */
     private TileSetService tileSetService;
@@ -37,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
      */
     @Nested
     @DisplayName("when getting the tileset")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class GetTileSet {
 
         /**
@@ -46,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.*;
         @Test
         @DisplayName("should return a non-null tileset after loading")
         /* default */ void testGetTileSetNotNull() {
-            assertNotNull(tileSetService.getTileSet());
+            Assertions.assertNotNull(tileSetService.getTileSet());
         }
 
         /**
@@ -55,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.*;
         @Test
         @DisplayName("should return a tileset with a non-null tile list")
         /* default */ void testGetTileSetHasTiles() {
-            assertNotNull(tileSetService.getTileSet().tiles());
+            Assertions.assertNotNull(tileSetService.getTileSet().tiles());
         }
     }
 
@@ -64,7 +62,6 @@ import static org.junit.jupiter.api.Assertions.*;
      */
     @Nested
     @DisplayName("when checking ground GIDs")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class IsGroundGID {
 
         /**
@@ -73,7 +70,7 @@ import static org.junit.jupiter.api.Assertions.*;
         @Test
         @DisplayName("should return false for GID 0")
         /* default */ void testIsGroundGIDReturnsFalseForZero() {
-            assertFalse(tileSetService.isGroundGID(INVALID_GID));
+            Assertions.assertFalse(tileSetService.isGroundGID(INVALID_GID));
         }
     }
 
@@ -82,7 +79,6 @@ import static org.junit.jupiter.api.Assertions.*;
      */
     @Nested
     @DisplayName("when checking object GIDs")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class IsObjectGID {
 
         /**
@@ -91,7 +87,7 @@ import static org.junit.jupiter.api.Assertions.*;
         @Test
         @DisplayName("should return false for GID 0")
         /* default */ void testIsObjectGIDReturnsFalseForZero() {
-            assertFalse(tileSetService.isObjectGID(INVALID_GID));
+            Assertions.assertFalse(tileSetService.isObjectGID(INVALID_GID));
         }
     }
 
@@ -100,7 +96,6 @@ import static org.junit.jupiter.api.Assertions.*;
      */
     @Nested
     @DisplayName("when getting the tile type for a GID")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class GetObjectTileType {
 
         /**
@@ -109,7 +104,7 @@ import static org.junit.jupiter.api.Assertions.*;
         @Test
         @DisplayName("should return an empty string for an unknown GID")
         /* default */ void testGetObjectTileTypeUnknownGID() {
-            assertEquals("", tileSetService.getObjectTileType(UNKNOWN_GID));
+            Assertions.assertEquals("", tileSetService.getObjectTileType(UNKNOWN_GID));
         }
     }
 }

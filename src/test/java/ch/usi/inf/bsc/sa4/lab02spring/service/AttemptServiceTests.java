@@ -8,6 +8,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,18 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the AttemptService.
@@ -35,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The Attempt Service (Unit)")
 @SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
-class AttemptServiceTests {
+/* default */ class AttemptServiceTests {
 
     /** The mocked attempt repository. */
     @Mock
@@ -76,17 +71,17 @@ class AttemptServiceTests {
          */
         @Test
         @DisplayName("should save and return a non null attempt")
-        void testCreateAttemptNotNull() {
+        /* default */ void testCreateAttemptNotNull() {
             final CreateAttemptDTO dto = new CreateAttemptDTO("level-1", true, Duration.ofSeconds(10));
             final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
                     true, Duration.ofSeconds(10));
 
-            when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
-            when(attemptRepository.save(any(Attempt.class))).thenReturn(savedAttempt);
+            Mockito.when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
+            Mockito.when(attemptRepository.save(Mockito.any(Attempt.class))).thenReturn(savedAttempt);
 
             final Attempt result = attemptService.createAttempt(testUser, dto);
 
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
 
         /**
@@ -94,17 +89,17 @@ class AttemptServiceTests {
          */
         @Test
         @DisplayName("should return the correct attempt ID")
-        void testCreateAttemptCorrectId() {
+        /* default */ void testCreateAttemptCorrectId() {
             final CreateAttemptDTO dto = new CreateAttemptDTO("level-1", true, Duration.ofSeconds(10));
             final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
                     true, Duration.ofSeconds(10));
 
-            when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
-            when(attemptRepository.save(any(Attempt.class))).thenReturn(savedAttempt);
+            Mockito.when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
+            Mockito.when(attemptRepository.save(Mockito.any(Attempt.class))).thenReturn(savedAttempt);
 
             final Attempt result = attemptService.createAttempt(testUser, dto);
 
-            assertEquals("attempt-1", result.getId());
+            Assertions.assertEquals("attempt-1", result.getId());
         }
 
         /**
@@ -112,11 +107,11 @@ class AttemptServiceTests {
          */
         @Test
         @DisplayName("should throw LevelNotFoundException if level does not exist")
-        void testCreateAttemptLevelNotFound() {
+        /* default */ void testCreateAttemptLevelNotFound() {
             final CreateAttemptDTO dto = new CreateAttemptDTO("non-existent", true, Duration.ZERO);
-            when(levelRepository.findById("non-existent")).thenReturn(Optional.empty());
+            Mockito.when(levelRepository.findById("non-existent")).thenReturn(Optional.empty());
 
-            assertThrows(LevelNotFoundException.class, () -> attemptService.createAttempt(testUser, dto));
+            Assertions.assertThrows(LevelNotFoundException.class, () -> attemptService.createAttempt(testUser, dto));
         }
     }
 
@@ -128,46 +123,70 @@ class AttemptServiceTests {
     /* default */ class Stats {
 
         /**
-         * Verifies retrieval of attempts by user.
+         * Verifies retrieval of attempts by user returns correct result.
          */
         @Test
         @DisplayName("should find attempts by user")
-        void testGetAttemptsByUser() {
+        /* default */ void testGetAttemptsByUser() {
             final List<Attempt> attempts = List.of(new Attempt("1", testUser, null, testLevel, true, null));
-            when(attemptRepository.findByUser(testUser)).thenReturn(attempts);
-
+            Mockito.when(attemptRepository.findByUser(testUser)).thenReturn(attempts);
             final List<Attempt> result = attemptService.getAttemptsByUser(testUser);
-
-            assertEquals(1, result.size());
-            verify(attemptRepository).findByUser(testUser);
+            Assertions.assertEquals(1, result.size());
         }
 
         /**
-         * Verifies played levels count.
+         * Verifies retrieval of attempts by user delegates to repository.
+         */
+        @Test
+        @DisplayName("should delegate to the repository when getting attempts by user")
+        /* default */ void testGetAttemptsByUserCallsRepo() {
+            Mockito.when(attemptRepository.findByUser(testUser)).thenReturn(List.of());
+            attemptService.getAttemptsByUser(testUser);
+            Mockito.verify(attemptRepository).findByUser(testUser);
+        }
+
+        /**
+         * Verifies played levels count returns correct value.
          */
         @Test
         @DisplayName("should count played levels correctly")
-        void testGetPlayedLevelsCount() {
-            when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
-
+        /* default */ void testGetPlayedLevelsCount() {
+            Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
             final long count = attemptService.getPlayedLevelsCount(testUser);
-
-            assertEquals(5L, count);
-            verify(attemptRepository).countDistinctPlayedLevelsByUser(testUser);
+            Assertions.assertEquals(5L, count);
         }
 
         /**
-         * Verifies completed levels count.
+         * Verifies played levels count delegates to repository.
+         */
+        @Test
+        @DisplayName("should delegate to the repository when counting played levels")
+        /* default */ void testGetPlayedLevelsCountCallsRepo() {
+            Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
+            attemptService.getPlayedLevelsCount(testUser);
+            Mockito.verify(attemptRepository).countDistinctPlayedLevelsByUser(testUser);
+        }
+
+        /**
+         * Verifies completed levels count returns correct value.
          */
         @Test
         @DisplayName("should count completed levels correctly")
-        void testGetCompletedLevelsCount() {
-            when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
-
+        /* default */ void testGetCompletedLevelsCount() {
+            Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
             final long count = attemptService.getCompletedLevelsCount(testUser);
+            Assertions.assertEquals(3L, count);
+        }
 
-            assertEquals(3L, count);
-            verify(attemptRepository).countDistinctCompletedLevelsByUser(testUser);
+        /**
+         * Verifies completed levels count delegates to repository.
+         */
+        @Test
+        @DisplayName("should delegate to the repository when counting completed levels")
+        /* default */ void testGetCompletedLevelsCountCallsRepo() {
+            Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
+            attemptService.getCompletedLevelsCount(testUser);
+            Mockito.verify(attemptRepository).countDistinctCompletedLevelsByUser(testUser);
         }
     }
 }

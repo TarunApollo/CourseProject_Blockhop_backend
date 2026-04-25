@@ -9,6 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,10 +29,6 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 /**
  * UserControllerLogicTests (black-box testing).
@@ -98,10 +95,10 @@ class UserControllerLogicTests {
      */
     @BeforeEach
     /* default */ void setup() {
-        when(userService.getById(any())).thenReturn(Optional.empty());
-        when(userService.getById(user1.getId())).thenReturn(Optional.of(user1));
-        when(userService.getById(user2.getId())).thenReturn(Optional.of(user2));
-        when(userService.getAllUsers()).thenReturn(List.of(user1, user2));
+        Mockito.when(userService.getById(Mockito.any())).thenReturn(Optional.empty());
+        Mockito.when(userService.getById(user1.getId())).thenReturn(Optional.of(user1));
+        Mockito.when(userService.getById(user2.getId())).thenReturn(Optional.of(user2));
+        Mockito.when(userService.getAllUsers()).thenReturn(List.of(user1, user2));
     }
 
     /**
@@ -111,7 +108,7 @@ class UserControllerLogicTests {
     @DisplayName("GET /users should return list of users")
     void testGetUsers() {
         final List<UserDTO> expectedUsers = List.of(new UserDTO(user1), new UserDTO(user2));
-        assertDoesNotThrow(() -> restTestClient.get().uri("/users")
+        Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(new ParameterizedTypeReference<List<UserDTO>>() {
@@ -127,16 +124,16 @@ class UserControllerLogicTests {
     @DisplayName("GET /users/profile should return full profile for authenticated user")
     void testGetProfile() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
-            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(any())).thenReturn("userid1");
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn("userid1");
 
-            when(attemptService.getPlayedLevelsCount(user1)).thenReturn(5L);
-            when(attemptService.getCompletedLevelsCount(user1)).thenReturn(3L);
-            when(levelService.getCreatedLevelsByUser(user1)).thenReturn(Collections.emptyList());
+            Mockito.when(attemptService.getPlayedLevelsCount(user1)).thenReturn(5L);
+            Mockito.when(attemptService.getCompletedLevelsCount(user1)).thenReturn(3L);
+            Mockito.when(levelService.getCreatedLevelsByUser(user1)).thenReturn(Collections.emptyList());
 
             final UserProfileDTO expectedProfile = new UserProfileDTO(user1.getName(), 5L,
                     3L, Collections.emptyList());
 
-            assertDoesNotThrow(() -> restTestClient.get().uri("/users/profile")
+            Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users/profile")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserProfileDTO.class)
@@ -151,11 +148,11 @@ class UserControllerLogicTests {
     @DisplayName("GET /users/me should return current user when already exists")
     void testGetMeExistingUser() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
-            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(any())).thenReturn("userid1");
-            mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(any())).thenReturn("Alan Turing");
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn("userid1");
+            mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(Mockito.any())).thenReturn("Alan Turing");
 
             final UserDTO expectedUserDTO = new UserDTO(user1);
-            assertDoesNotThrow(() -> restTestClient.get().uri("/users/me")
+            Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users/me")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)
@@ -170,15 +167,15 @@ class UserControllerLogicTests {
     @DisplayName("GET /users/me should create and return user when not exists")
     void testGetMeNewUser() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
-            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(any())).thenReturn("new-userid");
-            mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(any())).thenReturn("New User");
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn("new-userid");
+            mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(Mockito.any())).thenReturn("New User");
 
             final User newUser = new User("new-userid", "New User");
-            when(userService.getById("new-userid")).thenReturn(Optional.empty());
-            when(userService.createUser(any(CreateUserDTO.class))).thenReturn(newUser);
+            Mockito.when(userService.getById("new-userid")).thenReturn(Optional.empty());
+            Mockito.when(userService.createUser(Mockito.any(CreateUserDTO.class))).thenReturn(newUser);
 
             final UserDTO expectedUserDTO = new UserDTO(newUser);
-            assertDoesNotThrow(() -> restTestClient.get().uri("/users/me")
+            Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users/me")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)

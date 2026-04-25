@@ -1,8 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
-import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
-import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserNameFromAuth;
-
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
@@ -10,6 +7,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +27,7 @@ public class UserController {
     private final AttemptService attemptService;
 
     /// Constructs a new UserController with the given dependencies.
-    /// 
+    ///
     /// @param userService    the service for accessing user data
     /// @param levelService   the service for managing level operations
     /// @param attemptService the service for querying attempt-related statistics
@@ -48,7 +46,7 @@ public class UserController {
     }
 
     /// Returns the user with the given id.
-    /// 
+    ///
     /// @spec.requires id is not null.
     /// @param id the user's unique identifier (path variable)
     /// @return a 200 OK response containing the user as a UserDTO if found, or a 404
@@ -60,7 +58,7 @@ public class UserController {
     }
 
     /// Searches for users whose name matches the given query string.
-    /// 
+    ///
     /// @spec.requires partialName is not null.
     /// @param partialName the string to search for in user names (request parameter
     ///                    "query")
@@ -72,7 +70,7 @@ public class UserController {
     }
 
     /// Returns the profile information for the authenticated user.
-    /// 
+    ///
     /// @spec.requires authentication is not null.
     /// @param authentication token containing information about the logged-in user
     /// @return a 200 OK response containing the user's profile information (name,
@@ -80,7 +78,7 @@ public class UserController {
     ///         levels), or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
-        String userId = getUserIdFromAuth(authentication);
+        String userId = AuthUtils.getUserIdFromAuth(authentication);
 
         return ResponseEntity.of(this.userService.getById(userId)
                 .map(user -> new UserProfileDTO(
@@ -99,8 +97,8 @@ public class UserController {
     public ResponseEntity<UserDTO> index(Authentication authentication) {
         // Reuse the shared auth helper so /me and /profile resolve the current user id
         // the same way.
-        String eduId = getUserIdFromAuth(authentication);
-        String fullName = getUserNameFromAuth(authentication);
+        String eduId = AuthUtils.getUserIdFromAuth(authentication);
+        String fullName = AuthUtils.getUserNameFromAuth(authentication);
 
         Optional<User> optUser = this.userService.getById(eduId);
         return optUser.map(user -> ResponseEntity.ok(new UserDTO(user)))

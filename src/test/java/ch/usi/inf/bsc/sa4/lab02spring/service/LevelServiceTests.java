@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
@@ -18,12 +19,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,17 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 /**
  * Unit tests for the LevelService.
  * Goal: Test service logic in isolation using Mockito.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The Level Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway", "PMD.ExcessiveImports" })
 /* default */ class LevelServiceTests {
 
     /** The mocked level repository. */
@@ -63,28 +60,7 @@ import static org.mockito.Mockito.*;
     @Mock
     private AttemptRepository attemptRepository;
 
-    /** The mocked level thumbnail repository. */
-    @Mock
-    private LevelThumbnailRepository levelThumbnailRepository;
-
-    /** The mocked thumbnail repository. */
-    @Mock
-    private ThumbnailRepository thumbnailRepository;
-
-    /** The mocked attempt service. */
-    @Mock
-    private AttemptService attemptService;
-
-    /** The mocked tileset service. */
-    @Mock
-    private TileSetService tileSetService;
-
-    /** The mocked layer converter. */
-    @Mock
-    private LayerToTiledMapConverter layerToTiledMapConverter;
-
     /** The service under test. */
-    @InjectMocks
     private LevelService levelService;
 
     /** Default user ID used in tests. */
@@ -105,6 +81,9 @@ import static org.mockito.Mockito.*;
     /** Expected success message from submitAttempt. */
     private static final String SUCCESS_MSG = "Successful level submission.";
 
+    /** Shared display name for level-not-found tests. */
+    private static final String LEVEL_NOT_FOUND_DISPLAY = "should throw LevelNotFoundException when level does not exist";
+
     /** The test user. */
     private User testUser;
 
@@ -118,6 +97,16 @@ import static org.mockito.Mockito.*;
     /* default */ void setup() {
         this.testUser = new User(USER_ID, USER_NAME);
         this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, this.testUser);
+        this.levelService = new LevelService(
+                levelRepository,
+                userService,
+                attemptRepository,
+                Mockito.mock(LevelThumbnailRepository.class),
+                Mockito.mock(ThumbnailRepository.class),
+                userRepository,
+                Mockito.mock(AttemptService.class),
+                Mockito.mock(TileSetService.class),
+                Mockito.mock(LayerToTiledMapConverter.class));
     }
 
     /**
@@ -125,7 +114,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when creating a level")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class CreateLevel {
 
         /**
@@ -135,10 +123,10 @@ import static org.mockito.Mockito.*;
         @DisplayName("should save and return a new level for an existing user")
         /* default */ void testCreateLevelReturnsLevel() {
             final CreateLevelDTO dto = new CreateLevelDTO(LEVEL_TITLE, LEVEL_DESC);
-            when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
-            when(levelRepository.save(any(Level.class))).thenReturn(testLevel);
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelRepository.save(Mockito.any(Level.class))).thenReturn(testLevel);
             final Level result = levelService.createLevel(dto, USER_ID);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
 
         /**
@@ -148,8 +136,8 @@ import static org.mockito.Mockito.*;
         @DisplayName("should throw UserNotFoundException when user does not exist")
         /* default */ void testCreateLevelUserNotFound() {
             final CreateLevelDTO dto = new CreateLevelDTO(LEVEL_TITLE, LEVEL_DESC);
-            when(userService.getById(USER_ID)).thenReturn(Optional.empty());
-            assertThrows(UserNotFoundException.class, () -> levelService.createLevel(dto, USER_ID));
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(UserNotFoundException.class, () -> levelService.createLevel(dto, USER_ID));
         }
     }
 
@@ -158,7 +146,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when cloning a level")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class CloneLevel {
 
         /**
@@ -168,11 +155,11 @@ import static org.mockito.Mockito.*;
         @DisplayName("should return a non-empty optional when the level is owned by the user")
         /* default */ void testCloneLevelOwned() {
             final CloneLevelDTO dto = new CloneLevelDTO(LEVEL_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(levelRepository.findByCreator(testUser)).thenReturn(List.of());
-            when(levelRepository.save(any(Level.class))).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findByCreator(testUser)).thenReturn(List.of());
+            Mockito.when(levelRepository.save(Mockito.any(Level.class))).thenReturn(testLevel);
             final Optional<Level> result = levelService.cloneLevel(dto, testUser);
-            assertTrue(result.isPresent());
+            Assertions.assertTrue(result.isPresent());
         }
 
         /**
@@ -183,9 +170,9 @@ import static org.mockito.Mockito.*;
         /* default */ void testCloneLevelNotOwned() {
             final User otherUser = new User("user-2", "Luigi");
             final CloneLevelDTO dto = new CloneLevelDTO(LEVEL_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
             final Optional<Level> result = levelService.cloneLevel(dto, otherUser);
-            assertTrue(result.isEmpty());
+            Assertions.assertTrue(result.isEmpty());
         }
     }
 
@@ -194,7 +181,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when deleting a level")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class DeleteLevel {
 
         /**
@@ -203,19 +189,19 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should delete an owned unpublished level")
         /* default */ void testDeleteLevel() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
             levelService.deleteLevel(USER_ID, LEVEL_ID);
-            verify(levelRepository).deleteById(LEVEL_ID);
+            Mockito.verify(levelRepository).deleteById(LEVEL_ID);
         }
 
         /**
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testDeleteLevelNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
-            assertThrows(LevelNotFoundException.class, () -> levelService.deleteLevel(USER_ID, LEVEL_ID));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(LevelNotFoundException.class, () -> levelService.deleteLevel(USER_ID, LEVEL_ID));
         }
     }
 
@@ -224,7 +210,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when updating level properties")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class UpdateLevelProperties {
 
         /**
@@ -234,21 +219,21 @@ import static org.mockito.Mockito.*;
         @DisplayName("should save and return the updated level")
         /* default */ void testUpdateLevelReturnsLevel() {
             final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
             final Level result = levelService.updateLevelProperties(testUser, LEVEL_ID, dto);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
 
         /**
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testUpdateLevelNotFound() {
             final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty());
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
-            assertThrows(LevelNotFoundException.class,
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(LevelNotFoundException.class,
                     () -> levelService.updateLevelProperties(testUser, LEVEL_ID, dto));
         }
     }
@@ -258,7 +243,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when publishing a level")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class Publish {
 
         /**
@@ -268,11 +252,11 @@ import static org.mockito.Mockito.*;
         @DisplayName("should publish and return the level")
         /* default */ void testPublishReturnsLevel() {
             final Level mockLevel = Mockito.mock(Level.class);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
-            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
-            when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
             final Level result = levelService.publish(USER_ID, LEVEL_ID);
-            assertEquals(mockLevel, result);
+            Assertions.assertEquals(mockLevel, result);
         }
 
         /**
@@ -282,21 +266,21 @@ import static org.mockito.Mockito.*;
         @DisplayName("should call publish on the domain level")
         /* default */ void testPublishCallsDomainMethod() {
             final Level mockLevel = Mockito.mock(Level.class);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
-            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
-            when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
             levelService.publish(USER_ID, LEVEL_ID);
-            verify(mockLevel).publish(USER_ID);
+            Mockito.verify(mockLevel).publish(USER_ID);
         }
 
         /**
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testPublishLevelNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
-            assertThrows(LevelNotFoundException.class, () -> levelService.publish(USER_ID, LEVEL_ID));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(LevelNotFoundException.class, () -> levelService.publish(USER_ID, LEVEL_ID));
         }
 
         /**
@@ -306,9 +290,9 @@ import static org.mockito.Mockito.*;
         @DisplayName("should throw UserNotFoundException when user does not exist")
         /* default */ void testPublishUserNotFound() {
             final Level mockLevel = Mockito.mock(Level.class);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
-            when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
-            assertThrows(UserNotFoundException.class, () -> levelService.publish(USER_ID, LEVEL_ID));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
+            Assertions.assertThrows(UserNotFoundException.class, () -> levelService.publish(USER_ID, LEVEL_ID));
         }
     }
 
@@ -317,7 +301,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when unpublishing a level")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class UnpublishLevel {
 
         /**
@@ -327,10 +310,10 @@ import static org.mockito.Mockito.*;
         @DisplayName("should return the unpublished level")
         /* default */ void testUnpublishReturnsLevel() {
             final Level mockLevel = Mockito.mock(Level.class);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
-            when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.when(levelRepository.save(mockLevel)).thenReturn(mockLevel);
             final Level result = levelService.unpublishLevel(USER_ID, LEVEL_ID);
-            assertNotNull(result);
+            Assertions.assertNotNull(result);
         }
     }
 
@@ -339,7 +322,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when getting published levels")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class GetPublishedLevels {
 
         /**
@@ -348,12 +330,12 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return published levels sorted by clear rate")
         /* default */ void testGetPublishedLevelsClearRate() {
-            when(levelRepository.findByPublishedTrue()).thenReturn(List.of(testLevel));
-            when(attemptRepository.countByLevel(testLevel)).thenReturn(10L);
-            when(attemptRepository.countByLevelAndCompletedTrue(testLevel)).thenReturn(5L);
-            final var result = levelService.getPublishedLevels(
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(testLevel));
+            Mockito.when(attemptRepository.countByLevel(testLevel)).thenReturn(10L);
+            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(testLevel)).thenReturn(5L);
+            final List<LevelSummaryDto> result = levelService.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE, DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
-            assertEquals(1, result.size());
+            Assertions.assertEquals(1, result.size());
         }
     }
 
@@ -362,7 +344,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when getting a level by ID")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class GetById {
 
         /**
@@ -371,9 +352,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return a non-empty optional when the level exists")
         /* default */ void testGetByIdFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
             final Optional<Level> result = levelService.getById(LEVEL_ID);
-            assertTrue(result.isPresent());
+            Assertions.assertTrue(result.isPresent());
         }
 
         /**
@@ -382,9 +363,9 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should return an empty optional when the level does not exist")
         /* default */ void testGetByIdNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
             final Optional<Level> result = levelService.getById(LEVEL_ID);
-            assertTrue(result.isEmpty());
+            Assertions.assertTrue(result.isEmpty());
         }
     }
 
@@ -393,7 +374,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when validating a level submission")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class ValidateLevelSubmission {
 
         /**
@@ -405,7 +385,7 @@ import static org.mockito.Mockito.*;
             final AttemptDTO dto = new AttemptDTO(
                     Map.of(), new Position(0, 0), ZonedDateTime.now(), Duration.ZERO, false);
             final boolean result = levelService.validateLevelSubmission(testLevel, dto);
-            assertTrue(result);
+            Assertions.assertTrue(result);
         }
 
         /**
@@ -418,7 +398,7 @@ import static org.mockito.Mockito.*;
             final AttemptDTO dto = new AttemptDTO(
                     layer, new Position(0, 0), ZonedDateTime.now(), Duration.ZERO, false);
             final boolean result = levelService.validateLevelSubmission(testLevel, dto);
-            assertFalse(result);
+            Assertions.assertFalse(result);
         }
     }
 
@@ -427,7 +407,6 @@ import static org.mockito.Mockito.*;
      */
     @Nested
     @DisplayName("when submitting an attempt")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class SubmitAttempt {
 
         /**
@@ -437,13 +416,13 @@ import static org.mockito.Mockito.*;
         @DisplayName("should return a success message for a published level")
         /* default */ void testSubmitAttemptSuccess() {
             final Level mockLevel = Mockito.mock(Level.class);
-            Mockito.lenient().when(mockLevel.isPublished()).thenReturn(true);
-            when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
+            Mockito.lenient().when(mockLevel.isPublished()).thenReturn(Boolean.TRUE);
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(mockLevel));
             final AttemptDTO dto = new AttemptDTO(
                     Map.of(), new Position(0, 0), ZonedDateTime.now(), Duration.ZERO, true);
             final String result = levelService.submitAttempt(LEVEL_ID, USER_ID, dto);
-            assertEquals(SUCCESS_MSG, result);
+            Assertions.assertEquals(SUCCESS_MSG, result);
         }
 
         /**
@@ -452,10 +431,10 @@ import static org.mockito.Mockito.*;
         @Test
         @DisplayName("should throw UserNotFoundException when user does not exist")
         /* default */ void testSubmitAttemptUserNotFound() {
-            when(userService.getById(USER_ID)).thenReturn(Optional.empty());
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
             final AttemptDTO dto = new AttemptDTO(
                     Map.of(), new Position(0, 0), ZonedDateTime.now(), Duration.ZERO, true);
-            assertThrows(UserNotFoundException.class,
+            Assertions.assertThrows(UserNotFoundException.class,
                     () -> levelService.submitAttempt(LEVEL_ID, USER_ID, dto));
         }
 
@@ -463,13 +442,13 @@ import static org.mockito.Mockito.*;
          * Verifies that LevelNotFoundException is thrown when level does not exist.
          */
         @Test
-        @DisplayName("should throw LevelNotFoundException when level does not exist")
+        @DisplayName(LEVEL_NOT_FOUND_DISPLAY)
         /* default */ void testSubmitAttemptLevelNotFound() {
-            when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
             final AttemptDTO dto = new AttemptDTO(
                     Map.of(), new Position(0, 0), ZonedDateTime.now(), Duration.ZERO, true);
-            assertThrows(LevelNotFoundException.class,
+            Assertions.assertThrows(LevelNotFoundException.class,
                     () -> levelService.submitAttempt(LEVEL_ID, USER_ID, dto));
         }
     }
