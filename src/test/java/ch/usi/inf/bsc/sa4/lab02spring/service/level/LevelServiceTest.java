@@ -46,7 +46,8 @@ import static org.mockito.Mockito.when;
 /// Verifies create, clone, update, delete, and listing semantics.
 @DisplayName("LevelService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
+    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class LevelServiceTest {
 
     /// Identifier of the level under test.

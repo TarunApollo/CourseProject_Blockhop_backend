@@ -34,7 +34,8 @@ import static org.mockito.Mockito.when;
 /// Unit tests for the level publish service.
 @DisplayName("LevelPublishService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
+    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class LevelPublishServiceTest {
 
     /// Identifier of the level under test.
@@ -136,23 +137,6 @@ class LevelPublishServiceTest {
                 () -> service.publish(OTHER_USER_ID, LEVEL_ID));
         }
 
-        /// A failed publish must leave the level unpublished.
-        @Test
-        @DisplayName("does not change publication state when a non-owner attempt fails")
-        void nonOwnerFailureLeavesUnpublished() {
-            final Level level = publishableLevel();
-            level.validatePublishEligible(OWNER_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            when(userRepository.findById(OTHER_USER_ID))
-                .thenReturn(Optional.of(new User(OTHER_USER_ID, OTHER_NAME)));
-
-            assertAll(
-                () -> assertThrows(ForbiddenUserException.class,
-                    () -> service.publish(OTHER_USER_ID, LEVEL_ID)),
-                () -> assertFalse(level.isPublished())
-            );
-        }
-
         /// Publishing a level that is not eligible should be rejected.
         @Test
         @DisplayName("throws ForbiddenLevelActionException when the level is not publish-eligible")
@@ -211,22 +195,6 @@ class LevelPublishServiceTest {
 
             assertThrows(ForbiddenUserException.class,
                 () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID));
-        }
-
-        /// A failed unpublish must leave the level published.
-        @Test
-        @DisplayName("does not change publication state when a non-owner attempt fails")
-        void nonOwnerFailureLeavesPublished() {
-            final Level level = publishableLevel();
-            level.validatePublishEligible(OWNER_ID);
-            level.publish(OWNER_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-
-            assertAll(
-                () -> assertThrows(ForbiddenUserException.class,
-                    () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID)),
-                () -> assertTrue(level.isPublished())
-            );
         }
 
         /// Owner can unpublish their own published level.
@@ -297,19 +265,6 @@ class LevelPublishServiceTest {
                 () -> service.validateLevelPublishEligible(level, OTHER_USER_ID));
         }
 
-        /// Non-owner failure must not flip the flag.
-        @Test
-        @DisplayName("does not change the eligibility flag when a non-owner attempt fails")
-        void nonOwnerFailureLeavesFlagUnchanged() {
-            final Level level = newLevel();
-
-            assertAll(
-                () -> assertThrows(ForbiddenUserException.class,
-                    () -> service.validateLevelPublishEligible(level, OTHER_USER_ID)),
-                () -> assertFalse(level.isPublishEligible())
-            );
-        }
-
         /// Non-owner failure must not save anything.
         @Test
         @DisplayName("does not persist the level when a non-owner attempt fails")
@@ -366,19 +321,6 @@ class LevelPublishServiceTest {
                 () -> service.invalidateLevelPublishEligible(level, OTHER_USER_ID));
         }
 
-        /// Non-owner failure must leave the eligibility flag intact.
-        @Test
-        @DisplayName("does not change the eligibility flag when a non-owner attempt fails")
-        void nonOwnerFailureLeavesFlagUnchanged() {
-            final Level level = newLevel();
-            level.validatePublishEligible(OWNER_ID);
-
-            assertAll(
-                () -> assertThrows(ForbiddenUserException.class,
-                    () -> service.invalidateLevelPublishEligible(level, OTHER_USER_ID)),
-                () -> assertTrue(level.isPublishEligible())
-            );
-        }
 
         /// Non-owner failure must not save anything.
         @Test

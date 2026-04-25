@@ -18,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /// Unit tests for the TiledTilesetMapper utility.
 @DisplayName("TiledTilesetMapper.buildTileset")
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
+    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class TiledTilesetMapperTest {
 
     /// JSON key for the Tiled `firstgid` field.
@@ -336,7 +337,7 @@ class TiledTilesetMapperTest {
             assertFalse(tilesOf(result).get(0).containsKey(PROPERTIES_KEY));
         }
 
-        /// An empty properties list on the source tile should suppress the properties entry.
+        /// An empty properties list suppresses the properties entry.
         @Test
         @DisplayName("omits properties key when tile properties are empty")
         void emptyPropertiesOmitted() {

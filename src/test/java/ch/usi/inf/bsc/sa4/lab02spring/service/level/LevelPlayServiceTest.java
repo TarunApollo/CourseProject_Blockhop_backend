@@ -41,7 +41,8 @@ import static org.mockito.Mockito.when;
 /// Unit tests for the level play service.
 @DisplayName("LevelPlayService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
+    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class LevelPlayServiceTest {
 
     /// Identifier of the level under test.
@@ -94,7 +95,7 @@ class LevelPlayServiceTest {
         return new Level(LEVEL_TITLE, LEVEL_DESC, owner);
     }
 
-    /// Builds a level with one start flag and one exit door so that publish() can succeed.
+    /// Builds a level with start flag and exit door so publish() succeeds.
     private Level publishableLevel() {
         final Level level = newLevel();
         final Position flag = new Position(1, 1);
@@ -244,7 +245,7 @@ class LevelPlayServiceTest {
             verify(attemptService, never()).submitAttempt(any(), any(), any());
         }
 
-        /// Owner completing their own unpublished level should validate publish eligibility.
+        /// Owner completing own unpublished level validates eligibility.
         @Test
         @DisplayName("triggers publish-eligibility validation when owner completes their own unpublished level")
         void ownerCompletesUnpublishedTriggersEligibility() {
@@ -298,7 +299,7 @@ class LevelPlayServiceTest {
             verify(attemptService).submitAttempt(any(), any(), any());
         }
 
-        /// Already-published level should skip eligibility validation regardless of submitter.
+        /// Published levels skip eligibility validation regardless of submitter.
         @Test
         @DisplayName("does not trigger eligibility check when the level is already published")
         void publishedLevelSkipsEligibility() {

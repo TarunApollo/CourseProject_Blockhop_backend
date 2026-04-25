@@ -30,7 +30,8 @@ import static org.mockito.Mockito.lenient;
 /// Unit tests for the LayerToTiledMapConverter top-level pipeline.
 @DisplayName("LayerToTiledMapConverter.convertPipeline")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor"})
+@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
+    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
 class LayerToTiledMapConverterTest {
 
     /// JSON key for the Tiled `name` field.
@@ -487,7 +488,7 @@ class LayerToTiledMapConverterTest {
     // Sanity: tileset's tiles list is part of the result
     // ====================================================================
 
-    /// The tileset entry should expose a tiles list (from the delegated tileset mapper).
+    /// The tileset entry should expose a tiles list.
     @Test
     @DisplayName("delegates tileset conversion so the tileset map exposes a tiles list")
     void tilesetExposesTilesList() {
