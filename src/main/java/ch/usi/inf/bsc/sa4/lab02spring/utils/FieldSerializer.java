@@ -16,24 +16,28 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Custom Jackson serializers and deserializers for Level DTO map fields. */
 public class FieldSerializer {
 
-    static public class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
+    /** Serializes the object layer map ({@link Position} → {@link GameObject}) to JSON. */
+    public static class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
 
+        /** Creates a new LevelDTOObjectLayerSerializer. */
         public LevelDTOObjectLayerSerializer() {
             this(Map.class);
         }
 
-        protected LevelDTOObjectLayerSerializer(Class<?> t) {
+        /** Creates a new LevelDTOObjectLayerSerializer for the given raw type. */
+        protected LevelDTOObjectLayerSerializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Map<Position, GameObject> value, JsonGenerator jgen, SerializationContext provider)
+        public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen, final SerializationContext provider)
                 throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GameObject> element : value.entrySet()) {
-                var key = element.getKey().compactString();
+            for (final Map.Entry<Position, GameObject> element : value.entrySet()) {
+                final var key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -41,22 +45,25 @@ public class FieldSerializer {
         }
     }
 
-    static public class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
+    /** Serializes the world layer map ({@link Position} → {@link GroundObject}) to JSON. */
+    public static class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
 
+        /** Creates a new LevelDTOWorldLayerSerializer. */
         public LevelDTOWorldLayerSerializer() {
             this(Map.class);
         }
 
-        protected LevelDTOWorldLayerSerializer(Class<?> t) {
+        /** Creates a new LevelDTOWorldLayerSerializer for the given raw type. */
+        protected LevelDTOWorldLayerSerializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Map<Position, GroundObject> value, JsonGenerator jgen, SerializationContext provider)
+        public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen, final SerializationContext provider)
                 throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GroundObject> element : value.entrySet()) {
-                var key = element.getKey().compactString();
+            for (final Map.Entry<Position, GroundObject> element : value.entrySet()) {
+                final var key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -64,43 +71,52 @@ public class FieldSerializer {
         }
     }
 
-    static public class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
+    /** Deserializes the world layer map ({@link Position} → {@link GroundObject}) from JSON. */
+    public static class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
 
+        /** Creates a new WorldLayerDeserializer. */
         public WorldLayerDeserializer() {
             this(Map.class);
         }
 
-        protected WorldLayerDeserializer(Class<?> t) {
+        /** Creates a new WorldLayerDeserializer for the given raw type. */
+        protected WorldLayerDeserializer(final Class<?> t) {
             super(t);
         }
 
+        /** Parses a compact {@code "x,y"} key string into a {@link Position}. */
+        private static Position parsePosition(final String compactKey) {
+            final String[] coords = compactKey.split(",");
+            return new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
+        }
+
         @Override
-        public Map<Position, GroundObject> deserialize(JsonParser p, DeserializationContext context) {
-            Map<Position, GroundObject> map = new HashMap<>();
+        public Map<Position, GroundObject> deserialize(final JsonParser p, final DeserializationContext context) {
+            final Map<Position, GroundObject> map = new HashMap<>();
 
             while (p.nextToken() != JsonToken.END_OBJECT) {
-                String name = p.currentName();
+                final String name = p.currentName();
                 p.nextToken();
 
-                String[] coords = name.split(",");
-                Position pos = new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
+                final Position pos = parsePosition(name);
 
                 // This assumes GameObject has @JsonTypeInfo or similar setup for polymorphism.
                 // If not, you might need to read it as a JsonNode and use your factory.
-                GroundObject obj = p.readValueAs(GroundObject.class);
+                final GroundObject obj = p.readValueAs(GroundObject.class);
                 map.put(pos, obj);
             }
             return map;
         }
     }
 
-    static public class PositionKeyDeserializer extends tools.jackson.databind.KeyDeserializer {
+    /** Deserializes a compact position string (e.g. {@code "x,y"}) into a {@link Position} map key. */
+    public static class PositionKeyDeserializer extends tools.jackson.databind.KeyDeserializer {
         @Override
-        public Object deserializeKey(String key, DeserializationContext ctxt) {
+        public Object deserializeKey(final String key, final DeserializationContext ctxt) {
             if (key == null || key.isEmpty()) {
                 throw new IllegalArgumentException("key can't be null or empty");
             }
-            String[] coords = key.split(",");
+            final String[] coords = key.split(",");
             return new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
         }
     }
