@@ -22,35 +22,34 @@ import java.util.Map;
 // Black-box tests for FieldSerializer inner classes.
 // Verifies serialization of Position-keyed maps to JSON and
 // deserialization of compact position keys back into Position objects.
-@DisplayName(" In the FieldSerializer class ")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings("NullAway")
 /* package */ class FieldSerializerTests {
 
-    // Position used across tests.
+    /** Position used across tests. */
     private static final Position TEST_POS = new Position(3, 7);
 
-    // Compact string representation of TEST_POS.
+    /** Compact string representation of TEST_POS. */
     private static final String COMPACT_KEY = "3,7";
 
-    // Ground object used across tests.
+    /** Ground object used across tests. */
     private static final GroundObject TEST_GROUND = new GroundObject(42);
 
-    // Game object (StartFlag) used across tests.
+    /** Game object (StartFlag) used across tests. */
     private static final StartFlag TEST_OBJECT = new StartFlag(68, TEST_POS);
 
-    // JSON input for world layer deserialization tests.
+    /** JSON input for world layer deserialization tests. */
     private static final String WORLD_JSON = "{\"3,7\":{\"gid\":42}}";
 
-    // ObjectMapper configured with the object layer serializer.
+    /** ObjectMapper configured with the object layer serializer. */
     private static ObjectMapper objectLayerMapper;
 
-    // ObjectMapper configured with the world layer serializer.
+    /** ObjectMapper configured with the world layer serializer. */
     private static ObjectMapper worldLayerMapper;
 
-    // ObjectMapper configured with the world layer deserializer.
+    /** ObjectMapper configured with the world layer deserializer. */
     private static ObjectMapper worldLayerDeserMapper;
 
-    // PositionKeyDeserializer instance for direct testing.
+    /** PositionKeyDeserializer instance for direct testing. */
     private static FieldSerializer.PositionKeyDeserializer keyDeserializer;
 
     @BeforeAll
@@ -76,6 +75,7 @@ import java.util.Map;
         keyDeserializer = new FieldSerializer.PositionKeyDeserializer();
     }
 
+    /** Tests for LevelDTOObjectLayerSerializer. */
     @Nested
     @DisplayName("LevelDTOObjectLayerSerializer")
     /* default */ class ObjectLayerSerializerTests {
@@ -90,6 +90,7 @@ import java.util.Map;
         }
     }
 
+    /** Tests for LevelDTOWorldLayerSerializer. */
     @Nested
     @DisplayName("LevelDTOWorldLayerSerializer")
     /* default */ class WorldLayerSerializerTests {
@@ -104,6 +105,7 @@ import java.util.Map;
         }
     }
 
+    /** Tests for WorldLayerDeserializer. */
     @Nested
     @DisplayName("WorldLayerDeserializer")
     /* default */ class WorldLayerDeserializerTests {
@@ -130,6 +132,7 @@ import java.util.Map;
         }
     }
 
+    /** Tests for PositionKeyDeserializer. */
     @Nested
     @DisplayName("PositionKeyDeserializer")
     /* default */ class PositionKeyDeserializerTests {
