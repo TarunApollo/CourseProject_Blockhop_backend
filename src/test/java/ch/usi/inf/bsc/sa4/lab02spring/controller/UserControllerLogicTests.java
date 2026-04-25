@@ -9,7 +9,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 /**
- * UserControllerLogicTests (black-box testing)
+ * UserControllerLogicTests (black-box testing).
  * Goal: Test only the controller's input mapping, dependency interactions, and
  * output serialization.
  * We disable Spring's Security and mock the existence of authenticated users,
@@ -43,41 +46,70 @@ import static org.mockito.Mockito.when;
 })
 @AutoConfigureRestTestClient
 @DisplayName("User Controller Logic Tests")
-public class UserControllerLogicTests {
+@SuppressWarnings("PMD.AtLeastOneConstructor")
+class UserControllerLogicTests {
 
+    /**
+     * The mocked user service.
+     */
     @MockitoBean
     private UserService userService;
 
+    /**
+     * The mocked level service.
+     */
     @MockitoBean
     private LevelService levelService;
 
+    /**
+     * The mocked attempt service.
+     */
     @MockitoBean
     private AttemptService attemptService;
 
+    /**
+     * The RestTestClient for performing requests.
+     */
     @Autowired
     private RestTestClient restTestClient;
 
+    /**
+     * The first test user.
+     */
     private static User user1;
+
+    /**
+     * The second test user.
+     */
     private static User user2;
 
+    /**
+     * Initializes static test data.
+     */
     @BeforeAll
-    public static void testDataSetup() {
+    static void setupData() {
         user1 = new User("userid1", "Alan Turing");
         user2 = new User("userid2", "Grace Hopper");
     }
 
+    /**
+     * Sets up the test environment.
+     */
     @BeforeEach
-    void setup() {
+    /* default */ void setup() {
         when(userService.getById(any())).thenReturn(Optional.empty());
         when(userService.getById(user1.getId())).thenReturn(Optional.of(user1));
         when(userService.getById(user2.getId())).thenReturn(Optional.of(user2));
         when(userService.getAllUsers()).thenReturn(List.of(user1, user2));
     }
 
+    /**
+     * Verifies that GET /users returns a list of all users.
+     */
     @Test
     @DisplayName("GET /users should return list of users")
-    public void testGetUsers() {
-        var expectedUsers = List.of(new UserDTO(user1), new UserDTO(user2));
+    void testGetUsers() {
+        final List<UserDTO> expectedUsers = List.of(new UserDTO(user1), new UserDTO(user2));
         restTestClient.get().uri("/users")
                 .exchange()
                 .expectStatus().isOk()
@@ -86,9 +118,12 @@ public class UserControllerLogicTests {
                 .isEqualTo(expectedUsers);
     }
 
+    /**
+     * Verifies that GET /users/profile returns the full profile for an authenticated user.
+     */
     @Test
     @DisplayName("GET /users/profile should return full profile for authenticated user")
-    public void testGetProfile() {
+    void testGetProfile() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(any())).thenReturn("userid1");
 
@@ -96,7 +131,7 @@ public class UserControllerLogicTests {
             when(attemptService.getCompletedLevelsCount(user1)).thenReturn(3L);
             when(levelService.getCreatedLevelsByUser(user1)).thenReturn(Collections.emptyList());
 
-            var expectedProfile = new UserProfileDTO(user1.getName(), 5L,
+            final UserProfileDTO expectedProfile = new UserProfileDTO(user1.getName(), 5L,
                     3L, Collections.emptyList());
 
             restTestClient.get().uri("/users/profile")
@@ -107,14 +142,17 @@ public class UserControllerLogicTests {
         }
     }
 
+    /**
+     * Verifies that GET /users/me returns the current user when it already exists.
+     */
     @Test
     @DisplayName("GET /users/me should return current user when already exists")
-    public void testGetMeExistingUser() {
+    void testGetMeExistingUser() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(any())).thenReturn("userid1");
             mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(any())).thenReturn("Alan Turing");
 
-            var expectedUserDTO = new UserDTO(user1);
+            final UserDTO expectedUserDTO = new UserDTO(user1);
             restTestClient.get().uri("/users/me")
                     .exchange()
                     .expectStatus().isOk()
@@ -123,18 +161,21 @@ public class UserControllerLogicTests {
         }
     }
 
+    /**
+     * Verifies that GET /users/me creates and returns a user when it does not exist.
+     */
     @Test
     @DisplayName("GET /users/me should create and return user when not exists")
-    public void testGetMeNewUser() {
+    void testGetMeNewUser() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(any())).thenReturn("new-userid");
             mockedAuth.when(() -> AuthUtils.getUserNameFromAuth(any())).thenReturn("New User");
 
-            User newUser = new User("new-userid", "New User");
+            final User newUser = new User("new-userid", "New User");
             when(userService.getById("new-userid")).thenReturn(Optional.empty());
             when(userService.createUser(any(CreateUserDTO.class))).thenReturn(newUser);
 
-            var expectedUserDTO = new UserDTO(newUser);
+            final UserDTO expectedUserDTO = new UserDTO(newUser);
             restTestClient.get().uri("/users/me")
                     .exchange()
                     .expectStatus().isOk()
