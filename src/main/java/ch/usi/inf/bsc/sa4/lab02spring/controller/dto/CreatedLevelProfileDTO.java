@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
@@ -15,8 +16,10 @@ public record CreatedLevelProfileDTO(
         boolean publishEligible,
         ClearCondition clearCondition,
         @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
+        @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
         Map<Position, GameObject> objectLayer,
         @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
+        @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
         Map<Position, GroundObject> worldLayer,
         long playCount,
         long completeCount

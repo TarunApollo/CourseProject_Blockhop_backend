@@ -7,6 +7,7 @@ import java.util.Map;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
 import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 public record LevelDTO(
         String id,
@@ -16,13 +17,11 @@ public record LevelDTO(
         boolean published,
         boolean publishEligible,
         ClearCondition clearCondition,
-        @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
-        Map<Position, GameObject> objectLayer,
-        @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
-        Map<Position, GroundObject> worldLayer
-) {
+        @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GameObject> objectLayer,
+        @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GroundObject> worldLayer) {
 
     /// Constructs a LevelDTO from the given Level entity.
+    /// 
     /// @param level the level to convert into a DTO
     public LevelDTO(Level level) {
         this(
@@ -34,7 +33,6 @@ public record LevelDTO(
                 level.isPublishEligible(),
                 level.getClearCondition(),
                 level.getObjectLayer(),
-                level.getWorldLayer()
-        );
+                level.getWorldLayer());
     }
 }

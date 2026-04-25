@@ -18,8 +18,10 @@ public record LevelSummaryDto(
         double clearRate,
         long popularity,
         @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
+        @tools.jackson.databind.annotation.JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
         Map<Position, GameObject> objectLayer,
         @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
+        @tools.jackson.databind.annotation.JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
         Map<Position, GroundObject> worldLayer) {
 
     /// Constructs a LevelSummaryDto from the given Level entity and statistics.

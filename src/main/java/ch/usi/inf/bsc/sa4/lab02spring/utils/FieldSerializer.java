@@ -29,9 +29,10 @@ public class FieldSerializer {
         }
 
         @Override
-        public void serialize(Map<Position, GameObject> value, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
+        public void serialize(Map<Position, GameObject> value, JsonGenerator jgen, SerializationContext provider)
+                throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GameObject> element: value.entrySet()) {
+            for (Map.Entry<Position, GameObject> element : value.entrySet()) {
                 var key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
@@ -51,9 +52,10 @@ public class FieldSerializer {
         }
 
         @Override
-        public void serialize(Map<Position, GroundObject> value, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
+        public void serialize(Map<Position, GroundObject> value, JsonGenerator jgen, SerializationContext provider)
+                throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GroundObject> element: value.entrySet()) {
+            for (Map.Entry<Position, GroundObject> element : value.entrySet()) {
                 var key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
@@ -89,6 +91,17 @@ public class FieldSerializer {
                 map.put(pos, obj);
             }
             return map;
+        }
+    }
+
+    static public class PositionKeyDeserializer extends tools.jackson.databind.KeyDeserializer {
+        @Override
+        public Object deserializeKey(String key, DeserializationContext ctxt) {
+            if (key == null || key.isEmpty()) {
+                throw new IllegalArgumentException("key can't be null or empty");
+            }
+            String[] coords = key.split(",");
+            return new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
         }
     }
 }

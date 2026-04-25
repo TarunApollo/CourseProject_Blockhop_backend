@@ -1,55 +1,53 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.*;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
 @Configuration
-public class MongoConfiguration extends AbstractMongoClientConfiguration {
+public class MongoConfiguration {
 
-    @Override
-    protected String getDatabaseName() {
-        return "test";
-    }
-
-    /// Tells Spring Data MongoDB to scan the model package, discover classes with @TypeAlias annotations
-    /// (e.g., @TypeAlias("box") on Box), and resolve type aliases to their corresponding classes when deserializing.
-    /// Without this, Spring cannot map "_class": "box" back to Box.class.
-    /// So the batch endpoints would fail for example.
-    @Override
-    protected Set<String> getMappingBasePackages() {
-        return Set.of("ch.usi.inf.bsc.sa4.lab02spring.model");
-    }
-
-    @Override
-    protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-        Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
-        entitySet.addAll(Set.of(
+    @Bean
+    public MongoMappingContext mongoMappingContext(MongoCustomConversions customConversions) {
+        MongoMappingContext mappingContext = new MongoMappingContext();
+        mappingContext.setInitialEntitySet(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
-                Snail.class, Slime.class
-        ));
-        return entitySet;
+                Snail.class, Slime.class, User.class,
+                Level.class, Attempt.class));
+        mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+        return mappingContext;
+    }
+
+    @Bean
+    public MongoCustomConversions customConversions() {
+        List<Converter<?, ?>> custom = new ArrayList<>();
+        custom.add(new PositionToStringConverter());
+        custom.add(new StringToPositionConverter());
+        custom.add(new ZonedDateTimeToDateConverter());
+        custom.add(new DateToZonedDateTimeConverter());
+        return new MongoCustomConversions(custom);
     }
 
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
-        public String convert(Position position){
+        public String convert(Position position) {
             return position.compactString();
         }
     }
 
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
-        public Position convert(String string){
+        public Position convert(String string) {
             String[] parts = string.split(",");
             int posX = Integer.parseInt(parts[0]);
             int posY = Integer.parseInt(parts[1]);
@@ -71,15 +69,5 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         public ZonedDateTime convert(final Date date) {
             return date.toInstant().atZone(ZoneOffset.UTC);
         }
-    }
-
-    @Override
-    public MongoCustomConversions customConversions(){
-        List<Converter<?, ?>> custom = new ArrayList<>();
-        custom.add(new PositionToStringConverter());
-        custom.add(new StringToPositionConverter());
-        custom.add(new ZonedDateTimeToDateConverter());
-        custom.add(new DateToZonedDateTimeConverter());
-        return new MongoCustomConversions(custom);
     }
 }

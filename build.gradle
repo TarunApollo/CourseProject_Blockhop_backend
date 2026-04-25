@@ -1,5 +1,6 @@
 plugins {
 	id 'java'
+	id 'eclipse'
 	id 'org.springframework.boot' version '4.0.3'
 	id 'io.spring.dependency-management' version '1.1.7'
   	id 'net.ltgt.errorprone' version '4.3.0'
@@ -27,6 +28,8 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
 	testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x:4.24.0'
   	errorprone 'com.google.errorprone:error_prone_core:2.42.0' // https://github.com/google/error-prone
 	errorprone 'com.uber.nullaway:nullaway:0.12.12' // https://github.com/uber/NullAway

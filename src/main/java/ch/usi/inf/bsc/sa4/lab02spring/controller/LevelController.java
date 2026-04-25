@@ -85,6 +85,7 @@ public class LevelController {
     /// @param levelId the id of the level whose thumbnail is requested
     /// @return a 200 OK response containing the thumbnail image bytes
     /// @deprecated
+    @Deprecated
     @GetMapping(value = "/{levelId}/thumbnail", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getThumbnail(@PathVariable String levelId) {
         return ResponseEntity.ok()
@@ -93,6 +94,7 @@ public class LevelController {
     }
 
     /// @deprecated
+    @Deprecated
     @PutMapping(value = "/{levelId}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateThumbnail(
             final Authentication authentication,
