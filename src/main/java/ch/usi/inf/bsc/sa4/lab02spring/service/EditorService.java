@@ -19,38 +19,40 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
-/// Service for editing level layers and object properties.
+/// Applies editor updates to world and object layers.
 @Service
 public class EditorService {
 
-    /// Repository used to load and persist levels.
+    /// Persists edited levels.
     private final LevelRepository levelRepository;
-
-    /// Service used to inspect tile set metadata.
+    /// Validates tile identifiers against the loaded tileset.
     private final TileSetService tileSetService;
-
-    /// Factory used to create game objects from tile ids.
+    /// Builds domain objects for edited object-layer entries.
     private final GameObjectFactory gameObjectFactory;
+    /// Recomputes publish eligibility after edits.
+    private final LevelPublishService levelPublishService;
 
-    /// Service used for level-related validation and state updates.
-    private final LevelService levelService;
-
-    /// Creates an editor service with all required collaborators.
-    /// @param levelRepository repository for loading and saving levels
-    /// @param tileSetService service for tile metadata checks
-    /// @param gameObjectFactory factory for creating game objects
-    /// @param levelService service for level validation/update logic
+    /// Creates an editor service with its required collaborators.
+    ///
+    /// @param levelRepository persists edited levels
+    /// @param tileSetService validates ground and object gids
+    /// @param gameObjectFactory creates game objects from editor payloads
+    /// @param levelPublishService updates publish eligibility after edits
     @Autowired
-    public EditorService(final LevelRepository levelRepository, final TileSetService tileSetService,
-            final GameObjectFactory gameObjectFactory, final LevelService levelService) {
+    public EditorService(
+            final LevelRepository levelRepository,
+            final TileSetService tileSetService,
+            final GameObjectFactory gameObjectFactory,
+            final LevelPublishService levelPublishService) {
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.gameObjectFactory = gameObjectFactory;
-        this.levelService = levelService;
+        this.levelPublishService = levelPublishService;
     }
 
     /// Replaces the entire world layer of a level.
@@ -59,7 +61,8 @@ public class EditorService {
     ///
     /// @param userId  the authenticated user's ID
     /// @param levelId the level to edit
-    /// @param dto     contains the list of tiles (position + gid) representing the new world layer state
+    /// @param dto     contains the list of tiles (position + gid)
+    ///                representing the new world layer state
     /// @return the updated level
     /// @throws LevelNotFoundException   if level not found
     /// @throws ForbiddenUserException   if not level owner
@@ -82,7 +85,7 @@ public class EditorService {
 
         level.setWorldLayer(newWorldLayer);
 
-        this.levelService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -97,7 +100,8 @@ public class EditorService {
     /// @throws LevelNotFoundException if level not found
     /// @throws ForbiddenUserException if not level owner
     /// @throws LevelPublishedException if level is published
-    /// @throws IllegalArgumentException if any position is out of bounds, gid invalid, or placement rules violated
+    /// @throws IllegalArgumentException if any position is out of bounds, gid
+    ///         invalid, or placement rules are violated
     public Level replaceObjectLayer(final String userId, final String levelId, final UpdateObjectLayerDTO dto) {
         final Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
@@ -126,7 +130,7 @@ public class EditorService {
         level.ensureValidObjectLayer(newObjectLayer);
         level.setObjectLayer(newObjectLayer);
 
-        this.levelService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 
@@ -155,7 +159,7 @@ public class EditorService {
                     "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
-        this.levelService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
         return levelRepository.save(level);
     }
 }
