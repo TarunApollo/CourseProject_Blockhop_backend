@@ -69,15 +69,14 @@ class AttemptServiceTests {
      */
     @Nested
     @DisplayName("when creating an attempt")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class Creation {
 
         /**
          * Verifies that a valid attempt is saved and returned.
          */
         @Test
-        @DisplayName("should save and return a new attempt")
-        void testCreateAttempt() {
+        @DisplayName("should save and return a non null attempt")
+        void testCreateAttemptNotNull() {
             final CreateAttemptDTO dto = new CreateAttemptDTO("level-1", true, Duration.ofSeconds(10));
             final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
                     true, Duration.ofSeconds(10));
@@ -88,9 +87,24 @@ class AttemptServiceTests {
             final Attempt result = attemptService.createAttempt(testUser, dto);
 
             assertNotNull(result);
+        }
+
+        /**
+         * Verifies that the returned attempt has the correct ID.
+         */
+        @Test
+        @DisplayName("should return the correct attempt ID")
+        void testCreateAttemptCorrectId() {
+            final CreateAttemptDTO dto = new CreateAttemptDTO("level-1", true, Duration.ofSeconds(10));
+            final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
+                    true, Duration.ofSeconds(10));
+
+            when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
+            when(attemptRepository.save(any(Attempt.class))).thenReturn(savedAttempt);
+
+            final Attempt result = attemptService.createAttempt(testUser, dto);
+
             assertEquals("attempt-1", result.getId());
-            verify(levelRepository).findById("level-1");
-            verify(attemptRepository).save(any(Attempt.class));
         }
 
         /**
@@ -111,7 +125,6 @@ class AttemptServiceTests {
      */
     @Nested
     @DisplayName("when retrieving attempts and stats")
-    @SuppressWarnings("PMD.AtLeastOneConstructor")
     /* default */ class Stats {
 
         /**
