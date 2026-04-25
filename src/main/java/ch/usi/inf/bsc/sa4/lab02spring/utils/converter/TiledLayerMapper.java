@@ -1,4 +1,4 @@
-package ch.usi.inf.bsc.sa4.lab02spring.converter;
+package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
@@ -6,7 +6,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,26 +14,23 @@ import java.util.List;
 import java.util.Map;
 
 /// Maps level layers into Tiled-compatible layer structures.
-@Component
 @SuppressWarnings("PMD.UseConcurrentHashMap")
 final class TiledLayerMapper {
     /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;
 
+    /// JSON key for the Tiled `name` field.
     private static final String KEY_NAME = "name";
+    /// JSON key for the Tiled `type` field.
     private static final String KEY_TYPE = "type";
+    /// JSON key for the Tiled `visible` field.
     private static final String KEY_VISIBLE = "visible";
 
-    /// Resolves object tile type metadata.
-    private final TileSetService tileSetService;
-
-    /// Package-private constructor used by the converter package and Spring.
-    /* package */ TiledLayerMapper(final TileSetService tileSetService) {
-        this.tileSetService = tileSetService;
+    private TiledLayerMapper() {
     }
 
     /// Package-private helper that exports the world layer in Tiled format.
-    /* package */ Map<String, Object> buildWorldLayer(
+    /* package */ static Map<String, Object> buildWorldLayer(
             final Map<Position, GroundObject> worldLayer,
             final int width,
             final int height) {
@@ -68,11 +64,13 @@ final class TiledLayerMapper {
     }
 
     /// Package-private helper that exports the object layer in Tiled format.
-    /* package */ Map<String, Object> buildObjectLayer(final Map<Position, GameObject> objectLayer) {
+    /* package */ static Map<String, Object> buildObjectLayer(
+            final Map<Position, GameObject> objectLayer,
+            final TileSetService tileSetService) {
         final List<Map<String, Object>> objects = new ArrayList<>(objectLayer.size());
         int idCounter = 1;
         for (final GameObject gameObject : objectLayer.values()) {
-            objects.add(toTiledObject(gameObject, idCounter));
+            objects.add(toTiledObject(gameObject, idCounter, tileSetService));
             idCounter++;
         }
 
@@ -89,7 +87,10 @@ final class TiledLayerMapper {
         return tiledObjectLayer;
     }
 
-    private Map<String, Object> toTiledObject(final GameObject gameObject, final int id) {
+    private static Map<String, Object> toTiledObject(
+            final GameObject gameObject,
+            final int id,
+            final TileSetService tileSetService) {
         final Position pos = gameObject.pos();
         final int x = pos.x() * TILE_SIZE;
         final int y = (pos.y() + 1) * TILE_SIZE;
@@ -104,7 +105,7 @@ final class TiledLayerMapper {
         tiledObject.put(KEY_VISIBLE, Boolean.TRUE);
         tiledObject.put("rotation", 0);
         tiledObject.put(KEY_NAME, "");
-        tiledObject.put(KEY_TYPE, this.tileSetService.getObjectTileType(gameObject.gid()));
+        tiledObject.put(KEY_TYPE, tileSetService.getObjectTileType(gameObject.gid()));
 
         if (gameObject instanceof Box box) {
             final List<Map<String, Object>> properties = buildBoxProperties(box);

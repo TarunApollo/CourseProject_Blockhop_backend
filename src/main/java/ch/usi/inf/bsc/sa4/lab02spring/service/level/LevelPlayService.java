@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -13,6 +12,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.converter.LayerToTiledMapConverter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +30,6 @@ public class LevelPlayService {
     private final AttemptService attemptService;
     /// Loads the tileset used in exported maps.
     private final TileSetService tileSetService;
-    /// Converts domain levels into Tiled-compatible payloads.
-    private final LayerToTiledMapConverter layerToTiledMapConverter;
     /// Updates publish eligibility after successful submissions.
     private final LevelPublishService levelPublishService;
 
@@ -40,7 +39,6 @@ public class LevelPlayService {
     /// @param userService resolves users by identifier
     /// @param attemptService stores submitted attempts
     /// @param tileSetService loads tileset metadata
-    /// @param layerToTiledMapConverter exports playable maps
     /// @param levelPublishService updates publish eligibility
     @Autowired
     public LevelPlayService(
@@ -48,13 +46,11 @@ public class LevelPlayService {
             final UserService userService,
             final AttemptService attemptService,
             final TileSetService tileSetService,
-            final LayerToTiledMapConverter layerToTiledMapConverter,
             final LevelPublishService levelPublishService) {
         this.levelRepository = levelRepository;
         this.userService = userService;
         this.attemptService = attemptService;
         this.tileSetService = tileSetService;
-        this.layerToTiledMapConverter = layerToTiledMapConverter;
         this.levelPublishService = levelPublishService;
     }
 
@@ -105,6 +101,6 @@ public class LevelPlayService {
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensurePlayable(user.getId());
         final TileSet tileSet = this.tileSetService.getTileSet();
-        return this.layerToTiledMapConverter.convertPipeline(level, tileSet);
+        return LayerToTiledMapConverter.convertPipeline(level, tileSet, this.tileSetService);
     }
 }

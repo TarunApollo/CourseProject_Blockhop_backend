@@ -1,29 +1,19 @@
-package ch.usi.inf.bsc.sa4.lab02spring.converter;
+package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
-import org.springframework.stereotype.Component;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 /// Exports a level and tileset as a Tiled-compatible map payload.
 /// Delegates layer and tileset conversion to dedicated helpers.
-@Component
 @SuppressWarnings("PMD.UseConcurrentHashMap")
-public class LayerToTiledMapConverter {
-    /// Converts world and object layers into Tiled structures.
-    private final TiledLayerMapper tiledLayerMapper;
-
-    /// Creates a map converter with its layer conversion helper.
-    ///
-    /// @param tiledLayerMapper converts level layers into Tiled structures
-    public LayerToTiledMapConverter(final TiledLayerMapper tiledLayerMapper) {
-        this.tiledLayerMapper = tiledLayerMapper;
-    }
-
+public final class LayerToTiledMapConverter {
     private static final Map<String, Object> MAP_METADATA = Map.of(
         "type", "map",
         "orientation", "orthogonal",
@@ -33,21 +23,26 @@ public class LayerToTiledMapConverter {
         "version", "1.10",
         "tiledversion", "1.10.1",
         "compressionlevel", -1
-);
+    );
+
+    private LayerToTiledMapConverter() {
+    }
 
     /// Converts a level and tileset into the map payload expected by the
     /// frontend.
     ///
     /// @param level the level to export
     /// @param tileSet the tileset metadata referenced by the level
+    /// @param tileSetService resolves tile types referenced by object-layer entries
     /// @return a Tiled-compatible map payload
-    public Map<String, Object> convertPipeline(
+    public static Map<String, Object> convertPipeline(
             final Level level,
-            final TileSet tileSet) {
+            final TileSet tileSet,
+            final TileSetService tileSetService) {
         final Map<String, Object> worldLayer =
-                this.tiledLayerMapper.buildWorldLayer(level.getWorldLayer(), level.getWidth(), level.getHeight());
+                TiledLayerMapper.buildWorldLayer(level.getWorldLayer(), level.getWidth(), level.getHeight());
         final Map<String, Object> objectLayer =
-                this.tiledLayerMapper.buildObjectLayer(level.getObjectLayer());
+                TiledLayerMapper.buildObjectLayer(level.getObjectLayer(), tileSetService);
         final Map<String, Object> tilesetMap = TiledTilesetMapper.buildTileset(tileSet);
         final Map<String, Object> res = new LinkedHashMap<>();
         res.putAll(buildMapMetadata(level));

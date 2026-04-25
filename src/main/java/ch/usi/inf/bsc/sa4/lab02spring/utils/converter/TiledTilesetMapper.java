@@ -1,4 +1,4 @@
-package ch.usi.inf.bsc.sa4.lab02spring.converter;
+package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 
@@ -10,7 +10,9 @@ import java.util.Map;
 /// Maps tileset domain objects into Tiled-compatible structures.
 @SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
 final class TiledTilesetMapper {
+    /// JSON key for the Tiled `name` field.
     private static final String KEY_NAME = "name";
+    /// JSON key for the Tiled `type` field.
     private static final String KEY_TYPE = "type";
 
     private TiledTilesetMapper() {
