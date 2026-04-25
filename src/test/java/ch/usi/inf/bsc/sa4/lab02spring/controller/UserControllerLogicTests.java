@@ -119,7 +119,8 @@ class UserControllerLogicTests {
     }
 
     /**
-     * Verifies that GET /users/profile returns the full profile for an authenticated user.
+     * Verifies that GET /users/profile
+     * returns the full profile for an authenticated user.
      */
     @Test
     @DisplayName("GET /users/profile should return full profile for authenticated user")
