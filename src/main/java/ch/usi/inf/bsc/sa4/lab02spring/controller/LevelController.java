@@ -33,12 +33,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/levels")
 @SuppressWarnings("PMD.ExcessiveImports")
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "Spring-managed singleton; injected services are intentionally shared")
 public class LevelController {
     /// Handles level creation, publication, and play-related endpoints.
     private final LevelService levelService;

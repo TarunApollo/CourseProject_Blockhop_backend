@@ -9,6 +9,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 ///
 @RestController
 @RequestMapping("/users")
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "Spring-managed singleton; injected services are intentionally shared")
 public class UserController {
 
     ///

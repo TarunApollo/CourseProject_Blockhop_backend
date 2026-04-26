@@ -11,7 +11,6 @@ import org.junit.jupiter.api.function.Executable;
  * and fromValue() deserialization.
  */
 @DisplayName(" In the ClearConditionType enum ")
-@SuppressWarnings("PMD.AtLeastOneConstructor")
 /* package */ class ClearConditionTypeTests {
 
     /** JSON value for the BOX clear condition. */

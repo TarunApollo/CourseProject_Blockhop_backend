@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
  * getters, and setCompleted.
  */
 @DisplayName(" In the Attempt class ")
-@SuppressWarnings("PMD.AtLeastOneConstructor")
 class AttemptTests {
 
     /** User ID used when building test fixtures. */
@@ -60,7 +59,7 @@ class AttemptTests {
 
     /**
      * Verifies that an Attempt can be constructed and that
-     * getCompleted reflects the value given at construction.
+     * isCompleted reflects the value given at construction.
      */
     @DisplayName(" should reflect completion status given at construction ")
     @Test
@@ -68,7 +67,7 @@ class AttemptTests {
         final User user = createTestUser();
         final Level level = createTestLevel();
         final Attempt attempt = new Attempt(user, TIMESTAMP, level, true, DURATION);
-        Assertions.assertTrue(attempt.getCompleted());
+        Assertions.assertTrue(attempt.isCompleted());
     }
 
     /**
@@ -140,13 +139,13 @@ class AttemptTests {
         }
 
         /**
-         * Verifies that getCompleted returns true when
+         * Verifies that isCompleted returns true when
          * constructed with true.
          */
         @DisplayName(" should return true for completed ")
         @Test
         /* package */ void returnsCompletedTrue() {
-            Assertions.assertTrue(this.attempt.getCompleted());
+            Assertions.assertTrue(this.attempt.isCompleted());
         }
     }
 
@@ -183,13 +182,13 @@ class AttemptTests {
         }
 
         /**
-         * Verifies that getCompleted returns false when
+         * Verifies that isCompleted returns false when
          * constructed with false.
          */
         @DisplayName(" should return false for not completed ")
         @Test
         /* package */ void returnsCompletedFalse() {
-            Assertions.assertFalse(this.attempt.getCompleted());
+            Assertions.assertFalse(this.attempt.isCompleted());
         }
     }
 
@@ -216,24 +215,24 @@ class AttemptTests {
 
         /**
          * Verifies that setCompleted(true) causes
-         * getCompleted to return true.
+         * isCompleted to return true.
          */
         @DisplayName(" should set completed to true ")
         @Test
         /* package */ void setsTrueCorrectly() {
             this.attempt.setCompleted(true);
-            Assertions.assertTrue(this.attempt.getCompleted());
+            Assertions.assertTrue(this.attempt.isCompleted());
         }
 
         /**
          * Verifies that setCompleted(false) causes
-         * getCompleted to return false.
+         * isCompleted to return false.
          */
         @DisplayName(" should set completed to false ")
         @Test
         /* package */ void setsFalseCorrectly() {
             this.attempt.setCompleted(false);
-            Assertions.assertFalse(this.attempt.getCompleted());
+            Assertions.assertFalse(this.attempt.isCompleted());
         }
     }
 }
