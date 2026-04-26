@@ -71,12 +71,11 @@ class GameObjectFactoryTest {
         );
     }
 
-    /// Each enum constant must build the expected GameObject subtype with the
-    /// supplied gid and position preserved.
+    /// Each enum constant must build the expected GameObject subtype.
     @ParameterizedTest(name = "{0} -> {1}")
     @MethodSource("dispatchCases")
-    @DisplayName("ObjectTypeEnum dispatches each tile type to its GameObject")
-    void enumDispatchesToCorrectGameObject(
+    @DisplayName("ObjectTypeEnum dispatches each tile type to the right class")
+    void enumDispatchesToCorrectClass(
             final String tileType,
             final Class<? extends GameObject> expected,
             final Content content) {
@@ -84,7 +83,33 @@ class GameObjectFactoryTest {
             .createGameObject(GID, POS, content);
 
         assertInstanceOf(expected, result);
+    }
+
+    /// The dispatched GameObject must preserve the supplied gid.
+    @ParameterizedTest(name = "{0} preserves gid")
+    @MethodSource("dispatchCases")
+    @DisplayName("ObjectTypeEnum dispatch preserves gid")
+    void enumDispatchPreservesGid(
+            final String tileType,
+            final Class<? extends GameObject> expected,
+            final Content content) {
+        final GameObject result = ObjectTypeEnum.fromValue(tileType)
+            .createGameObject(GID, POS, content);
+
         assertEquals(GID, result.gid());
+    }
+
+    /// The dispatched GameObject must preserve the supplied position.
+    @ParameterizedTest(name = "{0} preserves pos")
+    @MethodSource("dispatchCases")
+    @DisplayName("ObjectTypeEnum dispatch preserves position")
+    void enumDispatchPreservesPos(
+            final String tileType,
+            final Class<? extends GameObject> expected,
+            final Content content) {
+        final GameObject result = ObjectTypeEnum.fromValue(tileType)
+            .createGameObject(GID, POS, content);
+
         assertEquals(POS, result.pos());
     }
 
@@ -94,29 +119,40 @@ class GameObjectFactoryTest {
     void boxDispatchCarriesContent() {
         final Content content = new Content.SomeContent(CoinType.SILVER_COIN);
 
-        final GameObject result = ObjectTypeEnum.fromValue(TYPE_BOX)
+        final Box box = (Box) ObjectTypeEnum.fromValue(TYPE_BOX)
             .createGameObject(GID, POS, content);
 
-        final Box box = assertInstanceOf(Box.class, result);
         assertEquals(content, box.content());
     }
 
-    /// Each gold/silver/bronze constant must hardcode its own coin variant.
+    /// The gold-coin constant must hardcode CoinType.GOLD_COIN.
     @Test
-    @DisplayName("Coin dispatch encodes the coin variant per enum constant")
-    void coinDispatchEncodesCoinType() {
-        final Content noContent = new Content.NoContent();
+    @DisplayName("Gold coin dispatch encodes GOLD_COIN")
+    void coinDispatchEncodesGold() {
+        final Coin coin = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Gold")
+            .createGameObject(GID, POS, new Content.NoContent());
 
-        final Coin gold = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Gold")
-            .createGameObject(GID, POS, noContent);
-        final Coin silver = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Silver")
-            .createGameObject(GID, POS, noContent);
-        final Coin bronze = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Bronze")
-            .createGameObject(GID, POS, noContent);
+        assertEquals(CoinType.GOLD_COIN, coin.type());
+    }
 
-        assertEquals(CoinType.GOLD_COIN, gold.type());
-        assertEquals(CoinType.SILVER_COIN, silver.type());
-        assertEquals(CoinType.BRONZE_COIN, bronze.type());
+    /// The silver-coin constant must hardcode CoinType.SILVER_COIN.
+    @Test
+    @DisplayName("Silver coin dispatch encodes SILVER_COIN")
+    void coinDispatchEncodesSilver() {
+        final Coin coin = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Silver")
+            .createGameObject(GID, POS, new Content.NoContent());
+
+        assertEquals(CoinType.SILVER_COIN, coin.type());
+    }
+
+    /// The bronze-coin constant must hardcode CoinType.BRONZE_COIN.
+    @Test
+    @DisplayName("Bronze coin dispatch encodes BRONZE_COIN")
+    void coinDispatchEncodesBronze() {
+        final Coin coin = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Bronze")
+            .createGameObject(GID, POS, new Content.NoContent());
+
+        assertEquals(CoinType.BRONZE_COIN, coin.type());
     }
 
     /// fromValue must reject any tile-type string not registered in the enum
@@ -128,28 +164,41 @@ class GameObjectFactoryTest {
             () -> ObjectTypeEnum.fromValue(TYPE_UNKNOWN));
     }
 
-    /// The @JsonValue accessor must echo the constant's wire string so Jackson
-    /// serializes the enum as the editor's tile-type identifier.
+    /// The @JsonValue accessor must echo the BOX constant's wire string.
     @Test
-    @DisplayName("value() returns the JSON tile-type string")
-    void valueReturnsJsonTileType() {
+    @DisplayName("value() returns the JSON tile-type string for BOX")
+    void valueReturnsJsonTileTypeForBox() {
         assertEquals(TYPE_BOX, ObjectTypeEnum.BOX.value());
+    }
+
+    /// The @JsonValue accessor must echo the gold-coin wire string.
+    @Test
+    @DisplayName("value() returns the JSON tile-type string for ITEM_COIN_GOLD")
+    void valueReturnsJsonTileTypeForGold() {
         assertEquals("Item_Coin_Gold", ObjectTypeEnum.ITEM_COIN_GOLD.value());
     }
 
-    /// The 3-arg factory entry point must resolve the gid via TileSetService
-    /// and then dispatch through the enum.
+    /// The 3-arg entry point must dispatch to the type returned by TileSetService.
     @Test
-    @DisplayName("createGameObject(3-arg) delegates to TileSetService and enum")
-    void createGameObjectThreeArgDispatches() {
+    @DisplayName("createGameObject(3-arg) dispatches by resolved tile type")
+    void createGameObjectThreeArgDispatchesType() {
+        when(tileSetService.getObjectTileType(GID)).thenReturn(TYPE_BOX);
+
+        final GameObject result = factory.createGameObject(GID, POS,
+            new Content.SomeContent(CoinType.BRONZE_COIN));
+
+        assertInstanceOf(Box.class, result);
+    }
+
+    /// The 3-arg entry point must propagate the caller's content into the box.
+    @Test
+    @DisplayName("createGameObject(3-arg) propagates content into the box")
+    void createGameObjectThreeArgPropagatesContent() {
         when(tileSetService.getObjectTileType(GID)).thenReturn(TYPE_BOX);
         final Content content = new Content.SomeContent(CoinType.BRONZE_COIN);
 
-        final GameObject result = factory.createGameObject(GID, POS, content);
+        final Box box = (Box) factory.createGameObject(GID, POS, content);
 
-        final Box box = assertInstanceOf(Box.class, result);
-        assertEquals(GID, box.gid());
-        assertEquals(POS, box.pos());
         assertEquals(content, box.content());
     }
 
@@ -160,9 +209,8 @@ class GameObjectFactoryTest {
     void createGameObjectTwoArgDefaultsToNoContent() {
         when(tileSetService.getObjectTileType(GID)).thenReturn(TYPE_BOX);
 
-        final GameObject result = factory.createGameObject(GID, POS);
+        final Box box = (Box) factory.createGameObject(GID, POS);
 
-        final Box box = assertInstanceOf(Box.class, result);
         assertEquals(new Content.NoContent(), box.content());
     }
 
