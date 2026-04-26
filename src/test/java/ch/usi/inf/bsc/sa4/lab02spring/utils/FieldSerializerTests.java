@@ -16,7 +16,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /** Black-box tests for FieldSerializer inner classes. */
