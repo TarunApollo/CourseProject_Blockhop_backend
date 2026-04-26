@@ -44,6 +44,9 @@ import java.util.Optional;
     @InjectMocks
     private AttemptService attemptService;
 
+    /** Level ID used in creation tests. */
+    private static final String LEVEL_ID = "level-1";
+
     /** The test user. */
     private User testUser;
 
@@ -72,11 +75,11 @@ import java.util.Optional;
         @Test
         @DisplayName("should save and return a non null attempt")
         /* default */ void testCreateAttemptNotNull() {
-            final CreateAttemptDTO dto = new CreateAttemptDTO("level-1", true, Duration.ofSeconds(10));
+            final CreateAttemptDTO dto = new CreateAttemptDTO(LEVEL_ID, true, Duration.ofSeconds(10));
             final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
                     true, Duration.ofSeconds(10));
 
-            Mockito.when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
             Mockito.when(attemptRepository.save(Mockito.any(Attempt.class))).thenReturn(savedAttempt);
 
             final Attempt result = attemptService.createAttempt(testUser, dto);
@@ -90,11 +93,11 @@ import java.util.Optional;
         @Test
         @DisplayName("should return the correct attempt ID")
         /* default */ void testCreateAttemptCorrectId() {
-            final CreateAttemptDTO dto = new CreateAttemptDTO("level-1", true, Duration.ofSeconds(10));
+            final CreateAttemptDTO dto = new CreateAttemptDTO(LEVEL_ID, true, Duration.ofSeconds(10));
             final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
                     true, Duration.ofSeconds(10));
 
-            Mockito.when(levelRepository.findById("level-1")).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
             Mockito.when(attemptRepository.save(Mockito.any(Attempt.class))).thenReturn(savedAttempt);
 
             final Attempt result = attemptService.createAttempt(testUser, dto);
