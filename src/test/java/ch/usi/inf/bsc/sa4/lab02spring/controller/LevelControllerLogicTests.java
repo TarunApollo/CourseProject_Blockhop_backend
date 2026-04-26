@@ -6,14 +6,17 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.converter.LayerToTiledMapConverter;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.converter.LayerToTiledMapConverter;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.LevelService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPlayService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
@@ -84,9 +87,21 @@ import java.util.Optional;
     /** A level ID used across tests. */
     private static final String LEVEL_ID = "level-1";
 
-    /** The mocked level service. */
+    /** The mocked level service (create / clone / update / delete / get). */
     @MockitoBean
     private LevelService levelService;
+
+    /** The mocked level aggregation service (published list, counts). */
+    @MockitoBean
+    private LevelAggregationService levelAggregationService;
+
+    /** The mocked level publish service (publish / unpublish). */
+    @MockitoBean
+    private LevelPublishService levelPublishService;
+
+    /** The mocked level play service (playable map, submission). */
+    @MockitoBean
+    private LevelPlayService levelPlayService;
 
     /** The mocked user service. */
     @MockitoBean
@@ -158,7 +173,7 @@ import java.util.Optional;
         void testGetPublishedLevelsByClearRate() {
             final List<LevelSummaryDto> summaries = List.of(
                     new LevelSummaryDto(testLevel, 10, 0.5, 5));
-            Mockito.when(levelService.getPublishedLevels(
+            Mockito.when(levelAggregationService.getPublishedLevels(
                     Mockito.eq(PublishedLevelSortBy.CLEAR_RATE),
                     Mockito.any(DateRangePreset.class)))
                     .thenReturn(summaries);
@@ -170,27 +185,6 @@ import java.util.Optional;
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {
                     })
                     .isEqualTo(summaries));
-        }
-    }
-
-    /** Tests for GET /levels/{levelId}/thumbnail. */
-    @Nested
-    @DisplayName("GET /levels/{levelId}/thumbnail")
-    /* default */ class GetThumbnail {
-
-        /** Verifies that getting a thumbnail returns 200 OK with image/png. */
-        @Test
-        @DisplayName("should return 200 OK with image/png content type")
-        void testGetThumbnailReturnsImage() {
-            final byte[] thumbnailBytes = {(byte) 0x89, 'P', 'N', 'G'};
-            Mockito.when(levelService.getThumbnailForLevel(LEVEL_ID))
-                    .thenReturn(thumbnailBytes);
-
-            Assertions.assertDoesNotThrow(() -> restTestClient.get()
-                    .uri("/levels/{levelId}/thumbnail", LEVEL_ID)
-                    .exchange()
-                    .expectStatus().isOk()
-                    .expectHeader().contentType("image/png"));
         }
     }
 
@@ -306,22 +300,21 @@ import java.util.Optional;
     @DisplayName("PUT /levels/{levelId}/unpublish")
     /* default */ class UnpublishLevel {
 
-        /** Verifies that unpublishing a level returns 200 OK. */
+        /** Verifies that unpublishing a level returns 204 No Content. */
         @Test
-        @DisplayName("should return 200 OK with unpublished level")
-        void testUnpublishLevelReturnsOk() {
+        @DisplayName("should return 204 No Content")
+        void testUnpublishLevelReturnsNoContent() {
             try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
                 mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any()))
                         .thenReturn(USER_ID);
-                Mockito.when(levelService.unpublishLevel(Mockito.eq(USER_ID), Mockito.eq(LEVEL_ID)))
-                        .thenReturn(testLevel);
+                Mockito.doNothing().when(levelPublishService).unpublishLevel(USER_ID, LEVEL_ID);
 
                 final HttpStatusCode status = restTestClient.put()
                         .uri("/levels/{levelId}/unpublish", LEVEL_ID)
                         .exchange()
-                        .returnResult(LevelDTO.class)
+                        .returnResult(Void.class)
                         .getStatus();
-                Assertions.assertEquals(HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.NO_CONTENT, status);
             }
         }
     }
@@ -331,22 +324,21 @@ import java.util.Optional;
     @DisplayName("PUT /levels/{levelId}/publish")
     /* default */ class PublishLevel {
 
-        /** Verifies that publishing a level returns 200 OK. */
+        /** Verifies that publishing a level returns 204 No Content. */
         @Test
-        @DisplayName("should return 200 OK with published level")
-        void testPublishLevelReturnsOk() {
+        @DisplayName("should return 204 No Content")
+        void testPublishLevelReturnsNoContent() {
             try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
                 mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any()))
                         .thenReturn(USER_ID);
-                Mockito.when(levelService.publish(Mockito.eq(USER_ID), Mockito.eq(LEVEL_ID)))
-                        .thenReturn(testLevel);
+                Mockito.doNothing().when(levelPublishService).publish(USER_ID, LEVEL_ID);
 
                 final HttpStatusCode status = restTestClient.put()
                         .uri("/levels/{levelId}/publish", LEVEL_ID)
                         .exchange()
-                        .returnResult(LevelDTO.class)
+                        .returnResult(Void.class)
                         .getStatus();
-                Assertions.assertEquals(HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.NO_CONTENT, status);
             }
         }
     }
@@ -366,7 +358,7 @@ import java.util.Optional;
 
                 final AttemptDTO attemptDTO = new AttemptDTO(
                         Map.of(), new Position(0, 0), FIXED_TIMESTAMP, FIXED_DURATION, true);
-                Mockito.when(levelService.submitAttempt(
+                Mockito.when(levelPlayService.handleLevelSubmission(
                         Mockito.eq(LEVEL_ID), Mockito.eq(USER_ID), Mockito.any(AttemptDTO.class)))
                         .thenReturn("attempt-result");
 
@@ -396,7 +388,7 @@ import java.util.Optional;
                 Mockito.when(userService.getById(USER_ID))
                         .thenReturn(Optional.of(testUser));
                 final Map<String, Object> mapData = Map.of("width", 16, "height", 16);
-                Mockito.when(levelService.getPlayableMap(Mockito.eq(testUser), Mockito.eq(LEVEL_ID)))
+                Mockito.when(levelPlayService.getPlayableMap(Mockito.eq(testUser), Mockito.eq(LEVEL_ID)))
                         .thenReturn(mapData);
 
                 final HttpStatusCode status = restTestClient.get()
