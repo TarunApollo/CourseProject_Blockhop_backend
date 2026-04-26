@@ -19,7 +19,7 @@ import org.mockito.Mockito;
 /** Black-box tests for AuthUtils. */
 @DisplayName(" In the AuthUtils class ")
 @SuppressWarnings("NullAway")
-/* package */ class AuthUtilsTests {
+/* package */ class AuthUtilsTests { // NOSONAR: all tests are in @Nested classes
 
     /** The subject claim used in test OAuth2 users. */
     private static final String TEST_USER_ID = "user-123";

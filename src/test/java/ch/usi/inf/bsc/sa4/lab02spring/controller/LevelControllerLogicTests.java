@@ -57,8 +57,7 @@ import java.util.Optional;
  * <p>PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
  * requires multipart upload (not supported by RestTestClient).</p>
  */
-@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.AtLeastOneConstructor",
-        "fb-contrib:FCBL_FIELD_COULD_BE_LOCAL" })
+@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.AtLeastOneConstructor" })
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -92,17 +91,26 @@ import java.util.Optional;
     @MockitoBean
     private UserService userService;
 
-    /** The mocked tile set service. */
+    /**
+     * The mocked tile set service.
+     * Required at class level by Spring's @MockitoBean. Can't be local...
+     */
     @MockitoBean
-    private TileSetService tileSetService;
+    private TileSetService tileSetService; // NOSONAR
 
-    /** The mocked attempt service. */
+    /**
+     * The mocked attempt service.
+     * Required at class level by Spring's @MockitoBean.
+     */
     @MockitoBean
-    private AttemptService attemptService;
+    private AttemptService attemptService; // NOSONAR
 
-    /** The mocked layer to tiled map converter. */
+    /**
+     * The mocked layer to tiled map converter.
+     * Required at class level by Spring's @MockitoBean.
+     */
     @MockitoBean
-    private LayerToTiledMapConverter layerToTiledMapConverter;
+    private LayerToTiledMapConverter layerToTiledMapConverter; // NOSONAR
 
     /** The RestTestClient for performing requests. */
     @Autowired
