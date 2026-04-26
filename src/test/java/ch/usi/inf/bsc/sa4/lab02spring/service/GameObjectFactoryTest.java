@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 /// Unit tests for the GameObject factory and its tile-type dispatch enum.
 @DisplayName("GameObjectFactory")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor","PMD.TooManyStaticImports"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports"})
 class GameObjectFactoryTest {
 
     /// Tile gid used by all dispatch fixtures; the value itself is irrelevant.

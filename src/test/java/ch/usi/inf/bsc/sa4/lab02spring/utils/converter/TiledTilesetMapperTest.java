@@ -18,8 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /// Unit tests for the TiledTilesetMapper utility.
 @DisplayName("TiledTilesetMapper.buildTileset")
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
-    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports", "PMD.TooManyMethods"})
 class TiledTilesetMapperTest {
 
     /// JSON key for the Tiled `firstgid` field.

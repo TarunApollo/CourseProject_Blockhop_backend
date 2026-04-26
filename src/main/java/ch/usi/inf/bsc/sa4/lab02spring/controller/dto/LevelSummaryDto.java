@@ -13,7 +13,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 
 @SuppressFBWarnings(
-        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
         justification = "Transient response DTO; mutability is intentional and not shared concurrently")
 public record LevelSummaryDto(
         String id,

@@ -1,6 +1,10 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.Collections;
@@ -76,6 +80,7 @@ public class Level {
         this.creator = user;
         this.clearCondition = new ClearCondition(new Condition.NoClearCondition(), 0);
     }
+    
 
     /// Persistence constructor used by Spring Data MongoDB to recreate a Level from
     /// the database.
@@ -367,11 +372,11 @@ public class Level {
                 .filter(ExitDoor.class::isInstance)
                 .count();
 
-        if (countFlag != 1) {
+        if (countFlag != MAX_START_FLAGS) {
             throw new ForbiddenLevelActionException("A published level must have exactly one start flag");
         }
 
-        if (countDoor != 1) {
+        if (countDoor != MAX_EXIT_DOORS) {
             throw new ForbiddenLevelActionException("A published level must have exactly one exit door");
         }
     }

@@ -30,8 +30,7 @@ import static org.mockito.Mockito.lenient;
 /// Unit tests for the LayerToTiledMapConverter top-level pipeline.
 @DisplayName("LayerToTiledMapConverter.convertPipeline")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
-    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports"})
 class LayerToTiledMapConverterTest {
 
     /// JSON key for the Tiled `name` field.

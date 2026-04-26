@@ -54,8 +54,8 @@ public class AttemptService {
     /// @param level     the level the attempt was made on
     /// @param dto       the DTO containing the attempt timestamp and time taken
     ///                  condition
-    public void submitAttempt(User user, Level level, AttemptDTO dto){
-        Attempt attempt = new Attempt(
+    public void submitAttempt(final User user, final Level level, final AttemptDTO dto) {
+        final Attempt attempt = new Attempt(
                 user,
                 dto.timestamp(),
                 level,

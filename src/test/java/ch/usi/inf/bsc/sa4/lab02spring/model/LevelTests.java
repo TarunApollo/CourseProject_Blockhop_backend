@@ -39,7 +39,7 @@ class LevelTests {
     @Test
     @DisplayName("can be created with title, description, and creator")
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-            value = "SEC_SIDE_EFFECT_CONSTRUCTOR",
+            value = {"SEC_SIDE_EFFECT_CONSTRUCTOR", "US_USELESS_SUPPRESSION_ON_METHOD"},
             justification = "Constructor invocation in lambda is the test target")
     void creatorTest() {
         final User creator = new User(USER_ID, USER_NAME);

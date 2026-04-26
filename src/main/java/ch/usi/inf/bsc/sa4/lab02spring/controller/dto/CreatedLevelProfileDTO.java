@@ -1,6 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.*;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
@@ -10,7 +15,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Map;
 
 @SuppressFBWarnings(
-        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
         justification = "Transient response DTO; mutability is intentional and not shared concurrently")
 public record CreatedLevelProfileDTO(
         String id,
@@ -29,7 +34,11 @@ public record CreatedLevelProfileDTO(
         long playCount,
         long completeCount
 ) {
-    public CreatedLevelProfileDTO(Level level, long playCount, long completeCount) {
+    /// Convenience constructor that derives layer/condition fields from a Level.
+    /// @param level         the level whose fields populate the DTO
+    /// @param playCount     total play attempts on the level
+    /// @param completeCount total successful completions
+    public CreatedLevelProfileDTO(final Level level, final long playCount, final long completeCount) {
         this(
                 level.getId(),
                 level.getTitle(),
