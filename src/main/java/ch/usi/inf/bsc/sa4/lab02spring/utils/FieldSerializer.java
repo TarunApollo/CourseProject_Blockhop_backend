@@ -124,4 +124,18 @@ public class FieldSerializer {
             return map;
         }
     }
+
+    ///
+    /// Deserializes a "x,y" JSON map key into a Position.
+    ///
+    public static class PositionKeyDeserializer extends tools.jackson.databind.KeyDeserializer {
+        @Override
+        public Object deserializeKey(final String key, final DeserializationContext ctxt) {
+            if (key == null || key.isEmpty()) {
+                throw new IllegalArgumentException("key can't be null or empty");
+            }
+            final String[] coords = key.split(",");
+            return new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
+        }
+    }
 }

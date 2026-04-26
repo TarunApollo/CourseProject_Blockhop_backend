@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
@@ -18,8 +19,10 @@ public record LevelSummaryDto(
         double clearRate,
         long popularity,
         @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
+        @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
         Map<Position, GameObject> objectLayer,
         @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
+        @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
         Map<Position, GroundObject> worldLayer) {
 
     /// Constructs a LevelSummaryDto from the given Level entity and statistics.
