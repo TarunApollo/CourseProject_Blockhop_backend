@@ -100,8 +100,7 @@ import java.util.Map;
         @Test
         @DisplayName("should serialize a non-empty map containing the compact position key")
         void serializeNonEmptyMap() throws Exception {
-            final Map<Position, GroundObject> map = new HashMap<>();
-            map.put(TEST_POS, TEST_GROUND);
+            final Map<Position, GroundObject> map = Map.of(TEST_POS, TEST_GROUND);
             final String json = worldLayerMapper.writeValueAsString(map);
             Assertions.assertTrue(json.contains(COMPACT_KEY));
         }
