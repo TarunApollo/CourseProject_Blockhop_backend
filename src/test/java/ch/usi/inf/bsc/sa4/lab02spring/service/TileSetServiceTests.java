@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
  * Goal: Verify that the tileset is loaded correctly and GID classification works.
  */
 @DisplayName("The TileSet Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings("NullAway")
 /* default */ class TileSetServiceTests {
 
     /** GID that is not expected to exist in the tileset. */

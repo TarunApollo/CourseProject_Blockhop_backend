@@ -29,7 +29,7 @@ import java.util.Optional;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The Editor Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings("NullAway")
 /* default */ class EditorServiceTests {
 
     /** The mocked level repository. */
