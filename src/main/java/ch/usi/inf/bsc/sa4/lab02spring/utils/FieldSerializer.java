@@ -19,7 +19,10 @@ import java.util.Map;
 /** Custom Jackson serializers and deserializers for Level DTO map fields. */
 public class FieldSerializer {
 
-    /** Serializes the object layer map ({@link Position} → {@link GameObject}) to JSON. */
+    /**
+     * Serializes the object layer map ({@link Position} → {@link GameObject}) to
+     * JSON.
+     */
     public static class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
 
         /** Creates a new LevelDTOObjectLayerSerializer. */
@@ -33,7 +36,8 @@ public class FieldSerializer {
         }
 
         @Override
-        public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen, final SerializationContext provider)
+        public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen,
+                final SerializationContext provider)
                 throws JacksonException {
             jgen.writeStartObject();
             for (final Map.Entry<Position, GameObject> element : value.entrySet()) {
@@ -45,7 +49,10 @@ public class FieldSerializer {
         }
     }
 
-    /** Serializes the world layer map ({@link Position} → {@link GroundObject}) to JSON. */
+    /**
+     * Serializes the world layer map ({@link Position} → {@link GroundObject}) to
+     * JSON.
+     */
     public static class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
 
         /** Creates a new LevelDTOWorldLayerSerializer. */
@@ -59,7 +66,8 @@ public class FieldSerializer {
         }
 
         @Override
-        public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen, final SerializationContext provider)
+        public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen,
+                final SerializationContext provider)
                 throws JacksonException {
             jgen.writeStartObject();
             for (final Map.Entry<Position, GroundObject> element : value.entrySet()) {
@@ -71,7 +79,10 @@ public class FieldSerializer {
         }
     }
 
-    /** Deserializes the world layer map ({@link Position} → {@link GroundObject}) from JSON. */
+    /**
+     * Deserializes the world layer map ({@link Position} → {@link GroundObject})
+     * from JSON.
+     */
     public static class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
 
         /** Creates a new WorldLayerDeserializer. */
@@ -105,11 +116,14 @@ public class FieldSerializer {
                 final GroundObject obj = p.readValueAs(GroundObject.class);
                 map.put(pos, obj);
             }
-            return map;
+            return Map.copyOf(map);
         }
     }
 
-    /** Deserializes a compact position string (e.g. {@code "x,y"}) into a {@link Position} map key. */
+    /**
+     * Deserializes a compact position string (e.g. {@code "x,y"}) into a
+     * {@link Position} map key.
+     */
     public static class PositionKeyDeserializer extends tools.jackson.databind.KeyDeserializer {
         @Override
         public Object deserializeKey(final String key, final DeserializationContext ctxt) {
