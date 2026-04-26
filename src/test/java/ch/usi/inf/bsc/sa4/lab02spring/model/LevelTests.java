@@ -2,8 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.junit.jupiter.api.Assertions;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 

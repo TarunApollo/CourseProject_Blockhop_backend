@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Custom Jackson serializers and deserializers for Level DTO map fields. */
-@SuppressWarnings("PMD:UseConcurrentHashMap")
+@SuppressWarnings("PMD.UseConcurrentHashMap")
 public class FieldSerializer {
 
     /**
