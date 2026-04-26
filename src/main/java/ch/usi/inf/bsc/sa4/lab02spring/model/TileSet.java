@@ -39,7 +39,7 @@ public record TileSet(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @SuppressFBWarnings(
-            value = {TileSet.EI_RULE, TileSet.US_RULE},
+            value = {EI_RULE, US_RULE},
             justification = EXPOSE_REP_JUSTIFICATION)
     public record TileData(
         int id,
@@ -57,7 +57,7 @@ public record TileSet(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @SuppressFBWarnings(
-            value = {TileSet.EI_RULE, TileSet.US_RULE},
+            value = {EI_RULE, US_RULE},
             justification = EXPOSE_REP_JUSTIFICATION)
     public record ObjectGroup(
         String draworder,
@@ -72,7 +72,7 @@ public record TileSet(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @SuppressFBWarnings(
-            value = {TileSet.EI_RULE, TileSet.US_RULE},
+            value = {EI_RULE, US_RULE},
             justification = EXPOSE_REP_JUSTIFICATION)
     public record TileObject(
         int id,

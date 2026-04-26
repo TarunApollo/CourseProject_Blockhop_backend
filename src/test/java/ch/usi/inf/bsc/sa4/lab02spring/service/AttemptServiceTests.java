@@ -110,7 +110,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
     /* default */ class Submission {
 
         /**
-         * Verifies submitAttempt persists a new Attempt built from the given user/level/dto.
+         * Verifies submitAttempt persists a new Attempt built from
+         * the given user/level/dto.
          */
         @Test
         @DisplayName("should save a new attempt to the repository")
