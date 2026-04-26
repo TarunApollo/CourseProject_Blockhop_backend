@@ -88,12 +88,12 @@ public class EditorController {
     ///
     /// @param authentication authentication token for the current user
     /// @param levelId id of the level to edit
-    /// @param dto contains the list of objects with position, gid, and optional content
+    /// @param dto list of objects with position, gid, and optional content
     /// @return 200 OK with the updated object layer
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if level not found
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if not level owner
-    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if level is published
-    /// @throws IllegalArgumentException if any position is out of bounds, gid is invalid, or duplicate positions
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException if not found
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException if not owner
+    /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if published
+    /// @throws IllegalArgumentException if invalid position, gid, or duplicate positions
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> replaceObjectLayer(
             final Authentication authentication,

@@ -21,7 +21,7 @@ public record AttemptResponseDTO(
                 attempt.getUser().getId(),
                 attempt.getLevel().getId(),
                 attempt.getTimestamp(),
-                attempt.getCompleted(),
+                attempt.isCompleted(),
                 attempt.getTimeTaken()
         );
     }

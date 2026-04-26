@@ -13,7 +13,7 @@ import org.junit.jupiter.api.function.Executable;
  * remove() factory, isRemoval(), and validated constructor.
  */
 @DisplayName(" In the TileObjectId class ")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings("NullAway")
 /* package */ class TileObjectIdTests {
 
     /** A positive GID value accepted by the validator. */

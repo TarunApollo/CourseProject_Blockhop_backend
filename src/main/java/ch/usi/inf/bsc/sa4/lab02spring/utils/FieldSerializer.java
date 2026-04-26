@@ -12,7 +12,6 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ public class FieldSerializer {
     ///
     /// Serializes the object layer of a level DTO as a JSON object keyed by position.
     ///
-    static public class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
+    public static class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
 
         ///
         /// Creates a serializer for object-layer maps.
@@ -56,7 +55,7 @@ public class FieldSerializer {
     ///
     /// Serializes the world layer of a level DTO as a JSON object keyed by position.
     ///
-    static public class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
+    public static class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
 
         ///
         /// Creates a serializer for world-layer maps.
@@ -88,7 +87,7 @@ public class FieldSerializer {
     ///
     /// Deserializes the world layer of a level DTO.
     ///
-    static public class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
+    public static class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
 
         ///
         /// Creates a deserializer for world-layer maps.

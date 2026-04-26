@@ -14,46 +14,27 @@ import java.time.ZonedDateTime;
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "attempts")
 public class Attempt {
-    public String getId() {
-        return id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public ZonedDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public Level getLevel() {
-        return level;
-    }
-
-    public Duration getTimeTaken() {
-        return timeTaken;
-    }
 
     /// Database identifier of the attempt.
     @Id
-    String id;
+    /* package */ String id;
 
     /// Reference to the user who made this attempt.
     @DBRef
-    User user;
+    /* package */ User user;
 
     /// Timestamp when the attempt was created.
-    ZonedDateTime timestamp;
+    /* package */ ZonedDateTime timestamp;
 
     /// Reference to the level associated with this attempt.
     @DBRef
-    Level level;
+    /* package */ Level level;
 
     /// Whether the attempt completed the level successfully.
-    boolean completed;
+    /* package */ boolean completed;
 
     /// Time spent on the attempt.
-    Duration timeTaken;
+    /* package */ Duration timeTaken;
 
     /// Creates a new attempt without an explicit id.
     ///
@@ -88,7 +69,27 @@ public class Attempt {
         this.timeTaken = timeTaken;
     }
 
-    public boolean getCompleted() {
+    public String getId() {
+        return id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public ZonedDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public Level getLevel() {
+        return level;
+    }
+
+    public Duration getTimeTaken() {
+        return timeTaken;
+    }
+
+    public boolean isCompleted() {
         return completed;
     }
 

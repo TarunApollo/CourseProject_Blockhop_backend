@@ -20,7 +20,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 ///
 @DisplayName("In the Level class")
 @SuppressWarnings("NullAway")
-public class LevelTests {
+class LevelTests {
 
     /// Default user id used by fixtures.
     private static final String USER_ID = "user-1";
@@ -41,7 +41,7 @@ public class LevelTests {
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
             value = "SEC_SIDE_EFFECT_CONSTRUCTOR",
             justification = "Constructor invocation in lambda is the test target")
-    public void creatorTest() {
+    void creatorTest() {
         final User creator = new User(USER_ID, USER_NAME);
         final Executable codeToExecute = () -> new Level(LEVEL_TITLE, LEVEL_DESC, creator);
         Assertions.assertDoesNotThrow(codeToExecute);
@@ -70,7 +70,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should store the provided metadata")
-        public void storesProvidedMetadata() {
+        void storesProvidedMetadata() {
             Assertions.assertEquals(LEVEL_TITLE, this.level.getTitle());
             Assertions.assertEquals(LEVEL_DESC, this.level.getDescription());
             Assertions.assertSame(this.creator, this.level.getCreator());
@@ -81,7 +81,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should be unpublished")
-        public void isUnpublished() {
+        void isUnpublished() {
             Assertions.assertFalse(this.level.isPublished());
             Assertions.assertTrue(this.level.canBeModified());
         }
@@ -91,7 +91,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should expose the fixed dimensions")
-        public void hasFixedDimensions() {
+        void hasFixedDimensions() {
             Assertions.assertEquals(256, this.level.getWidth());
             Assertions.assertEquals(14, this.level.getHeight());
         }
@@ -101,7 +101,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should start with the default clear condition")
-        public void hasDefaultClearCondition() {
+        void hasDefaultClearCondition() {
             final ClearCondition clearCondition = this.level.getClearCondition();
             Assertions.assertTrue(clearCondition.condition() instanceof Condition.NoClearCondition);
             Assertions.assertEquals(0, clearCondition.targetAmount());
@@ -112,7 +112,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should start with empty layers")
-        public void startsWithEmptyLayers() {
+        void startsWithEmptyLayers() {
             Assertions.assertTrue(this.level.getObjectLayer().isEmpty());
             Assertions.assertTrue(this.level.getWorldLayer().isEmpty());
         }
@@ -142,7 +142,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should update the mutable fields")
-        public void updatesMutableFields() {
+        void updatesMutableFields() {
             this.level.setTitle("New title");
             this.level.setDescription("New description");
             this.level.setClearCondition(this.clearCondition);
@@ -174,7 +174,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should report ownership for the matching user id")
-        public void matchesUserId() {
+        void matchesUserId() {
             Assertions.assertTrue(this.level.isOwnedBy(OWNER_ID));
             Assertions.assertFalse(this.level.isOwnedBy("other-id"));
         }
@@ -184,7 +184,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should report ownership for the matching user")
-        public void matchesUser() {
+        void matchesUser() {
             Assertions.assertTrue(this.level.isOwnedBy(new User(OWNER_ID, "Mario clone")));
             Assertions.assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
         }
@@ -201,7 +201,7 @@ public class LevelTests {
             ///
             @Test
             @DisplayName("throws ForbiddenUserException")
-            public void throwsForbiddenUserException() {
+            void throwsForbiddenUserException() {
                 final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("other-id");
                 Assertions.assertThrows(ForbiddenUserException.class, codeToExecute);
             }
@@ -211,7 +211,7 @@ public class LevelTests {
             ///
             @Test
             @DisplayName("should not throw when the user owns the level")
-            public void allowsOwner() {
+            void allowsOwner() {
                 final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy(OWNER_ID);
                 Assertions.assertDoesNotThrow(codeToExecute);
             }
@@ -239,7 +239,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should allow modification when unpublished")
-        public void allowsModificationWhenUnpublished() {
+        void allowsModificationWhenUnpublished() {
             Assertions.assertTrue(this.level.canBeModified());
             Assertions.assertDoesNotThrow(() -> this.level.ensureModifiable());
         }
@@ -249,7 +249,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should reject modification when published")
-        public void rejectsModificationWhenPublished() {
+        void rejectsModificationWhenPublished() {
             final Position flagPos = new Position(1, 1);
             final Position doorPos = new Position(2, 1);
             this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
@@ -282,7 +282,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should accept positions on the borders")
-        public void acceptsBorderPositions() {
+        void acceptsBorderPositions() {
             Assertions.assertTrue(this.level.isWithinBounds(new Position(0, 0)));
             Assertions.assertTrue(this.level.isWithinBounds(new Position(255, 13)));
         }
@@ -292,7 +292,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should reject positions outside the valid range")
-        public void rejectsOutOfBoundsPositions() {
+        void rejectsOutOfBoundsPositions() {
             Assertions.assertFalse(this.level.isWithinBounds(new Position(-1, 0)));
             Assertions.assertFalse(this.level.isWithinBounds(new Position(256, 0)));
             Assertions.assertFalse(this.level.isWithinBounds(new Position(0, -1)));
@@ -311,7 +311,7 @@ public class LevelTests {
             ///
             @Test
             @DisplayName("throws IllegalArgumentException when position is null")
-            public void nullPosition() {
+            void nullPosition() {
                 Assertions.assertThrows(IllegalArgumentException.class, () -> BoundsMethods.this.level.ensureWithinBounds(null));
             }
 
@@ -320,7 +320,7 @@ public class LevelTests {
             ///
             @Test
             @DisplayName("throws IllegalArgumentException when position is out of bounds")
-            public void outOfBoundsPosition() {
+            void outOfBoundsPosition() {
                 Assertions.assertThrows(IllegalArgumentException.class,
                     () -> BoundsMethods.this.level.ensureWithinBounds(new Position(256, 14)));
             }
@@ -330,7 +330,7 @@ public class LevelTests {
             ///
             @Test
             @DisplayName("should not throw when position is valid")
-            public void validPosition() {
+            void validPosition() {
                 Assertions.assertDoesNotThrow(() -> BoundsMethods.this.level.ensureWithinBounds(new Position(255, 13)));
             }
         }
@@ -360,7 +360,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should return unmodifiable views")
-        public void returnsUnmodifiableViews() {
+        void returnsUnmodifiableViews() {
             final Executable modifyWorldLayer = () -> this.level.getWorldLayer().put(new Position(2, 2), new GroundObject(3));
             final Executable modifyObjectLayer = () -> this.level.getObjectLayer().put(new Position(2, 2), new StartFlag(4, new Position(2, 2)));
 
@@ -396,7 +396,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should add and replace entries in both layers")
-        public void addsAndReplacesEntries() {
+        void addsAndReplacesEntries() {
             final StartFlag firstObject = new StartFlag(10, this.objectPosition);
             final Coin replacementObject = new Coin(11, this.objectPosition, CoinType.BRONZE_COIN
 );
@@ -417,7 +417,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should remove existing entries from both layers")
-        public void removesEntries() {
+        void removesEntries() {
             this.level.putObjectLayer(this.objectPosition, new StartFlag(10, this.objectPosition));
             this.level.putWorldLayer(this.worldPosition, new GroundObject(20));
 
@@ -457,7 +457,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should replace the entire world layer")
-        public void replacesEntireLayer() {
+        void replacesEntireLayer() {
             final Position newPos = new Position(7, 8);
             final Map<Position, GroundObject> newLayer = Map.of(newPos, new GroundObject(10));
             this.level.setWorldLayer(newLayer);
@@ -471,7 +471,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should clear the world layer when given an empty map")
-        public void clearsLayer() {
+        void clearsLayer() {
             this.level.setWorldLayer(Map.of());
             Assertions.assertTrue(this.level.getWorldLayer().isEmpty());
         }
@@ -502,7 +502,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should replace the entire object layer")
-        public void replacesEntireLayer() {
+        void replacesEntireLayer() {
             final Position newPos = new Position(5, 6);
             final Map<Position, GameObject> newLayer = Map.of(newPos, new StartFlag(77, newPos));
             this.level.setObjectLayer(newLayer);
@@ -515,7 +515,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should clear the object layer when given an empty map")
-        public void clearsLayer() {
+        void clearsLayer() {
             this.level.setObjectLayer(Map.of());
             Assertions.assertTrue(this.level.getObjectLayer().isEmpty());
         }
@@ -559,7 +559,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should create an unpublished copy for the new creator")
-        public void createsUnpublishedCopy() {
+        void createsUnpublishedCopy() {
             final Level cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
             Assertions.assertFalse(cloned.isPublished());
             Assertions.assertTrue(cloned.canBeModified());
@@ -572,7 +572,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should copy metadata, condition, and layers")
-        public void copiesState() {
+        void copiesState() {
             final Level cloned = this.original.cloneFor(this.cloneCreator, this.original.getTitle());
             Assertions.assertEquals(this.original.getTitle(), cloned.getTitle());
             Assertions.assertEquals(this.original.getDescription(), cloned.getDescription());
@@ -586,7 +586,7 @@ public class LevelTests {
         ///
         @Test
         @DisplayName("should copy the layer maps instead of sharing them")
-        public void copiesLayerMaps() {
+        void copiesLayerMaps() {
             final Level cloned = this.original.cloneFor(this.cloneCreator, "Copy");
             final Position clonedOnlyWorldPosition = new Position(10, 2);
             final Position clonedOnlyObjectPosition = new Position(11, 3);
