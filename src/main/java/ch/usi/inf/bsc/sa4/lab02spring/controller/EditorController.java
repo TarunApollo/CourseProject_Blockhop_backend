@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
-import java.lang.IllegalArgumentException;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
@@ -70,27 +69,14 @@ public class EditorController {
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
 
-    /// Replaces the entire object layer of an unpublished level. The request body
-    /// contains all objects that should exist in the object layer. Objects not
-    /// present in the request are implicitly deleted (removed from the layer).
-    ///
-    /// Security checks:
-    /// - Only the level creator can edit
-    /// - Only unpublished levels can be edited
-    /// - All positions must be within level bounds
-    /// - All GIDs must be valid object GIDs
-    /// - No duplicate positions allowed in the request
-    ///
-    /// JSON example: { "objects": [ {"position": {"x": 1, "y": 2}, "gid": 42,
-    /// "content": {"type": "Item_Coin_Gold"}}, {"position": {"x": 3, "y": 4}, "gid":
-    /// 42}, {"position": {"x": 5, "y": 6}, "gid": 50} ] }
-    ///
-    /// Note: "content" is optional per object. Only boxes use it.
+    /// Replaces the entire object layer of an unpublished level. Objects not
+    /// present in the request are implicitly deleted. Only the owner can edit
+    /// unpublished levels; positions must be in-bounds, GIDs valid, and unique.
+    /// The optional `content` field on each object is only used by boxes.
     ///
     /// @param authentication authentication token for the current user
     /// @param levelId        id of the level to edit
-    /// @param dto            list of objects with position, gid, and optional
-    ///                       content
+    /// @param dto            list of objects with position, gid, and content
     /// @return 200 OK with the updated object layer
     /// @throws LevelNotFoundException   if not found
     /// @throws ForbiddenUserException   if not owner
