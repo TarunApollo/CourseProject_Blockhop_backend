@@ -181,6 +181,37 @@ import java.util.Optional;
             Assertions.assertThrows(LevelNotFoundException.class,
                     () -> editorService.replaceObjectLayer(USER_ID, LEVEL_ID, dto));
         }
+
+        /**
+         * Verifies that a single object is processed through the loop and persisted.
+         */
+        @Test
+        @DisplayName("should process each object in the list and save the level")
+        /* default */ void testReplaceObjectLayerWithObject() {
+            final EditorLevelDTO obj = EditorLevelDTO.create(new Position(0, 0), 42);
+            final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isObjectGID(42)).thenReturn(Boolean.TRUE);
+            Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
+            final Level result = editorService.replaceObjectLayer(USER_ID, LEVEL_ID, dto);
+            Assertions.assertNotNull(result);
+        }
+
+        /**
+         * Verifies that duplicate positions in the request are rejected.
+         */
+        @Test
+        @DisplayName("should throw IllegalArgumentException on duplicate position")
+        /* default */ void testReplaceObjectLayerRejectsDuplicate() {
+            final Position pos = new Position(0, 0);
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(pos, 42);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(pos, 43);
+            final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isObjectGID(Mockito.anyInt())).thenReturn(Boolean.TRUE);
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceObjectLayer(USER_ID, LEVEL_ID, dto));
+        }
     }
 
     /**

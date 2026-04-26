@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 
 /** Black-box tests for AuthUtils. */
 @DisplayName(" In the AuthUtils class ")
-@SuppressWarnings("NullAway")
+@SuppressWarnings({"NullAway", "java:S2187"})
 /* package */ class AuthUtilsTests {
 
     /** The subject claim used in test OAuth2 users. */
