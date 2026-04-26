@@ -12,11 +12,11 @@ import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.deser.std.StdDeserializer;
 import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /** Custom Jackson serializers and deserializers for Level DTO map fields. */
+@SuppressWarnings("PMD:UseConcurrentHashMap")
 public class FieldSerializer {
 
     /**
@@ -41,7 +41,7 @@ public class FieldSerializer {
                 throws JacksonException {
             jgen.writeStartObject();
             for (final Map.Entry<Position, GameObject> element : value.entrySet()) {
-                final var key = element.getKey().compactString();
+                final String key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -71,7 +71,7 @@ public class FieldSerializer {
                 throws JacksonException {
             jgen.writeStartObject();
             for (final Map.Entry<Position, GroundObject> element : value.entrySet()) {
-                final var key = element.getKey().compactString();
+                final String key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }

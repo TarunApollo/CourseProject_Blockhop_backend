@@ -50,12 +50,16 @@ import java.util.Optional;
  * Black-box tests for LevelController.
  * Tests HTTP contract: status codes, response bodies, and content types.
  *
- * <p>Error Prone crashes when MockedStatic and assertDoesNotThrow are
+ * <p>
+ * Error Prone crashes when MockedStatic and assertDoesNotThrow are
  * combined with a RestTestClient fluent chain. Tests that mock AuthUtils
- * use returnResult().getStatus() directly instead of assertDoesNotThrow.</p>
+ * use returnResult().getStatus() directly instead of assertDoesNotThrow.
+ * </p>
  *
- * <p>PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
- * requires multipart upload (not supported by RestTestClient).</p>
+ * <p>
+ * PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
+ * requires multipart upload (not supported by RestTestClient).
+ * </p>
  */
 @SuppressWarnings({ "PMD.ExcessiveImports", "PMD.AtLeastOneConstructor", "fb-contrib:FCBL_FIELD_COULD_BE_LOCAL" })
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
@@ -71,8 +75,7 @@ import java.util.Optional;
     private static final String USER_ID = "userid1";
 
     /** A fixed timestamp used for attempt tests. */
-    private static final ZonedDateTime FIXED_TIMESTAMP =
-            ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    private static final ZonedDateTime FIXED_TIMESTAMP = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
     /** A fixed duration used for attempt tests. */
     private static final Duration FIXED_DURATION = Duration.ofSeconds(30);
@@ -160,7 +163,9 @@ import java.util.Optional;
     @DisplayName("GET /levels/published")
     /* default */ class GetPublishedLevels {
 
-        /** Verifies that getting published levels returns a list sorted by CLEAR_RATE. */
+        /**
+         * Verifies that getting published levels returns a list sorted by CLEAR_RATE.
+         */
         @Test
         @DisplayName("should return list of published levels sorted by CLEAR_RATE")
         void testGetPublishedLevelsByClearRate() {
@@ -190,7 +195,7 @@ import java.util.Optional;
         @Test
         @DisplayName("should return 200 OK with image/png content type")
         void testGetThumbnailReturnsImage() {
-            final byte[] thumbnailBytes = {(byte) 0x89, 'P', 'N', 'G'};
+            final byte[] thumbnailBytes = { (byte) 0x89, 'P', 'N', 'G' };
             Mockito.when(levelService.getThumbnailForLevel(LEVEL_ID))
                     .thenReturn(thumbnailBytes);
 

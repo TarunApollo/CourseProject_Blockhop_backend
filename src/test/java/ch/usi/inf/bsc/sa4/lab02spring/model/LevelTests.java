@@ -23,7 +23,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
  * Unit tests for the {@link Level} class.
  */
 @DisplayName(" In the Level class ")
-@SuppressWarnings({"PMD.AtLeastOneConstructor", "NullAway"})
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
 class LevelTests {
 
     /** The ID of a test user. */
@@ -594,7 +594,7 @@ class LevelTests {
         @DisplayName(" should clear the world layer when given an empty map ")
         @Test
         void clearsLayer() {
-            this.level.setWorldLayer(new HashMap<>());
+            this.level.setWorldLayer(Map.of());
             Assertions.assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
@@ -1017,7 +1017,7 @@ class LevelTests {
             @DisplayName(" should not throw for an empty layer ")
             @Test
             void emptyLayer() {
-                final Map<Position, GameObject> layer = new HashMap<>();
+                final Map<Position, GameObject> layer = Map.of();
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 Assertions.assertDoesNotThrow(codeToExecute);
@@ -1029,9 +1029,9 @@ class LevelTests {
             void oneFlagOneDoor() {
                 final Position flagPos = new Position(1, 1);
                 final Position doorPos = new Position(2, 1);
-                final Map<Position, GameObject> layer = new HashMap<>();
-                layer.put(flagPos, new StartFlag(68, flagPos));
-                layer.put(doorPos, new ExitDoor(115, doorPos));
+                final Map<Position, GameObject> layer = Map.of(
+                        flagPos, new StartFlag(68, flagPos),
+                        doorPos, new ExitDoor(115, doorPos));
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 Assertions.assertDoesNotThrow(codeToExecute);
