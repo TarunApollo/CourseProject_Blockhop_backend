@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Black-box tests for FieldSerializer inner classes. */
-@SuppressWarnings({ "NullAway", "PMD.UseConcurrentHashMap" })
+@SuppressWarnings({ "NullAway" })
 /* package */ final class FieldSerializerTests {
 
     /** Position used across tests. */
@@ -86,8 +86,7 @@ import java.util.Map;
         @Test
         @DisplayName("should serialize a non-empty map containing the compact position key")
         void serializeNonEmptyMap() throws Exception {
-            final Map<Position, GameObject> map = new HashMap<>();
-            map.put(TEST_POS, TEST_OBJECT);
+            final Map<Position, GameObject> map = Map.of(TEST_POS, TEST_OBJECT);
             final String json = objectLayerMapper.writeValueAsString(map);
             Assertions.assertTrue(json.contains(COMPACT_KEY));
         }
