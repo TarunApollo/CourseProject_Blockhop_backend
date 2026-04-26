@@ -87,6 +87,13 @@ import java.util.Optional;
     /** A level ID used across tests. */
     private static final String LEVEL_ID = "level-1";
 
+    /** SpotBugs rule key suppressed on @MockitoBean fields below. */
+    private static final String FCBL_RULE = "FCBL_FIELD_COULD_BE_LOCAL";
+
+    /** Justification for the FCBL_FIELD_COULD_BE_LOCAL suppression below. */
+    private static final String FCBL_JUSTIFICATION =
+            "@MockitoBean field required by Spring context even if unused in tests";
+
     /** The mocked level service (create / clone / update / delete / get). */
     @MockitoBean
     private LevelService levelService;
@@ -110,22 +117,22 @@ import java.util.Optional;
     /** The mocked tile set service. */
     @MockitoBean
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-            value = "FCBL_FIELD_COULD_BE_LOCAL",
-            justification = "@MockitoBean field required by Spring context even if unused in tests")
+            value = FCBL_RULE,
+            justification = FCBL_JUSTIFICATION)
     private TileSetService tileSetService;
 
     /** The mocked attempt service. */
     @MockitoBean
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-            value = "FCBL_FIELD_COULD_BE_LOCAL",
-            justification = "@MockitoBean field required by Spring context even if unused in tests")
+            value = FCBL_RULE,
+            justification = FCBL_JUSTIFICATION)
     private AttemptService attemptService;
 
     /** The mocked layer to tiled map converter. */
     @MockitoBean
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
-            value = "FCBL_FIELD_COULD_BE_LOCAL",
-            justification = "@MockitoBean field required by Spring context even if unused in tests")
+            value = FCBL_RULE,
+            justification = FCBL_JUSTIFICATION)
     private LayerToTiledMapConverter layerToTiledMapConverter;
 
     /** The RestTestClient for performing requests. */

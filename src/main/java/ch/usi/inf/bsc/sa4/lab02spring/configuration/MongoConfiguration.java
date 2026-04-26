@@ -81,6 +81,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     /// Converts a ZonedDateTime to a Date for MongoDB storage.
     ///
     @WritingConverter
+    @SuppressWarnings("PMD.ReplaceJavaUtilDate")
     public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
         @Override
         public Date convert(final ZonedDateTime dateTime) {
