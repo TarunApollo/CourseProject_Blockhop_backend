@@ -51,7 +51,7 @@ public class GameObjectFactory {
 
     /// Maps each tile-type string to a constructor for the corresponding GameObject.
     /// New tile types must be registered here so the factory can dispatch them.
-    enum ObjectTypeEnum {
+    /* package */ enum ObjectTypeEnum {
 
         DECORATION("Decoration") {
             @Override
@@ -124,16 +124,16 @@ public class GameObjectFactory {
         };
 
         /// JSON tile-type string carried by this enum constant.
-        private final String value;
+        private final String jsonValue;
 
-        ObjectTypeEnum(final String value) {
-            this.value = value;
+        ObjectTypeEnum(final String jsonValue) {
+            this.jsonValue = jsonValue;
         }
 
         /// JSON value used to serialize this enum (matches the editor's tile type string).
         @JsonValue
         public String value() {
-            return value;
+            return jsonValue;
         }
 
         /// Constructs the GameObject instance corresponding to this tile type.
@@ -146,11 +146,11 @@ public class GameObjectFactory {
         /// Resolves the enum constant for the given JSON tile-type string.
         /// @param value the JSON tile-type string
         /// @return the corresponding enum constant
-        /// @throws UnknownObjectTypeException if no enum constant is registered for the value
+        /// @throws UnknownObjectTypeException if no enum constant matches the value
         @JsonCreator
         public static ObjectTypeEnum fromValue(final String value) {
             for (final ObjectTypeEnum type : values()) {
-                if (type.value.equals(value)) {
+                if (type.jsonValue.equals(value)) {
                     return type;
                 }
             }
