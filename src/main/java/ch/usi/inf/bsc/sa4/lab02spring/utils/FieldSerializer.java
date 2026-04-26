@@ -45,7 +45,7 @@ public class FieldSerializer {
         public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
             for (final Map.Entry<Position, GameObject> element: value.entrySet()) {
-                final var key = element.getKey().compactString();
+                final String key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -77,7 +77,7 @@ public class FieldSerializer {
         public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
             for (final Map.Entry<Position, GroundObject> element: value.entrySet()) {
-                final var key = element.getKey().compactString();
+                final String key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -106,7 +106,9 @@ public class FieldSerializer {
         }
 
         @Override
+        @SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
         public Map<Position, GroundObject> deserialize(final JsonParser p, DeserializationContext context) {
+            // Built dynamically via put(); Map.of() is immutable so cannot be used here.
             final Map<Position, GroundObject> map = new HashMap<>();
 
             while (p.nextToken() != JsonToken.END_OBJECT) {

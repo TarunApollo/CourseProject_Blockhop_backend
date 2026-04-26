@@ -3,7 +3,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import org.junit.jupiter.api.Assertions;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,14 +22,25 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 @SuppressWarnings("NullAway")
 public class LevelTests {
 
+    /// Default user id used by fixtures.
+    private static final String USER_ID = "user-1";
+    /// Alternate user id used for ownership tests.
+    private static final String OWNER_ID = "owner-id";
+    /// Default user display name used by fixtures.
+    private static final String USER_NAME = "Mario";
+    /// Default level title used by fixtures.
+    private static final String LEVEL_TITLE = "Test level";
+    /// Default level description used by fixtures.
+    private static final String LEVEL_DESC = "A level description";
+
     ///
     /// Verifies that a level can be created with title, description, and creator.
     ///
     @Test
     @DisplayName("can be created with title, description, and creator")
     public void creatorTest() {
-        final User creator = new User("user-1", "Mario");
-        final Executable codeToExecute = () -> new Level("Test level", "A level description", creator);
+        final User creator = new User(USER_ID, USER_NAME);
+        final Executable codeToExecute = () -> new Level(LEVEL_TITLE, LEVEL_DESC, creator);
         Assertions.assertDoesNotThrow(codeToExecute);
     }
 
@@ -48,8 +58,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            this.creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", this.creator);
+            this.creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, this.creator);
         }
 
         ///
@@ -58,8 +68,8 @@ public class LevelTests {
         @Test
         @DisplayName("should store the provided metadata")
         public void storesProvidedMetadata() {
-            Assertions.assertEquals("Test level", this.level.getTitle());
-            Assertions.assertEquals("A level description", this.level.getDescription());
+            Assertions.assertEquals(LEVEL_TITLE, this.level.getTitle());
+            Assertions.assertEquals(LEVEL_DESC, this.level.getDescription());
             Assertions.assertSame(this.creator, this.level.getCreator());
         }
 
@@ -119,7 +129,7 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
+            final User creator = new User(USER_ID, USER_NAME);
             this.level = new Level("Old title", "Old description", creator);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.SLIME), 2);
         }
@@ -152,8 +162,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("owner-id", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(OWNER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
         }
 
         ///
@@ -162,7 +172,7 @@ public class LevelTests {
         @Test
         @DisplayName("should report ownership for the matching user id")
         public void matchesUserId() {
-            Assertions.assertTrue(this.level.isOwnedBy("owner-id"));
+            Assertions.assertTrue(this.level.isOwnedBy(OWNER_ID));
             Assertions.assertFalse(this.level.isOwnedBy("other-id"));
         }
 
@@ -172,7 +182,7 @@ public class LevelTests {
         @Test
         @DisplayName("should report ownership for the matching user")
         public void matchesUser() {
-            Assertions.assertTrue(this.level.isOwnedBy(new User("owner-id", "Mario clone")));
+            Assertions.assertTrue(this.level.isOwnedBy(new User(OWNER_ID, "Mario clone")));
             Assertions.assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
         }
 
@@ -199,7 +209,7 @@ public class LevelTests {
             @Test
             @DisplayName("should not throw when the user owns the level")
             public void allowsOwner() {
-                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("owner-id");
+                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy(OWNER_ID);
                 Assertions.assertDoesNotThrow(codeToExecute);
             }
         }
@@ -217,8 +227,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
         }
 
         ///
@@ -241,8 +251,8 @@ public class LevelTests {
             final Position doorPos = new Position(2, 1);
             this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
             this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-            this.level.validatePublishEligible("user-1");
-            this.level.publish("user-1");
+            this.level.validatePublishEligible(USER_ID);
+            this.level.publish(USER_ID);
             Assertions.assertFalse(this.level.canBeModified());
             Assertions.assertThrows(LevelPublishedException.class, () -> this.level.ensureModifiable());
         }
@@ -260,8 +270,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
         }
 
         ///
@@ -337,8 +347,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
             this.position = new Position(1, 1);
             this.level.putWorldLayer(this.position, new GroundObject(8));
             this.level.putObjectLayer(this.position, new StartFlag(9, this.position));
@@ -374,8 +384,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
             this.objectPosition = new Position(2, 3);
             this.worldPosition = new Position(4, 5);
         }
@@ -433,8 +443,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
             this.pos1 = new Position(1, 2);
             this.pos2 = new Position(3, 4);
             this.level.putWorldLayer(this.pos1, new GroundObject(5));
@@ -448,8 +458,7 @@ public class LevelTests {
         @DisplayName("should replace the entire world layer")
         public void replacesEntireLayer() {
             final Position newPos = new Position(7, 8);
-            final Map<Position, GroundObject> newLayer = new HashMap<>();
-            newLayer.put(newPos, new GroundObject(10));
+            final Map<Position, GroundObject> newLayer = Map.of(newPos, new GroundObject(10));
             this.level.setWorldLayer(newLayer);
             Assertions.assertFalse(this.level.getWorldLayer().containsKey(this.pos1));
             Assertions.assertFalse(this.level.getWorldLayer().containsKey(this.pos2));
@@ -462,7 +471,7 @@ public class LevelTests {
         @Test
         @DisplayName("should clear the world layer when given an empty map")
         public void clearsLayer() {
-            this.level.setWorldLayer(new HashMap<>());
+            this.level.setWorldLayer(Map.of());
             Assertions.assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
@@ -481,8 +490,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            final User creator = new User("user-1", "Mario");
-            this.level = new Level("Test level", "A level description", creator);
+            final User creator = new User(USER_ID, USER_NAME);
+            this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
             this.pos = new Position(1, 2);
             this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
@@ -494,8 +503,7 @@ public class LevelTests {
         @DisplayName("should replace the entire object layer")
         public void replacesEntireLayer() {
             final Position newPos = new Position(5, 6);
-            final Map<Position, GameObject> newLayer = new HashMap<>();
-            newLayer.put(newPos, new StartFlag(77, newPos));
+            final Map<Position, GameObject> newLayer = Map.of(newPos, new StartFlag(77, newPos));
             this.level.setObjectLayer(newLayer);
             Assertions.assertFalse(this.level.getObjectLayer().containsKey(this.pos));
             Assertions.assertTrue(this.level.getObjectLayer().containsKey(newPos));
@@ -507,7 +515,7 @@ public class LevelTests {
         @Test
         @DisplayName("should clear the object layer when given an empty map")
         public void clearsLayer() {
-            this.level.setObjectLayer(new HashMap<>());
+            this.level.setObjectLayer(Map.of());
             Assertions.assertTrue(this.level.getObjectLayer().isEmpty());
         }
     }
@@ -534,7 +542,7 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            this.originalCreator = new User("user-1", "Mario");
+            this.originalCreator = new User(USER_ID, USER_NAME);
             this.cloneCreator = new User("user-2", "Luigi");
             this.original = new Level("Original", "Original description", this.originalCreator);
             this.worldPosition = new Position(3, 4);
@@ -544,8 +552,8 @@ public class LevelTests {
             final Position doorPos = new Position(2, 1);
             this.original.putObjectLayer(flagPos, new StartFlag(68, flagPos));
             this.original.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-            this.original.validatePublishEligible("user-1");
-            this.original.publish("user-1");
+            this.original.validatePublishEligible(USER_ID);
+            this.original.publish(USER_ID);
             this.original.setClearCondition(this.clearCondition);
             this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
             this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, CoinType.GOLD_COIN

@@ -52,7 +52,7 @@ public class UserController {
     /// @return a list of all existing users as UserDTOs
     @GetMapping
     public List<UserDTO> getUsers() {
-        final var users = this.userService.getAllUsers();
+        final List<User> users = this.userService.getAllUsers();
         return users.stream().map(UserDTO::new).toList();
     }
 
