@@ -10,7 +10,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /// polygon and point(x,y) working for collision,its not position
 @JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressFBWarnings(
-        value = {"EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
+        value = {TileSet.EI_RULE, TileSet.US_RULE},
         justification = TileSet.EXPOSE_REP_JUSTIFICATION)
 public record TileSet(
     int firstgid,
@@ -27,13 +27,19 @@ public record TileSet(
     List<TileData> tiles
 ) {
 
+    /** SpotBugs EI_EXPOSE_REP2 rule key suppressed across all TileSet inner records. */
+    /* package */ static final String EI_RULE = "EI_EXPOSE_REP2";
+
+    /** SpotBugs US_USELESS_SUPPRESSION_ON_CLASS rule key (self-suppress). */
+    /* package */ static final String US_RULE = "US_USELESS_SUPPRESSION_ON_CLASS";
+
     /** Justification reused across all TileSet SpotBugs suppressions. */
     /* package */ static final String EXPOSE_REP_JUSTIFICATION =
             "TileSet is loaded once from JSON and never mutated at runtime";
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @SuppressFBWarnings(
-            value = {"EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
+            value = {TileSet.EI_RULE, TileSet.US_RULE},
             justification = EXPOSE_REP_JUSTIFICATION)
     public record TileData(
         int id,
@@ -51,7 +57,7 @@ public record TileSet(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @SuppressFBWarnings(
-            value = {"EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
+            value = {TileSet.EI_RULE, TileSet.US_RULE},
             justification = EXPOSE_REP_JUSTIFICATION)
     public record ObjectGroup(
         String draworder,
@@ -66,7 +72,7 @@ public record TileSet(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @SuppressFBWarnings(
-            value = {"EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
+            value = {TileSet.EI_RULE, TileSet.US_RULE},
             justification = EXPOSE_REP_JUSTIFICATION)
     public record TileObject(
         int id,

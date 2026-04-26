@@ -60,8 +60,7 @@ import java.util.Optional;
  * <p>PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
  * requires multipart upload (not supported by RestTestClient).</p>
  */
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
-        "FCBL_FIELD_COULD_BE_LOCAL"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
