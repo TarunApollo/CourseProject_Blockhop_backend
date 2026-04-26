@@ -560,8 +560,7 @@ class LevelTests {
             this.pos1 = new Position(1, 2);
             this.pos2 = new Position(3, 4);
             this.newPos = new Position(7, 8);
-            this.newLayer = new HashMap<>();
-            this.newLayer.put(this.newPos, new GroundObject(10));
+            this.newLayer = Map.of(this.newPos, new GroundObject(10));
             this.level.putWorldLayer(this.pos1, new GroundObject(5));
             this.level.putWorldLayer(this.pos2, new GroundObject(6));
         }
@@ -619,8 +618,7 @@ class LevelTests {
             this.level = createTestLevel();
             this.pos = new Position(1, 2);
             this.newPos = new Position(5, 6);
-            this.newLayer = new HashMap<>();
-            this.newLayer.put(this.newPos, new StartFlag(77, this.newPos));
+            this.newLayer = Map.of(this.newPos, new StartFlag(77, this.newPos));
             this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
 
@@ -644,7 +642,7 @@ class LevelTests {
         @DisplayName(" should clear the object layer when given an empty map ")
         @Test
         void clearsLayer() {
-            this.level.setObjectLayer(new HashMap<>());
+            this.level.setObjectLayer(Map.of());
             Assertions.assertTrue(this.level.getObjectLayer().isEmpty());
         }
     }
@@ -985,11 +983,11 @@ class LevelTests {
             void moreThanOneFlag() {
                 final Position pos1 = new Position(1, 1);
                 final Position pos2 = new Position(3, 1);
-                final Map<Position, GameObject> layer = new HashMap<>();
-                layer.put(pos1, new StartFlag(68, pos1));
-                layer.put(pos2, new StartFlag(68, pos2));
+                final StartFlag flag1 = new StartFlag(68, pos1);
+                final StartFlag flag2 = new StartFlag(68, pos2);
+                final Map<Position, GameObject> layer = Map.of(pos1, flag1, pos2, flag2);
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
-                        .ensureValidObjectLayer(Collections.unmodifiableMap(layer));
+                        .ensureValidObjectLayer(layer);
                 Assertions.assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
@@ -999,9 +997,9 @@ class LevelTests {
             void moreThanOneDoor() {
                 final Position pos1 = new Position(1, 1);
                 final Position pos2 = new Position(3, 1);
-                final Map<Position, GameObject> layer = new HashMap<>();
-                layer.put(pos1, new ExitDoor(115, pos1));
-                layer.put(pos2, new ExitDoor(115, pos2));
+                final Map<Position, GameObject> layer = Map.of(
+                        pos1, new ExitDoor(115, pos1),
+                        pos2, new ExitDoor(115, pos2));
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 Assertions.assertThrows(IllegalArgumentException.class, codeToExecute);
