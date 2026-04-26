@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
  * getters, and setCompleted.
  */
 @DisplayName(" In the Attempt class ")
-public class AttemptTests {
+class AttemptTests {
 
     /** User ID used when building test fixtures. */
     private static final String USER_ID = "user-1";
