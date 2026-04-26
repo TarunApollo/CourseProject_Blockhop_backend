@@ -16,23 +16,36 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+///
+/// Jackson serializers and deserializers for map-based level fields.
+///
 public class FieldSerializer {
 
+    ///
+    /// Serializes the object layer of a level DTO as a JSON object keyed by position.
+    ///
     static public class LevelDTOObjectLayerSerializer extends StdSerializer<Map<Position, GameObject>> {
 
+        ///
+        /// Creates a serializer for object-layer maps.
+        ///
         public LevelDTOObjectLayerSerializer() {
             this(Map.class);
         }
 
-        protected LevelDTOObjectLayerSerializer(Class<?> t) {
+        ///
+        /// Creates a serializer for object-layer maps.
+        /// @param t the handled type
+        ///
+        protected LevelDTOObjectLayerSerializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Map<Position, GameObject> value, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
+        public void serialize(final Map<Position, GameObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GameObject> element: value.entrySet()) {
-                var key = element.getKey().compactString();
+            for (final Map.Entry<Position, GameObject> element: value.entrySet()) {
+                final String key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -40,21 +53,31 @@ public class FieldSerializer {
         }
     }
 
+    ///
+    /// Serializes the world layer of a level DTO as a JSON object keyed by position.
+    ///
     static public class LevelDTOWorldLayerSerializer extends StdSerializer<Map<Position, GroundObject>> {
 
+        ///
+        /// Creates a serializer for world-layer maps.
+        ///
         public LevelDTOWorldLayerSerializer() {
             this(Map.class);
         }
 
-        protected LevelDTOWorldLayerSerializer(Class<?> t) {
+        ///
+        /// Creates a serializer for world-layer maps.
+        /// @param t the handled type
+        ///
+        protected LevelDTOWorldLayerSerializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public void serialize(Map<Position, GroundObject> value, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
+        public void serialize(final Map<Position, GroundObject> value, final JsonGenerator jgen, final SerializationContext provider) throws JacksonException {
             jgen.writeStartObject();
-            for (Map.Entry<Position, GroundObject> element: value.entrySet()) {
-                var key = element.getKey().compactString();
+            for (final Map.Entry<Position, GroundObject> element: value.entrySet()) {
+                final String key = element.getKey().compactString();
                 jgen.writeName(key);
                 provider.writeValue(jgen, element.getValue());
             }
@@ -62,33 +85,59 @@ public class FieldSerializer {
         }
     }
 
+    ///
+    /// Deserializes the world layer of a level DTO.
+    ///
     static public class WorldLayerDeserializer extends StdDeserializer<Map<Position, GroundObject>> {
 
+        ///
+        /// Creates a deserializer for world-layer maps.
+        ///
         public WorldLayerDeserializer() {
             this(Map.class);
         }
 
-        protected WorldLayerDeserializer(Class<?> t) {
+        ///
+        /// Creates a deserializer for world-layer maps.
+        /// @param t the handled type
+        ///
+        protected WorldLayerDeserializer(final Class<?> t) {
             super(t);
         }
 
         @Override
-        public Map<Position, GroundObject> deserialize(JsonParser p, DeserializationContext context) {
-            Map<Position, GroundObject> map = new HashMap<>();
+        @SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
+        public Map<Position, GroundObject> deserialize(final JsonParser p, DeserializationContext context) {
+            // Built dynamically via put(); Map.of() is immutable so cannot be used here.
+            final Map<Position, GroundObject> map = new HashMap<>();
 
             while (p.nextToken() != JsonToken.END_OBJECT) {
-                String name = p.currentName();
+                final String name = p.currentName();
                 p.nextToken();
 
-                String[] coords = name.split(",");
-                Position pos = new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
+                final String[] coords = name.split(",");
+                final Position pos = new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
 
                 // This assumes GameObject has @JsonTypeInfo or similar setup for polymorphism.
                 // If not, you might need to read it as a JsonNode and use your factory.
-                GroundObject obj = p.readValueAs(GroundObject.class);
+                final GroundObject obj = p.readValueAs(GroundObject.class);
                 map.put(pos, obj);
             }
             return map;
+        }
+    }
+
+    ///
+    /// Deserializes a "x,y" JSON map key into a Position.
+    ///
+    public static class PositionKeyDeserializer extends tools.jackson.databind.KeyDeserializer {
+        @Override
+        public Object deserializeKey(final String key, final DeserializationContext ctxt) {
+            if (key == null || key.isEmpty()) {
+                throw new IllegalArgumentException("key can't be null or empty");
+            }
+            final String[] coords = key.split(",");
+            return new Position(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]));
         }
     }
 }

@@ -22,8 +22,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
+    ///
+    /// Service used to access and manage users.
+    ///
     private final UserService userService;
+
+    ///
+    /// Service used to retrieve level data for user profiles.
+    ///
     private final LevelService levelService;
+
+    ///
+    /// Service used to retrieve attempt statistics for user profiles.
+    ///
     private final AttemptService attemptService;
 
     /// Constructs a new UserController with the given dependencies.
@@ -31,7 +43,7 @@ public class UserController {
     /// @param levelService the service for managing level operations
     /// @param attemptService the service for querying attempt-related statistics
     @Autowired
-    public UserController(UserService userService, LevelService levelService, AttemptService attemptService) {
+    public UserController(final UserService userService, final LevelService levelService, final AttemptService attemptService) {
         this.userService = userService;
         this.levelService = levelService;
         this.attemptService = attemptService;
@@ -40,7 +52,7 @@ public class UserController {
     /// @return a list of all existing users as UserDTOs
     @GetMapping
     public List<UserDTO> getUsers() {
-        var users = this.userService.getAllUsers();
+        final List<User> users = this.userService.getAllUsers();
         return users.stream().map(UserDTO::new).toList();
     }
 
@@ -50,7 +62,7 @@ public class UserController {
     /// @return a 200 OK response containing the user as a UserDTO if found,
     ///         or a 404 Not Found response otherwise
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable String id) {
+    public ResponseEntity<UserDTO> getUser(@PathVariable final String id) {
         return ResponseEntity.of(this.userService.getById(id).map(UserDTO::new));
     }
 
@@ -59,7 +71,7 @@ public class UserController {
     /// @param partialName the string to search for in user names (request parameter "query")
     /// @return a list of matching users as UserDTOs
     @GetMapping("/search")
-    public List<UserDTO> searchUsers(@RequestParam("query") String partialName) {
+    public List<UserDTO> searchUsers(@RequestParam("query") final String partialName) {
         return userService.searchUsers(partialName).stream().map(UserDTO::new).toList();
     }
 
@@ -70,7 +82,7 @@ public class UserController {
     ///         (name, played levels count, completed levels count, and list of created levels),
     ///         or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileDTO> getProfile(Authentication authentication) {
+    public ResponseEntity<UserProfileDTO> getProfile(final Authentication authentication) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
 
         return ResponseEntity.of(this.userService.getById(userId)
@@ -86,7 +98,7 @@ public class UserController {
     /// @param authentication token containing information about logged user
     /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
     @GetMapping(path = "/me")
-    public ResponseEntity<UserDTO> index(Authentication authentication) {
+    public ResponseEntity<UserDTO> index(final Authentication authentication) {
         // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
         final String eduId = AuthUtils.getUserIdFromAuth(authentication);
         final String fullName = AuthUtils.getUserNameFromAuth(authentication);

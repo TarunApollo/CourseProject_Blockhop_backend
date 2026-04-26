@@ -68,17 +68,19 @@ public class EditorService {
     /// @throws ForbiddenUserException   if not level owner
     /// @throws LevelPublishedException  if level is published
     /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
     public Level replaceWorldLayer(final String userId, final String levelId, final UpdateWorldLayerDTO dto) {
-        Level level = levelRepository.findById(levelId)
+        final Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        Map<Position, GroundObject> newWorldLayer = new LinkedHashMap<>();
-        for (EditorLevelDTO tile : dto.tiles()) {
+        // Built dynamically via put(); Map.of() is immutable so cannot be used here.
+        final Map<Position, GroundObject> newWorldLayer = new LinkedHashMap<>();
+        for (final EditorLevelDTO tile : dto.tiles()) {
             level.ensureWithinBounds(tile.position());
-            int gid = tile.gid();
+            final int gid = tile.gid();
             new TileObjectId(gid, tileSetService::isGroundGID);
             newWorldLayer.put(tile.position(), new GroundObject(gid));
         }
@@ -102,20 +104,22 @@ public class EditorService {
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if any position is out of bounds, gid
     ///         invalid, or placement rules are violated
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
     public Level replaceObjectLayer(final String userId, final String levelId, final UpdateObjectLayerDTO dto) {
-        Level level = levelRepository.findById(levelId)
+        final Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        Map<Position, GameObject> newObjectLayer = new LinkedHashMap<>();
-        Set<Position> positionsInNewLayer = new HashSet<>();
+        // Built dynamically via put(); Map.of() is immutable so cannot be used here.
+        final Map<Position, GameObject> newObjectLayer = new LinkedHashMap<>();
+        final Set<Position> positionsInNewLayer = new HashSet<>();
 
-        for (EditorLevelDTO object : dto.objects()) {
+        for (final EditorLevelDTO object : dto.objects()) {
             level.ensureWithinBounds(object.position());
 
-            int gid = object.gid();
+            final int gid = object.gid();
             new TileObjectId(gid, tileSetService::isObjectGID);
 
             if (positionsInNewLayer.contains(object.position())) {
@@ -123,7 +127,7 @@ public class EditorService {
             }
             positionsInNewLayer.add(object.position());
 
-            GameObject gameObject = gameObjectFactory.createGameObject(gid, object.position(), object.content());
+            final GameObject gameObject = gameObjectFactory.createGameObject(gid, object.position(), object.content());
             newObjectLayer.put(object.position(), gameObject);
         }
 
@@ -144,7 +148,7 @@ public class EditorService {
     /// @throws LevelPublishedException if level is published
     /// @throws IllegalArgumentException if property doesn't match object type
     public Level updateObjectProperties(final String userId, final String levelId, final UpdateObjectPropertiesDTO dto) {
-        Level level = levelRepository.findById(levelId)
+        final Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
 

@@ -15,13 +15,14 @@ import org.springframework.stereotype.Service;
 /// 
 @Service
 public class UserService {
+  /// Repository used to persist and query users.
   private final UserRepository userRepository;
 
 
   /// Constructs a new UserService with the given dependency.
   /// @param userRepository the repository for accessing user data
   @Autowired
-  public UserService(UserRepository userRepository) {
+  public UserService(final UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
@@ -39,8 +40,8 @@ public class UserService {
   /// @return the newly created user.
   /// @spec.requires <code>createUserDTO != null</code>
   /// 
-  public User createUser(CreateUserDTO dto) {
-    User newUser = new User(dto.id(), dto.fullName());
+  public User createUser(final CreateUserDTO dto) {
+    final User newUser = new User(dto.id(), dto.fullName());
     return this.userRepository.save(newUser);
   }
 
@@ -50,7 +51,7 @@ public class UserService {
   /// @return an optional which contains the user with the given id if it exists,
   ///         otherwise an empty optional.
   ///
-  public Optional<User> getById(String userId) {
+  public Optional<User> getById(final String userId) {
     return userRepository.findById(userId);
   }
 
@@ -60,7 +61,7 @@ public class UserService {
   /// @return the list of users whose name contains `partialName`.
   /// @spec.requires `partialName != null`
   /// 
-  public List<User> searchUsers(String partialName) {
+  public List<User> searchUsers(final String partialName) {
     return userRepository.findByNameContaining(partialName);
   }
 

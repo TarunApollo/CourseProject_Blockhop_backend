@@ -12,6 +12,10 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+/// MongoDB configuration for the application.
+/// Registers MongoDB mapping packages, entity classes, and custom converters
+/// used to persist and read domain objects.
+///
 @Configuration
 public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
@@ -31,7 +35,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
     @Override
     protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-        Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
+        final Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
         entitySet.addAll(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
@@ -40,23 +44,34 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         return entitySet;
     }
 
+    ///
+    /// Converts a Position to its compact string representation.
+    ///
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
-        public String convert(Position position){
+        @Override
+        public String convert(final Position position){
             return position.compactString();
         }
     }
 
+    ///
+    /// Converts a compact string representation to a Position.
+    ///
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
-        public Position convert(String string){
-            String[] parts = string.split(",");
-            int posX = Integer.parseInt(parts[0]);
-            int posY = Integer.parseInt(parts[1]);
+        @Override
+        public Position convert(final String string){
+            final String[] parts = string.split(",");
+            final int posX = Integer.parseInt(parts[0]);
+            final int posY = Integer.parseInt(parts[1]);
             return new Position(posX, posY);
         }
     }
 
+    ///
+    /// Converts a ZonedDateTime to a Date for MongoDB storage.
+    ///
     @WritingConverter
     public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
         @Override
@@ -65,6 +80,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
+    ///
+    /// Converts a Date read from MongoDB to a ZonedDateTime.
+    ///
     @ReadingConverter
     public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
         @Override
@@ -75,7 +93,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
     @Override
     public MongoCustomConversions customConversions(){
-        List<Converter<?, ?>> custom = new ArrayList<>();
+        final List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToDateConverter());

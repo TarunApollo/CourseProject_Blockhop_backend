@@ -6,16 +6,19 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.server.ResponseStatusException;
 
+/// Authentication helper methods for extracting user information.
 public final class AuthUtils {
-    ///
-    /// TODO: javadoc!
-    ///
-    ///
-    public static String getUserIdFromAuth(Authentication authentication) {
+
+    /// Returns the authenticated user's id from the security context.
+    /// Supports both JWT and OAuth2 user principals.
+    /// @param authentication the current authentication object
+    /// @return the authenticated user's subject/id
+    /// @throws ResponseStatusException if authentication is missing or unsupported
+    public static String getUserIdFromAuth(final Authentication authentication) {
         if (authentication == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         } else {
-            Object principal = authentication.getPrincipal();
+            final Object principal = authentication.getPrincipal();
             if (principal instanceof Jwt jwt) {
                 return jwt.getClaimAsString("sub");
             } else if (principal instanceof OAuth2User oauth2User) {
@@ -28,16 +31,20 @@ public final class AuthUtils {
         }
     }
 
-    public static String getUserNameFromAuth(Authentication authentication) {
-        Object principal = authentication.getPrincipal();
+    /// Returns the authenticated user's display name from the security context.
+    /// @param authentication the current authentication object
+    /// @return the authenticated user's name
+    /// @throws ResponseStatusException if the name is unavailable
+    public static String getUserNameFromAuth(final Authentication authentication) {
+        final Object principal = authentication.getPrincipal();
 
         if (principal instanceof Jwt jwt) {
-            String name = jwt.getClaimAsString("name");
+            final String name = jwt.getClaimAsString("name");
             if (name != null) {
                 return name;
             }
         } else if (principal instanceof OAuth2User oAuth2User) {
-            String name = oAuth2User.getAttribute("name");
+            final String name = oAuth2User.getAttribute("name");
             if (name != null) {
                 return name;
             }

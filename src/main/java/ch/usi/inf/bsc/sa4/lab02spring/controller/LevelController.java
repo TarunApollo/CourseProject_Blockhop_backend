@@ -79,7 +79,7 @@ public class LevelController {
     /// @return a 200 OK response containing the created level as a LevelDTO
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping()
-    public ResponseEntity<LevelDTO> createLevel(Authentication authentication, @RequestBody CreateLevelDTO createLevelDTO) {
+    public ResponseEntity<LevelDTO> createLevel(final Authentication authentication, @RequestBody final CreateLevelDTO createLevelDTO) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
@@ -95,8 +95,8 @@ public class LevelController {
     /// @return a list of published levels sorted by the specified criteria
     @GetMapping("/published")
     public List<LevelSummaryDto> getPublishedLevels(
-            @RequestParam PublishedLevelSortBy sortBy,
-            @RequestParam(defaultValue = "ALL_TIME") DateRangePreset period) {
+            @RequestParam final PublishedLevelSortBy sortBy,
+            @RequestParam(defaultValue = "ALL_TIME") final DateRangePreset period) {
         return this.levelAggregationService.getPublishedLevels(sortBy, period);
     }
 
@@ -113,7 +113,7 @@ public class LevelController {
     ///         the user
     /// @throws UserNotFoundException if the authenticated user does not exist
     @PostMapping("/clone")
-    public ResponseEntity<LevelDTO> cloneLevel(Authentication authentication, @RequestBody CloneLevelDTO cloneLevelDTO) {
+    public ResponseEntity<LevelDTO> cloneLevel(final Authentication authentication, @RequestBody final CloneLevelDTO cloneLevelDTO) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return this.levelService.cloneLevel(cloneLevelDTO, user)
@@ -142,7 +142,7 @@ public class LevelController {
     /// @throws ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException if the
     ///         target level is already published
     @PutMapping("/{levelId}/properties")
-    public ResponseEntity<LevelDTO> updateLevel(Authentication authentication, @PathVariable String levelId, @RequestBody UpdateLevelDTO dto) {
+    public ResponseEntity<LevelDTO> updateLevel(final Authentication authentication, @PathVariable final String levelId, @RequestBody final UpdateLevelDTO dto) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         final User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return ResponseEntity.ok(new LevelDTO(this.levelService.updateLevelProperties(creator, levelId, dto)));
@@ -151,8 +151,8 @@ public class LevelController {
     // TODO: add jsdoc...
     @DeleteMapping("/{levelId}")
     public ResponseEntity<Void> deleteLevel(
-            Authentication authentication,
-            @PathVariable String levelId) {
+            final Authentication authentication,
+            @PathVariable final String levelId) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelService.deleteLevel(userId, levelId);
         return ResponseEntity.noContent().build();
@@ -166,8 +166,8 @@ public class LevelController {
     /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
     @PutMapping("/{levelId}/unpublish")
     public ResponseEntity<Void> unpublishLevel(
-            Authentication authentication,
-            @PathVariable String levelId) {
+            final Authentication authentication,
+            @PathVariable final String levelId) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelPublishService.unpublishLevel(userId, levelId);
         return ResponseEntity.noContent().build();
@@ -183,8 +183,8 @@ public class LevelController {
     /// @return a 204 No Content response when the level is published successfully
     @PutMapping(path = "/{levelId}/publish")
     public ResponseEntity<Void> publishLevel(
-            Authentication authentication,
-            @PathVariable String levelId) {
+            final Authentication authentication,
+            @PathVariable final String levelId) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelPublishService.publish(userId, levelId);
         return ResponseEntity.noContent().build();

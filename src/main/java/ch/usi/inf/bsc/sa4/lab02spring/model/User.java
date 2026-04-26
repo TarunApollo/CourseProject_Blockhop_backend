@@ -3,10 +3,14 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/// Represents a user in the system.
+/// A user has a stable identifier and a display name.
 @Document(collection = "users")
 public class User {
+    /// Unique identifier of the user.
     @Id
     private final String id; // switchEduId
+    /// Display name of the user.
     private final String name;
 
 
@@ -16,7 +20,7 @@ public class User {
     ///               with levelsPlayed and levelsCompleted initialized as empty sets.
     /// @param id the unique identifier of the user (switchEduId).
     /// @param name the display name of the user.
-    public User(String id, String name) {
+    public User(final String id, final String name) {
         this.id = id;
         this.name = name;
     }

@@ -17,15 +17,22 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
-import static ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils.getUserIdFromAuth;
-
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+/// REST controller for editing level data in the editor.
 @RestController
 @RequestMapping("/editor")
 public class EditorController {
+
+    ///
+    /// Service used to perform editor operations.
+    ///
     private final EditorService editorService;
 
+    ///Creates a new editor controller.
+    ///@param editorService service used to apply editor updates
+    ///
     @Autowired
-    public EditorController(EditorService editorService) {
+    public EditorController(final EditorService editorService) {
         this.editorService = editorService;
     }
 
@@ -49,11 +56,11 @@ public class EditorController {
     /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
     @PutMapping("/{levelId}/world-layer")
     public ResponseEntity<WorldLayerResponseDTO> replaceWorldLayer(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody UpdateWorldLayerDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
-        Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final UpdateWorldLayerDTO dto) {
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
 
@@ -89,11 +96,11 @@ public class EditorController {
     /// @throws IllegalArgumentException if any position is out of bounds, gid is invalid, or duplicate positions
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> replaceObjectLayer(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody UpdateObjectLayerDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
-        Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final UpdateObjectLayerDTO dto) {
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
 
@@ -115,11 +122,11 @@ public class EditorController {
     /// @throws IllegalArgumentException if property doesn't match object type
     @PatchMapping("/{levelId}/object-layer/properties")
     public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
-            Authentication authentication,
-            @PathVariable String levelId,
-            @RequestBody UpdateObjectPropertiesDTO dto) {
-        String userId = getUserIdFromAuth(authentication);
-        Level updated = editorService.updateObjectProperties(userId, levelId, dto);
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final UpdateObjectPropertiesDTO dto) {
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final Level updated = editorService.updateObjectProperties(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
 }

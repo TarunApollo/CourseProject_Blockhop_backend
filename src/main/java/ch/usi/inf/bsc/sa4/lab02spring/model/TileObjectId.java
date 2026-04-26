@@ -41,7 +41,7 @@ public record TileObjectId(int value) {
      * @param value the GID value; must be 0 (removal) or a valid ground tile GID
      * @param validator predicate to validate the GID; must not be null
      */
-    public TileObjectId(int value, IntPredicate validator) {
+    public TileObjectId(final int value, final IntPredicate validator) {
         this(value);
         if (value != 0 && !validator.test(value)) {
             throw new IllegalArgumentException("Invalid ground GID: " + value);
