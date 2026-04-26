@@ -32,6 +32,10 @@ public sealed interface DateRangePreset
     ///
     /// A preset representing the complete time span.
     ///
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "ENMI_ONE_ENUM_VALUE",
+            justification = "Single-value enum is the intentional design: distinguishes ALL_TIME"
+                    + " from RelativeDateRangePreset via the sealed-style DateRangePreset interface")
     enum AllTimeDateRangePreset implements DateRangePreset {
         ALL_TIME
     }

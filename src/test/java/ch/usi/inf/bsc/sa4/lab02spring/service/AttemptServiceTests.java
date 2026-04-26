@@ -2,7 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,10 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
     /** The mocked attempt repository. */
     @Mock
     private AttemptRepository attemptRepository;
-
-    /** The mocked level repository. */
-    @Mock
-    private LevelRepository levelRepository;
 
     /** The service under test. */
     @InjectMocks

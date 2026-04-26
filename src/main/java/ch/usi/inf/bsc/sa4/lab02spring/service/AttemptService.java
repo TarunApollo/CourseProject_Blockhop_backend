@@ -6,7 +6,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,17 +20,12 @@ public class AttemptService {
     /// Repository handling attempt persistence.
     private final AttemptRepository attemptRepository;
 
-    /// Repository used to load levels referenced by attempts.
-    private final LevelRepository levelRepository;
-
     /// Constructs a new AttemptService with the given dependency.
     ///
     /// @param attemptRepository the repository for accessing attempt data
-    /// @param levelRepository the repository for accessing level data
     @Autowired
-    public AttemptService(final AttemptRepository attemptRepository, final LevelRepository levelRepository) {
+    public AttemptService(final AttemptRepository attemptRepository) {
         this.attemptRepository = attemptRepository;
-        this.levelRepository = levelRepository;
     }
 
     /// Returns the number of distinct levels the given user has played.

@@ -33,7 +33,7 @@ public class AttemptStatisticsRepositoryImpl implements AttemptStatisticsReposit
     private long countDistinctLevelsByUser(final User user, final boolean completedOnly) {
         Criteria criteria = Criteria.where("user.$id").is(user.getId());
         if (completedOnly) {
-            criteria = criteria.and("completed").is(true);
+            criteria = criteria.and("completed").is(Boolean.TRUE);
         }
 
         final Aggregation aggregation = Aggregation.newAggregation(
