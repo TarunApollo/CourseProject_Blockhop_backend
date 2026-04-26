@@ -5,8 +5,13 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.Map;
 
+@SuppressFBWarnings(
+        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
+        justification = "Transient response DTO; mutability is intentional and not shared concurrently")
 public record CreatedLevelProfileDTO(
         String id,
         String title,

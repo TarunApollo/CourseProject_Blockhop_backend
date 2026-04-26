@@ -3,11 +3,15 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /// right now it parse all data from json becasue phaser need them
 /// but still keep jsonignore avoid mistakes in future
 /// polygon and point(x,y) working for collision,its not position
 @JsonIgnoreProperties(ignoreUnknown = true)
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "TileSet is loaded once from JSON and never mutated at runtime")
 public record TileSet(
     int firstgid,
     String name,
@@ -24,6 +28,9 @@ public record TileSet(
 ) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "TileSet is loaded once from JSON and never mutated at runtime")
     public record TileData(
         int id,
         String type,
@@ -39,6 +46,9 @@ public record TileSet(
     ){}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "TileSet is loaded once from JSON and never mutated at runtime")
     public record ObjectGroup(
         String draworder,
         String name,
@@ -47,10 +57,13 @@ public record TileSet(
         String type,
         boolean visible,
         int x,
-        int y 
+        int y
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "TileSet is loaded once from JSON and never mutated at runtime")
     public record TileObject(
         int id,
         String name,
