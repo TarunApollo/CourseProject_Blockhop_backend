@@ -16,13 +16,11 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
 
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
-// Black-box tests for FieldSerializer inner classes.
-// Verifies serialization of Position-keyed maps to JSON and
-// deserialization of compact position keys back into Position objects.
-@SuppressWarnings("NullAway")
+/** Black-box tests for FieldSerializer inner classes. */
+@SuppressWarnings({ "NullAway", "PMD.UseConcurrentHashMap" })
 /* package */ class FieldSerializerTests {
 
     /** Position used across tests. */
@@ -52,6 +50,11 @@ import java.util.Map;
     /** PositionKeyDeserializer instance for direct testing. */
     private static FieldSerializer.PositionKeyDeserializer keyDeserializer;
 
+    /** Prevents instantiation. */
+    private FieldSerializerTests() {
+    }
+
+    /** Configures ObjectMapper instances with custom serializers. */
     @BeforeAll
     static void setupMappers() {
         final SimpleModule objectSerModule = new SimpleModule();
@@ -83,7 +86,7 @@ import java.util.Map;
         @Test
         @DisplayName("should serialize a non-empty map containing the compact position key")
         void serializeNonEmptyMap() throws Exception {
-            final Map<Position, GameObject> map = new LinkedHashMap<>();
+            final Map<Position, GameObject> map = new HashMap<>();
             map.put(TEST_POS, TEST_OBJECT);
             final String json = objectLayerMapper.writeValueAsString(map);
             Assertions.assertTrue(json.contains(COMPACT_KEY));
@@ -98,7 +101,7 @@ import java.util.Map;
         @Test
         @DisplayName("should serialize a non-empty map containing the compact position key")
         void serializeNonEmptyMap() throws Exception {
-            final Map<Position, GroundObject> map = new LinkedHashMap<>();
+            final Map<Position, GroundObject> map = new HashMap<>();
             map.put(TEST_POS, TEST_GROUND);
             final String json = worldLayerMapper.writeValueAsString(map);
             Assertions.assertTrue(json.contains(COMPACT_KEY));

@@ -34,23 +34,31 @@ import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2Clien
 import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-// Black-box tests for LevelController.
-// Tests HTTP contract: status codes, response bodies, and content types.
-//
-// NOTE: Error Prone crashes when MockedStatic and assertDoesNotThrow are
-// combined with a RestTestClient fluent chain. Tests that mock AuthUtils use
-// returnResult().getStatus() directly and assert on status via assertEquals.
-//
-// NOTE: PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
-// requires multipart upload (not supported by RestTestClient).
-@SuppressWarnings("PMD.ExcessiveImports")
+/**
+ * Black-box tests for LevelController.
+ * Tests HTTP contract: status codes, response bodies, and content types.
+ *
+ * <p>Error Prone crashes when MockedStatic and assertDoesNotThrow are
+ * combined with a RestTestClient fluent chain. Tests that mock AuthUtils
+ * use returnResult().getStatus() directly instead of assertDoesNotThrow.</p>
+ *
+ * <p>PUT /{levelId}/thumbnail is skipped because it is @Deprecated and
+ * requires multipart upload (not supported by RestTestClient).</p>
+ */
+@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.AtLeastOneConstructor",
+        "fb-contrib:FCBL_FIELD_COULD_BE_LOCAL" })
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -64,11 +72,11 @@ import java.util.Optional;
     private static final String USER_ID = "userid1";
 
     /** A fixed timestamp used for attempt tests. */
-    private static final java.time.ZonedDateTime FIXED_TIMESTAMP =
-            java.time.ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, java.time.ZoneOffset.UTC);
+    private static final ZonedDateTime FIXED_TIMESTAMP =
+            ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
     /** A fixed duration used for attempt tests. */
-    private static final java.time.Duration FIXED_DURATION = java.time.Duration.ofSeconds(30);
+    private static final Duration FIXED_DURATION = Duration.ofSeconds(30);
 
     /** The authenticated user name used across tests. */
     private static final String USER_NAME = "Test User";
@@ -106,7 +114,7 @@ import java.util.Optional;
     /** A test level owned by the test user. */
     private static Level testLevel;
 
-    // Initializes static test data.
+    /** Initializes static test data. */
     @BeforeAll
     static void setupData() {
         testUser = new User(USER_ID, USER_NAME);
@@ -118,7 +126,7 @@ import java.util.Optional;
     @DisplayName("POST /levels")
     /* default */ class CreateLevel {
 
-        // Verifies that creating a level returns 200 OK.
+        /** Verifies that creating a level returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with created level")
         void testCreateLevelReturnsOk() {
@@ -129,12 +137,12 @@ import java.util.Optional;
                         .thenReturn(testLevel);
 
                 final CreateLevelDTO dto = new CreateLevelDTO("Test Level", "A description");
-                final var status = restTestClient.post().uri("/levels")
+                final HttpStatusCode status = restTestClient.post().uri("/levels")
                         .body(dto)
                         .exchange()
                         .returnResult(LevelDTO.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
     }
@@ -144,7 +152,7 @@ import java.util.Optional;
     @DisplayName("GET /levels/published")
     /* default */ class GetPublishedLevels {
 
-        // Verifies that getting published levels returns a list sorted by CLEAR_RATE.
+        /** Verifies that getting published levels returns a list sorted by CLEAR_RATE. */
         @Test
         @DisplayName("should return list of published levels sorted by CLEAR_RATE")
         void testGetPublishedLevelsByClearRate() {
@@ -170,11 +178,11 @@ import java.util.Optional;
     @DisplayName("GET /levels/{levelId}/thumbnail")
     /* default */ class GetThumbnail {
 
-        // Verifies that getting a thumbnail returns 200 OK with image/png content.
+        /** Verifies that getting a thumbnail returns 200 OK with image/png. */
         @Test
         @DisplayName("should return 200 OK with image/png content type")
         void testGetThumbnailReturnsImage() {
-            final byte[] thumbnailBytes = new byte[]{(byte) 0x89, 'P', 'N', 'G'};
+            final byte[] thumbnailBytes = {(byte) 0x89, 'P', 'N', 'G'};
             Mockito.when(levelService.getThumbnailForLevel(LEVEL_ID))
                     .thenReturn(thumbnailBytes);
 
@@ -191,7 +199,7 @@ import java.util.Optional;
     @DisplayName("POST /levels/clone")
     /* default */ class CloneLevel {
 
-        // Verifies that cloning a level returns 200 OK.
+        /** Verifies that cloning a level returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with cloned level")
         void testCloneLevelReturnsOk() {
@@ -204,16 +212,16 @@ import java.util.Optional;
                         .thenReturn(Optional.of(testLevel));
 
                 final CloneLevelDTO dto = new CloneLevelDTO(LEVEL_ID);
-                final var status = restTestClient.post().uri("/levels/clone")
+                final HttpStatusCode status = restTestClient.post().uri("/levels/clone")
                         .body(dto)
                         .exchange()
                         .returnResult(LevelDTO.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
 
-        // Verifies that cloning a level not owned by the user returns 403 Forbidden.
+        /** Verifies that cloning returns 403 when not allowed. */
         @Test
         @DisplayName("should return 403 Forbidden when clone is not allowed")
         void testCloneLevelReturnsForbidden() {
@@ -226,12 +234,12 @@ import java.util.Optional;
                         .thenReturn(Optional.empty());
 
                 final CloneLevelDTO dto = new CloneLevelDTO(LEVEL_ID);
-                final var status = restTestClient.post().uri("/levels/clone")
+                final HttpStatusCode status = restTestClient.post().uri("/levels/clone")
                         .body(dto)
                         .exchange()
                         .returnResult(LevelDTO.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.FORBIDDEN, status);
+                Assertions.assertEquals(HttpStatus.FORBIDDEN, status);
             }
         }
     }
@@ -241,7 +249,7 @@ import java.util.Optional;
     @DisplayName("PUT /levels/{levelId}/properties")
     /* default */ class UpdateLevelProperties {
 
-        // Verifies that updating level properties returns 200 OK.
+        /** Verifies that updating level properties returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with updated level")
         void testUpdateLevelReturnsOk() {
@@ -257,13 +265,13 @@ import java.util.Optional;
                 final UpdateLevelDTO dto = new UpdateLevelDTO(
                         Optional.of("Updated"), Optional.empty(),
                         Optional.of(new ClearCondition(new Condition.NoClearCondition(), 0)));
-                final var status = restTestClient.put()
+                final HttpStatusCode status = restTestClient.put()
                         .uri("/levels/{levelId}/properties", LEVEL_ID)
                         .body(dto)
                         .exchange()
                         .returnResult(LevelDTO.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
     }
@@ -273,7 +281,7 @@ import java.util.Optional;
     @DisplayName("DELETE /levels/{levelId}")
     /* default */ class DeleteLevel {
 
-        // Verifies that deleting a level returns 204 No Content.
+        /** Verifies that deleting a level returns 204 No Content. */
         @Test
         @DisplayName("should return 204 No Content on successful deletion")
         void testDeleteLevelReturnsNoContent() {
@@ -283,12 +291,12 @@ import java.util.Optional;
                 Mockito.doNothing().when(levelService)
                         .deleteLevel(Mockito.eq(USER_ID), Mockito.eq(LEVEL_ID));
 
-                final var status = restTestClient.delete()
+                final HttpStatusCode status = restTestClient.delete()
                         .uri("/levels/{levelId}", LEVEL_ID)
                         .exchange()
                         .returnResult(Void.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.NO_CONTENT, status);
+                Assertions.assertEquals(HttpStatus.NO_CONTENT, status);
             }
         }
     }
@@ -298,7 +306,7 @@ import java.util.Optional;
     @DisplayName("PUT /levels/{levelId}/unpublish")
     /* default */ class UnpublishLevel {
 
-        // Verifies that unpublishing a level returns 200 OK.
+        /** Verifies that unpublishing a level returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with unpublished level")
         void testUnpublishLevelReturnsOk() {
@@ -308,12 +316,12 @@ import java.util.Optional;
                 Mockito.when(levelService.unpublishLevel(Mockito.eq(USER_ID), Mockito.eq(LEVEL_ID)))
                         .thenReturn(testLevel);
 
-                final var status = restTestClient.put()
+                final HttpStatusCode status = restTestClient.put()
                         .uri("/levels/{levelId}/unpublish", LEVEL_ID)
                         .exchange()
                         .returnResult(LevelDTO.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
     }
@@ -323,7 +331,7 @@ import java.util.Optional;
     @DisplayName("PUT /levels/{levelId}/publish")
     /* default */ class PublishLevel {
 
-        // Verifies that publishing a level returns 200 OK.
+        /** Verifies that publishing a level returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with published level")
         void testPublishLevelReturnsOk() {
@@ -333,12 +341,12 @@ import java.util.Optional;
                 Mockito.when(levelService.publish(Mockito.eq(USER_ID), Mockito.eq(LEVEL_ID)))
                         .thenReturn(testLevel);
 
-                final var status = restTestClient.put()
+                final HttpStatusCode status = restTestClient.put()
                         .uri("/levels/{levelId}/publish", LEVEL_ID)
                         .exchange()
                         .returnResult(LevelDTO.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
     }
@@ -348,7 +356,7 @@ import java.util.Optional;
     @DisplayName("POST /levels/{levelId}/submit")
     /* default */ class SubmitAttempt {
 
-        // Verifies that submitting an attempt returns 200 OK.
+        /** Verifies that submitting an attempt returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with attempt result")
         void testSubmitAttemptReturnsOk() {
@@ -362,13 +370,13 @@ import java.util.Optional;
                         Mockito.eq(LEVEL_ID), Mockito.eq(USER_ID), Mockito.any(AttemptDTO.class)))
                         .thenReturn("attempt-result");
 
-                final var status = restTestClient.post()
+                final HttpStatusCode status = restTestClient.post()
                         .uri("/levels/{levelId}/submit", LEVEL_ID)
                         .body(attemptDTO)
                         .exchange()
                         .returnResult(String.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
     }
@@ -378,7 +386,7 @@ import java.util.Optional;
     @DisplayName("GET /levels/play/{levelId}/map")
     /* default */ class GetPlayableMap {
 
-        // Verifies that getting a playable map returns 200 OK.
+        /** Verifies that getting a playable map returns 200 OK. */
         @Test
         @DisplayName("should return 200 OK with map data")
         void testGetMapReturnsOk() {
@@ -391,12 +399,12 @@ import java.util.Optional;
                 Mockito.when(levelService.getPlayableMap(Mockito.eq(testUser), Mockito.eq(LEVEL_ID)))
                         .thenReturn(mapData);
 
-                final var status = restTestClient.get()
+                final HttpStatusCode status = restTestClient.get()
                         .uri("/levels/play/{levelId}/map", LEVEL_ID)
                         .exchange()
                         .returnResult(Object.class)
                         .getStatus();
-                Assertions.assertEquals(org.springframework.http.HttpStatus.OK, status);
+                Assertions.assertEquals(HttpStatus.OK, status);
             }
         }
     }
