@@ -17,7 +17,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import ch.usi.inf.bsc.sa4.lab02spring.model.TileObjectId;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.TileObjectIdValidator;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
@@ -81,7 +81,7 @@ public class EditorService {
         for (final EditorLevelDTO tile : dto.tiles()) {
             level.ensureWithinBounds(tile.position());
             final int gid = tile.gid();
-            new TileObjectId(gid, tileSetService::isGroundGID);
+            TileObjectIdValidator.validate(gid, tileSetService::isGroundGID);
             newWorldLayer.put(tile.position(), new GroundObject(gid));
         }
 
@@ -120,7 +120,7 @@ public class EditorService {
             level.ensureWithinBounds(object.position());
 
             final int gid = object.gid();
-            new TileObjectId(gid, tileSetService::isObjectGID);
+            TileObjectIdValidator.validate(gid, tileSetService::isObjectGID);
 
             if (positionsInNewLayer.contains(object.position())) {
                 throw new IllegalArgumentException("Duplicate position in object layer: " + object.position());
