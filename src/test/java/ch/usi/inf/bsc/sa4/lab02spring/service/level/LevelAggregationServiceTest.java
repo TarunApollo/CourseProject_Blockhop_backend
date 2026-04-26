@@ -30,8 +30,7 @@ import static org.mockito.Mockito.when;
 /// Verifies sort strategies, popularity windows, and clear-rate computation.
 @DisplayName("LevelAggregationService.getPublishedLevels")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
-    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports"})
 class LevelAggregationServiceTest {
 
     /// Default level description used in fixtures.

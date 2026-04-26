@@ -41,8 +41,7 @@ import static org.mockito.Mockito.when;
 /// Unit tests for the level play service.
 @DisplayName("LevelPlayService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
-    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports", "PMD.ExcessiveImports"})
 class LevelPlayServiceTest {
 
     /// Identifier of the level under test.

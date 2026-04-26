@@ -67,8 +67,9 @@ public class EditorService {
     /// @throws LevelNotFoundException   if level not found
     /// @throws ForbiddenUserException   if not level owner
     /// @throws LevelPublishedException  if level is published
-    /// @throws IllegalArgumentException if any position is out of bounds or any gid is invalid
-    @SuppressWarnings("PMD.UseConcurrentHashMap")
+    /// @throws IllegalArgumentException if any position is out of bounds or
+    ///                                  any gid is invalid
+    @SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
     public Level replaceWorldLayer(final String userId, final String levelId, final UpdateWorldLayerDTO dto) {
         final Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);

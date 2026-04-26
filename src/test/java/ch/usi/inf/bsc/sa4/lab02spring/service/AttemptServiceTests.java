@@ -1,7 +1,15 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,6 +99,31 @@ import org.mockito.junit.jupiter.MockitoExtension;
             Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
             attemptService.getCompletedLevelsCount(testUser);
             Mockito.verify(attemptRepository).countDistinctCompletedLevelsByUser(testUser);
+        }
+    }
+
+    /**
+     * Tests for the submitAttempt method.
+     */
+    @Nested
+    @DisplayName("when submitting an attempt")
+    /* default */ class Submission {
+
+        /**
+         * Verifies submitAttempt persists a new Attempt built from
+         * the given user/level/dto.
+         */
+        @Test
+        @DisplayName("should save a new attempt to the repository")
+        /* default */ void testSubmitAttemptSaves() {
+            final Level level = new Level("Test Level", "desc", testUser);
+            final AttemptDTO dto = new AttemptDTO(
+                    Map.of(), new Position(0, 0),
+                    ZonedDateTime.now(), Duration.ofSeconds(10), true);
+
+            attemptService.submitAttempt(testUser, level, dto);
+
+            Mockito.verify(attemptRepository).save(Mockito.any(Attempt.class));
         }
     }
 }

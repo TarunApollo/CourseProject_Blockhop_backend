@@ -22,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,8 +33,7 @@ import static org.mockito.Mockito.when;
 /// Unit tests for the level publish service.
 @DisplayName("LevelPublishService")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
-    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports"})
 class LevelPublishServiceTest {
 
     /// Identifier of the level under test.

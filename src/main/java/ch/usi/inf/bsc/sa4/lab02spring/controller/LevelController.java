@@ -153,7 +153,12 @@ public class LevelController {
         return ResponseEntity.ok(new LevelDTO(this.levelService.updateLevelProperties(creator, levelId, dto)));
     }
 
-    // TODO: add jsdoc...
+    /// Deletes a level owned by the authenticated user.
+    /// @param authentication the current authenticated user
+    /// @param levelId        the ID of the level to delete
+    /// @return 204 No Content when the level is deleted successfully
+    /// @throws LevelNotFoundException if the level does not exist
+    /// @throws ForbiddenUserException if the user is not the owner of the level
     @DeleteMapping("/{levelId}")
     public ResponseEntity<Void> deleteLevel(
             final Authentication authentication,

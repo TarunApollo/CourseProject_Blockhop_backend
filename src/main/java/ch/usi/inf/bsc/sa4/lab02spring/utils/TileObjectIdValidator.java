@@ -12,7 +12,8 @@ public final class TileObjectIdValidator {
     private TileObjectIdValidator() {}
 
     /**
-     * Throws IllegalArgumentException if the given GID is non-zero and rejected by the validator.
+     * Throws IllegalArgumentException if the given GID is non-zero and
+     * rejected by the validator.
      *
      * @param value     the GID to validate; 0 is always accepted (removal marker)
      * @param validator predicate used to test non-zero GIDs

@@ -5,6 +5,8 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
@@ -12,6 +14,9 @@ import java.time.ZonedDateTime;
 /// An attempt stores who played, when it happened, which level was played,
 /// whether the level was completed, and how long the attempt took.
 @SuppressWarnings("NullAway.Init")
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "attempts")
 public class Attempt {
 

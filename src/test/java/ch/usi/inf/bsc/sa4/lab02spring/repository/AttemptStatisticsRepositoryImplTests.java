@@ -17,7 +17,8 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 
 /**
  * Unit tests for AttemptStatisticsRepositoryImpl.
- * MongoTemplate is mocked; aggregation pipeline is not exercised against a real database.
+ * MongoTemplate is mocked; aggregation pipeline is not exercised
+ * against a real database.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AttemptStatisticsRepositoryImpl")

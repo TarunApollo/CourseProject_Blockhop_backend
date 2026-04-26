@@ -23,7 +23,7 @@ import java.util.Optional;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The User Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
+@SuppressWarnings("NullAway")
 /* default */ class UserServiceTests {
 
     /** The mocked user repository. */

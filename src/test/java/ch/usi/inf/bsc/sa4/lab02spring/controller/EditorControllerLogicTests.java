@@ -38,8 +38,7 @@ import java.util.List;
  * Black-box tests for EditorController.
  * Tests HTTP contract: status codes, response bodies, and content types.
  */
-@SuppressWarnings({"PMD.AtLeastOneConstructor", "PMD.ExcessiveImports",
-        "FCBL_FIELD_COULD_BE_LOCAL"})
+@SuppressWarnings({"PMD.ExcessiveImports", "FCBL_FIELD_COULD_BE_LOCAL"})
 @WebMvcTest(controllers = EditorController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,

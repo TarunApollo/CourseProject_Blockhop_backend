@@ -22,9 +22,14 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /// REST controller for editing level data in the editor.
 @RestController
 @RequestMapping("/editor")
+@SuppressFBWarnings(
+        value = "EI_EXPOSE_REP2",
+        justification = "Spring-managed singleton; injected services are intentionally shared")
 public class EditorController {
 
     /// Service used to perform editor operations.

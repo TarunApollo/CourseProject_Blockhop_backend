@@ -1,6 +1,14 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.*;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Shell;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
+import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
@@ -75,6 +83,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     @WritingConverter
     public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
         @Override
+        @SuppressWarnings("PMD.ReplaceJavaUtilDate")
         public Date convert(final ZonedDateTime dateTime) {
             return Date.from(dateTime.toInstant());
         }

@@ -32,8 +32,7 @@ import static org.mockito.Mockito.when;
 /// Unit tests for the TiledLayerMapper utility.
 @DisplayName("TiledLayerMapper")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.AtLeastOneConstructor",
-    "PMD.TooManyStaticImports", "PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports", "PMD.TooManyMethods"})
 class TiledLayerMapperTest {
 
     /// Pixel size of a Tiled tile.
