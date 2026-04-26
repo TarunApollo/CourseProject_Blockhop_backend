@@ -119,7 +119,7 @@ public class LevelController {
         return this.levelService.cloneLevel(cloneLevelDTO, user)
                 .map(LevelDTO::new)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 
     /// Updates the properties of an existing unpublished level owned by the
