@@ -24,6 +24,10 @@ public class Level {
     private static final int DEFAULT_WIDTH = 256;
     /// Fixed height shared by all levels.
     private static final int DEFAULT_HEIGHT = 14;
+    /// Maximum number of start flags allowed in a level.
+    private static final int MAX_START_FLAGS = 1;
+    /// Maximum number of exit doors allowed in a level.
+    private static final int MAX_EXIT_DOORS = 1;
 
     /// Database identifier of this level.
     @Id
@@ -340,11 +344,11 @@ public class Level {
                 .filter(ExitDoor.class::isInstance)
                 .count();
 
-        if (countFlag > 1) {
+        if (countFlag > MAX_START_FLAGS) {
             throw new IllegalArgumentException("One level can only have a flag");
         }
 
-        if (countDoor > 1) {
+        if (countDoor > MAX_EXIT_DOORS) {
             throw new IllegalArgumentException("One level can only have a door");
         }
     }

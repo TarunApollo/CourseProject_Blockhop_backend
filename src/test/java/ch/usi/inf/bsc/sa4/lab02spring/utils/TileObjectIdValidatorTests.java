@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TileObjectIdValidator}. */
 @DisplayName("In the TileObjectIdValidator")
+@SuppressWarnings("java:S2187")
 /* package */ class TileObjectIdValidatorTests {
 
     /** A non-zero GID used by tests. */

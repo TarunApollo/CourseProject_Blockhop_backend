@@ -10,8 +10,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /// polygon and point(x,y) working for collision,its not position
 @JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "TileSet is loaded once from JSON and never mutated at runtime")
+        value = TileSet.EXPOSE_REP_RULE,
+        justification = TileSet.EXPOSE_REP_JUSTIFICATION)
 public record TileSet(
     int firstgid,
     String name,
@@ -27,10 +27,15 @@ public record TileSet(
     List<TileData> tiles
 ) {
 
+    /** SpotBugs rule key suppressed across all TileSet inner records. */
+    static final String EXPOSE_REP_RULE = "EI_EXPOSE_REP2";
+
+    /** Justification reused across all TileSet SpotBugs suppressions. */
+    static final String EXPOSE_REP_JUSTIFICATION =
+            "TileSet is loaded once from JSON and never mutated at runtime";
+
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @SuppressFBWarnings(
-            value = "EI_EXPOSE_REP2",
-            justification = "TileSet is loaded once from JSON and never mutated at runtime")
+    @SuppressFBWarnings(value = EXPOSE_REP_RULE, justification = EXPOSE_REP_JUSTIFICATION)
     public record TileData(
         int id,
         String type,
@@ -46,9 +51,7 @@ public record TileSet(
     ){}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @SuppressFBWarnings(
-            value = "EI_EXPOSE_REP2",
-            justification = "TileSet is loaded once from JSON and never mutated at runtime")
+    @SuppressFBWarnings(value = EXPOSE_REP_RULE, justification = EXPOSE_REP_JUSTIFICATION)
     public record ObjectGroup(
         String draworder,
         String name,
@@ -61,9 +64,7 @@ public record TileSet(
     ) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @SuppressFBWarnings(
-            value = "EI_EXPOSE_REP2",
-            justification = "TileSet is loaded once from JSON and never mutated at runtime")
+    @SuppressFBWarnings(value = EXPOSE_REP_RULE, justification = EXPOSE_REP_JUSTIFICATION)
     public record TileObject(
         int id,
         String name,

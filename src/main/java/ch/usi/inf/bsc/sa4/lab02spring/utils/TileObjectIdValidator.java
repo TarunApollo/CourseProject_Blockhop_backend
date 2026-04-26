@@ -8,8 +8,15 @@ import java.util.function.IntPredicate;
  */
 public final class TileObjectIdValidator {
 
-    private TileObjectIdValidator() {}  // not instantiable
+    /** Utility class; not instantiable. */
+    private TileObjectIdValidator() {}
 
+    /**
+     * Throws IllegalArgumentException if the given GID is non-zero and rejected by the validator.
+     *
+     * @param value     the GID to validate; 0 is always accepted (removal marker)
+     * @param validator predicate used to test non-zero GIDs
+     */
     public static void validate(final int value, final IntPredicate validator) {
         if (value != 0 && !validator.test(value)) {
             throw new IllegalArgumentException("Invalid GID: " + value);
