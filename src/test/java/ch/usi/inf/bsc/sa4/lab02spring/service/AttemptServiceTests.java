@@ -1,11 +1,17 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import ch.usi.inf.bsc.sa4.lab02spring.configuration.TestSecurityConfig;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateAttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 
 import org.junit.jupiter.api.Assertions;
@@ -13,183 +19,318 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.function.Executable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
- * Unit tests for the AttemptService.
- * Goal: Test service logic in isolation using Mockito.
+ * Integration tests for AttemptService.
+ * Uses a real Spring context with embedded MongoDB.
+ * All assertions go through the service; repositories are only used
+ * for setup cleanup.
  */
-@ExtendWith(MockitoExtension.class)
-@DisplayName("The Attempt Service (Unit)")
-@SuppressWarnings({ "PMD.AtLeastOneConstructor", "NullAway" })
-/* default */ class AttemptServiceTests {
+/**
+ * Integration tests for AttemptService.
+ * Uses a real Spring context with embedded MongoDB.
+ * All assertions go through the service; repositories are only used
+ * for setup cleanup.
+ *
+ * <p>Bean definition overriding is enabled because
+ * {@link TestSecurityConfig} must replace the production
+ * {@code SecurityConfiguration}'s filter chain bean. Without this
+ * property Spring Boot rejects two beans with the same name.</p>
+ */
+@SpringBootTest(properties = {
+        "spring.main.allow-bean-definition-overriding=true"
+})
+@Import(TestSecurityConfig.class)
+@DisplayName("The Attempt Service")
+@SuppressWarnings("NullAway")
+/* package */ class AttemptServiceTests {
 
-    /** The mocked attempt repository. */
-    @Mock
-    private AttemptRepository attemptRepository;
-
-    /** The mocked level repository. */
-    @Mock
-    private LevelRepository levelRepository;
-
-    /** The service under test. */
-    @InjectMocks
+    /** The service under test, wired by Spring. */
+    @Autowired
     private AttemptService attemptService;
 
-    /** Level ID used in creation tests. */
-    private static final String LEVEL_ID = "level-1";
+    /** Used to create the test level through the service layer. */
+    @Autowired
+    private LevelService levelService;
+
+    /** Used to persist the test user via the service layer. */
+    @Autowired
+    private UserService userService;
+
+    /** Used only for setup cleanup between tests. */
+    @Autowired
+    private AttemptRepository attemptRepository;
+
+    /** Used only for setup cleanup between tests. */
+    @Autowired
+    private LevelRepository levelRepository;
+
+    /** Used only for setup cleanup between tests. */
+    @Autowired
+    private UserRepository userRepository;
 
     /** The test user. */
     private User testUser;
 
-    /** The test level. */
+    /** A test level created via LevelService. */
     private Level testLevel;
 
-    /**
-     * Sets up test data before each test.
-     */
+    /** A fixed duration used across tests. */
+    private static final Duration TEST_DURATION = Duration.ofSeconds(30);
+
+    /** Clears all data and creates fresh user and level via services. */
     @BeforeEach
-    /* default */ void setup() {
-        this.testUser = new User("user-1", "Mario");
-        this.testLevel = new Level("Test Level", "Desc", this.testUser);
+    /* package */ void setup() {
+        attemptRepository.deleteAll();
+        levelRepository.deleteAll();
+        userRepository.deleteAll();
+        final CreateUserDTO userDto =
+                new CreateUserDTO("user-1", "Mario");
+        this.testUser = userService.createUser(userDto);
+        final CreateLevelDTO levelDto = new CreateLevelDTO(
+                "Test Level", "A description");
+        this.testLevel = levelService.createLevel(levelDto, testUser.getId());
     }
 
-    /**
-     * Tests for the createAttempt method.
-     */
+    /** Tests for the createAttempt method. */
     @Nested
-    @DisplayName("when creating an attempt")
-    /* default */ class Creation {
+    @DisplayName("after creating a new attempt")
+    /* default */ class AfterCreatingANewAttempt {
 
-        /**
-         * Verifies that a valid attempt is saved and returned.
-         */
-        @Test
-        @DisplayName("should save and return a non null attempt")
-        /* default */ void testCreateAttemptNotNull() {
-            final CreateAttemptDTO dto = new CreateAttemptDTO(LEVEL_ID, true, Duration.ofSeconds(10));
-            final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
-                    true, Duration.ofSeconds(10));
+        private Attempt newAttempt;
 
-            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(attemptRepository.save(Mockito.any(Attempt.class))).thenReturn(savedAttempt);
-
-            final Attempt result = attemptService.createAttempt(testUser, dto);
-
-            Assertions.assertNotNull(result);
+        /** Creates a new attempt before each test. */
+        @BeforeEach
+        /* package */ void setup() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            this.newAttempt = attemptService.createAttempt(testUser, dto);
         }
 
-        /**
-         * Verifies that the returned attempt has the correct ID.
-         */
+        /** Verifies the returned attempt is not null. */
+        @DisplayName("the attempt should be non null")
         @Test
-        @DisplayName("should return the correct attempt ID")
-        /* default */ void testCreateAttemptCorrectId() {
-            final CreateAttemptDTO dto = new CreateAttemptDTO(LEVEL_ID, true, Duration.ofSeconds(10));
-            final Attempt savedAttempt = new Attempt("attempt-1", testUser, java.time.ZonedDateTime.now(), testLevel,
-                    true, Duration.ofSeconds(10));
-
-            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(attemptRepository.save(Mockito.any(Attempt.class))).thenReturn(savedAttempt);
-
-            final Attempt result = attemptService.createAttempt(testUser, dto);
-
-            Assertions.assertEquals("attempt-1", result.getId());
+        /* package */ void testNotNull() {
+            Assertions.assertNotNull(this.newAttempt);
         }
 
-        /**
-         * Verifies that an exception is thrown if the level is not found.
-         */
+        /** Verifies the attempt is assigned the correct level. */
+        @DisplayName("the attempt should reference the correct level")
         @Test
-        @DisplayName("should throw LevelNotFoundException if level does not exist")
-        /* default */ void testCreateAttemptLevelNotFound() {
-            final CreateAttemptDTO dto = new CreateAttemptDTO("non-existent", true, Duration.ZERO);
-            Mockito.when(levelRepository.findById("non-existent")).thenReturn(Optional.empty());
+        /* package */ void testLevel() {
+            Assertions.assertEquals(testLevel.getId(),
+                    this.newAttempt.getLevel().getId());
+        }
 
-            Assertions.assertThrows(LevelNotFoundException.class, () -> attemptService.createAttempt(testUser, dto));
+        /** Verifies the attempt can be retrieved via the service. */
+        @DisplayName("the attempt should be retrievable by id and user")
+        @Test
+        /* package */ void testRetrievable() {
+            final Optional<Attempt> found =
+                    attemptService.getAttemptByIdAndUser(
+                            newAttempt.getId(), testUser);
+            Assertions.assertTrue(found.isPresent());
         }
     }
 
-    /**
-     * Tests for retrieval and statistics methods.
-     */
+    /** Tests for LevelNotFoundException in createAttempt. */
     @Nested
-    @DisplayName("when retrieving attempts and stats")
-    /* default */ class Stats {
+    @DisplayName("when creating an attempt for a non-existent level")
+    /* default */ class CreateAttemptLevelNotFound {
 
-        /**
-         * Verifies retrieval of attempts by user returns correct result.
-         */
+        /** Verifies that LevelNotFoundException is thrown. */
+        @DisplayName("should throw LevelNotFoundException")
         @Test
-        @DisplayName("should find attempts by user")
-        /* default */ void testGetAttemptsByUser() {
-            final List<Attempt> attempts = List.of(new Attempt("1", testUser, null, testLevel, true, null));
-            Mockito.when(attemptRepository.findByUser(testUser)).thenReturn(attempts);
-            final List<Attempt> result = attemptService.getAttemptsByUser(testUser);
+        /* package */ void testThrows() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO("non-existent-id", true, TEST_DURATION);
+            final Executable call =
+                    () -> attemptService.createAttempt(testUser, dto);
+            Assertions.assertThrows(LevelNotFoundException.class, call);
+        }
+    }
+
+    /** Tests for the getAttemptsByUser method. */
+    @Nested
+    @DisplayName("when retrieving attempts by user")
+    /* default */ class GetAttemptsByUser {
+
+        private Attempt attempt;
+
+        /** Creates an attempt before each test. */
+        @BeforeEach
+        /* package */ void setup() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            this.attempt = attemptService.createAttempt(testUser, dto);
+        }
+
+        /** Verifies the user's attempts are returned. */
+        @DisplayName("should return the user's attempts")
+        @Test
+        /* package */ void testReturnsAttempts() {
+            final List<Attempt> result =
+                    attemptService.getAttemptsByUser(testUser);
             Assertions.assertEquals(1, result.size());
         }
 
-        /**
-         * Verifies retrieval of attempts by user delegates to repository.
-         */
+        /** Verifies the returned attempt matches the created one. */
+        @DisplayName("should return the correct attempt")
         @Test
-        @DisplayName("should delegate to the repository when getting attempts by user")
-        /* default */ void testGetAttemptsByUserCallsRepo() {
-            Mockito.when(attemptRepository.findByUser(testUser)).thenReturn(List.of());
-            attemptService.getAttemptsByUser(testUser);
-            Mockito.verify(attemptRepository).findByUser(testUser);
+        /* package */ void testCorrectAttempt() {
+            final List<Attempt> result =
+                    attemptService.getAttemptsByUser(testUser);
+            Assertions.assertEquals(
+                    attempt.getId(), result.getFirst().getId());
+        }
+    }
+
+    /** Tests for the getPlayedLevelsCount method. */
+    @Nested
+    @DisplayName("when counting played levels")
+    /* default */ class PlayedLevelsCount {
+
+        /** Verifies the count is zero before any attempts. */
+        @DisplayName("should return 0 when no attempts exist")
+        @Test
+        /* package */ void testZeroInitially() {
+            Assertions.assertEquals(0L,
+                    attemptService.getPlayedLevelsCount(testUser));
         }
 
-        /**
-         * Verifies played levels count returns correct value.
-         */
+        /** Verifies the count increases after an attempt. */
+        @DisplayName("should return 1 after one attempt")
         @Test
-        @DisplayName("should count played levels correctly")
-        /* default */ void testGetPlayedLevelsCount() {
-            Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
-            final long count = attemptService.getPlayedLevelsCount(testUser);
-            Assertions.assertEquals(5L, count);
+        /* package */ void testAfterOneAttempt() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            attemptService.createAttempt(testUser, dto);
+            Assertions.assertEquals(1L,
+                    attemptService.getPlayedLevelsCount(testUser));
+        }
+    }
+
+    /** Tests for the getCompletedLevelsCount method. */
+    @Nested
+    @DisplayName("when counting completed levels")
+    /* default */ class CompletedLevelsCount {
+
+        /** Verifies the count is zero before any attempts. */
+        @DisplayName("should return 0 when no attempts exist")
+        @Test
+        /* package */ void testZeroInitially() {
+            Assertions.assertEquals(0L,
+                    attemptService.getCompletedLevelsCount(testUser));
         }
 
-        /**
-         * Verifies played levels count delegates to repository.
-         */
+        /** Verifies the count increases after a completed attempt. */
+        @DisplayName("should return 1 after a completed attempt")
         @Test
-        @DisplayName("should delegate to the repository when counting played levels")
-        /* default */ void testGetPlayedLevelsCountCallsRepo() {
-            Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
-            attemptService.getPlayedLevelsCount(testUser);
-            Mockito.verify(attemptRepository).countDistinctPlayedLevelsByUser(testUser);
+        /* package */ void testAfterCompletedAttempt() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            attemptService.createAttempt(testUser, dto);
+            Assertions.assertEquals(1L,
+                    attemptService.getCompletedLevelsCount(testUser));
+        }
+    }
+
+    /** Tests for the setAttemptUncompleted method. */
+    @Nested
+    @DisplayName("after marking an attempt as uncompleted")
+    /* default */ class SetUncompleted {
+
+        /** Creates a completed attempt before each test. */
+        @BeforeEach
+        /* package */ void setup() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            attemptService.createAttempt(testUser, dto);
         }
 
-        /**
-         * Verifies completed levels count returns correct value.
-         */
+        /** Verifies the attempt is marked as uncompleted. */
+        @DisplayName("should mark the attempt as uncompleted")
         @Test
-        @DisplayName("should count completed levels correctly")
-        /* default */ void testGetCompletedLevelsCount() {
-            Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
-            final long count = attemptService.getCompletedLevelsCount(testUser);
-            Assertions.assertEquals(3L, count);
+        /* package */ void testMarkedUncompleted() {
+            attemptService.setAttemptUncompleted(testUser, testLevel);
+            Assertions.assertFalse(
+                    attemptService.hasCompleted(testUser, testLevel));
+        }
+    }
+
+    /** Tests for the hasCompleted method. */
+    @Nested
+    @DisplayName("when checking completion status")
+    /* default */ class HasCompleted {
+
+        /** Verifies false when no attempts exist. */
+        @DisplayName("should return false when no attempts exist")
+        @Test
+        /* package */ void testNoAttempts() {
+            Assertions.assertFalse(
+                    attemptService.hasCompleted(testUser, testLevel));
         }
 
-        /**
-         * Verifies completed levels count delegates to repository.
-         */
+        /** Verifies true after a completed attempt. */
+        @DisplayName("should return true after a completed attempt")
         @Test
-        @DisplayName("should delegate to the repository when counting completed levels")
-        /* default */ void testGetCompletedLevelsCountCallsRepo() {
-            Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
-            attemptService.getCompletedLevelsCount(testUser);
-            Mockito.verify(attemptRepository).countDistinctCompletedLevelsByUser(testUser);
+        /* package */ void testAfterCompleted() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            attemptService.createAttempt(testUser, dto);
+            Assertions.assertTrue(
+                    attemptService.hasCompleted(testUser, testLevel));
+        }
+    }
+
+    /** Tests for the submitAttempt method. */
+    @Nested
+    @DisplayName("after submitting an attempt")
+    /* default */ class SubmitAttempt {
+
+        /** Verifies the attempt is retrievable after submission. */
+        @DisplayName("should create a retrievable attempt")
+        @Test
+        /* package */ void testRetrievableAfterSubmit() {
+            final AttemptDTO dto = new AttemptDTO(
+                    Map.of(), new Position(0, 0),
+                    ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0,
+                            java.time.ZoneOffset.UTC),
+                    TEST_DURATION, true);
+            attemptService.submitAttempt(testUser, testLevel, dto);
+            final List<Attempt> result =
+                    attemptService.getAttemptsByUser(testUser);
+            Assertions.assertEquals(1, result.size());
+        }
+    }
+
+    /** Tests for the getAttemptByIdAndUser method. */
+    @Nested
+    @DisplayName("when retrieving an attempt by id and user")
+    /* default */ class GetByIdAndUser {
+
+        /** Verifies the correct attempt is returned. */
+        @DisplayName("should return the correct attempt")
+        @Test
+        /* package */ void testCorrectAttempt() {
+            final CreateAttemptDTO dto =
+                    new CreateAttemptDTO(testLevel.getId(), true, TEST_DURATION);
+            final Attempt created =
+                    attemptService.createAttempt(testUser, dto);
+            final Optional<Attempt> found =
+                    attemptService.getAttemptByIdAndUser(
+                            created.getId(), testUser);
+            Assertions.assertTrue(found.isPresent());
         }
     }
 }
