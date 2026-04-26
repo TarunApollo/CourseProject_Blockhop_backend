@@ -21,7 +21,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationResults;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AttemptStatisticsRepositoryImpl")
-@SuppressWarnings({"PMD.AtLeastOneConstructor", "NullAway"})
+@SuppressWarnings("NullAway")
 /* package */ class AttemptStatisticsRepositoryImplTests {
 
     /** Mocked Mongo template. */

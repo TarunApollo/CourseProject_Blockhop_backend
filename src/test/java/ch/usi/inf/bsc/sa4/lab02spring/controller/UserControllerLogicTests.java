@@ -44,8 +44,7 @@ import java.util.Optional;
 })
 @AutoConfigureRestTestClient
 @DisplayName("User Controller Logic Tests")
-@SuppressWarnings("PMD.AtLeastOneConstructor")
-class UserControllerLogicTests {
+public class UserControllerLogicTests {
 
     /**
      * The mocked user service.

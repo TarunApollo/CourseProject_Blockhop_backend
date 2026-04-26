@@ -10,7 +10,6 @@ import org.junit.jupiter.api.function.Executable;
  * Tests for CoinType enum: value() JSON key
  * and fromValue() deserialization.
  */
-@SuppressWarnings("PMD.AtLeastOneConstructor")
 @DisplayName(" In the CoinType enum ")
 /* package */ class CoinTypeTests {
 

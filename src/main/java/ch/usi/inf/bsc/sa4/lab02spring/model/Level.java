@@ -1,4 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.*;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
