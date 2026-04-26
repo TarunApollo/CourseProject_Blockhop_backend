@@ -44,7 +44,7 @@ import java.util.Optional;
 })
 @AutoConfigureRestTestClient
 @DisplayName("User Controller Logic Tests")
-public class UserControllerLogicTests {
+class UserControllerLogicTests {
 
     /**
      * The mocked user service.
@@ -160,7 +160,8 @@ public class UserControllerLogicTests {
     }
 
     /**
-     * Verifies that GET /users/me creates and returns a user when it does not exist.
+     * Verifies that GET /users/me creates and returns a user when it does not
+     * exist.
      */
     @Test
     @DisplayName("GET /users/me should create and return user when not exists")
