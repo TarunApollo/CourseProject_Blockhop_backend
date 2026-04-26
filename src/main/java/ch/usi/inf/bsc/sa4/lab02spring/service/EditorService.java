@@ -77,7 +77,7 @@ public class EditorService {
         level.ensureModifiable();
 
         // Built dynamically via put(); Map.of() is immutable so cannot be used here.
-        final Map<Position, GroundObject> newWorldLayer = new LinkedHashMap<>();
+        final Map<Position, GroundObject> newWorldLayer = new LinkedHashMap<>(dto.tiles().size());
         for (final EditorLevelDTO tile : dto.tiles()) {
             level.ensureWithinBounds(tile.position());
             final int gid = tile.gid();
@@ -113,8 +113,8 @@ public class EditorService {
         level.ensureModifiable();
 
         // Built dynamically via put(); Map.of() is immutable so cannot be used here.
-        final Map<Position, GameObject> newObjectLayer = new LinkedHashMap<>();
-        final Set<Position> positionsInNewLayer = new HashSet<>();
+        final Map<Position, GameObject> newObjectLayer = new LinkedHashMap<>(dto.objects().size());
+        final Set<Position> positionsInNewLayer = new HashSet<>(dto.objects().size());
 
         for (final EditorLevelDTO object : dto.objects()) {
             level.ensureWithinBounds(object.position());
