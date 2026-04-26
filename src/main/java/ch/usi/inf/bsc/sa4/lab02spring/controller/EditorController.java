@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
+import java.lang.IllegalArgumentException;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
@@ -18,7 +22,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 
 /// REST controller for editing level data in the editor.
 @RestController
