@@ -38,6 +38,9 @@ public class LevelTests {
     ///
     @Test
     @DisplayName("can be created with title, description, and creator")
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "SEC_SIDE_EFFECT_CONSTRUCTOR",
+            justification = "Constructor invocation in lambda is the test target")
     public void creatorTest() {
         final User creator = new User(USER_ID, USER_NAME);
         final Executable codeToExecute = () -> new Level(LEVEL_TITLE, LEVEL_DESC, creator);
@@ -529,8 +532,6 @@ public class LevelTests {
 
         /// The original level used as the source for cloning.
         private Level original;
-        /// The original creator of the source level.
-        private User originalCreator;
         /// The user that should receive the cloned level.
         private User cloneCreator;
         /// A position used for world-layer setup.
@@ -542,9 +543,8 @@ public class LevelTests {
 
         @BeforeEach
         void setUp() {
-            this.originalCreator = new User(USER_ID, USER_NAME);
             this.cloneCreator = new User("user-2", "Luigi");
-            this.original = new Level("Original", "Original description", this.originalCreator);
+            this.original = new Level("Original", "Original description", new User(USER_ID, USER_NAME));
             this.worldPosition = new Position(3, 4);
             this.objectPosition = new Position(5, 6);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);

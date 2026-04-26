@@ -109,14 +109,23 @@ import java.util.Optional;
 
     /** The mocked tile set service. */
     @MockitoBean
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "FCBL_FIELD_COULD_BE_LOCAL",
+            justification = "@MockitoBean field required by Spring context even if unused in tests")
     private TileSetService tileSetService;
 
     /** The mocked attempt service. */
     @MockitoBean
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "FCBL_FIELD_COULD_BE_LOCAL",
+            justification = "@MockitoBean field required by Spring context even if unused in tests")
     private AttemptService attemptService;
 
     /** The mocked layer to tiled map converter. */
     @MockitoBean
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+            value = "FCBL_FIELD_COULD_BE_LOCAL",
+            justification = "@MockitoBean field required by Spring context even if unused in tests")
     private LayerToTiledMapConverter layerToTiledMapConverter;
 
     /** The RestTestClient for performing requests. */

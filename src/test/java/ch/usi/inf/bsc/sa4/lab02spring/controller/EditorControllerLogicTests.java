@@ -38,7 +38,8 @@ import java.util.List;
  * Black-box tests for EditorController.
  * Tests HTTP contract: status codes, response bodies, and content types.
  */
-@SuppressWarnings({"PMD.AtLeastOneConstructor", "FCBL_FIELD_COULD_BE_LOCAL"})
+@SuppressWarnings({"PMD.AtLeastOneConstructor", "PMD.ExcessiveImports",
+        "FCBL_FIELD_COULD_BE_LOCAL"})
 @WebMvcTest(controllers = EditorController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -65,17 +66,13 @@ import java.util.List;
     @Autowired
     private RestTestClient restTestClient;
 
-    /** The test user. */
-    private static User testUser;
-
     /** A test level owned by the test user. */
     private static Level testLevel;
 
     /** Initializes static test data. */
     @BeforeAll
     static void setupData() {
-        testUser = new User(USER_ID, USER_NAME);
-        testLevel = new Level("Editor Level", "A description", testUser);
+        testLevel = new Level("Editor Level", "A description", new User(USER_ID, USER_NAME));
     }
 
     /** Tests for PUT /editor/{levelId}/world-layer. */

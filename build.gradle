@@ -29,6 +29,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+	testImplementation 'com.github.spotbugs:spotbugs-annotations:4.8.6'
 	testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring4x:4.24.0'
   	errorprone 'com.google.errorprone:error_prone_core:2.42.0' // https://github.com/google/error-prone
 	errorprone 'com.uber.nullaway:nullaway:0.12.12' // https://github.com/uber/NullAway

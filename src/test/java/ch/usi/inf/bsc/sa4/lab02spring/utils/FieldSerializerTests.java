@@ -21,7 +21,7 @@ import java.util.Map;
 
 /** Black-box tests for FieldSerializer inner classes. */
 @SuppressWarnings({ "NullAway", "PMD.UseConcurrentHashMap" })
-/* package */ class FieldSerializerTests {
+/* package */ final class FieldSerializerTests {
 
     /** Position used across tests. */
     private static final Position TEST_POS = new Position(3, 7);
