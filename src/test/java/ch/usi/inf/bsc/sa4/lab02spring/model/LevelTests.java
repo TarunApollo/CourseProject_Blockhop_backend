@@ -345,16 +345,14 @@ public class LevelTests {
 
         /// The level under test.
         private Level level;
-        /// A reference position used in the layer setup.
-        private Position position;
 
         @BeforeEach
         void setUp() {
             final User creator = new User(USER_ID, USER_NAME);
             this.level = new Level(LEVEL_TITLE, LEVEL_DESC, creator);
-            this.position = new Position(1, 1);
-            this.level.putWorldLayer(this.position, new GroundObject(8));
-            this.level.putObjectLayer(this.position, new StartFlag(9, this.position));
+            final Position position = new Position(1, 1);
+            this.level.putWorldLayer(position, new GroundObject(8));
+            this.level.putObjectLayer(position, new StartFlag(9, position));
         }
 
         ///
@@ -534,10 +532,6 @@ public class LevelTests {
         private Level original;
         /// The user that should receive the cloned level.
         private User cloneCreator;
-        /// A position used for world-layer setup.
-        private Position worldPosition;
-        /// A position used for object-layer setup.
-        private Position objectPosition;
         /// The clear condition assigned to the original level.
         private ClearCondition clearCondition;
 
@@ -545,8 +539,8 @@ public class LevelTests {
         void setUp() {
             this.cloneCreator = new User("user-2", "Luigi");
             this.original = new Level("Original", "Original description", new User(USER_ID, USER_NAME));
-            this.worldPosition = new Position(3, 4);
-            this.objectPosition = new Position(5, 6);
+            final Position worldPosition = new Position(3, 4);
+            final Position objectPosition = new Position(5, 6);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
             final Position flagPos = new Position(1, 1);
             final Position doorPos = new Position(2, 1);
@@ -555,8 +549,8 @@ public class LevelTests {
             this.original.validatePublishEligible(USER_ID);
             this.original.publish(USER_ID);
             this.original.setClearCondition(this.clearCondition);
-            this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
-            this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, CoinType.GOLD_COIN
+            this.original.putWorldLayer(worldPosition, new GroundObject(21));
+            this.original.putObjectLayer(objectPosition, new Coin(33, objectPosition, CoinType.GOLD_COIN
 ));
         }
 
