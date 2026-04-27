@@ -14,14 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.TileSetNotLoadedException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /// Service that loads and exposes tileset metadata.
 @Service
-@SuppressFBWarnings(
-        value = "CT_CONSTRUCTOR_THROW",
-        justification = "Tileset must be loaded at startup; failure to load is unrecoverable")
-public class TileSetService {
+public final class TileSetService {
     
     /// Ground GIDs - type is always "Ground", so just store GIDs
     private final Set<Integer> groundGIDs;
