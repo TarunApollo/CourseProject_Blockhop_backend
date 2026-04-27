@@ -45,16 +45,13 @@ class LevelAggregationControllerTests {
     @Autowired
     private RestTestClient restTestClient;
 
-    /// Shared test user instance.
-    private static User testUser;
-    
     /// Shared test level instance.
     private static Level testLevel;
 
-    /// Initializes static test data. ///
+    /// Initializes static test data.
     @BeforeAll
     static void setupData() {
-        testUser = new User("userid1", "Test User");
+        final User testUser = new User("userid1", "Test User");
         testLevel = new Level("Test Level", "A description", testUser);
     }
 
