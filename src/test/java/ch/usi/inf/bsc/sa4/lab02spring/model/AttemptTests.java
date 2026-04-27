@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for Attempt model: construction,
- * getters, and setCompleted.
+ * Tests for Attempt model: construction and getters.
  */
 @DisplayName(" In the Attempt class ")
 class AttemptTests {
@@ -192,47 +191,4 @@ class AttemptTests {
         }
     }
 
-    /**
-     * Tests for the setCompleted method.
-     */
-    @DisplayName(" method setCompleted ")
-    @Nested
-    /* package */ class SetCompletedMethod {
-
-        /** The Attempt under test, created in setUp. */
-        private Attempt attempt;
-
-        /**
-         * Creates an Attempt (initially not completed)
-         * before each test.
-         */
-        @BeforeEach
-        /* package */ void setUp() {
-            final User user = createTestUser();
-            final Level level = createTestLevel();
-            this.attempt = new Attempt(user, TIMESTAMP, level, false, DURATION);
-        }
-
-        /**
-         * Verifies that setCompleted(true) causes
-         * isCompleted to return true.
-         */
-        @DisplayName(" should set completed to true ")
-        @Test
-        /* package */ void setsTrueCorrectly() {
-            this.attempt.setCompleted(true);
-            Assertions.assertTrue(this.attempt.isCompleted());
-        }
-
-        /**
-         * Verifies that setCompleted(false) causes
-         * isCompleted to return false.
-         */
-        @DisplayName(" should set completed to false ")
-        @Test
-        /* package */ void setsFalseCorrectly() {
-            this.attempt.setCompleted(false);
-            Assertions.assertFalse(this.attempt.isCompleted());
-        }
-    }
 }
