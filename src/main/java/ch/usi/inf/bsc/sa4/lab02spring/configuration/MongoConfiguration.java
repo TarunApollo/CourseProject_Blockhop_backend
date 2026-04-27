@@ -16,9 +16,12 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /// MongoDB configuration for the application.
 /// Registers MongoDB mapping packages, entity classes, and custom converters
@@ -78,25 +81,24 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     ///
-    /// Converts a ZonedDateTime to a Date for MongoDB storage.
+    /// Converts a ZonedDateTime to an Instant for MongoDB storage.
     ///
     @WritingConverter
-    public static class ZonedDateTimeToDateConverter implements Converter<ZonedDateTime, Date> {
+    public static class ZonedDateTimeToInstantConverter implements Converter<ZonedDateTime, Instant> {
         @Override
-        @SuppressWarnings("PMD.ReplaceJavaUtilDate")
-        public Date convert(final ZonedDateTime dateTime) {
-            return Date.from(dateTime.toInstant());
+        public Instant convert(final ZonedDateTime dateTime) {
+            return dateTime.toInstant();
         }
     }
 
     ///
-    /// Converts a Date read from MongoDB to a ZonedDateTime.
+    /// Converts an Instant read from MongoDB to a ZonedDateTime in UTC.
     ///
     @ReadingConverter
-    public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
+    public static class InstantToZonedDateTimeConverter implements Converter<Instant, ZonedDateTime> {
         @Override
-        public ZonedDateTime convert(final Date date) {
-            return date.toInstant().atZone(ZoneOffset.UTC);
+        public ZonedDateTime convert(final Instant instant) {
+            return instant.atZone(ZoneOffset.UTC);
         }
     }
 
@@ -105,8 +107,8 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         final List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());
-        custom.add(new ZonedDateTimeToDateConverter());
-        custom.add(new DateToZonedDateTimeConverter());
+        custom.add(new ZonedDateTimeToInstantConverter());
+        custom.add(new InstantToZonedDateTimeConverter());
         return new MongoCustomConversions(custom);
     }
 }
