@@ -18,15 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 /// REST endpoints for publish / unpublish transitions on a level.
 @RestController
 @RequestMapping("/levels")
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Spring-managed singleton; injected services are intentionally shared")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring-managed singleton; injected services are intentionally shared")
 public class LevelPublishController {
 
     /// Manages publish and unpublish transitions.
     private final LevelPublishService levelPublishService;
 
     /// Constructs a new LevelPublishController.
+    /// 
     /// @param levelPublishService the service for publish and unpublish actions
     @Autowired
     public LevelPublishController(final LevelPublishService levelPublishService) {
@@ -34,11 +33,13 @@ public class LevelPublishController {
     }
 
     /// Unpublishes a level owned by the authenticated user.
+    /// 
     /// @param authentication the current authenticated user
-    /// @param levelId the ID of the level to unpublish
+    /// @param levelId        the ID of the level to unpublish
     /// @return 204 No Content when the level is unpublished successfully
     /// @throws LevelNotFoundException if the level does not exist
-    /// @throws ForbiddenUserException if the authenticated user is not the owner of the level
+    /// @throws ForbiddenUserException if the authenticated user is not the owner of
+    ///                                the level
     @PutMapping("/{levelId}/unpublish")
     public ResponseEntity<Void> unpublishLevel(
             final Authentication authentication,
@@ -54,7 +55,7 @@ public class LevelPublishController {
     /// @spec.effects forwards the authenticated user and target level id to the
     ///               level service, which publishes the level.
     /// @param authentication the current authenticated user
-    /// @param levelId the id of the target level
+    /// @param levelId        the id of the target level
     /// @return a 204 No Content response when the level is published successfully
     @PutMapping(path = "/{levelId}/publish")
     public ResponseEntity<Void> publishLevel(

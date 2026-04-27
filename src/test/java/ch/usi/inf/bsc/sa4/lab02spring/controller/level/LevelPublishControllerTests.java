@@ -19,10 +19,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-/**
- * Black-box tests for LevelPublishController.
- * Verifies endpoints for publishing and unpublishing levels.
- */
+///
+ /// Black-box tests for LevelPublishController.
+ /// Verifies endpoints for publishing and unpublishing levels.
+ ///
 @WebMvcTest(controllers = LevelPublishController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -32,21 +32,21 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @DisplayName("Level Publish Controller Logic Tests")
 class LevelPublishControllerTests {
 
-    /** The authenticated user ID used across tests. */
+    /// The authenticated user ID used across tests.
     private static final String USER_ID = "userid1";
 
-    /** A level ID used across tests. */
+    /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
-    /** The mocked publish service. */
+    /// The mocked publish service.
     @MockitoBean
     private LevelPublishService levelPublishService;
 
-    /** The RestTestClient for performing requests. */
+    /// The RestTestClient for performing requests.
     @Autowired
     private RestTestClient restTestClient;
 
-    /** Verifies that publishing a level returns 204 No Content. */
+    /// Verifies that publishing a level returns 204 No Content. ///
     @Test
     @DisplayName("PUT /levels/{id}/publish should return 204")
     void testPublishLevel() {
@@ -63,7 +63,7 @@ class LevelPublishControllerTests {
         }
     }
 
-    /** Verifies that unpublishing a level returns 204 No Content. */
+    /// Verifies that unpublishing a level returns 204 No Content. ///
     @Test
     @DisplayName("PUT /levels/{id}/unpublish should return 204")
     void testUnpublishLevel() {
