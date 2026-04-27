@@ -98,7 +98,4 @@ public class Attempt {
         return completed;
     }
 
-    public void setCompleted(final boolean completed) {
-        this.completed = completed;
-    }
 }
