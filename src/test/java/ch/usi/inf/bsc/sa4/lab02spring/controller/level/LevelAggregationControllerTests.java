@@ -24,10 +24,10 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.List;
 
-/**
- * Black-box tests for LevelAggregationController.
- * Verifies the contract for fetching sorted summaries of published levels.
- */
+///
+ /// Black-box tests for LevelAggregationController.
+ /// Verifies the contract for fetching sorted summaries of published levels.
+ ///
 @WebMvcTest(controllers = LevelAggregationController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -37,28 +37,28 @@ import java.util.List;
 @DisplayName("Level Aggregation Controller Logic Tests")
 class LevelAggregationControllerTests {
 
-    /** The mocked aggregation service. */
+    /// The mocked aggregation service.
     @MockitoBean
     private LevelAggregationService levelAggregationService;
 
-    /** The RestTestClient for performing requests. */
+    /// The RestTestClient for performing requests.
     @Autowired
     private RestTestClient restTestClient;
 
-    /** A test user. */
+    /// Shared test user instance.
     private static User testUser;
     
-    /** A test level. */
+    /// Shared test level instance.
     private static Level testLevel;
 
-    /** Initializes static test data. */
+    /// Initializes static test data. ///
     @BeforeAll
     static void setupData() {
         testUser = new User("userid1", "Test User");
         testLevel = new Level("Test Level", "A description", testUser);
     }
 
-    /** Verifies that getting published levels returns a list sorted by CLEAR_RATE. */
+    /// Verifies that getting published levels returns a list sorted by CLEAR_RATE. ///
     @Test
     @DisplayName("should return list of published levels sorted by CLEAR_RATE")
     void testGetPublishedLevels() {

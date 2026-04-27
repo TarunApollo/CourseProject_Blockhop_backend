@@ -30,10 +30,10 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Black-box tests for LevelPlayController.
- * Verifies endpoints for playable map retrieval and attempt submission.
- */
+///
+ /// Black-box tests for LevelPlayController.
+ /// Verifies endpoints for playable map retrieval and attempt submission.
+ ///
 @WebMvcTest(controllers = LevelPlayController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -43,41 +43,41 @@ import java.util.Optional;
 @DisplayName("Level Play Controller Logic Tests")
 class LevelPlayControllerTests {
 
-    /** The authenticated user ID used across tests. */
+    /// The authenticated user ID used across tests.
     private static final String USER_ID = "userid1";
 
-    /** A level ID used across tests. */
+    /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
-    /** A fixed timestamp used for attempt tests. */
+    /// A fixed timestamp used for attempt tests.
     private static final ZonedDateTime FIXED_TIMESTAMP =
             ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
 
-    /** A fixed duration used for attempt tests. */
+    /// A fixed duration used for attempt tests.
     private static final Duration FIXED_DURATION = Duration.ofSeconds(30);
 
-    /** The mocked play service. */
+    /// The mocked play service.
     @MockitoBean
     private LevelPlayService levelPlayService;
 
-    /** The mocked user service. */
+    /// The mocked user service.
     @MockitoBean
     private UserService userService;
 
-    /** The RestTestClient for performing requests. */
+    /// The RestTestClient for performing requests.
     @Autowired
     private RestTestClient restTestClient;
 
-    /** A test user. */
+    /// Shared test user instance.
     private static User testUser;
 
-    /** Initializes static test data. */
+    /// Initializes static test data. ///
     @BeforeAll
     static void setupData() {
         testUser = new User(USER_ID, "Test User");
     }
 
-    /** Verifies that submitting an attempt returns 200 OK. */
+    /// Verifies that submitting an attempt returns 200 OK. ///
     @Test
     @DisplayName("POST /levels/{id}/submit should return 200 OK")
     void testSubmitAttempt() {
@@ -100,7 +100,7 @@ class LevelPlayControllerTests {
         }
     }
 
-    /** Verifies that getting a playable map returns 200 OK. */
+    /// Verifies that getting a playable map returns 200 OK. ///
     @Test
     @DisplayName("GET /levels/play/{id}/map should return 200 OK")
     void testGetMap() {

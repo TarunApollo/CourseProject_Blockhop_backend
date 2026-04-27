@@ -31,10 +31,9 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.Optional;
 
-/**
- * Black-box tests for LevelController (CRUD).
- * Follows the pattern from the original LevelControllerLogicTests.
- */
+/// Black-box tests for LevelController (CRUD). Follows the pattern from the
+/// original LevelControllerLogicTests.
+///
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -44,31 +43,38 @@ import java.util.Optional;
 @DisplayName("Level Controller CRUD Logic Tests")
 class LevelControllerTests {
 
-    /** The authenticated user ID used across tests. */
+    /// The authenticated user ID used across tests.
     private static final String USER_ID = "userid1";
 
-    /** A level ID used across tests. */
+    /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
+    /// Mocked service for core level operations.
     @MockitoBean
     private LevelService levelService;
 
+    /// Mocked service for user resolution.
     @MockitoBean
     private UserService userService;
 
+    /// Client used to perform REST calls.
     @Autowired
     private RestTestClient restTestClient;
 
+    /// Shared test user instance.
     private static User testUser;
+
+    /// Shared test level instance.
     private static Level testLevel;
 
+    /// Initializes static test data.
     @BeforeAll
     static void setupData() {
         testUser = new User(USER_ID, "Test User");
         testLevel = new Level("Title", "Desc", testUser);
     }
 
-    /** Verifies that creating a level returns 200 OK. */
+    /// Verifies that creating a level returns 200 OK.
     @Test
     @DisplayName("POST /levels should return 200 OK")
     void testCreateLevel() {
@@ -86,7 +92,7 @@ class LevelControllerTests {
         }
     }
 
-    /** Verifies that cloning a level returns 200 OK. */
+    /// Verifies that cloning a level returns 200 OK.
     @Test
     @DisplayName("POST /levels/clone should return 200 OK")
     void testCloneLevel() {
@@ -105,7 +111,7 @@ class LevelControllerTests {
         }
     }
 
-    /** Verifies that updating level properties returns 200 OK. */
+    /// Verifies that updating level properties returns 200 OK.
     @Test
     @DisplayName("PUT /levels/{id}/properties should return 200 OK")
     void testUpdateLevelProperties() {
@@ -115,7 +121,8 @@ class LevelControllerTests {
             Mockito.when(levelService.updateLevelProperties(Mockito.eq(testUser), Mockito.eq(LEVEL_ID), Mockito.any()))
                     .thenReturn(testLevel);
 
-            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.of("U"), Optional.empty(), Optional.of(new ClearCondition(new Condition.NoClearCondition(), 0)));
+            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.of("U"), Optional.empty(),
+                    Optional.of(new ClearCondition(new Condition.NoClearCondition(), 0)));
             final HttpStatusCode status = restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID)
                     .body(dto)
                     .exchange()
@@ -125,7 +132,7 @@ class LevelControllerTests {
         }
     }
 
-    /** Verifies that deleting a level returns 204 No Content. */
+    /// Verifies that deleting a level returns 204 No Content.
     @Test
     @DisplayName("DELETE /levels/{id} should return 204")
     void testDeleteLevel() {
