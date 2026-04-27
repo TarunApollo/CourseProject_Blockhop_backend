@@ -28,16 +28,30 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
  * Unit tests for the {@link Level} class.
  */
 @DisplayName("In the Level class")
-@SuppressWarnings("NullAway")
+@SuppressWarnings({
+        "NullAway",
+        "PMD.UseConcurrentHashMap",
+        "PMD.TooManyStaticImports",
+        "PMD.AtLeastOneConstructor"
+})
 class LevelTests {
+
+    /** Default test user ID. */
+    private static final String USER_ID = "user-1";
+
+    /** User ID denoting the level owner in ownership tests. */
+    private static final String OWNER_ID = "owner-id";
+
+    /** User ID denoting a non-owner in ownership tests. */
+    private static final String OTHER_ID = "other-id";
 
     /**
      * Creates a test user.
-     * 
+     *
      * @return a new User instance
      */
     private static User createTestUser() {
-        return new User("user-1", "Mario");
+        return new User(USER_ID, "Mario");
     }
 
     /**
@@ -69,8 +83,8 @@ class LevelTests {
         final Position doorPos = new Position(2, 1);
         level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
         level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
-        level.validatePublishEligible("user-1");
-        level.publish("user-1");
+        level.validatePublishEligible(USER_ID);
+        level.publish(USER_ID);
     }
 
     /**
@@ -246,35 +260,35 @@ class LevelTests {
         /** Sets up ownership test. */
         @BeforeEach
         void setUp() {
-            this.level = createLevelFor(new User("owner-id", "Mario"));
+            this.level = createLevelFor(new User(OWNER_ID, "Mario"));
         }
 
         /** Verify isOwnedBy with ID. */
         @Test
         @DisplayName("should return true when user id matches the owner")
         void returnsTrueForOwnerId() {
-            assertTrue(this.level.isOwnedBy("owner-id"));
+            assertTrue(this.level.isOwnedBy(OWNER_ID));
         }
 
         /** Verify isOwnedBy with different ID. */
         @Test
         @DisplayName("should return false when user id does not match the owner")
         void returnsFalseForOtherId() {
-            assertFalse(this.level.isOwnedBy("other-id"));
+            assertFalse(this.level.isOwnedBy(OTHER_ID));
         }
 
         /** Verify isOwnedBy with user instance. */
         @Test
         @DisplayName("should return true when user matches the owner")
         void returnsTrueForOwnerUser() {
-            assertTrue(this.level.isOwnedBy(new User("owner-id", "Mario clone")));
+            assertTrue(this.level.isOwnedBy(new User(OWNER_ID, "Mario clone")));
         }
 
         /** Verify isOwnedBy with different user instance. */
         @Test
         @DisplayName("should return false when user does not match the owner")
         void returnsFalseForOtherUser() {
-            assertFalse(this.level.isOwnedBy(new User("other-id", "Luigi")));
+            assertFalse(this.level.isOwnedBy(new User(OTHER_ID, "Luigi")));
         }
 
         /** Tests for ensureOwnedBy. */
@@ -286,7 +300,7 @@ class LevelTests {
             @Test
             @DisplayName("throws ForbiddenUserException")
             void throwsForbiddenUserException() {
-                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("other-id");
+                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy(OTHER_ID);
                 assertThrows(ForbiddenUserException.class, codeToExecute);
             }
 
@@ -294,7 +308,7 @@ class LevelTests {
             @Test
             @DisplayName("should not throw when the user owns the level")
             void allowsOwner() {
-                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy("owner-id");
+                final Executable codeToExecute = () -> OwnershipMethods.this.level.ensureOwnedBy(OWNER_ID);
                 assertDoesNotThrow(codeToExecute);
             }
         }
@@ -438,16 +452,14 @@ class LevelTests {
 
         /** The level instance. */
         private Level level;
-        /** A position for testing. */
-        private Position position;
 
         /** Sets up layer getters test. */
         @BeforeEach
         void setUp() {
             this.level = createTestLevel();
-            this.position = new Position(1, 1);
-            this.level.putWorldLayer(this.position, new GroundObject(8));
-            this.level.putObjectLayer(this.position, new StartFlag(9, this.position));
+            final Position position = new Position(1, 1);
+            this.level.putWorldLayer(position, new GroundObject(8));
+            this.level.putObjectLayer(position, new StartFlag(9, position));
         }
 
         /** Verify unmodifiable world layer. */
@@ -548,10 +560,6 @@ class LevelTests {
         /** Replacement world layer used in each test. */
         private Map<Position, GroundObject> newLayer;
 
-        /** Default constructor for SetWorldLayerMethod. */
-        SetWorldLayerMethod() {
-        }
-
         /** Sets up world layer replacement test. */
         @BeforeEach
         void setUp() {
@@ -612,10 +620,6 @@ class LevelTests {
         /** Replacement object layer used in each test. */
         private Map<Position, GameObject> newLayer;
 
-        /** Default constructor for SetObjectLayerMethod. */
-        SetObjectLayerMethod() {
-        }
-
         /** Sets up object layer replacement test. */
         @BeforeEach
         void setUp() {
@@ -661,18 +665,10 @@ class LevelTests {
         private Level original;
         /** Creator for the clone. */
         private User cloneCreator;
-        /** Position for world objects. */
-        private Position worldPosition;
-        /** Position for game objects. */
-        private Position objectPosition;
         /** Clear condition. */
         private ClearCondition clearCondition;
         /** Cloned level created in setUp for use across all tests. */
         private Level cloned;
-
-        /** Default constructor for CloneForMethod. */
-        CloneForMethod() {
-        }
 
         /** Sets up clone test. */
         @BeforeEach
@@ -680,13 +676,13 @@ class LevelTests {
             final User originalCreator = createTestUser();
             this.cloneCreator = new User("user-2", "Luigi");
             this.original = new Level("Original", "Original description", originalCreator);
-            this.worldPosition = new Position(3, 4);
-            this.objectPosition = new Position(5, 6);
+            final Position worldPosition = new Position(3, 4);
+            final Position objectPosition = new Position(5, 6);
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
             publishTestLevel(this.original);
             this.original.setClearCondition(this.clearCondition);
-            this.original.putWorldLayer(this.worldPosition, new GroundObject(21));
-            this.original.putObjectLayer(this.objectPosition, new Coin(33, this.objectPosition, CoinType.GOLD_COIN));
+            this.original.putWorldLayer(worldPosition, new GroundObject(21));
+            this.original.putObjectLayer(objectPosition, new Coin(33, objectPosition, CoinType.GOLD_COIN));
             this.cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
         }
 
@@ -794,7 +790,7 @@ class LevelTests {
             @Test
             @DisplayName("when user does not own the level")
             void wrongUser() {
-                final Executable codeToExecute = () -> PublishMethod.this.level.publish("other-id");
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish(OTHER_ID);
                 assertThrows(ForbiddenUserException.class, codeToExecute);
             }
         }
@@ -810,8 +806,8 @@ class LevelTests {
             void noStartFlag() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos,
                         new ExitDoor(115, PublishMethod.this.doorPos));
-                PublishMethod.this.level.validatePublishEligible("user-1");
-                final Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                PublishMethod.this.level.validatePublishEligible(USER_ID);
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish(USER_ID);
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
@@ -821,8 +817,8 @@ class LevelTests {
             void noExitDoor() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos,
                         new StartFlag(68, PublishMethod.this.flagPos));
-                PublishMethod.this.level.validatePublishEligible("user-1");
-                final Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                PublishMethod.this.level.validatePublishEligible(USER_ID);
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish(USER_ID);
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
@@ -834,7 +830,7 @@ class LevelTests {
                         new StartFlag(68, PublishMethod.this.flagPos));
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos,
                         new ExitDoor(115, PublishMethod.this.doorPos));
-                final Executable codeToExecute = () -> PublishMethod.this.level.publish("user-1");
+                final Executable codeToExecute = () -> PublishMethod.this.level.publish(USER_ID);
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
         }
@@ -872,7 +868,7 @@ class LevelTests {
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
-            final Executable codeToExecute = () -> this.level.validatePublishEligible("other-id");
+            final Executable codeToExecute = () -> this.level.validatePublishEligible(OTHER_ID);
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
@@ -880,7 +876,7 @@ class LevelTests {
         @Test
         @DisplayName("should set publish eligible to true")
         void setsPublishEligible() {
-            this.level.validatePublishEligible("user-1");
+            this.level.validatePublishEligible(USER_ID);
             assertTrue(this.level.isPublishEligible());
         }
     }
@@ -897,14 +893,14 @@ class LevelTests {
         @BeforeEach
         void setUp() {
             this.level = createTestLevel();
-            this.level.validatePublishEligible("user-1");
+            this.level.validatePublishEligible(USER_ID);
         }
 
         /** Verify wrong user. */
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
-            final Executable codeToExecute = () -> this.level.invalidatePublishEligible("other-id");
+            final Executable codeToExecute = () -> this.level.invalidatePublishEligible(OTHER_ID);
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
@@ -912,7 +908,7 @@ class LevelTests {
         @Test
         @DisplayName("should set publish eligible to false")
         void setsPublishIneligible() {
-            this.level.invalidatePublishEligible("user-1");
+            this.level.invalidatePublishEligible(USER_ID);
             assertFalse(this.level.isPublishEligible());
         }
     }
@@ -936,7 +932,7 @@ class LevelTests {
         @Test
         @DisplayName("throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
-            final Executable codeToExecute = () -> this.level.unpublish("other-id");
+            final Executable codeToExecute = () -> this.level.unpublish(OTHER_ID);
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
@@ -944,7 +940,7 @@ class LevelTests {
         @Test
         @DisplayName("should mark the level as unpublished")
         void marksAsUnpublished() {
-            this.level.unpublish("user-1");
+            this.level.unpublish(USER_ID);
             assertFalse(this.level.isPublished());
         }
 
@@ -952,8 +948,8 @@ class LevelTests {
         @Test
         @DisplayName("should not throw when called on an already unpublished level")
         void doesNotThrowWhenCalledTwice() {
-            this.level.unpublish("user-1");
-            final Executable codeToExecute = () -> this.level.unpublish("user-1");
+            this.level.unpublish(USER_ID);
+            final Executable codeToExecute = () -> this.level.unpublish(USER_ID);
             assertDoesNotThrow(codeToExecute);
         }
 
@@ -961,8 +957,8 @@ class LevelTests {
         @Test
         @DisplayName("should remain unpublished after a second unpublish call")
         void remainsUnpublishedAfterSecondCall() {
-            this.level.unpublish("user-1");
-            this.level.unpublish("user-1");
+            this.level.unpublish(USER_ID);
+            this.level.unpublish(USER_ID);
             assertFalse(this.level.isPublished());
         }
     }
@@ -1156,7 +1152,7 @@ class LevelTests {
         @Test
         @DisplayName("throws LevelNotPlayableException when level is unpublished and user is not the owner")
         void unpublishedNotOwner() {
-            final Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+            final Executable codeToExecute = () -> this.level.ensurePlayable(OTHER_ID);
             assertThrows(LevelNotPlayableException.class, codeToExecute);
         }
 
@@ -1164,7 +1160,7 @@ class LevelTests {
         @Test
         @DisplayName("should not throw when level is unpublished but user is the owner")
         void unpublishedOwner() {
-            final Executable codeToExecute = () -> this.level.ensurePlayable("user-1");
+            final Executable codeToExecute = () -> this.level.ensurePlayable(USER_ID);
             assertDoesNotThrow(codeToExecute);
         }
 
@@ -1173,7 +1169,7 @@ class LevelTests {
         @DisplayName("should not throw when level is published regardless of user")
         void publishedLevel() {
             publishTestLevel(this.level);
-            final Executable codeToExecute = () -> this.level.ensurePlayable("other-id");
+            final Executable codeToExecute = () -> this.level.ensurePlayable(OTHER_ID);
             assertDoesNotThrow(codeToExecute);
         }
     }
