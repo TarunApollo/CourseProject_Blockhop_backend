@@ -2,13 +2,13 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /// Maps tileset domain objects into Tiled-compatible structures.
-@SuppressWarnings("PMD.OnlyOneReturn")
 final class TiledTilesetMapper {
     /// JSON key for the Tiled `name` field.
     private static final String KEY_NAME = "name";
@@ -27,7 +27,7 @@ final class TiledTilesetMapper {
                 TileSet.TileData::id,
                 TiledTilesetMapper::toTiledTile
             ));
-
+        
         final List<Map<String, Object>> tiles = IntStream.range(0, tileSet.tilecount())
             .<Map<String, Object>>mapToObj(i -> {
                 final Map<String, Object> existing = tilesById.get(i);
@@ -56,33 +56,28 @@ final class TiledTilesetMapper {
         final boolean hasProperties = tile.properties() != null && !tile.properties().isEmpty();
         final boolean hasObjectGroup = tile.objectgroup() != null;
 
-        if (hasProperties && hasObjectGroup) {
-            return Map.of(
-                "id", tile.id(),
-                KEY_TYPE, type,
-                "properties", tile.properties().stream().map(TiledTilesetMapper::toTiledProperty).toList(),
-                "objectgroup", toTiledObjectGroup(tile.objectgroup())
-            );
+        final List<Map.Entry<String, Object>> entries = new ArrayList<>(List.of(
+            Map.entry("id", tile.id()),
+            Map.entry(KEY_TYPE, type)
+        ));
+
+        if(hasObjectGroup)
+        {
+            entries.add(Map.entry(
+                "objectgroup",toTiledObjectGroup(tile.objectgroup())));
         }
-        if (hasProperties) {
-            return Map.of(
-                "id", tile.id(),
-                KEY_TYPE, type,
-                "properties", tile.properties().stream().map(TiledTilesetMapper::toTiledProperty).toList()
-            );
+
+        if(hasProperties)
+        {
+            entries.add(Map.entry(
+                "properties",
+                tile.properties().stream().map(TiledTilesetMapper::toTiledProperty).toList()));
         }
-        if (hasObjectGroup) {
-            return Map.of(
-                "id", tile.id(),
-                KEY_TYPE, type,
-                "objectgroup", toTiledObjectGroup(tile.objectgroup())
-            );
-        }
-        return Map.of(
-            "id", tile.id(),
-            KEY_TYPE, type
-        );
+
+        return Map.ofEntries(entries.toArray(new Map.Entry[0]));
     }
+        
+        
 
     private static Map<String, Object> toTiledProperty(final TileSet.Property property) {
         return Map.of(
@@ -109,24 +104,8 @@ final class TiledTilesetMapper {
     }
 
     private static Map<String, Object> toTiledTileObject(final TileSet.TileObject object) {
-        if (object.polygon() != null && !object.polygon().isEmpty()) {
-            final List<Map<String, Object>> polygon = object.polygon().stream()
-                .map(TiledTilesetMapper::toTiledPoint)
-                .toList();
-            return Map.ofEntries(
-                Map.entry("id", object.id()),
-                Map.entry(KEY_NAME, object.name()),
-                Map.entry(KEY_TYPE, object.type()),
-                Map.entry(KEY_VISIBLE, object.visible()),
-                Map.entry("rotation", object.rotation()),
-                Map.entry("x", object.x()),
-                Map.entry("y", object.y()),
-                Map.entry("width", object.width()),
-                Map.entry("height", object.height()),
-                Map.entry("polygon", polygon)
-            );
-        }
-        return Map.ofEntries(
+        
+        final List<Map.Entry<String, Object>> entries = new ArrayList<>(List.of(
             Map.entry("id", object.id()),
             Map.entry(KEY_NAME, object.name()),
             Map.entry(KEY_TYPE, object.type()),
@@ -136,7 +115,17 @@ final class TiledTilesetMapper {
             Map.entry("y", object.y()),
             Map.entry("width", object.width()),
             Map.entry("height", object.height())
-        );
+        ));
+
+        if (object.polygon() != null && !object.polygon().isEmpty()) {
+            final List<Map<String, Object>> polygon = object.polygon().stream()
+                .map(TiledTilesetMapper::toTiledPoint)
+                .toList();
+            entries.add(Map.entry("polygon", polygon));
+        }
+        
+        return Map.ofEntries(entries.toArray(new Map.Entry[0]));
+        
     }
 
     private static Map<String, Object> toTiledPoint(final TileSet.Point point) {

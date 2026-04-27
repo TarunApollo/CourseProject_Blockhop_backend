@@ -117,13 +117,14 @@ final class TiledLayerMapper {
     }
 
     private static List<Map<String, Object>> buildBoxProperties(final Box box) {
+        final List<Map<String, Object>> properties = new ArrayList<>();
         if (box.content() instanceof Content.SomeContent someContent) {
-            return List.of(Map.of(
+            properties.add(Map.of(
                 KEY_NAME, "Content",
                 KEY_TYPE, "string",
                 "value", someContent.coinType().value()
             ));
         }
-        return List.of();
+        return properties;
     }
 }
