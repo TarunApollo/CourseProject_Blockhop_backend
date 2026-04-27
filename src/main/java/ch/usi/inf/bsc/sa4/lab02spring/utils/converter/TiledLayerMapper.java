@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 /// Maps level layers into Tiled-compatible layer structures.
-@SuppressWarnings("PMD.OnlyOneReturn")
 final class TiledLayerMapper {
     /// Pixel size used for each exported tile.
     private static final int TILE_SIZE = 128;
@@ -99,22 +98,7 @@ final class TiledLayerMapper {
         final int y = (pos.y() + 1) * TILE_SIZE;
         final String type = tileSetService.getObjectTileType(gameObject.gid());
 
-        if (gameObject instanceof Box box && box.content() instanceof Content.SomeContent) {
-            return Map.ofEntries(
-                Map.entry("id", id),
-                Map.entry("gid", gameObject.gid()),
-                Map.entry("x", x),
-                Map.entry("y", y),
-                Map.entry(KEY_WIDTH, TILE_SIZE),
-                Map.entry(KEY_HEIGHT, TILE_SIZE),
-                Map.entry(KEY_VISIBLE, Boolean.TRUE),
-                Map.entry("rotation", 0),
-                Map.entry(KEY_NAME, ""),
-                Map.entry(KEY_TYPE, type),
-                Map.entry("properties", buildBoxProperties(box))
-            );
-        }
-        return Map.ofEntries(
+        final List<Map.Entry<String, Object>> entries = new ArrayList<>(List.of(
             Map.entry("id", id),
             Map.entry("gid", gameObject.gid()),
             Map.entry("x", x),
@@ -125,7 +109,11 @@ final class TiledLayerMapper {
             Map.entry("rotation", 0),
             Map.entry(KEY_NAME, ""),
             Map.entry(KEY_TYPE, type)
-        );
+        ));
+        if (gameObject instanceof Box box && box.content() instanceof Content.SomeContent) {
+            entries.add(Map.entry("properties", buildBoxProperties(box)));
+        }
+        return Map.ofEntries(entries.toArray(new Map.Entry[0]));
     }
 
     private static List<Map<String, Object>> buildBoxProperties(final Box box) {
