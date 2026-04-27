@@ -10,13 +10,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
-/// Represents a user's attempt at playing a level.
-/// An attempt stores who played, when it happened, which level was played,
-/// whether the level was completed, and how long the attempt took.
+/// Represents a user's attempt at playing a level. An attempt stores who
+/// played, when it happened, which level was played, whether the level was
+/// completed, and how long the attempt took.
 @SuppressWarnings("NullAway.Init")
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Mongo-managed entity; references stored as-is for persistence")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "attempts")
 public class Attempt {
 
@@ -43,12 +41,13 @@ public class Attempt {
 
     /// Creates a new attempt without an explicit id.
     ///
-    /// @param user the user who made the attempt
+    /// @param user      the user who made the attempt
     /// @param timestamp the creation timestamp
-    /// @param level the level that was played
+    /// @param level     the level that was played
     /// @param completed whether the level was completed
     /// @param timeTaken the duration of the attempt
-    public Attempt(final User user, final ZonedDateTime timestamp, final Level level, final boolean completed, final Duration timeTaken) {
+    public Attempt(final User user, final ZonedDateTime timestamp, final Level level, final boolean completed,
+            final Duration timeTaken) {
         this.user = user;
         this.timestamp = timestamp;
         this.level = level;
@@ -58,14 +57,15 @@ public class Attempt {
 
     /// Creates a persisted attempt with an explicit id.
     ///
-    /// @param id the attempt id
-    /// @param user the user who made the attempt
+    /// @param id        the attempt id
+    /// @param user      the user who made the attempt
     /// @param timestamp the creation timestamp
-    /// @param level the level that was played
+    /// @param level     the level that was played
     /// @param completed whether the level was completed
     /// @param timeTaken the duration of the attempt
     @PersistenceCreator
-    public Attempt(final String id, final User user, final ZonedDateTime timestamp, final Level level, final boolean completed, final Duration timeTaken) {
+    public Attempt(final String id, final User user, final ZonedDateTime timestamp, final Level level,
+            final boolean completed, final Duration timeTaken) {
         this.id = id;
         this.user = user;
         this.timestamp = timestamp;
@@ -98,4 +98,7 @@ public class Attempt {
         return completed;
     }
 
+    public void setCompleted(final boolean completed) {
+        this.completed = completed;
+    }
 }
