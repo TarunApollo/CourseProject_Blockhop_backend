@@ -1,5 +1,10 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -7,11 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -122,88 +122,42 @@ class LevelTests {
             this.level = createLevelFor(this.creator);
         }
 
-        /** Verify title. */
+        /** Sets up a test that finds and checks that all basic metadata about the level is initialised properly */
         @Test
-        @DisplayName("should have the correct title")
-        void hasCorrectTitle() {
-            assertEquals(this.title, this.level.getTitle());
+        @DisplayName("should initialize basic metadata correctly")
+        void initializesBasicMetadata() {
+            assertAll(
+                () -> assertEquals(this.title, this.level.getTitle()),
+                () -> assertEquals(this.description, this.level.getDescription()),
+                () -> assertSame(this.creator, this.level.getCreator()),
+                () -> assertFalse(this.level.isPublished())
+            );
         }
 
-        /** Verify description. */
+        /** Sets up a test that finds and sets all flags, and ensures that the dimensions of the levels themselves are correct. */
         @Test
-        @DisplayName("should have the correct description")
-        void hasCorrectDescription() {
-            assertEquals(this.description, this.level.getDescription());
+        @DisplayName("should initialize lifecycle flags and dimensions correctly")
+        void initializesLifecycleFlagsAndDimensions() {
+            assertAll(
+                () -> assertTrue(this.level.canBeModified()),
+                () -> assertFalse(this.level.isPublishEligible()),
+                () -> assertEquals(256, this.level.getWidth()),
+                () -> assertEquals(14, this.level.getHeight())
+            );
         }
 
-        /** Verify creator. */
+        /** Sets up a test that checks if defaults of the level are correctly set to their base cases. */
         @Test
-        @DisplayName("should have the correct creator")
-        void hasCorrectCreator() {
-            assertSame(this.creator, this.level.getCreator());
-        }
-
-        /** Verify unpublished status. */
-        @Test
-        @DisplayName("should be unpublished")
-        void isNotPublished() {
-            assertFalse(this.level.isPublished());
-        }
-
-        /** Verify modifiable status. */
-        @Test
-        @DisplayName("should be modifiable")
-        void isModifiable() {
-            assertTrue(this.level.canBeModified());
-        }
-
-        /** Verify publish eligibility. */
-        @Test
-        @DisplayName("should start as not publish eligible")
-        void isNotPublishEligible() {
-            assertFalse(this.level.isPublishEligible());
-        }
-
-        /** Verify width. */
-        @Test
-        @DisplayName("should have the correct width")
-        void hasCorrectWidth() {
-            assertEquals(256, this.level.getWidth());
-        }
-
-        /** Verify height. */
-        @Test
-        @DisplayName("should have the correct height")
-        void hasCorrectHeight() {
-            assertEquals(14, this.level.getHeight());
-        }
-
-        /** Verify clear condition condition. */
-        @Test
-        @DisplayName("should start with no clear condition")
-        void hasNoClearCondition() {
-            assertInstanceOf(Condition.NoClearCondition.class, this.level.getClearCondition().condition());
-        }
-
-        /** Verify clear condition target amount. */
-        @Test
-        @DisplayName("should start with zero target amount")
-        void hasZeroTargetAmount() {
-            assertEquals(0, this.level.getClearCondition().targetAmount());
-        }
-
-        /** Verify empty object layer. */
-        @Test
-        @DisplayName("should start with an empty object layer")
-        void startsWithEmptyObjectLayer() {
-            assertTrue(this.level.getObjectLayer().isEmpty());
-        }
-
-        /** Verify empty world layer. */
-        @Test
-        @DisplayName("should start with an empty world layer")
-        void startsWithEmptyWorldLayer() {
-            assertTrue(this.level.getWorldLayer().isEmpty());
+        @DisplayName("should initialize gameplay defaults correctly")
+        void initializesGameplayDefaults() {
+            assertAll(
+                () -> assertInstanceOf(
+                        Condition.NoClearCondition.class,
+                        this.level.getClearCondition().condition()),
+                () -> assertEquals(0, this.level.getClearCondition().targetAmount()),
+                () -> assertTrue(this.level.getObjectLayer().isEmpty()),
+                () -> assertTrue(this.level.getWorldLayer().isEmpty())
+            );
         }
     }
 
