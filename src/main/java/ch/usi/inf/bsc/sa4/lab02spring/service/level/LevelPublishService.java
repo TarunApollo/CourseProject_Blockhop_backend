@@ -45,6 +45,7 @@ public class LevelPublishService {
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         this.userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         level.publish(userId);
+        this.levelRepository.save(level);
     }
 
     /// Unpublishes an existing level owned by the given user.
@@ -56,6 +57,7 @@ public class LevelPublishService {
         final Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
+        this.levelRepository.save(level);
     }
 
     /// Marks the given level as eligible for publishing on behalf of the given user.
