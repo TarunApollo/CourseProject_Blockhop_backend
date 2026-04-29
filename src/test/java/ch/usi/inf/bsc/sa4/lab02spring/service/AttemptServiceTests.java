@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 
 /// Unit tests for [AttemptService].
 @SpringBootTest
+@SuppressWarnings("PMD.TooManyStaticImports")
 @DisplayName("The Attempt Service")
 class AttemptServiceTests {
 

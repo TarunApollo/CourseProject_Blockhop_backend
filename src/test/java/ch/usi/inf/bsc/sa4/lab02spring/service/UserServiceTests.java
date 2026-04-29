@@ -20,9 +20,10 @@ import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/// Unit tests for the UserService.
+/// Unit tests for [UserService].
 @SpringBootTest
 @DisplayName("The User Service")
+@SuppressWarnings("PMD.TooManyStaticImports")
 class UserServiceTests {
 
     /// Default user ID used in tests.
