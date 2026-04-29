@@ -15,37 +15,31 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 
-/**
- * Tests covering validation rules for {@link Level} object layers.
- */
+/// Tests covering validation rules for {@link Level} object layers.
 @DisplayName("In the Level layer validation API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelLayerValidationTests {
 
-    /**
-     * Tests for ensureValidObjectLayer.
-     */
+    /// Tests for ensureValidObjectLayer.
     @Nested
     @DisplayName("method ensureValidObjectLayer")
     class EnsureValidObjectLayerMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up validation tests. */
+        /// Sets up validation tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
         }
 
-        /**
-         * Tests for invalid object layers.
-         */
+        /// Tests for invalid object layers.
         @Nested
         @DisplayName("when the object layer is invalid")
         class WhenObjectLayerIsInvalid {
 
-            /** Verify multiple flags. */
+            /// Verify multiple flags.
             @Test
             @DisplayName("it throws when there is more than one start flag")
             void moreThanOneFlag() {
@@ -59,7 +53,7 @@ class LevelLayerValidationTests {
                 assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
-            /** Verify multiple doors. */
+            /// Verify multiple doors.
             @Test
             @DisplayName("it throws when there is more than one exit door")
             void moreThanOneDoor() {
@@ -74,14 +68,12 @@ class LevelLayerValidationTests {
             }
         }
 
-        /**
-         * Tests for valid object layers.
-         */
+        /// Tests for valid object layers.
         @Nested
         @DisplayName("when the object layer is valid")
         class WhenObjectLayerIsValid {
 
-            /** Verify empty layer. */
+            /// Verify empty layer.
             @Test
             @DisplayName("it allows an empty layer")
             void emptyLayer() {
@@ -91,7 +83,7 @@ class LevelLayerValidationTests {
                 assertDoesNotThrow(codeToExecute);
             }
 
-            /** Verify valid layer. */
+            /// Verify valid layer.
             @Test
             @DisplayName("it allows one flag and one door")
             void oneFlagOneDoor() {
@@ -107,30 +99,26 @@ class LevelLayerValidationTests {
         }
     }
 
-    /**
-     * Tests for ensurePublishableObjectLayer.
-     */
+    /// Tests for ensurePublishableObjectLayer.
     @Nested
     @DisplayName("method ensurePublishableObjectLayer")
     class EnsurePublishableObjectLayerMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up publishability validation tests. */
+        /// Sets up publishability validation tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
         }
 
-        /**
-         * Tests for non-publishable layers.
-         */
+        /// Tests for non-publishable layers.
         @Nested
         @DisplayName("when the object layer is not publishable")
         class WhenObjectLayerIsNotPublishable {
 
-            /** Verify missing flag. */
+            /// Verify missing flag.
             @Test
             @DisplayName("it throws when there are no start flags")
             void noFlag() {
@@ -143,7 +131,7 @@ class LevelLayerValidationTests {
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
-            /** Verify missing door. */
+            /// Verify missing door.
             @Test
             @DisplayName("it throws when there are no exit doors")
             void noDoor() {
@@ -156,7 +144,7 @@ class LevelLayerValidationTests {
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
-            /** Verify multiple flags. */
+            /// Verify multiple flags.
             @Test
             @DisplayName("it throws when there is more than one start flag")
             void moreThanOneFlag() {
@@ -177,7 +165,7 @@ class LevelLayerValidationTests {
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
-            /** Verify multiple doors. */
+            /// Verify multiple doors.
             @Test
             @DisplayName("it throws when there is more than one exit door")
             void moreThanOneDoor() {
@@ -199,14 +187,12 @@ class LevelLayerValidationTests {
             }
         }
 
-        /**
-         * Tests for publishable layers.
-         */
+        /// Tests for publishable layers.
         @Nested
         @DisplayName("when the object layer is publishable")
         class WhenObjectLayerIsPublishable {
 
-            /** Verify valid layer. */
+            /// Verify valid layer.
             @Test
             @DisplayName("it allows exactly one flag and one door")
             void oneFlagOneDoor() {

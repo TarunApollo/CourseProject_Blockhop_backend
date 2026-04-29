@@ -18,44 +18,40 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
-/**
- * Tests covering {@link Level} publication and playability.
- */
+/// Tests covering {@link Level} publication and playability.
 @DisplayName("In the Level publication and playability API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelPublicationTests {
 
-    /**
-     * Tests for publication methods.
-     */
+    /// Tests for publication methods.
     @Nested
     @DisplayName("methods canBeModified and ensureModifiable")
     class PublicationMethods {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up publication tests. */
+        /// Sets up publication tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
         }
 
-        /** Verify canBeModified for unpublished. */
+        /// Verify canBeModified for unpublished.
         @Test
         @DisplayName("an unpublished level is modifiable")
         void isModifiableWhenUnpublished() {
             assertTrue(this.level.canBeModified());
         }
 
-        /** Verify ensureModifiable for unpublished. */
+        /// Verify ensureModifiable for unpublished.
         @Test
         @DisplayName("ensureModifiable does not throw for an unpublished level")
         void doesNotThrowWhenUnpublished() {
             assertDoesNotThrow(() -> this.level.ensureModifiable());
         }
 
-        /** Verify canBeModified for published. */
+        /// Verify canBeModified for published.
         @Test
         @DisplayName("a published level is not modifiable")
         void isNotModifiableWhenPublished() {
@@ -63,7 +59,7 @@ class LevelPublicationTests {
             assertFalse(this.level.canBeModified());
         }
 
-        /** Verify ensureModifiable for published. */
+        /// Verify ensureModifiable for published.
         @Test
         @DisplayName("ensureModifiable throws LevelPublishedException for a published level")
         void throwsWhenPublished() {
@@ -72,21 +68,19 @@ class LevelPublicationTests {
         }
     }
 
-    /**
-     * Tests for the publish method.
-     */
+    /// Tests for the publish method.
     @Nested
     @DisplayName("method publish")
     class PublishMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** Flag position. */
+        /// Flag position.
         private Position flagPos;
-        /** Door position. */
+        /// Door position.
         private Position doorPos;
 
-        /** Sets up publish tests. */
+        /// Sets up publish tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
@@ -94,14 +88,12 @@ class LevelPublicationTests {
             this.doorPos = new Position(2, 1);
         }
 
-        /**
-         * Tests for unauthorized publish attempts.
-         */
+        /// Tests for unauthorized publish attempts.
         @Nested
         @DisplayName("when user is not the owner")
         class WhenUserIsNotOwner {
 
-            /** Verify wrong user. */
+            /// Verify wrong user.
             @Test
             @DisplayName("it throws ForbiddenUserException")
             void wrongUser() {
@@ -110,14 +102,12 @@ class LevelPublicationTests {
             }
         }
 
-        /**
-         * Tests for invalid publish states.
-         */
+        /// Tests for invalid publish states.
         @Nested
         @DisplayName("when the level cannot be published")
         class WhenCannotPublish {
 
-            /** Verify no flag. */
+            /// Verify no flag.
             @Test
             @DisplayName("it throws when the object layer has no start flag")
             void noStartFlag() {
@@ -128,7 +118,7 @@ class LevelPublicationTests {
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
-            /** Verify no door. */
+            /// Verify no door.
             @Test
             @DisplayName("it throws when the object layer has no exit door")
             void noExitDoor() {
@@ -139,7 +129,7 @@ class LevelPublicationTests {
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }
 
-            /** Verify not eligible. */
+            /// Verify not eligible.
             @Test
             @DisplayName("it throws when the level is not marked publish eligible")
             void notPublishEligible() {
@@ -152,14 +142,12 @@ class LevelPublicationTests {
             }
         }
 
-        /**
-         * Tests for valid publish.
-         */
+        /// Tests for valid publish.
         @Nested
         @DisplayName("when publishing is valid")
         class WhenValid {
 
-            /** Verify published status. */
+            /// Verify published status.
             @Test
             @DisplayName("it marks the level as published")
             void marksAsPublished() {
@@ -169,23 +157,21 @@ class LevelPublicationTests {
         }
     }
 
-    /**
-     * Tests for validatePublishEligible.
-     */
+    /// Tests for validatePublishEligible.
     @Nested
     @DisplayName("method validatePublishEligible")
     class ValidatePublishEligibleMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up validation tests. */
+        /// Sets up validation tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
         }
 
-        /** Verify wrong user. */
+        /// Verify wrong user.
         @Test
         @DisplayName("it throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
@@ -193,7 +179,7 @@ class LevelPublicationTests {
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
-        /** Verify successful validation. */
+        /// Verify successful validation.
         @Test
         @DisplayName("it sets publish eligible to true")
         void setsPublishEligible() {
@@ -202,24 +188,22 @@ class LevelPublicationTests {
         }
     }
 
-    /**
-     * Tests for invalidatePublishEligible.
-     */
+    /// Tests for invalidatePublishEligible.
     @Nested
     @DisplayName("method invalidatePublishEligible")
     class InvalidatePublishEligibleMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up invalidation tests. */
+        /// Sets up invalidation tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
             this.level.validatePublishEligible(LevelTestFixtures.USER_ID);
         }
 
-        /** Verify wrong user. */
+        /// Verify wrong user.
         @Test
         @DisplayName("it throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
@@ -227,7 +211,7 @@ class LevelPublicationTests {
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
-        /** Verify successful invalidation. */
+        /// Verify successful invalidation.
         @Test
         @DisplayName("it sets publish eligible to false")
         void setsPublishIneligible() {
@@ -236,24 +220,22 @@ class LevelPublicationTests {
         }
     }
 
-    /**
-     * Tests for unpublish.
-     */
+    /// Tests for unpublish.
     @Nested
     @DisplayName("method unpublish")
     class UnpublishMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up unpublish tests. */
+        /// Sets up unpublish tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
             LevelTestFixtures.publishTestLevel(this.level);
         }
 
-        /** Verify wrong user. */
+        /// Verify wrong user.
         @Test
         @DisplayName("it throws ForbiddenUserException when user does not own the level")
         void wrongUser() {
@@ -261,7 +243,7 @@ class LevelPublicationTests {
             assertThrows(ForbiddenUserException.class, codeToExecute);
         }
 
-        /** Verify successful unpublish. */
+        /// Verify successful unpublish.
         @Test
         @DisplayName("it marks the level as unpublished")
         void marksAsUnpublished() {
@@ -269,7 +251,7 @@ class LevelPublicationTests {
             assertFalse(this.level.isPublished());
         }
 
-        /** Verify idempotency. */
+        /// Verify idempotency.
         @Test
         @DisplayName("it does not throw when called twice")
         void doesNotThrowWhenCalledTwice() {
@@ -278,7 +260,7 @@ class LevelPublicationTests {
             assertDoesNotThrow(codeToExecute);
         }
 
-        /** Verify status after second call. */
+        /// Verify status after second call.
         @Test
         @DisplayName("it remains unpublished after a second unpublish call")
         void remainsUnpublishedAfterSecondCall() {
@@ -288,23 +270,21 @@ class LevelPublicationTests {
         }
     }
 
-    /**
-     * Tests for ensurePlayable.
-     */
+    /// Tests for ensurePlayable.
     @Nested
     @DisplayName("method ensurePlayable")
     class EnsurePlayableMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up playability tests. */
+        /// Sets up playability tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
         }
 
-        /** Verify unpublished playability for non-owner. */
+        /// Verify unpublished playability for non-owner.
         @Test
         @DisplayName("it throws when the level is unpublished and user is not the owner")
         void unpublishedNotOwner() {
@@ -312,7 +292,7 @@ class LevelPublicationTests {
             assertThrows(LevelNotPlayableException.class, codeToExecute);
         }
 
-        /** Verify unpublished playability for owner. */
+        /// Verify unpublished playability for owner.
         @Test
         @DisplayName("it allows the owner to play an unpublished level")
         void unpublishedOwner() {
@@ -320,7 +300,7 @@ class LevelPublicationTests {
             assertDoesNotThrow(codeToExecute);
         }
 
-        /** Verify published playability. */
+        /// Verify published playability.
         @Test
         @DisplayName("it allows any user to play a published level")
         void publishedLevel() {
