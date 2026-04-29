@@ -32,6 +32,7 @@ import java.util.List;
 @WebMvcTest(controllers = LevelAggregationController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @DisplayName("The Level Aggregation Controller")
 class LevelAggregationControllerTests {
 
