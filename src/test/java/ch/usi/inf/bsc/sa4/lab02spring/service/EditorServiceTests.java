@@ -36,6 +36,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /// Integration tests for [EditorService] using a mocked Spring context.
 @SpringBootTest
 @DisplayName("The Editor Service")
+@SuppressWarnings("PMD.ExcessiveImports")
 class EditorServiceTests {
 
     /// Owner's user ID used across tests.
