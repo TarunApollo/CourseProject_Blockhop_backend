@@ -35,6 +35,7 @@ import java.util.Optional;
 @WebMvcTest(controllers = UserController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @DisplayName("The User Controller")
 class UserControllerTests {
 
