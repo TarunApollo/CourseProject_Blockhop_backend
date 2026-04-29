@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model.level;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -19,33 +18,28 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
-/**
- * Tests covering cloning behavior for {@link Level}.
- */
+/// Tests covering cloning behavior for {@link Level}.
 @DisplayName("In the Level cloning API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelCloneTests {
 
-    /**
-     * Tests for the cloneFor method.
-     */
+    /// Tests for the cloneFor method.
     @Nested
     @DisplayName("method cloneFor")
     class CloneForMethod {
 
-        /** Original level. */
+        /// Original level.
         private Level original;
-        /** Creator for the clone. */
+        /// Creator for the clone.
         private User cloneCreator;
-        /** Clear condition. */
+        /// Clear condition.
         private ClearCondition clearCondition;
-        /** Cloned level created in setUp for use across all tests. */
+        /// Cloned level created in setUp for use across all tests.
         private Level cloned;
 
-        /** Sets up clone tests. */
+        /// Sets up clone tests.
         @BeforeEach
         void setUp() {
             final User originalCreator = LevelTestFixtures.createTestUser();
@@ -61,7 +55,7 @@ class LevelCloneTests {
             this.cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
         }
 
-        /** Test to ensure that a cloned level has all the exact states. */
+        /// Test to ensure that a cloned level has all the exact states.
         @Test
         @DisplayName("cloneFor copies the expected state into the clone")
         void clonedCopiesExpectedState() {
@@ -76,7 +70,7 @@ class LevelCloneTests {
                     () -> assertEquals(this.original.getObjectLayer(), this.cloned.getObjectLayer()));
         }
 
-        /** Verify world layer deep copy. */
+        /// Verify world layer deep copy.
         @Test
         @DisplayName("cloneFor does not share the world layer")
         void doesNotShareWorldLayer() {
@@ -85,7 +79,7 @@ class LevelCloneTests {
             assertFalse(this.original.getWorldLayer().containsKey(clonedOnlyPos));
         }
 
-        /** Verify object layer deep copy. */
+        /// Verify object layer deep copy.
         @Test
         @DisplayName("cloneFor does not share the object layer")
         void doesNotShareObjectLayer() {

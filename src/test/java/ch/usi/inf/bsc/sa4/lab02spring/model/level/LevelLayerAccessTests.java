@@ -22,24 +22,20 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 
-/**
- * Tests covering layer getters and layer replacement operations.
- */
+/// Tests covering layer getters and layer replacement operations.
 @DisplayName("In the Level layer access and replacement API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelLayerAccessTests {
 
-    /**
-     * Tests for layer getters.
-     */
+    /// Tests for layer getters.
     @Nested
     @DisplayName("methods getObjectLayer and getWorldLayer")
     class LayerGetters {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up layer getters tests. */
+        /// Sets up layer getters tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
@@ -48,7 +44,7 @@ class LevelLayerAccessTests {
             this.level.putObjectLayer(position, new StartFlag(9, position));
         }
 
-        /** Verify unmodifiable world layer. */
+        /// Verify unmodifiable world layer.
         @Test
         @DisplayName("getWorldLayer returns an unmodifiable world layer")
         void returnsUnmodifiableWorldLayer() {
@@ -58,7 +54,7 @@ class LevelLayerAccessTests {
             assertThrows(UnsupportedOperationException.class, modifyWorldLayer);
         }
 
-        /** Verify unmodifiable object layer. */
+        /// Verify unmodifiable object layer.
         @Test
         @DisplayName("getObjectLayer returns an unmodifiable object layer")
         void returnsUnmodifiableObjectLayer() {
@@ -69,21 +65,19 @@ class LevelLayerAccessTests {
         }
     }
 
-    /**
-     * Tests for layer mutation methods.
-     */
+    /// Tests for layer mutation methods.
     @Nested
     @DisplayName("methods putObjectLayer, putWorldLayer, removeObjectLayer, and removeGroundObject")
     class LayerMutationMethods {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** A position for objects. */
+        /// A position for objects.
         private Position objectPosition;
-        /** A position for world objects. */
+        /// A position for world objects.
         private Position worldPosition;
 
-        /** Sets up mutation tests. */
+        /// Sets up mutation tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
@@ -91,7 +85,7 @@ class LevelLayerAccessTests {
             this.worldPosition = new Position(4, 5);
         }
 
-        /** Verify object replacement. */
+        /// Verify object replacement.
         @Test
         @DisplayName("putObjectLayer replaces an object layer entry")
         void replacesObjectLayerEntry() {
@@ -102,7 +96,7 @@ class LevelLayerAccessTests {
             assertSame(replacementObject, this.level.getObjectLayer().get(this.objectPosition));
         }
 
-        /** Verify world replacement. */
+        /// Verify world replacement.
         @Test
         @DisplayName("putWorldLayer replaces a world layer entry")
         void replacesWorldLayerEntry() {
@@ -113,7 +107,7 @@ class LevelLayerAccessTests {
             assertEquals(replacementGround, this.level.getWorldLayer().get(this.worldPosition));
         }
 
-        /** Verify object removal. */
+        /// Verify object removal.
         @Test
         @DisplayName("removeObjectLayer removes an object layer entry")
         void removesObjectLayerEntry() {
@@ -122,7 +116,7 @@ class LevelLayerAccessTests {
             assertFalse(this.level.getObjectLayer().containsKey(this.objectPosition));
         }
 
-        /** Verify world removal. */
+        /// Verify world removal.
         @Test
         @DisplayName("removeGroundObject removes a world layer entry")
         void removesWorldLayerEntry() {
@@ -132,25 +126,23 @@ class LevelLayerAccessTests {
         }
     }
 
-    /**
-     * Tests for the setWorldLayer method.
-     */
+    /// Tests for the setWorldLayer method.
     @Nested
     @DisplayName("method setWorldLayer")
     class SetWorldLayerMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** First position. */
+        /// First position.
         private Position pos1;
-        /** Second position. */
+        /// Second position.
         private Position pos2;
-        /** New position added to the replacement layer. */
+        /// New position added to the replacement layer.
         private Position newPos;
-        /** Replacement world layer used in each test. */
+        /// Replacement world layer used in each test.
         private Map<Position, GroundObject> newLayer;
 
-        /** Sets up world layer replacement tests. */
+        /// Sets up world layer replacement tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
@@ -162,7 +154,7 @@ class LevelLayerAccessTests {
             this.level.putWorldLayer(this.pos2, new GroundObject(6));
         }
 
-        /** Verify old entry removal. */
+        /// Verify old entry removal.
         @Test
         @DisplayName("setWorldLayer removes the first old entry")
         void removesFirstOldEntry() {
@@ -170,7 +162,7 @@ class LevelLayerAccessTests {
             assertFalse(this.level.getWorldLayer().containsKey(this.pos1));
         }
 
-        /** Verify second old entry removal. */
+        /// Verify second old entry removal.
         @Test
         @DisplayName("setWorldLayer removes the second old entry")
         void removesSecondOldEntry() {
@@ -178,7 +170,7 @@ class LevelLayerAccessTests {
             assertFalse(this.level.getWorldLayer().containsKey(this.pos2));
         }
 
-        /** Verify new entry presence. */
+        /// Verify new entry presence.
         @Test
         @DisplayName("setWorldLayer keeps the new entry")
         void containsNewEntry() {
@@ -186,7 +178,7 @@ class LevelLayerAccessTests {
             assertEquals(new GroundObject(10), this.level.getWorldLayer().get(this.newPos));
         }
 
-        /** Verify clearing layer. */
+        /// Verify clearing layer.
         @Test
         @DisplayName("setWorldLayer clears the world layer when given an empty map")
         void clearsLayer() {
@@ -195,23 +187,21 @@ class LevelLayerAccessTests {
         }
     }
 
-    /**
-     * Tests for the setObjectLayer method.
-     */
+    /// Tests for the setObjectLayer method.
     @Nested
     @DisplayName("method setObjectLayer")
     class SetObjectLayerMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** Original position. */
+        /// Original position.
         private Position pos;
-        /** New position added to the replacement layer. */
+        /// New position added to the replacement layer.
         private Position newPos;
-        /** Replacement object layer used in each test. */
+        /// Replacement object layer used in each test.
         private Map<Position, GameObject> newLayer;
 
-        /** Sets up object layer replacement tests. */
+        /// Sets up object layer replacement tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
@@ -221,7 +211,7 @@ class LevelLayerAccessTests {
             this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
 
-        /** Verify old entry removal. */
+        /// Verify old entry removal.
         @Test
         @DisplayName("setObjectLayer removes the previous entry when replacing")
         void removesPreviousEntry() {
@@ -229,7 +219,7 @@ class LevelLayerAccessTests {
             assertFalse(this.level.getObjectLayer().containsKey(this.pos));
         }
 
-        /** Verify new entry presence. */
+        /// Verify new entry presence.
         @Test
         @DisplayName("setObjectLayer contains the new entry after replacing")
         void containsNewEntry() {
@@ -237,7 +227,7 @@ class LevelLayerAccessTests {
             assertTrue(this.level.getObjectLayer().containsKey(this.newPos));
         }
 
-        /** Verify clearing layer. */
+        /// Verify clearing layer.
         @Test
         @DisplayName("setObjectLayer clears the object layer when given an empty map")
         void clearsLayer() {

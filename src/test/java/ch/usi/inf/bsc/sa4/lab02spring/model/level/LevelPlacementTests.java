@@ -21,40 +21,34 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
-/**
- * Tests covering placement rules and box-content updates for {@link Level}.
- */
+/// Tests covering placement rules and box-content updates for {@link Level}.
 @DisplayName("In the Level placement and box-content API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelPlacementTests {
 
-    /**
-     * Tests for ensureObjectCanBePlacedAt.
-     */
+    /// Tests for ensureObjectCanBePlacedAt.
     @Nested
     @DisplayName("method ensureObjectCanBePlacedAt")
     class EnsureObjectCanBePlacedAtMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** A position for testing. */
+        /// A position for testing.
         private Position position;
 
-        /** Sets up placement tests. */
+        /// Sets up placement tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
             this.position = new Position(3, 3);
         }
 
-        /**
-         * Tests for occupied positions.
-         */
+        /// Tests for occupied positions.
         @Nested
         @DisplayName("when the position is occupied")
         class WhenPositionIsOccupied {
 
-            /** Verify world layer occupancy. */
+            /// Verify world layer occupancy.
             @Test
             @DisplayName("it throws when the world layer has an object at the position")
             void worldLayerOccupied() {
@@ -65,7 +59,7 @@ class LevelPlacementTests {
                 assertThrows(ObjectPlacementConflictException.class, codeToExecute);
             }
 
-            /** Verify object layer occupancy. */
+            /// Verify object layer occupancy.
             @Test
             @DisplayName("it throws when the object layer has an object at the position")
             void objectLayerOccupied() {
@@ -77,7 +71,7 @@ class LevelPlacementTests {
             }
         }
 
-        /** Verify empty position. */
+        /// Verify empty position.
         @Test
         @DisplayName("it allows placement when both layers are empty at the position")
         void bothLayersEmpty() {
@@ -86,21 +80,19 @@ class LevelPlacementTests {
         }
     }
 
-    /**
-     * Tests for updateBoxContent.
-     */
+    /// Tests for updateBoxContent.
     @Nested
     @DisplayName("method updateBoxContent")
     class UpdateBoxContentMethod {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** Valid position. */
+        /// Valid position.
         private Position validPosition;
-        /** Invalid position. */
+        /// Invalid position.
         private Position outOfBoundsPosition;
 
-        /** Sets up box content update tests. */
+        /// Sets up box content update tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
@@ -108,14 +100,12 @@ class LevelPlacementTests {
             this.outOfBoundsPosition = new Position(256, 14);
         }
 
-        /**
-         * Tests for invalid updates.
-         */
+        /// Tests for invalid updates.
         @Nested
         @DisplayName("when position or object is invalid")
         class WhenPositionOrObjectIsInvalid {
 
-            /** Verify out of bounds. */
+            /// Verify out of bounds.
             @Test
             @DisplayName("it throws IllegalArgumentException when position is out of bounds")
             void outOfBounds() {
@@ -125,7 +115,7 @@ class LevelPlacementTests {
                 assertThrows(IllegalArgumentException.class, codeToExecute);
             }
 
-            /** Verify not a box. */
+            /// Verify not a box.
             @Test
             @DisplayName("it throws IllegalArgumentException when the object is not a box")
             void notABox() {
@@ -138,7 +128,7 @@ class LevelPlacementTests {
             }
         }
 
-        /** Verify missing object. */
+        /// Verify missing object.
         @Test
         @DisplayName("it throws NoSuchElementException when no object exists at the position")
         void noObjectAtPosition() {
@@ -147,7 +137,7 @@ class LevelPlacementTests {
             assertThrows(NoSuchElementException.class, codeToExecute);
         }
 
-        /** Verify box instance. */
+        /// Verify box instance.
         @Test
         @DisplayName("updateBoxContent keeps the object as a Box")
         void updatedObjectIsBox() {
@@ -157,7 +147,7 @@ class LevelPlacementTests {
             assertInstanceOf(Box.class, this.level.getObjectLayer().get(this.validPosition));
         }
 
-        /** Verify box content update. */
+        /// Verify box content update.
         @Test
         @DisplayName("updateBoxContent updates the box content")
         void updatedBoxHasNewContent() {

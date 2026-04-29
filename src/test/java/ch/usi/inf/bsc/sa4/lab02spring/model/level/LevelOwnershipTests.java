@@ -15,30 +15,26 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 
-/**
- * Tests covering {@link Level} ownership checks.
- */
+/// Tests covering {@link Level} ownership checks.
 @DisplayName("In the Level ownership API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelOwnershipTests {
 
-    /**
-     * Tests for ownership methods.
-     */
+    /// Tests for ownership methods.
     @Nested
     @DisplayName("methods isOwnedBy and ensureOwnedBy")
     class OwnershipMethods {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
 
-        /** Sets up ownership tests. */
+        /// Sets up ownership tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createLevelFor(LevelTestFixtures.createOwnerUser());
         }
 
-        /** Verifies ownership checks for user IDs and user instances. */
+        /// Verifies ownership checks for user IDs and user instances.
         @Test
         @DisplayName("isOwnedBy matches the owner for both user ids and user instances")
         void matchesOwnerForIdsAndUsers() {
@@ -49,14 +45,12 @@ class LevelOwnershipTests {
                     () -> assertFalse(this.level.isOwnedBy(LevelTestFixtures.createOtherUser())));
         }
 
-        /**
-         * Tests for ensureOwnedBy.
-         */
+        /// Tests for ensureOwnedBy.
         @Nested
         @DisplayName("method ensureOwnedBy")
         class EnsureOwnedByMethod {
 
-            /** Verify ensureOwnedBy throws. */
+            /// Verify ensureOwnedBy throws.
             @Test
             @DisplayName("it throws ForbiddenUserException for a non-owner")
             void throwsForbiddenUserException() {
@@ -65,7 +59,7 @@ class LevelOwnershipTests {
                 assertThrows(ForbiddenUserException.class, codeToExecute);
             }
 
-            /** Verify ensureOwnedBy allowed for owner. */
+            /// Verify ensureOwnedBy allowed for owner.
             @Test
             @DisplayName("it allows the owner")
             void allowsOwner() {

@@ -11,45 +11,40 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
-/**
- * Tests covering {@link Level} creation and metadata updates.
- */
+/// Tests covering {@link Level} creation and metadata updates.
 @DisplayName("In the Level creation and metadata API")
-@SuppressWarnings({ "PMD.TooManyStaticImports", "PMD.CommentSize", "java:S2187" })
+@SuppressWarnings({"PMD.TooManyStaticImports", "java:S2187"})
 class LevelCreationTests {
 
-    /**
-     * Test constructor/creation of a level.
-     */
+    /// Test constructor/creation of a level.
     @Test
     @DisplayName("a level can be created with title, description, and creator")
     void creatorTest() {
         assertDoesNotThrow(LevelTestFixtures::createTestLevel);
     }
 
-    /**
-     * Tests for a newly created level.
-     */
+    /// Tests for a newly created level.
     @Nested
     @DisplayName("when a level is newly created")
     class NewlyCreatedLevel {
 
-        /** The level instance under test. */
+        /// The level instance under test.
         private Level level;
-        /** The creator of the level. */
+        /// The creator of the level.
         private User creator;
-        /** The title of the level. */
+        /// The title of the level.
         private String title;
-        /** The description of the level. */
+        /// The description of the level.
         private String description;
 
-        /** Sets up the test environment for a newly created level. */
+        /// Sets up the test environment for a newly created level.
         @BeforeEach
         void setUp() {
             this.title = "Test level";
@@ -58,9 +53,7 @@ class LevelCreationTests {
             this.level = LevelTestFixtures.createLevelFor(this.creator);
         }
 
-        /**
-         * Checks that all basic metadata about the level is initialised properly.
-         */
+        /// Checks that all basic metadata about the level is initialised properly.
         @Test
         @DisplayName("it initializes basic metadata correctly")
         void initializesBasicMetadata() {
@@ -71,10 +64,8 @@ class LevelCreationTests {
                     () -> assertFalse(this.level.isPublished()));
         }
 
-        /**
-         * Checks lifecycle flags like modifiability, publishability, and dimensions
-         * for a freshly created level.
-         */
+        /// Checks lifecycle flags like modifiability, publishability, and dimensions
+        /// for a freshly created level.
         @Test
         @DisplayName("it initializes lifecycle flags and dimensions correctly")
         void initializesLifecycleFlagsAndDimensions() {
@@ -85,9 +76,7 @@ class LevelCreationTests {
                     () -> assertEquals(LevelTestFixtures.LEVEL_HEIGHT, this.level.getHeight()));
         }
 
-        /**
-         * Checks the default gameplay-related values for a new level.
-         */
+        /// Checks the default gameplay-related values for a new level.
         @Test
         @DisplayName("it initializes gameplay defaults correctly")
         void initializesGameplayDefaults() {
@@ -101,26 +90,24 @@ class LevelCreationTests {
         }
     }
 
-    /**
-     * Tests for setter methods.
-     */
+    /// Tests for setter methods.
     @Nested
     @DisplayName("metadata setters")
     class Setters {
 
-        /** The level instance. */
+        /// The level instance.
         private Level level;
-        /** A clear condition for testing. */
+        /// A clear condition for testing.
         private ClearCondition clearCondition;
 
-        /** Sets up setters tests. */
+        /// Sets up setters tests.
         @BeforeEach
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.SLIME), 2);
         }
 
-        /** Verify setTitle. */
+        /// Verify setTitle.
         @Test
         @DisplayName("setTitle updates the title")
         void updatesTitle() {
@@ -128,7 +115,7 @@ class LevelCreationTests {
             assertEquals("New title", this.level.getTitle());
         }
 
-        /** Verify setDescription. */
+        /// Verify setDescription.
         @Test
         @DisplayName("setDescription updates the description")
         void updatesDescription() {
@@ -136,7 +123,7 @@ class LevelCreationTests {
             assertEquals("New description", this.level.getDescription());
         }
 
-        /** Verify setClearCondition. */
+        /// Verify setClearCondition.
         @Test
         @DisplayName("setClearCondition updates the clear condition")
         void updatesClearCondition() {
