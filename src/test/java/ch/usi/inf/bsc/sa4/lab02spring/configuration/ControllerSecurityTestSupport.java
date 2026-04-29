@@ -11,10 +11,6 @@ import java.time.Instant;
 /// Shared helpers for controller tests that use real Spring Security filters.
 public final class ControllerSecurityTestSupport {
 
-    private ControllerSecurityTestSupport() {
-        throw new UnsupportedOperationException("utility class");
-    }
-
     /// Some fake bearer token value accepted by mocked JWT decoders.
     public static final String TOKEN = "test-token";
 
@@ -37,6 +33,10 @@ public final class ControllerSecurityTestSupport {
     /// JWT exipration timestamp used for test tokens. Add ample time to
     /// complete tests.
     private static final Instant EXPIRES_AT = Instant.EPOCH.plusSeconds(3600);
+
+    private ControllerSecurityTestSupport() {
+        throw new UnsupportedOperationException("utility class");
+    }
 
     /// Configures a mocked JWT decoder to accept the shared bearer token.
     ///

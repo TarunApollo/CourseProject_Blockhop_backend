@@ -2,23 +2,12 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
+import ch.usi.inf.bsc.sa4.lab02spring.model.*;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
@@ -32,27 +21,24 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.Optional;
 
-/// Importing these to improve readability.
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 /// Black-box tests for `LevelController` CRUD endpoints.
 ///
-/// The tests keep Spring Security filters active. Requests authenticate
-/// through the resource-server filter using a bearer token decoded by a
-/// mocked `JwtDecoder`, and unsafe HTTP methods include a CSRF
-/// cookie/header pair accepted by `CookieCsrfTokenRepository`.
-/// Note: we don't need to mock CSRF because it's not validating the token
-/// besides checking if header/cookie token match.
+/// The tests keep Spring Security filters active. Requests authenticate through
+/// the resource-server filter using a bearer token decoded by a mocked
+/// `JwtDecoder`, and unsafe HTTP methods include a CSRF cookie/header pair
+/// accepted by `CookieCsrfTokenRepository`. Note: we don't need to mock CSRF
+/// because it's not validating the token besides checking if header/cookie
+/// token match.
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         OAuth2ClientAutoConfiguration.class
 })
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("Level Controller CRUD Logic Tests")
-/* package */ class LevelControllerTests {
+class LevelControllerTests {
 
     /// The fake authenticated user ID used across tests.
     private static final String USER_ID = "userid1";
@@ -72,8 +58,6 @@ import static org.mockito.Mockito.when;
     private UserService userService;
 
     /// Mocked decoder used by the resource-server security filter.
-    /// https://docs.spring.io/spring-security/reference/servlet/oauth2 (deleteThis)
-    // (deleteThis) /resource-server/jwt.html#oauth2resourceserver-jwt-architecture
     @MockitoBean
     private JwtDecoder jwtDecoder;
 
@@ -96,7 +80,7 @@ import static org.mockito.Mockito.when;
 
     /// Configures the mocked JWT decoder used by authenticated requests.
     @BeforeEach
-    /* default */ void setupJwt() {
+    void setupJwt() {
         ControllerSecurityTestSupport.mockJwtDecoder(
                 this.jwtDecoder, USER_ID, USER_NAME);
     }
@@ -104,19 +88,14 @@ import static org.mockito.Mockito.when;
     /// Tests for POST /levels.
     @Nested
     @DisplayName("POST /levels")
-    /* default */ class CreateLevel {
-
-        /// Creates the POST /levels test group.
-        /* default */ CreateLevel() {
-            /// Explicit constructor required by PMD.
-        }
+    class CreateLevel {
 
         /// Verifies that creating a level returns 200 OK.
         @Test
         @DisplayName("should return 200 OK")
-        /* default */ void shouldReturnOk() {
+        void shouldReturnOk() {
             when(
-                    LevelControllerTests.this.levelService.createLevel(
+                    levelService.createLevel(
                             any(CreateLevelDTO.class),
                             eq(USER_ID)))
                     .thenReturn(testLevel);
@@ -134,15 +113,15 @@ import static org.mockito.Mockito.when;
     /// Tests for POST /levels/clone.
     @Nested
     @DisplayName("POST /levels/clone")
-    /* default */ class CloneLevel {
+    class CloneLevel {
 
         /// Verifies that cloning a level returns 200 OK.
         @Test
         @DisplayName("should return 200 OK")
-        /* default */ void shouldReturnOk() {
-            when(LevelControllerTests.this.userService.getById(USER_ID))
+        void shouldReturnOk() {
+            when(userService.getById(USER_ID))
                     .thenReturn(Optional.of(testUser));
-            when(LevelControllerTests.this.levelService.cloneLevel(
+            when(levelService.cloneLevel(
                     any(CloneLevelDTO.class),
                     eq(testUser)))
                     .thenReturn(Optional.of(testLevel));
@@ -160,15 +139,15 @@ import static org.mockito.Mockito.when;
     /// Tests for PUT /levels/{id}/properties.
     @Nested
     @DisplayName("PUT /levels/{id}/properties")
-    /* default */ class UpdateLevelProperties {
+    class UpdateLevelProperties {
 
         /// Verifies that updating level properties returns 200 OK.
         @Test
         @DisplayName("should return 200 OK")
-        /* default */ void shouldReturnOk() {
-            when(LevelControllerTests.this.userService.getById(USER_ID))
+        void shouldReturnOk() {
+            when(userService.getById(USER_ID))
                     .thenReturn(Optional.of(testUser));
-            when(LevelControllerTests.this.levelService.updateLevelProperties(
+            when(levelService.updateLevelProperties(
                     eq(testUser),
                     eq(LEVEL_ID),
                     any()))
@@ -191,13 +170,13 @@ import static org.mockito.Mockito.when;
     /// Tests for DELETE /levels/{id}.
     @Nested
     @DisplayName("DELETE /levels/{id}")
-    /* default */ class DeleteLevel {
+    class DeleteLevel {
 
         /// Verifies that deleting a level returns 204 No Content.
         @Test
         @DisplayName("should return 204 No Content")
-        /* default */ void shouldReturnNoContent() {
-            doNothing().when(LevelControllerTests.this.levelService)
+        void shouldReturnNoContent() {
+            doNothing().when(levelService)
                     .deleteLevel(USER_ID, LEVEL_ID);
 
             final HttpStatusCode status = ControllerSecurityTestSupport
