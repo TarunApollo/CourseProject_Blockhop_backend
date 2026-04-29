@@ -9,8 +9,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
@@ -20,6 +22,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -69,6 +72,9 @@ class EditorServiceTests {
     /// GID of the box placed in property update tests.
     private static final int BOX_GID = 10;
 
+    /// A GID value that the tileset service will not recognize as valid.
+    private static final int INVALID_GID = 999;
+
     /// First tile position used in layer tests.
     private static final Position POS_A = new Position(0, 0);
 
@@ -77,6 +83,9 @@ class EditorServiceTests {
 
     /// Position of the box placed in property update tests.
     private static final Position BOX_POS = new Position(2, 0);
+
+    /// A position that lies outside the level's valid bounds (y exceeds max height of 13).
+    private static final Position OUT_OF_BOUNDS_POS = new Position(0, 14);
 
     /// The service under test.
     @Autowired
@@ -149,6 +158,35 @@ class EditorServiceTests {
             editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto);
 
             Assertions.assertNotNull(testLevel.getWorldLayer().get(POS_A));
+        }
+
+        /// Verifies that a tile at an out-of-bounds position is rejected before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when tile position is out of bounds")
+        void throwsOnOutOfBoundsPosition() {
+            final EditorLevelDTO tile = EditorLevelDTO.create(OUT_OF_BOUNDS_POS, GROUND_GID);
+            final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that a tile with an invalid GID is rejected before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when ground GID is invalid")
+        void throwsOnInvalidGroundGid() {
+            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, INVALID_GID);
+            final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isGroundGID(INVALID_GID)).thenReturn(Boolean.FALSE);
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
         /// Verifies that a missing level aborts the operation before any save.
@@ -253,6 +291,77 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
+        /// Verifies that an object at an out-of-bounds position is rejected before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when object position is out of bounds")
+        void throwsOnOutOfBoundsPosition() {
+            final EditorLevelDTO obj = EditorLevelDTO.create(OUT_OF_BOUNDS_POS, OBJECT_GID_A);
+            final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that an object with an invalid GID is rejected before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when object GID is invalid")
+        void throwsOnInvalidObjectGid() {
+            final EditorLevelDTO obj = EditorLevelDTO.create(POS_A, INVALID_GID);
+            final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isObjectGID(INVALID_GID)).thenReturn(Boolean.FALSE);
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that placing two start flags in the same layer is rejected before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when two start flags are placed")
+        void throwsWhenTwoStartFlagsPlaced() {
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_GID_A);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_GID_B);
+            final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_A, POS_A, new Content.NoContent()))
+                    .thenReturn(new StartFlag(OBJECT_GID_A, POS_A));
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_B, POS_B, new Content.NoContent()))
+                    .thenReturn(new StartFlag(OBJECT_GID_B, POS_B));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that placing two exit doors in the same layer is rejected before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when two exit doors are placed")
+        void throwsWhenTwoExitDoorsPlaced() {
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_GID_A);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_GID_B);
+            final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_A, POS_A, new Content.NoContent()))
+                    .thenReturn(new ExitDoor(OBJECT_GID_A, POS_A));
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_B, POS_B, new Content.NoContent()))
+                    .thenReturn(new ExitDoor(OBJECT_GID_B, POS_B));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
         /// Verifies that a missing level aborts the operation before any save.
         @Test
         @DisplayName("throws LevelNotFoundException and aborts save when level is missing")
@@ -315,6 +424,46 @@ class EditorServiceTests {
             Assertions.assertEquals(newContent, updated.content());
             Mockito.verify(levelRepository).save(testLevel);
             Mockito.verify(levelPublishService).invalidateLevelPublishEligible(testLevel, OWNER_ID);
+        }
+
+        /// Verifies that a missing object at the target position throws before any save.
+        @Test
+        @DisplayName("throws NoSuchElementException and aborts save when no object exists at the position")
+        void throwsWhenNoObjectAtPosition() {
+            final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(NoSuchElementException.class,
+                    () -> editorService.updateObjectProperties(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that a non-box object at the target position throws before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when the object at the position is not a Box")
+        void throwsWhenNonBoxAtPosition() {
+            testLevel.putObjectLayer(BOX_POS, new StartFlag(BOX_GID, BOX_POS));
+            final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.updateObjectProperties(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that an out-of-bounds position throws before any save.
+        @Test
+        @DisplayName("throws IllegalArgumentException and aborts save when the target position is out of bounds")
+        void throwsOnOutOfBoundsPosition() {
+            final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(OUT_OF_BOUNDS_POS, new Content.NoContent());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.updateObjectProperties(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
         /// Verifies that a missing level aborts the operation before any save.
