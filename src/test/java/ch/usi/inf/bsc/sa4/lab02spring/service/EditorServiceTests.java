@@ -84,7 +84,8 @@ class EditorServiceTests {
     /// Position of the box placed in property update tests.
     private static final Position BOX_POS = new Position(2, 0);
 
-    /// A position that lies outside the level's valid bounds (y exceeds max height of 13).
+    /// A position that lies outside the level's valid bounds
+    /// (y exceeds max height of 13).
     private static final Position OUT_OF_BOUNDS_POS = new Position(0, 14);
 
     /// The service under test.
@@ -291,7 +292,8 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that an object at an out-of-bounds position is rejected before any save.
+        /// Verifies that an object at an out-of-bounds position
+        /// is rejected before any save.
         @Test
         @DisplayName("throws IllegalArgumentException and aborts save when object position is out of bounds")
         void throwsOnOutOfBoundsPosition() {
@@ -320,7 +322,8 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that placing two start flags in the same layer is rejected before any save.
+        /// Verifies that placing two start flags in the same layer
+        /// is rejected before any save.
         @Test
         @DisplayName("throws IllegalArgumentException and aborts save when two start flags are placed")
         void throwsWhenTwoStartFlagsPlaced() {
@@ -341,7 +344,8 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that placing two exit doors in the same layer is rejected before any save.
+        /// Verifies that placing two exit doors in the same layer
+        /// is rejected before any save.
         @Test
         @DisplayName("throws IllegalArgumentException and aborts save when two exit doors are placed")
         void throwsWhenTwoExitDoorsPlaced() {
