@@ -122,42 +122,48 @@ class LevelTests {
             this.level = createLevelFor(this.creator);
         }
 
-        /** Sets up a test that finds and checks that all basic metadata about the level is initialised properly */
+        /**
+         * Sets up a test that finds and checks that all basic metadata about the level
+         * is initialised properly
+         */
         @Test
         @DisplayName("should initialize basic metadata correctly")
         void initializesBasicMetadata() {
             assertAll(
-                () -> assertEquals(this.title, this.level.getTitle()),
-                () -> assertEquals(this.description, this.level.getDescription()),
-                () -> assertSame(this.creator, this.level.getCreator()),
-                () -> assertFalse(this.level.isPublished())
-            );
+                    () -> assertEquals(this.title, this.level.getTitle()),
+                    () -> assertEquals(this.description, this.level.getDescription()),
+                    () -> assertSame(this.creator, this.level.getCreator()),
+                    () -> assertFalse(this.level.isPublished()));
         }
 
-        /** Sets up a test that finds and sets all flags, and ensures that the dimensions of the levels themselves are correct. */
+        /**
+         * Sets up a test that finds and sets all flags, and ensures that the dimensions
+         * of the levels themselves are correct.
+         */
         @Test
         @DisplayName("should initialize lifecycle flags and dimensions correctly")
         void initializesLifecycleFlagsAndDimensions() {
             assertAll(
-                () -> assertTrue(this.level.canBeModified()),
-                () -> assertFalse(this.level.isPublishEligible()),
-                () -> assertEquals(256, this.level.getWidth()),
-                () -> assertEquals(14, this.level.getHeight())
-            );
+                    () -> assertTrue(this.level.canBeModified()),
+                    () -> assertFalse(this.level.isPublishEligible()),
+                    () -> assertEquals(256, this.level.getWidth()),
+                    () -> assertEquals(14, this.level.getHeight()));
         }
 
-        /** Sets up a test that checks if defaults of the level are correctly set to their base cases. */
+        /**
+         * Sets up a test that checks if defaults of the level are correctly set to
+         * their base cases.
+         */
         @Test
         @DisplayName("should initialize gameplay defaults correctly")
         void initializesGameplayDefaults() {
             assertAll(
-                () -> assertInstanceOf(
-                        Condition.NoClearCondition.class,
-                        this.level.getClearCondition().condition()),
-                () -> assertEquals(0, this.level.getClearCondition().targetAmount()),
-                () -> assertTrue(this.level.getObjectLayer().isEmpty()),
-                () -> assertTrue(this.level.getWorldLayer().isEmpty())
-            );
+                    () -> assertInstanceOf(
+                            Condition.NoClearCondition.class,
+                            this.level.getClearCondition().condition()),
+                    () -> assertEquals(0, this.level.getClearCondition().targetAmount()),
+                    () -> assertTrue(this.level.getObjectLayer().isEmpty()),
+                    () -> assertTrue(this.level.getWorldLayer().isEmpty()));
         }
     }
 

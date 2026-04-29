@@ -37,6 +37,7 @@ import org.mockito.Mockito;
 @WebMvcTest(controllers = LevelController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @DisplayName("Level Controller CRUD Logic Tests")
 class LevelControllerTests {
 
