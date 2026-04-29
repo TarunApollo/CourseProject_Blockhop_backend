@@ -15,7 +15,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 
-/// Tests covering {@link Level} ownership checks.
+/// Tests covering [Level] ownership checks.
 @DisplayName("In the Level ownership API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelOwnershipTests {

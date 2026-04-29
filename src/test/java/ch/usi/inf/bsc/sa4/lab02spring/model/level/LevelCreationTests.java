@@ -18,7 +18,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
-/// Tests covering {@link Level} creation and metadata updates.
+/// Tests covering [Level] creation and metadata updates.
 @DisplayName("In the Level creation and metadata API")
 @SuppressWarnings({"PMD.TooManyStaticImports", "java:S2187"})
 class LevelCreationTests {

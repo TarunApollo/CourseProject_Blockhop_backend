@@ -15,7 +15,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 
-/// Tests covering validation rules for {@link Level} object layers.
+/// Tests covering validation rules for [Level] object layers.
 @DisplayName("In the Level layer validation API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelLayerValidationTests {
