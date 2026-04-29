@@ -73,7 +73,8 @@ public class UserController {
 
     /// Searches for users whose name matches the given query string.
     /// @spec.requires partialName is not null.
-    /// @param partialName the string to search for in user names (request parameter "query")
+    /// @param partialName the string to search for in user names
+    ///                    (request parameter "query")
     /// @return a list of matching users as UserDTOs
     @GetMapping("/search")
     public List<UserDTO> searchUsers(@RequestParam("query") final String partialName) {
