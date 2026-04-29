@@ -4,7 +4,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
@@ -13,7 +12,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,19 +19,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import org.mockito.Mockito;
 
 /// Black-box tests for `LevelController` CRUD endpoints.
 ///
@@ -41,9 +34,7 @@ import static org.mockito.Mockito.*;
 /// the resource-server filter using a bearer token decoded by a mocked
 /// `JwtDecoder`, and unsafe HTTP methods include a CSRF cookie/header pair
 /// accepted by `CookieCsrfTokenRepository`.
-@WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
-        OAuth2ClientAutoConfiguration.class
-})
+@WebMvcTest(controllers = LevelController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("Level Controller CRUD Logic Tests")
@@ -103,20 +94,20 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 200 OK")
         /* default */ void shouldReturnOk() {
-            when(
+            Mockito.when(
                     levelService.createLevel(
-                            any(CreateLevelDTO.class),
-                            eq(USER_ID)))
+                            Mockito.any(CreateLevelDTO.class),
+                            Mockito.eq(USER_ID)))
                     .thenReturn(testLevel);
 
-            final HttpStatusCode status = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.post().uri("/levels"))
                     .body(new CreateLevelDTO("T", "D"))
                     .exchange()
-                    .returnResult(LevelDTO.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.OK, status);
+                    .expectStatus()
+                    .isOk();
         }
+
     }
 
     /// Tests for POST /levels/clone.
@@ -128,20 +119,19 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 200 OK")
         /* default */ void shouldReturnOk() {
-            when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(USER_ID))
                     .thenReturn(Optional.of(testUser));
-            when(levelService.cloneLevel(
-                    any(CloneLevelDTO.class),
-                    eq(testUser)))
+            Mockito.when(levelService.cloneLevel(
+                    Mockito.any(CloneLevelDTO.class),
+                    Mockito.eq(testUser)))
                     .thenReturn(Optional.of(testLevel));
 
-            final HttpStatusCode status = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
                     .body(new CloneLevelDTO(LEVEL_ID))
                     .exchange()
-                    .returnResult(LevelDTO.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.OK, status);
+                    .expectStatus()
+                    .isOk();
         }
     }
 
@@ -154,25 +144,24 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 200 OK")
         /* default */ void shouldReturnOk() {
-            when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(USER_ID))
                     .thenReturn(Optional.of(testUser));
-            when(levelService.updateLevelProperties(
-                    eq(testUser),
-                    eq(LEVEL_ID),
-                    any()))
+            Mockito.when(levelService.updateLevelProperties(
+                    Mockito.eq(testUser),
+                    Mockito.eq(LEVEL_ID),
+                    Mockito.any()))
                     .thenReturn(testLevel);
 
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(),
                     Optional.of(new ClearCondition(
                             new Condition.NoClearCondition(), 0)));
-            final HttpStatusCode status = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
                     .body(dto)
                     .exchange()
-                    .returnResult(LevelDTO.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.OK, status);
+                    .expectStatus()
+                    .isOk();
         }
     }
 
@@ -185,15 +174,14 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 204 No Content")
         /* default */ void shouldReturnNoContent() {
-            doNothing().when(levelService)
+            Mockito.doNothing().when(levelService)
                     .deleteLevel(USER_ID, LEVEL_ID);
 
-            final HttpStatusCode status = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.delete().uri("/levels/{id}", LEVEL_ID))
                     .exchange()
-                    .returnResult(Void.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.NO_CONTENT, status);
+                    .expectStatus()
+                    .isNoContent();
         }
     }
 }
