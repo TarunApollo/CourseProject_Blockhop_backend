@@ -18,7 +18,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
-/// Tests covering {@link Level} publication and playability.
+/// Tests covering [Level] publication and playability.
 @DisplayName("In the Level publication and playability API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelPublicationTests {

@@ -21,7 +21,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
-/// Tests covering placement rules and box-content updates for {@link Level}.
+/// Tests covering placement rules and box-content updates for [Level].
 @DisplayName("In the Level placement and box-content API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelPlacementTests {

@@ -6,7 +6,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
-/// Shared fixtures and helpers for split {@link Level} tests.
+/// Shared fixtures and helpers for split [Level] tests.
 final class LevelTestFixtures {
 
     /// Default test user ID.
@@ -45,28 +45,28 @@ final class LevelTestFixtures {
 
     /// Creates a test user.
     ///
-    /// @return a new {@link User} instance
+    /// @return a new [User] instance
     /* default */ static User createTestUser() {
         return new User(USER_ID, USER_NAME);
     }
 
     /// Creates the owner user used in ownership tests.
     ///
-    /// @return a new owner {@link User} instance
+    /// @return a new owner [User] instance
     /* default */ static User createOwnerUser() {
         return new User(OWNER_ID, OWNER_NAME);
     }
 
     /// Creates a non-owner user used in ownership tests.
     ///
-    /// @return a new non-owner {@link User} instance
+    /// @return a new non-owner [User] instance
     /* default */ static User createOtherUser() {
         return new User(OTHER_ID, OTHER_NAME);
     }
 
     /// Creates the clone creator used in clone tests.
     ///
-    /// @return a new clone creator {@link User} instance
+    /// @return a new clone creator [User] instance
     /* default */ static User createCloneUser() {
         return new User(CLONE_ID, CLONE_NAME);
     }
@@ -74,14 +74,14 @@ final class LevelTestFixtures {
     /// Creates a level for a specific creator.
     ///
     /// @param creator the user who creates the level
-    /// @return a new {@link Level} instance
+    /// @return a new [Level] instance
     /* default */ static Level createLevelFor(final User creator) {
         return new Level("Test level", "A level description", creator);
     }
 
     /// Creates a standard test level.
     ///
-    /// @return a new {@link Level} instance
+    /// @return a new [Level] instance
     /* default */ static Level createTestLevel() {
         return createLevelFor(createTestUser());
     }
@@ -89,7 +89,7 @@ final class LevelTestFixtures {
     /// Creates a start flag for the supplied position.
     ///
     /// @param position the desired position
-    /// @return a new {@link StartFlag}
+    /// @return a new [StartFlag]
     /* default */ static StartFlag createStartFlag(final Position position) {
         return new StartFlag(START_FLAG_GID, position);
     }
@@ -97,7 +97,7 @@ final class LevelTestFixtures {
     /// Creates an exit door for the supplied position.
     ///
     /// @param position the desired position
-    /// @return a new {@link ExitDoor}
+    /// @return a new [ExitDoor]
     /* default */ static ExitDoor createExitDoor(final Position position) {
         return new ExitDoor(EXIT_DOOR_GID, position);
     }

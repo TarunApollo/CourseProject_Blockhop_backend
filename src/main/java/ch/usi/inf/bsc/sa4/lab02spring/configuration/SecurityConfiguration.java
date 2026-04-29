@@ -48,7 +48,9 @@ public class SecurityConfiguration {
                         .requestMatchers("/levels/published").authenticated()
                         // .requestMatchers("/levels/**").authenticated()
                         .anyRequest().permitAll())
-                // .anyRequest().authenticated() // oauth2 for every request (TODO: replace line 19 with this after backend phase)
+                // .anyRequest().authenticated()
+                // TODO: oauth2 for every request; replace line 48
+                // with this after backend phase
                 .oauth2Login(auth ->
                         auth.defaultSuccessUrl("http://localhost:3000", true))
                 .oauth2ResourceServer(oauth2 -> oauth2

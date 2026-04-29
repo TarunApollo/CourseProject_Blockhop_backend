@@ -20,7 +20,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
-/// Tests covering cloning behavior for {@link Level}.
+/// Tests covering cloning behavior for [Level].
 @DisplayName("In the Level cloning API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelCloneTests {

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.function.Executable;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 
-/// Tests covering {@link Level} bounds validation.
+/// Tests covering [Level] bounds validation.
 @DisplayName("In the Level bounds API")
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelBoundsTests {
