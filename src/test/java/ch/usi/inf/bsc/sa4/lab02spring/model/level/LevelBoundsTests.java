@@ -18,6 +18,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
  * Tests covering {@link Level} bounds validation.
  */
 @DisplayName("In the Level bounds API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelBoundsTests {
 
     /**

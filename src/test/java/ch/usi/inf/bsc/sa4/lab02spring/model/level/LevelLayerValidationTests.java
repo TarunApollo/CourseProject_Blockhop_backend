@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model.level;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -11,17 +10,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 
 /**
  * Tests covering validation rules for {@link Level} object layers.
  */
 @DisplayName("In the Level layer validation API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelLayerValidationTests {
 
     /**
@@ -53,9 +51,9 @@ class LevelLayerValidationTests {
             void moreThanOneFlag() {
                 final Position pos1 = new Position(1, 1);
                 final Position pos2 = new Position(3, 1);
-                final Map<Position, GameObject> layer = new HashMap<>();
-                layer.put(pos1, new StartFlag(68, pos1));
-                layer.put(pos2, new StartFlag(68, pos2));
+                final Map<Position, GameObject> layer = Map.of(
+                        pos1, LevelTestFixtures.createStartFlag(pos1),
+                        pos2, LevelTestFixtures.createStartFlag(pos2));
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 assertThrows(IllegalArgumentException.class, codeToExecute);
@@ -67,9 +65,9 @@ class LevelLayerValidationTests {
             void moreThanOneDoor() {
                 final Position pos1 = new Position(1, 1);
                 final Position pos2 = new Position(3, 1);
-                final Map<Position, GameObject> layer = new HashMap<>();
-                layer.put(pos1, new ExitDoor(115, pos1));
-                layer.put(pos2, new ExitDoor(115, pos2));
+                final Map<Position, GameObject> layer = Map.of(
+                        pos1, LevelTestFixtures.createExitDoor(pos1),
+                        pos2, LevelTestFixtures.createExitDoor(pos2));
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 assertThrows(IllegalArgumentException.class, codeToExecute);
@@ -87,7 +85,7 @@ class LevelLayerValidationTests {
             @Test
             @DisplayName("it allows an empty layer")
             void emptyLayer() {
-                final Map<Position, GameObject> layer = new HashMap<>();
+                final Map<Position, GameObject> layer = Map.of();
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 assertDoesNotThrow(codeToExecute);
@@ -99,9 +97,9 @@ class LevelLayerValidationTests {
             void oneFlagOneDoor() {
                 final Position flagPos = new Position(1, 1);
                 final Position doorPos = new Position(2, 1);
-                final Map<Position, GameObject> layer = new HashMap<>();
-                layer.put(flagPos, new StartFlag(68, flagPos));
-                layer.put(doorPos, new ExitDoor(115, doorPos));
+                final Map<Position, GameObject> layer = Map.of(
+                        flagPos, LevelTestFixtures.createStartFlag(flagPos),
+                        doorPos, LevelTestFixtures.createExitDoor(doorPos));
                 final Executable codeToExecute = () -> EnsureValidObjectLayerMethod.this.level
                         .ensureValidObjectLayer(layer);
                 assertDoesNotThrow(codeToExecute);
@@ -137,7 +135,9 @@ class LevelLayerValidationTests {
             @DisplayName("it throws when there are no start flags")
             void noFlag() {
                 final Position doorPos = new Position(2, 1);
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        doorPos,
+                        LevelTestFixtures.createExitDoor(doorPos));
                 final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level
                         .ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
@@ -148,7 +148,9 @@ class LevelLayerValidationTests {
             @DisplayName("it throws when there are no exit doors")
             void noDoor() {
                 final Position flagPos = new Position(1, 1);
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        flagPos,
+                        LevelTestFixtures.createStartFlag(flagPos));
                 final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level
                         .ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
@@ -161,9 +163,15 @@ class LevelLayerValidationTests {
                 final Position flagPos1 = new Position(1, 1);
                 final Position flagPos2 = new Position(3, 1);
                 final Position doorPos = new Position(2, 1);
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos1, new StartFlag(68, flagPos1));
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos2, new StartFlag(68, flagPos2));
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        flagPos1,
+                        LevelTestFixtures.createStartFlag(flagPos1));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        flagPos2,
+                        LevelTestFixtures.createStartFlag(flagPos2));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        doorPos,
+                        LevelTestFixtures.createExitDoor(doorPos));
                 final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level
                         .ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
@@ -176,9 +184,15 @@ class LevelLayerValidationTests {
                 final Position flagPos = new Position(1, 1);
                 final Position doorPos1 = new Position(2, 1);
                 final Position doorPos2 = new Position(4, 1);
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos1, new ExitDoor(115, doorPos1));
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos2, new ExitDoor(115, doorPos2));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        flagPos,
+                        LevelTestFixtures.createStartFlag(flagPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        doorPos1,
+                        LevelTestFixtures.createExitDoor(doorPos1));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        doorPos2,
+                        LevelTestFixtures.createExitDoor(doorPos2));
                 final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level
                         .ensurePublishableObjectLayer();
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
@@ -198,8 +212,12 @@ class LevelLayerValidationTests {
             void oneFlagOneDoor() {
                 final Position flagPos = new Position(1, 1);
                 final Position doorPos = new Position(2, 1);
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(flagPos, new StartFlag(68, flagPos));
-                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(doorPos, new ExitDoor(115, doorPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        flagPos,
+                        LevelTestFixtures.createStartFlag(flagPos));
+                EnsurePublishableObjectLayerMethod.this.level.putObjectLayer(
+                        doorPos,
+                        LevelTestFixtures.createExitDoor(doorPos));
                 final Executable codeToExecute = () -> EnsurePublishableObjectLayerMethod.this.level
                         .ensurePublishableObjectLayer();
                 assertDoesNotThrow(codeToExecute);

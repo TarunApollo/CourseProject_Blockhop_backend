@@ -1,6 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model.level;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +26,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
  * Tests covering layer getters and layer replacement operations.
  */
 @DisplayName("In the Level layer access and replacement API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelLayerAccessTests {
 
     /**
@@ -157,8 +157,7 @@ class LevelLayerAccessTests {
             this.pos1 = new Position(1, 2);
             this.pos2 = new Position(3, 4);
             this.newPos = new Position(7, 8);
-            this.newLayer = new HashMap<>();
-            this.newLayer.put(this.newPos, new GroundObject(10));
+            this.newLayer = Map.of(this.newPos, new GroundObject(10));
             this.level.putWorldLayer(this.pos1, new GroundObject(5));
             this.level.putWorldLayer(this.pos2, new GroundObject(6));
         }
@@ -191,7 +190,7 @@ class LevelLayerAccessTests {
         @Test
         @DisplayName("setWorldLayer clears the world layer when given an empty map")
         void clearsLayer() {
-            this.level.setWorldLayer(new HashMap<>());
+            this.level.setWorldLayer(Map.of());
             assertTrue(this.level.getWorldLayer().isEmpty());
         }
     }
@@ -218,8 +217,7 @@ class LevelLayerAccessTests {
             this.level = LevelTestFixtures.createTestLevel();
             this.pos = new Position(1, 2);
             this.newPos = new Position(5, 6);
-            this.newLayer = new HashMap<>();
-            this.newLayer.put(this.newPos, new StartFlag(77, this.newPos));
+            this.newLayer = Map.of(this.newPos, new StartFlag(77, this.newPos));
             this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
         }
 
@@ -243,7 +241,7 @@ class LevelLayerAccessTests {
         @Test
         @DisplayName("setObjectLayer clears the object layer when given an empty map")
         void clearsLayer() {
-            this.level.setObjectLayer(new HashMap<>());
+            this.level.setObjectLayer(Map.of());
             assertTrue(this.level.getObjectLayer().isEmpty());
         }
     }
