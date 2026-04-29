@@ -36,6 +36,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /// Unit tests for [LevelPlayService].
 @SpringBootTest
+@SuppressWarnings("PMD.ExcessiveImports")
 @DisplayName("The Level Play Service")
 class LevelPlayServiceTest {
 
@@ -59,16 +60,16 @@ class LevelPlayServiceTest {
     private static final String LAYERS_KEY = "layers";
     /// Immutable completed attempt DTO used by submission tests.
     private static final AttemptDTO COMPLETED_DTO = new AttemptDTO(
-        Map.of(), new Position(0, 0),
-        ZonedDateTime.now(), Duration.ofSeconds(10), true);
+            Map.of(), new Position(0, 0),
+            ZonedDateTime.now(), Duration.ofSeconds(10), true);
     /// Immutable unfinished attempt DTO used by submission tests.
     private static final AttemptDTO UNFINISHED_DTO = new AttemptDTO(
-        Map.of(), new Position(0, 0),
-        ZonedDateTime.now(), Duration.ofSeconds(10), false);
+            Map.of(), new Position(0, 0),
+            ZonedDateTime.now(), Duration.ofSeconds(10), false);
     /// Immutable empty tileset used by play-pipeline tests.
     private static final TileSet EMPTY_TILESET = new TileSet(
-        1, "atlas", 128, 128, 0, 8,
-        "atlas.png", 1024, 1024, 0, 0, List.of());
+            1, "atlas", 128, 128, 0, 8,
+            "atlas.png", 1024, 1024, 0, 0, List.of());
 
     /// The service under test.
     @Autowired
@@ -133,7 +134,7 @@ class LevelPlayServiceTest {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                () -> service.getPlayableMap(owner, LEVEL_ID));
+                    () -> service.getPlayableMap(owner, LEVEL_ID));
         }
 
         /// Non-owner playing an unpublished level should be rejected.
@@ -144,10 +145,11 @@ class LevelPlayServiceTest {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(RuntimeException.class,
-                () -> service.getPlayableMap(otherUser, LEVEL_ID));
+                    () -> service.getPlayableMap(otherUser, LEVEL_ID));
         }
 
-        /// Published level should produce a Tiled map by delegating to the static converter.
+        /// Published level should produce a Tiled map by delegating to the
+        /// static converter.
         @Test
         @DisplayName("returns the generated Tiled map from the static converter for a published level")
         void returnsTiledMapForPublishedLevel() {
@@ -158,10 +160,10 @@ class LevelPlayServiceTest {
             Mockito.when(tileSetService.getTileSet()).thenReturn(EMPTY_TILESET);
 
             final Map<String, Object> fakeMap = Map.of(LAYERS_KEY, List.of());
-            try (MockedStatic<LayerToTiledMapConverter> mockedStatic =
-                    Mockito.mockStatic(LayerToTiledMapConverter.class)) {
+            try (MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito
+                    .mockStatic(LayerToTiledMapConverter.class)) {
                 mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
-                    level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
+                        level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
 
                 final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
@@ -178,10 +180,10 @@ class LevelPlayServiceTest {
             Mockito.when(tileSetService.getTileSet()).thenReturn(EMPTY_TILESET);
 
             final Map<String, Object> fakeMap = Map.of("data", "test");
-            try (MockedStatic<LayerToTiledMapConverter> mockedStatic =
-                    Mockito.mockStatic(LayerToTiledMapConverter.class)) {
+            try (MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito
+                    .mockStatic(LayerToTiledMapConverter.class)) {
                 mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
-                    level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
+                        level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
 
                 final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
@@ -202,7 +204,7 @@ class LevelPlayServiceTest {
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(UserNotFoundException.class,
-                () -> service.handleLevelSubmission(LEVEL_ID, OWNER_ID, COMPLETED_DTO));
+                    () -> service.handleLevelSubmission(LEVEL_ID, OWNER_ID, COMPLETED_DTO));
         }
 
         /// Missing level should surface as LevelNotFoundException.
@@ -213,7 +215,7 @@ class LevelPlayServiceTest {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                () -> service.handleLevelSubmission(LEVEL_ID, OWNER_ID, COMPLETED_DTO));
+                    () -> service.handleLevelSubmission(LEVEL_ID, OWNER_ID, COMPLETED_DTO));
         }
 
         /// A non-owner submitting to an unpublished level must throw.
@@ -225,7 +227,7 @@ class LevelPlayServiceTest {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(ForbiddenLevelActionException.class,
-                () -> service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO));
+                    () -> service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO));
         }
 
         /// A rejected submission must not reach the attempt service.
@@ -237,12 +239,12 @@ class LevelPlayServiceTest {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(ForbiddenLevelActionException.class,
-                () -> service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO));
+                    () -> service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO));
             Mockito.verify(attemptService, Mockito.never())
-                .submitAttempt(
-                    ArgumentMatchers.any(),
-                    ArgumentMatchers.any(),
-                    ArgumentMatchers.any());
+                    .submitAttempt(
+                            ArgumentMatchers.any(),
+                            ArgumentMatchers.any(),
+                            ArgumentMatchers.any());
         }
 
         /// Owner completing own unpublished level validates eligibility.
@@ -282,9 +284,9 @@ class LevelPlayServiceTest {
             service.handleLevelSubmission(LEVEL_ID, OWNER_ID, UNFINISHED_DTO);
 
             Mockito.verify(levelPublishService, Mockito.never())
-                .validateLevelPublishEligible(
-                    ArgumentMatchers.any(),
-                    ArgumentMatchers.any());
+                    .validateLevelPublishEligible(
+                            ArgumentMatchers.any(),
+                            ArgumentMatchers.any());
         }
 
         /// Unfinished attempt should still be recorded.
@@ -313,9 +315,9 @@ class LevelPlayServiceTest {
             service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO);
 
             Mockito.verify(levelPublishService, Mockito.never())
-                .validateLevelPublishEligible(
-                    ArgumentMatchers.any(),
-                    ArgumentMatchers.any());
+                    .validateLevelPublishEligible(
+                            ArgumentMatchers.any(),
+                            ArgumentMatchers.any());
         }
 
         /// Already-published level should still record the attempt.
@@ -343,8 +345,7 @@ class LevelPlayServiceTest {
             Mockito.when(userService.getById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
-            final String result =
-                service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO);
+            final String result = service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO);
 
             Assertions.assertEquals(SUBMISSION_OK_MSG, result);
         }
