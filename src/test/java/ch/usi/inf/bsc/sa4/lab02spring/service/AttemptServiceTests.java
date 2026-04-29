@@ -25,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 /// Unit tests for [AttemptService].
 @SpringBootTest
 @DisplayName("The Attempt Service")
+@SuppressWarnings("PMD.ExcessiveImports")
 class AttemptServiceTests {
 
     /// Default attempt DTO for testing attempts.
