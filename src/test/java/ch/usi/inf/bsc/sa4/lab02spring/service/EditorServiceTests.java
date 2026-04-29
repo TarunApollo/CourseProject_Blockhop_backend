@@ -97,19 +97,16 @@ class EditorServiceTests {
     @MockitoBean
     private LevelPublishService levelPublishService;
 
-    /// The test user who owns the test level.
-    private User testUser;
-
-    /// An unpublished level owned by [testUser].
+    /// An unpublished level owned by the test user.
     private Level testLevel;
 
-    /// A published level owned by [testUser], used for modifiability failure tests.
+    /// A published level used for modifiability failure tests.
     private Level publishedLevel;
 
     /// Initializes shared test data before each test.
     @BeforeEach
     void setup() {
-        this.testUser = new User(OWNER_ID, OWNER_NAME);
+        final User testUser = new User(OWNER_ID, OWNER_NAME);
         this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, testUser);
         this.publishedLevel = new Level(
                 testUser, LEVEL_TITLE, LEVEL_DESC, true,
@@ -145,7 +142,7 @@ class EditorServiceTests {
             final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, GROUND_GID);
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isGroundGID(GROUND_GID)).thenReturn(true);
+            Mockito.when(tileSetService.isGroundGID(GROUND_GID)).thenReturn(Boolean.TRUE);
             Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
 
             editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto);
@@ -225,8 +222,8 @@ class EditorServiceTests {
             final Box realObjA = new Box(OBJECT_GID_A, POS_A, new Content.NoContent());
             final Box realObjB = new Box(OBJECT_GID_B, POS_B, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(true);
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(true);
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
             Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_A, POS_A, new Content.NoContent())).thenReturn(realObjA);
             Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_B, POS_B, new Content.NoContent())).thenReturn(realObjB);
             Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
@@ -246,8 +243,8 @@ class EditorServiceTests {
             final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_A, OBJECT_GID_B);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(true);
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(true);
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
