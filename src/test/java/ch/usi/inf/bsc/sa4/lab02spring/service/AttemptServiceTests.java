@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/// tests for the {@link AttemptService}
+/// tests for the AttemptService
 ///
 @SpringBootTest
 @DisplayName("The Attempt Service")

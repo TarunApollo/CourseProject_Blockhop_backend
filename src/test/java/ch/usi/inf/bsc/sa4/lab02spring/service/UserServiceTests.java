@@ -3,188 +3,134 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.util.List;
-import java.util.Optional;
+import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for the UserService.
- * Goal: Test service logic in isolation using Mockito.
- */
-@ExtendWith(MockitoExtension.class)
-@DisplayName("The User Service (Unit)")
-@SuppressWarnings("NullAway")
-/* default */ class UserServiceTests {
+/// Unit tests for the UserService.
+@SpringBootTest
+@DisplayName("The User Service")
+class UserServiceTests {
 
-    /** The mocked user repository. */
-    @Mock
-    private UserRepository userRepository;
-
-    /** The service under test. */
-    @InjectMocks
-    private UserService userService;
-
-    /** Default user ID used in tests. */
+    /// Default user ID used in tests.
     private static final String USER_ID = "user-1";
 
-    /** Default username used in tests. */
+    /// Default username used in tests.
     private static final String USER_NAME = "Mario";
 
-    /** Default partial name used for search tests. */
+    /// Default partial name used for search tests.
     private static final String PARTIAL_NAME = "Mar";
 
-    /** The test user. */
+    /// Default DTO used for creation tests.
+    private static final CreateUserDTO CREATE_DTO = new CreateUserDTO(USER_ID, USER_NAME);
+
+    /// The service under test.
+    @Autowired
+    private UserService userService;
+
+    /// Mocked repository to isolate tests.
+    @MockitoBean
+    private UserRepository userRepository;
+
+    /// Shared test user entity.
     private User testUser;
 
-    /**
-     * Sets up test data before each test.
-     */
+    /// The expected User entity after creation mapping.
+    private User expectedUser;
+
+    /// Sets up test data before each test.
     @BeforeEach
-    /* default */ void setup() {
+    void setup() {
         this.testUser = new User(USER_ID, USER_NAME);
+        this.expectedUser = new User(USER_ID, USER_NAME);
     }
 
-    /**
-     * Tests for the getAllUsers method.
-     */
+    /// Tests for retrieving all users.
     @Nested
     @DisplayName("when getting all users")
-    /* default */ class GetAllUsers {
+    class GetAllUsers {
 
-        /**
-         * Verifies that all users from the repository are returned.
-         */
+        /// Verifies that all users from the repository are returned.
         @Test
         @DisplayName("should return all users from the repository")
-        /* default */ void testGetAllUsersReturnsAll() {
-            Mockito.when(userRepository.findAll()).thenReturn(List.of(testUser));
+        void testGetAllUsersReturnsAll() {
+            when(userRepository.findAll()).thenReturn(List.of(testUser));
             final List<User> result = userService.getAllUsers();
             Assertions.assertEquals(1, result.size());
-        }
-
-        /**
-         * Verifies that the repository is queried.
-         */
-        @Test
-        @DisplayName("should delegate to the repository")
-        /* default */ void testGetAllUsersCallsRepo() {
-            Mockito.when(userRepository.findAll()).thenReturn(List.of(testUser));
-            userService.getAllUsers();
-            Mockito.verify(userRepository).findAll();
+            Assertions.assertSame(testUser, result.get(0));
+            verify(userRepository).findAll();
         }
     }
 
-    /**
-     * Tests for the createUser method.
-     */
+    /// Tests for creating a user.
     @Nested
     @DisplayName("when creating a user")
-    /* default */ class CreateUser {
+    class CreateUser {
 
-        /**
-         * Verifies that the saved user is returned.
-         */
+        /// Verifies mapping, saving, and returning of a new user.
         @Test
-        @DisplayName("should return the saved user")
-        /* default */ void testCreateUserReturnsUser() {
-            final CreateUserDTO dto = new CreateUserDTO(USER_ID, USER_NAME);
-            Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(testUser);
-            final User result = userService.createUser(dto);
-            Assertions.assertNotNull(result);
-        }
+        @DisplayName("maps DTO to User, saves, and returns the result")
+        void createdUserIsMappedAndReturned() {
+            when(userRepository.save(refEq(expectedUser))).thenReturn(expectedUser);
 
-        /**
-         * Verifies that the returned user has the correct name.
-         */
-        @Test
-        @DisplayName("should return user with the name from the DTO")
-        /* default */ void testCreateUserHasCorrectName() {
-            final CreateUserDTO dto = new CreateUserDTO(USER_ID, USER_NAME);
-            Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(testUser);
-            final User result = userService.createUser(dto);
-            Assertions.assertEquals(USER_NAME, result.getName());
-        }
+            final User result = userService.createUser(CREATE_DTO);
 
-        /**
-         * Verifies that the repository save method is called.
-         */
-        @Test
-        @DisplayName("should persist the user via the repository")
-        /* default */ void testCreateUserPersists() {
-            final CreateUserDTO dto = new CreateUserDTO(USER_ID, USER_NAME);
-            Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(testUser);
-            userService.createUser(dto);
-            Mockito.verify(userRepository).save(Mockito.any(User.class));
+            Assertions.assertSame(expectedUser, result);
         }
     }
 
-    /**
-     * Tests for the getById method.
-     */
+    /// Tests for getting a user by ID.
     @Nested
     @DisplayName("when getting a user by ID")
-    /* default */ class GetById {
+    class GetById {
 
-        /**
-         * Verifies that an existing user is found.
-         */
+        /// Verifies that an existing user is found.
         @Test
         @DisplayName("should return a non-empty optional when the user exists")
-        /* default */ void testGetByIdFound() {
-            Mockito.when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
+        void testGetByIdFound() {
+            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(testUser));
             final Optional<User> result = userService.getById(USER_ID);
             Assertions.assertTrue(result.isPresent());
+            Assertions.assertSame(testUser, result.get());
         }
 
-        /**
-         * Verifies that an empty optional is returned for unknown IDs.
-         */
+        /// Verifies that an empty optional is returned for unknown IDs.
         @Test
         @DisplayName("should return an empty optional when the user does not exist")
-        /* default */ void testGetByIdNotFound() {
-            Mockito.when(userRepository.findById("unknown")).thenReturn(Optional.empty());
+        void testGetByIdNotFound() {
+            when(userRepository.findById("unknown")).thenReturn(Optional.empty());
             final Optional<User> result = userService.getById("unknown");
             Assertions.assertTrue(result.isEmpty());
         }
     }
 
-    /**
-     * Tests for the searchUsers method.
-     */
+    /// Tests for searching users.
     @Nested
     @DisplayName("when searching users by partial name")
-    /* default */ class SearchUsers {
+    class SearchUsers {
 
-        /**
-         * Verifies that matching users are returned.
-         */
+        /// Verifies that matching users are returned.
         @Test
         @DisplayName("should return users whose name contains the search term")
-        /* default */ void testSearchUsersReturnsMatches() {
-            Mockito.when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of(testUser));
+        void testSearchUsersReturnsMatches() {
+            when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of(testUser));
             final List<User> result = userService.searchUsers(PARTIAL_NAME);
             Assertions.assertEquals(1, result.size());
-        }
-
-        /**
-         * Verifies that the repository is queried with the correct term.
-         */
-        @Test
-        @DisplayName("should delegate to the repository with the given partial name")
-        /* default */ void testSearchUsersCallsRepo() {
-            Mockito.when(userRepository.findByNameContaining(PARTIAL_NAME)).thenReturn(List.of());
-            userService.searchUsers(PARTIAL_NAME);
-            Mockito.verify(userRepository).findByNameContaining(PARTIAL_NAME);
+            Assertions.assertSame(testUser, result.get(0));
+            verify(userRepository).findByNameContaining(PARTIAL_NAME);
         }
     }
 }

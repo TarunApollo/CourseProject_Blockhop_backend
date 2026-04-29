@@ -33,11 +33,16 @@ import java.util.Set;
 /// domain objects.
 ///
 @Configuration
+@SuppressWarnings("PMD.AtLeastOneConstructor")
 public class MongoConfiguration {
 
+    /// Configures the Mongo mapping context with initial entities.
+    ///
+    /// @param customConversions the custom conversions to use
+    /// @return the configured mapping context
     @Bean
-    public MongoMappingContext mongoMappingContext(MongoCustomConversions customConversions) {
-        MongoMappingContext mappingContext = new MongoMappingContext();
+    public MongoMappingContext mongoMappingContext(final MongoCustomConversions customConversions) {
+        final MongoMappingContext mappingContext = new MongoMappingContext();
         mappingContext.setInitialEntitySet(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
@@ -47,7 +52,7 @@ public class MongoConfiguration {
         return mappingContext;
     }
 
-    /// Converts a Position to its compact string representation.
+    /// Converts a [Position] to its compact string representation.
     ///
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
@@ -57,7 +62,7 @@ public class MongoConfiguration {
         }
     }
 
-    /// Converts a compact string representation to a Position.
+    /// Converts a compact string representation to a [Position].
     ///
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
@@ -70,7 +75,7 @@ public class MongoConfiguration {
         }
     }
 
-    /// Converts a ZonedDateTime to an Instant for MongoDB storage.
+    /// Converts a [ZonedDateTime] to an [Instant] for MongoDB storage.
     ///
     @WritingConverter
     public static class ZonedDateTimeToInstantConverter implements Converter<ZonedDateTime, Instant> {
@@ -80,7 +85,7 @@ public class MongoConfiguration {
         }
     }
 
-    /// Converts an Instant read from MongoDB to a ZonedDateTime in UTC.
+    /// Converts an [Instant] read from MongoDB to a [ZonedDateTime] in UTC.
     ///
     @ReadingConverter
     public static class InstantToZonedDateTimeConverter implements Converter<Instant, ZonedDateTime> {
@@ -90,6 +95,9 @@ public class MongoConfiguration {
         }
     }
 
+    /// Configures the custom conversions for MongoDB.
+    ///
+    /// @return the custom conversions
     @Bean
     public MongoCustomConversions customConversions() {
         final List<Converter<?, ?>> custom = new ArrayList<>();
