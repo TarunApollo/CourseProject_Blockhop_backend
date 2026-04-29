@@ -102,10 +102,12 @@ public class UserController {
     /// Authenticates a user using SwitchEduId Login.
     ///
     /// @param authentication token containing information about logged user
-    /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
+    /// @return a 200 OK with the newly created user dto, 
+    // otherwise return the existing user dto information
+    
     @GetMapping(path = "/me")
     public ResponseEntity<UserDTO> index(final Authentication authentication) {
-        // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
+    // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
         final String eduId = AuthUtils.getUserIdFromAuth(authentication);
         final String fullName = AuthUtils.getUserNameFromAuth(authentication);
 
