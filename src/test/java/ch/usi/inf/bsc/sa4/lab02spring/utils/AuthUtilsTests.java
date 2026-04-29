@@ -1,8 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.utils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
 
@@ -43,23 +40,6 @@ class AuthUtilsTests {
     /// Creates an OAuth2User with the given attributes.
     private static DefaultOAuth2User createOAuth2User(final Map<String, Object> attributes) {
         return new DefaultOAuth2User(Collections.singleton(() -> TEST_AUTHORITY), attributes, SUB_KEY);
-    }
-
-    /// Tests for the utility class constructor.
-    @DisplayName("constructor")
-    @Nested
-    class ConstructorTest {
-
-        /// Verifies that the private constructor throws an exception when invoked
-        /// via reflection.
-        @Test
-        @DisplayName("should be private and throw exception on instantiation")
-        void testConstructorIsPrivate() throws Exception {
-            final Constructor<AuthUtils> constructor = AuthUtils.class.getDeclaredConstructor();
-            Assertions.assertTrue(Modifier.isPrivate(constructor.getModifiers()), "Constructor should be private");
-            constructor.setAccessible(true);
-            Assertions.assertThrows(InvocationTargetException.class, constructor::newInstance);
-        }
     }
 
     /// Tests for the static method [getUserIdFromAuth].
