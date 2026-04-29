@@ -122,7 +122,8 @@ class EditorServiceTests {
     @DisplayName("when replacing the world layer")
     class ReplaceWorldLayer {
 
-        /// Verifies the level is saved and publish eligibility is invalidated on a successful empty-list replacement.
+        /// Verifies the level is saved
+        /// and publish eligibility is invalidated on a successful empty-list replacement.
         @Test
         @DisplayName("saves the level and invalidates publish eligibility with an empty tile list")
         void savesEmptyLayerAndInvalidatesPublish() {
@@ -197,7 +198,8 @@ class EditorServiceTests {
     @DisplayName("when replacing the object layer")
     class ReplaceObjectLayer {
 
-        /// Verifies the level is saved and publish eligibility is invalidated on a successful empty-list replacement.
+        /// Verifies the level is saved
+        /// and publish eligibility is invalidated on a successful empty-list replacement.
         @Test
         @DisplayName("saves the level and invalidates publish eligibility with an empty object list")
         void savesEmptyLayerAndInvalidatesPublish() {
@@ -212,7 +214,8 @@ class EditorServiceTests {
             Mockito.verify(levelPublishService).invalidateLevelPublishEligible(testLevel, OWNER_ID);
         }
 
-        /// Verifies that both DTOs are dispatched to the factory and the resulting objects land in the level's object layer.
+        /// Verifies that both DTOs are dispatched to the factory
+        /// and the resulting objects land in the level's object layer.
         @Test
         @DisplayName("maps both DTOs through the factory, populates the object layer, and saves")
         void placesTwoObjectsViaFactoryAndSaves() {
@@ -297,7 +300,8 @@ class EditorServiceTests {
     @DisplayName("when updating object properties")
     class UpdateObjectProperties {
 
-        /// Verifies that the box content at the target position is updated and the level is saved with publish eligibility invalidated.
+        /// Verifies that the box content at the target position is updated
+        /// and the level is saved with publish eligibility invalidated.
         @Test
         @DisplayName("updates the box content at the given position and saves the level")
         void updatesBoxContentAndSaves() {
