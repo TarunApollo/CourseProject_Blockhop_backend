@@ -16,12 +16,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 /// Unit tests for [AttemptService].
 @SpringBootTest
@@ -74,7 +73,7 @@ class AttemptServiceTests {
         @Test
         @DisplayName("should count played levels correctly")
         void testGetPlayedLevelsCount() {
-            when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
+            Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
 
             final long count = attemptService.getPlayedLevelsCount(testUser);
             Assertions.assertEquals(5L, count);
@@ -84,7 +83,7 @@ class AttemptServiceTests {
         @Test
         @DisplayName("should count completed levels correctly")
         void testGetCompletedLevelsCount() {
-            when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
+            Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
 
             final long count = attemptService.getCompletedLevelsCount(testUser);
             Assertions.assertEquals(3L, count);
@@ -102,7 +101,7 @@ class AttemptServiceTests {
         void testSubmitAttemptSaves() {
             attemptService.submitAttempt(testUser, testLevel, ATTEMPT_DTO);
 
-            verify(attemptRepository).save(refEq(expectedAttempt));
+            Mockito.verify(attemptRepository).save(ArgumentMatchers.refEq(expectedAttempt));
         }
     }
 }
