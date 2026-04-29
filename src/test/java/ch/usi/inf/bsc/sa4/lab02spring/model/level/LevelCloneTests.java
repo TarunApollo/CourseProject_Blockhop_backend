@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model.level;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -25,6 +26,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
  * Tests covering cloning behavior for {@link Level}.
  */
 @DisplayName("In the Level cloning API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelCloneTests {
 
     /**
@@ -47,7 +49,7 @@ class LevelCloneTests {
         @BeforeEach
         void setUp() {
             final User originalCreator = LevelTestFixtures.createTestUser();
-            this.cloneCreator = new User("user-2", "Luigi");
+            this.cloneCreator = LevelTestFixtures.createCloneUser();
             this.original = new Level("Original", "Original description", originalCreator);
             final Position worldPosition = new Position(3, 4);
             final Position objectPosition = new Position(5, 6);
@@ -59,8 +61,8 @@ class LevelCloneTests {
             this.cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
         }
 
-       /** Test to ensure that a cloned level has all the exact states. */
-       @Test
+        /** Test to ensure that a cloned level has all the exact states. */
+        @Test
         @DisplayName("cloneFor copies the expected state into the clone")
         void clonedCopiesExpectedState() {
             assertAll(
@@ -88,7 +90,7 @@ class LevelCloneTests {
         @DisplayName("cloneFor does not share the object layer")
         void doesNotShareObjectLayer() {
             final Position clonedOnlyPos = new Position(11, 3);
-            this.cloned.putObjectLayer(clonedOnlyPos, new StartFlag(77, clonedOnlyPos));
+            this.cloned.putObjectLayer(clonedOnlyPos, LevelTestFixtures.createStartFlag(clonedOnlyPos));
             assertFalse(this.original.getObjectLayer().containsKey(clonedOnlyPos));
         }
     }

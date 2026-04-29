@@ -11,10 +11,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotPlayableException;
@@ -24,6 +22,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
  * Tests covering {@link Level} publication and playability.
  */
 @DisplayName("In the Level publication and playability API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelPublicationTests {
 
     /**
@@ -123,7 +122,7 @@ class LevelPublicationTests {
             @DisplayName("it throws when the object layer has no start flag")
             void noStartFlag() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos,
-                        new ExitDoor(115, PublishMethod.this.doorPos));
+                        LevelTestFixtures.createExitDoor(PublishMethod.this.doorPos));
                 PublishMethod.this.level.validatePublishEligible(LevelTestFixtures.USER_ID);
                 final Executable codeToExecute = () -> PublishMethod.this.level.publish(LevelTestFixtures.USER_ID);
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
@@ -134,7 +133,7 @@ class LevelPublicationTests {
             @DisplayName("it throws when the object layer has no exit door")
             void noExitDoor() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos,
-                        new StartFlag(68, PublishMethod.this.flagPos));
+                        LevelTestFixtures.createStartFlag(PublishMethod.this.flagPos));
                 PublishMethod.this.level.validatePublishEligible(LevelTestFixtures.USER_ID);
                 final Executable codeToExecute = () -> PublishMethod.this.level.publish(LevelTestFixtures.USER_ID);
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
@@ -145,9 +144,9 @@ class LevelPublicationTests {
             @DisplayName("it throws when the level is not marked publish eligible")
             void notPublishEligible() {
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.flagPos,
-                        new StartFlag(68, PublishMethod.this.flagPos));
+                        LevelTestFixtures.createStartFlag(PublishMethod.this.flagPos));
                 PublishMethod.this.level.putObjectLayer(PublishMethod.this.doorPos,
-                        new ExitDoor(115, PublishMethod.this.doorPos));
+                        LevelTestFixtures.createExitDoor(PublishMethod.this.doorPos));
                 final Executable codeToExecute = () -> PublishMethod.this.level.publish(LevelTestFixtures.USER_ID);
                 assertThrows(ForbiddenLevelActionException.class, codeToExecute);
             }

@@ -19,6 +19,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
  * Tests covering {@link Level} ownership checks.
  */
 @DisplayName("In the Level ownership API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelOwnershipTests {
 
     /**
@@ -34,10 +35,10 @@ class LevelOwnershipTests {
         /** Sets up ownership tests. */
         @BeforeEach
         void setUp() {
-            this.level = LevelTestFixtures.createLevelFor(new User(LevelTestFixtures.OWNER_ID, "Mario"));
+            this.level = LevelTestFixtures.createLevelFor(LevelTestFixtures.createOwnerUser());
         }
 
-        /** to check that the isOwnedBy works for user ids and the user object itself. */
+        /** Verifies ownership checks for user IDs and user instances. */
         @Test
         @DisplayName("isOwnedBy matches the owner for both user ids and user instances")
         void matchesOwnerForIdsAndUsers() {
@@ -45,7 +46,7 @@ class LevelOwnershipTests {
                     () -> assertTrue(this.level.isOwnedBy(LevelTestFixtures.OWNER_ID)),
                     () -> assertFalse(this.level.isOwnedBy(LevelTestFixtures.OTHER_ID)),
                     () -> assertTrue(this.level.isOwnedBy(new User(LevelTestFixtures.OWNER_ID, "Mario clone"))),
-                    () -> assertFalse(this.level.isOwnedBy(new User(LevelTestFixtures.OTHER_ID, "Luigi"))));
+                    () -> assertFalse(this.level.isOwnedBy(LevelTestFixtures.createOtherUser())));
         }
 
         /**

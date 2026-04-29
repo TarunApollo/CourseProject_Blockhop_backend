@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model.level;
 
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,13 +19,13 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
-import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ObjectPlacementConflictException;
 
 /**
  * Tests covering placement rules and box-content updates for {@link Level}.
  */
 @DisplayName("In the Level placement and box-content API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelPlacementTests {
 
     /**
@@ -71,7 +70,7 @@ class LevelPlacementTests {
             @DisplayName("it throws when the object layer has an object at the position")
             void objectLayerOccupied() {
                 EnsureObjectCanBePlacedAtMethod.this.level.putObjectLayer(EnsureObjectCanBePlacedAtMethod.this.position,
-                        new StartFlag(68, EnsureObjectCanBePlacedAtMethod.this.position));
+                        LevelTestFixtures.createStartFlag(EnsureObjectCanBePlacedAtMethod.this.position));
                 final Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level
                         .ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
                 assertThrows(ObjectPlacementConflictException.class, codeToExecute);
@@ -131,7 +130,7 @@ class LevelPlacementTests {
             @DisplayName("it throws IllegalArgumentException when the object is not a box")
             void notABox() {
                 UpdateBoxContentMethod.this.level.putObjectLayer(UpdateBoxContentMethod.this.validPosition,
-                        new StartFlag(68, UpdateBoxContentMethod.this.validPosition));
+                        LevelTestFixtures.createStartFlag(UpdateBoxContentMethod.this.validPosition));
                 final Content noContent = new Content.NoContent();
                 final Executable codeToExecute = () -> UpdateBoxContentMethod.this.level
                         .updateBoxContent(UpdateBoxContentMethod.this.validPosition, noContent);
@@ -165,7 +164,7 @@ class LevelPlacementTests {
             final Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
             this.level.putObjectLayer(this.validPosition, new Box(42, this.validPosition, new Content.NoContent()));
             this.level.updateBoxContent(this.validPosition, newContent);
-            final Box updatedBox = (Box) Objects.requireNonNull(this.level.getObjectLayer().get(this.validPosition));
+            final Box updatedBox = assertInstanceOf(Box.class, this.level.getObjectLayer().get(this.validPosition));
             assertEquals(newContent, updatedBox.content());
         }
     }

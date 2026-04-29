@@ -11,8 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
@@ -23,6 +21,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
  * Tests covering {@link Level} creation and metadata updates.
  */
 @DisplayName("In the Level creation and metadata API")
+@SuppressWarnings({ "PMD.TooManyStaticImports", "PMD.CommentSize", "java:S2187" })
 class LevelCreationTests {
 
     /**
@@ -31,8 +30,7 @@ class LevelCreationTests {
     @Test
     @DisplayName("a level can be created with title, description, and creator")
     void creatorTest() {
-        final Executable codeToExecute = LevelTestFixtures::createTestLevel;
-        assertDoesNotThrow(codeToExecute);
+        assertDoesNotThrow(LevelTestFixtures::createTestLevel);
     }
 
     /**
@@ -74,7 +72,8 @@ class LevelCreationTests {
         }
 
         /**
-         * Checks lifecycle flags like modifiability and publishability and dimensions for a freshly created level.
+         * Checks lifecycle flags like modifiability, publishability, and dimensions
+         * for a freshly created level.
          */
         @Test
         @DisplayName("it initializes lifecycle flags and dimensions correctly")
@@ -82,8 +81,8 @@ class LevelCreationTests {
             assertAll(
                     () -> assertTrue(this.level.canBeModified()),
                     () -> assertFalse(this.level.isPublishEligible()),
-                    () -> assertEquals(256, this.level.getWidth()),
-                    () -> assertEquals(14, this.level.getHeight()));
+                    () -> assertEquals(LevelTestFixtures.LEVEL_WIDTH, this.level.getWidth()),
+                    () -> assertEquals(LevelTestFixtures.LEVEL_HEIGHT, this.level.getHeight()));
         }
 
         /**
