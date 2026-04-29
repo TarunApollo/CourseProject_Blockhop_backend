@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.mockito.Mockito;
 
 /// Unit tests for [AuthUtils].
+@SuppressWarnings("java:S2187")
 @DisplayName("In the AuthUtils class")
 class AuthUtilsTests {
 
@@ -43,6 +44,7 @@ class AuthUtilsTests {
 
     /// Tests for the static method [getUserIdFromAuth].
     @DisplayName("method getUserIdFromAuth")
+
     @Nested
     class GetUserIdFromAuth {
 
