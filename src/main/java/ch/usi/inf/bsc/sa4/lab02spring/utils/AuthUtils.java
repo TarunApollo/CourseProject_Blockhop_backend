@@ -12,7 +12,6 @@ import com.mongodb.lang.Nullable;
 public final class AuthUtils {
 
     private AuthUtils() {
-        throw new UnsupportedOperationException("utility class");
     }
 
     /// Returns the authenticated user's id from the security context. Supports both
