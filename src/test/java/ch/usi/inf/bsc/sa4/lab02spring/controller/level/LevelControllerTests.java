@@ -11,6 +11,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,7 +84,7 @@ class LevelControllerTests {
 
     /// Configures the mocked JWT decoder used by authenticated requests.
     @BeforeEach
-    /* default */ void setupJwt() {
+    void setupJwt() {
         ControllerSecurityTestSupport.mockJwtDecoder(
                 this.jwtDecoder, USER_ID, USER_NAME);
     }
@@ -89,7 +92,7 @@ class LevelControllerTests {
     /// Tests for POST /levels.
     @Nested
     @DisplayName("POST /levels")
-    /* default */ class CreateLevel {
+    class CreateLevel {
 
         /// Verifies that creating a level returns 200 OK.
         @Test
@@ -109,12 +112,27 @@ class LevelControllerTests {
                     .isOk();
         }
 
+        /// Verifies that creating a level for an unknown user returns 404 Not Found.
+        @Test
+        @DisplayName("should return 404 Not Found when user does not exist")
+        void shouldReturnNotFound() {
+            Mockito.when(levelService.createLevel(Mockito.any(), Mockito.eq(USER_ID)))
+                    .thenThrow(new UserNotFoundException());
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels"))
+                    .body(new CreateLevelDTO("T", "D"))
+                    .exchange()
+                    .expectStatus()
+                    .isNotFound();
+        }
+
     }
 
     /// Tests for POST /levels/clone.
     @Nested
     @DisplayName("POST /levels/clone")
-    /* default */ class CloneLevel {
+    class CloneLevel {
 
         /// Verifies that cloning a level returns 200 OK.
         @Test
@@ -134,12 +152,44 @@ class LevelControllerTests {
                     .expectStatus()
                     .isOk();
         }
+
+        /// Verifies that cloning returns 403 Forbidden when cloning fails.
+        @Test
+        @DisplayName("should return 403 Forbidden when cloning fails")
+        void shouldReturnForbidden() {
+            Mockito.when(userService.getById(USER_ID))
+                    .thenReturn(Optional.of(testUser));
+            Mockito.when(levelService.cloneLevel(Mockito.any(), Mockito.any()))
+                    .thenReturn(Optional.empty());
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
+                    .body(new CloneLevelDTO(LEVEL_ID))
+                    .exchange()
+                    .expectStatus()
+                    .isForbidden();
+        }
+
+        /// Verifies that cloning returns 404 Not Found when user does not exist.
+        @Test
+        @DisplayName("should return 404 Not Found when user does not exist")
+        void shouldReturnNotFound() {
+            Mockito.when(userService.getById(USER_ID))
+                    .thenReturn(Optional.empty());
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
+                    .body(new CloneLevelDTO(LEVEL_ID))
+                    .exchange()
+                    .expectStatus()
+                    .isNotFound();
+        }
     }
 
     /// Tests for PUT /levels/{id}/properties.
     @Nested
     @DisplayName("PUT /levels/{id}/properties")
-    /* default */ class UpdateLevelProperties {
+    class UpdateLevelProperties {
 
         /// Verifies that updating level properties returns 200 OK.
         @Test
@@ -164,12 +214,50 @@ class LevelControllerTests {
                     .expectStatus()
                     .isOk();
         }
+
+        /// Verifies that updating properties returns 404 Not Found when level
+        /// is missing.
+        @Test
+        @DisplayName("should return 404 Not Found when level does not exist")
+        void shouldReturnNotFound() {
+            Mockito.when(userService.getById(USER_ID))
+                    .thenReturn(Optional.of(testUser));
+            Mockito.when(levelService.updateLevelProperties(Mockito.any(), Mockito.any(), Mockito.any()))
+                    .thenThrow(new LevelNotFoundException());
+
+            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.of("U"), Optional.empty(), Optional.empty());
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
+                    .body(dto)
+                    .exchange()
+                    .expectStatus()
+                    .isNotFound();
+        }
+
+        /// Verifies that updating properties returns 403 Forbidden when user
+        /// is unauthorized.
+        @Test
+        @DisplayName("should return 403 Forbidden when user is not the owner")
+        void shouldReturnForbidden() {
+            Mockito.when(userService.getById(USER_ID))
+                    .thenReturn(Optional.of(testUser));
+            Mockito.when(levelService.updateLevelProperties(Mockito.any(), Mockito.any(), Mockito.any()))
+                    .thenThrow(new ForbiddenUserException("Forbidden"));
+
+            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.of("U"), Optional.empty(), Optional.empty());
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
+                    .body(dto)
+                    .exchange()
+                    .expectStatus()
+                    .isForbidden();
+        }
     }
 
     /// Tests for DELETE /levels/{id}.
     @Nested
     @DisplayName("DELETE /levels/{id}")
-    /* default */ class DeleteLevel {
+    class DeleteLevel {
 
         /// Verifies that deleting a level returns 204 No Content.
         @Test
@@ -183,6 +271,35 @@ class LevelControllerTests {
                     .exchange()
                     .expectStatus()
                     .isNoContent();
+        }
+
+        /// Verifies that deleting a level returns 404 Not Found when level is missing.
+        @Test
+        @DisplayName("should return 404 Not Found when level does not exist")
+        void shouldReturnNotFound() {
+            Mockito.doThrow(new LevelNotFoundException())
+                    .when(levelService).deleteLevel(USER_ID, LEVEL_ID);
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.delete().uri("/levels/{id}", LEVEL_ID))
+                    .exchange()
+                    .expectStatus()
+                    .isNotFound();
+        }
+
+        /// Verifies that deleting a level returns 403 Forbidden when user
+        /// is unauthorized.
+        @Test
+        @DisplayName("should return 403 Forbidden when user is not the owner")
+        void shouldReturnForbidden() {
+            Mockito.doThrow(new ForbiddenUserException("Forbidden"))
+                    .when(levelService).deleteLevel(USER_ID, LEVEL_ID);
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.delete().uri("/levels/{id}", LEVEL_ID))
+                    .exchange()
+                    .expectStatus()
+                    .isForbidden();
         }
     }
 }
