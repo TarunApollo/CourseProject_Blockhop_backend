@@ -6,50 +6,40 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for the TileSetService.
- * Goal: Verify that the tileset is loaded correctly and GID classification works.
- */
+/// Unit tests for the TileSetService.
+/// Goal: Verify that the tileset is loaded correctly and GID classification works.
 @DisplayName("The TileSet Service (Unit)")
 @SuppressWarnings("NullAway")
 /* default */ class TileSetServiceTests {
 
-    /** GID that is not expected to exist in the tileset. */
+    /// GID that is not expected to exist in the tileset.
     private static final int INVALID_GID = 0;
 
-    /** GID unlikely to be present in any valid tileset. */
+    /// GID unlikely to be present in any valid tileset.
     private static final int UNKNOWN_GID = 99_999;
 
-    /** The service under test. */
+    /// The service under test.
     private TileSetService tileSetService;
 
-    /**
-     * Instantiates the service before each test.
-     */
+    /// Instantiates the service before each test.
     @BeforeEach
     /* default */ void setup() {
         this.tileSetService = new TileSetService();
     }
 
-    /**
-     * Tests for the getTileSet method.
-     */
+    /// Tests for the getTileSet method.
     @Nested
     @DisplayName("when getting the tileset")
     /* default */ class GetTileSet {
 
-        /**
-         * Verifies that the returned tileset is not null.
-         */
+        /// Verifies that the returned tileset is not null.
         @Test
         @DisplayName("should return a non-null tileset after loading")
         /* default */ void testGetTileSetNotNull() {
             Assertions.assertNotNull(tileSetService.getTileSet());
         }
 
-        /**
-         * Verifies that the tileset contains a non-null tile list.
-         */
+        /// Verifies that the tileset contains a non-null tile list.
         @Test
         @DisplayName("should return a tileset with a non-null tile list")
         /* default */ void testGetTileSetHasTiles() {
@@ -57,16 +47,12 @@ import org.junit.jupiter.api.Test;
         }
     }
 
-    /**
-     * Tests for the isGroundGID method.
-     */
+    /// Tests for the isGroundGID method.
     @Nested
     @DisplayName("when checking ground GIDs")
     /* default */ class IsGroundGID {
 
-        /**
-         * Verifies that GID 0 is not classified as a ground tile.
-         */
+        /// Verifies that GID 0 is not classified as a ground tile.
         @Test
         @DisplayName("should return false for GID 0")
         /* default */ void testIsGroundGIDReturnsFalseForZero() {
@@ -74,16 +60,12 @@ import org.junit.jupiter.api.Test;
         }
     }
 
-    /**
-     * Tests for the isObjectGID method.
-     */
+    /// Tests for the isObjectGID method.
     @Nested
     @DisplayName("when checking object GIDs")
     /* default */ class IsObjectGID {
 
-        /**
-         * Verifies that GID 0 is not classified as an object tile.
-         */
+        /// Verifies that GID 0 is not classified as an object tile.
         @Test
         @DisplayName("should return false for GID 0")
         /* default */ void testIsObjectGIDReturnsFalseForZero() {
@@ -91,16 +73,12 @@ import org.junit.jupiter.api.Test;
         }
     }
 
-    /**
-     * Tests for the getObjectTileType method.
-     */
+    /// Tests for the getObjectTileType method.
     @Nested
     @DisplayName("when getting the tile type for a GID")
     /* default */ class GetObjectTileType {
 
-        /**
-         * Verifies that an unknown GID returns an empty string.
-         */
+        /// Verifies that an unknown GID returns an empty string.
         @Test
         @DisplayName("should return an empty string for an unknown GID")
         /* default */ void testGetObjectTileTypeUnknownGID() {
