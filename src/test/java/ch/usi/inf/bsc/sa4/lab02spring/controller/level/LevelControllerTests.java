@@ -2,12 +2,23 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.*;
-import ch.usi.inf.bsc.sa4.lab02spring.model.*;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
@@ -29,9 +40,7 @@ import static org.mockito.Mockito.*;
 /// The tests keep Spring Security filters active. Requests authenticate through
 /// the resource-server filter using a bearer token decoded by a mocked
 /// `JwtDecoder`, and unsafe HTTP methods include a CSRF cookie/header pair
-/// accepted by `CookieCsrfTokenRepository`. Note: we don't need to mock CSRF
-/// because it's not validating the token besides checking if header/cookie
-/// token match.
+/// accepted by `CookieCsrfTokenRepository`.
 @WebMvcTest(controllers = LevelController.class, excludeAutoConfiguration = {
         OAuth2ClientAutoConfiguration.class
 })
@@ -80,7 +89,7 @@ class LevelControllerTests {
 
     /// Configures the mocked JWT decoder used by authenticated requests.
     @BeforeEach
-    void setupJwt() {
+    /* default */ void setupJwt() {
         ControllerSecurityTestSupport.mockJwtDecoder(
                 this.jwtDecoder, USER_ID, USER_NAME);
     }
@@ -88,12 +97,12 @@ class LevelControllerTests {
     /// Tests for POST /levels.
     @Nested
     @DisplayName("POST /levels")
-    class CreateLevel {
+    /* default */ class CreateLevel {
 
         /// Verifies that creating a level returns 200 OK.
         @Test
         @DisplayName("should return 200 OK")
-        void shouldReturnOk() {
+        /* default */ void shouldReturnOk() {
             when(
                     levelService.createLevel(
                             any(CreateLevelDTO.class),
@@ -113,12 +122,12 @@ class LevelControllerTests {
     /// Tests for POST /levels/clone.
     @Nested
     @DisplayName("POST /levels/clone")
-    class CloneLevel {
+    /* default */ class CloneLevel {
 
         /// Verifies that cloning a level returns 200 OK.
         @Test
         @DisplayName("should return 200 OK")
-        void shouldReturnOk() {
+        /* default */ void shouldReturnOk() {
             when(userService.getById(USER_ID))
                     .thenReturn(Optional.of(testUser));
             when(levelService.cloneLevel(
@@ -139,12 +148,12 @@ class LevelControllerTests {
     /// Tests for PUT /levels/{id}/properties.
     @Nested
     @DisplayName("PUT /levels/{id}/properties")
-    class UpdateLevelProperties {
+    /* default */ class UpdateLevelProperties {
 
         /// Verifies that updating level properties returns 200 OK.
         @Test
         @DisplayName("should return 200 OK")
-        void shouldReturnOk() {
+        /* default */ void shouldReturnOk() {
             when(userService.getById(USER_ID))
                     .thenReturn(Optional.of(testUser));
             when(levelService.updateLevelProperties(
@@ -170,12 +179,12 @@ class LevelControllerTests {
     /// Tests for DELETE /levels/{id}.
     @Nested
     @DisplayName("DELETE /levels/{id}")
-    class DeleteLevel {
+    /* default */ class DeleteLevel {
 
         /// Verifies that deleting a level returns 204 No Content.
         @Test
         @DisplayName("should return 204 No Content")
-        void shouldReturnNoContent() {
+        /* default */ void shouldReturnNoContent() {
             doNothing().when(levelService)
                     .deleteLevel(USER_ID, LEVEL_ID);
 

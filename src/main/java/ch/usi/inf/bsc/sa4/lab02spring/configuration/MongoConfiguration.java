@@ -1,6 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
-import ch.qos.logback.classic.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;

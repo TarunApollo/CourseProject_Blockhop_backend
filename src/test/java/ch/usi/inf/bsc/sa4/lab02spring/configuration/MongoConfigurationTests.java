@@ -65,8 +65,8 @@ class MongoConfigurationTests {
         @DisplayName("should convert String to Position")
         void testStrToPos() {
             final Position pos = fromStr.convert("10,20");
-            Assertions.assertEquals(10, pos.getX());
-            Assertions.assertEquals(20, pos.getY());
+            Assertions.assertEquals(10, pos.x());
+            Assertions.assertEquals(20, pos.y());
         }
     }
 
