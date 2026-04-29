@@ -28,10 +28,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/// Unit tests for the {@link LevelPublishService}.
+/// Unit tests for the LevelPublishService.
 @SpringBootTest
 @DisplayName("The Level Publish Service")
-@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports"})
+@SuppressWarnings({ "NullAway", "PMD.TooManyStaticImports" })
 class LevelPublishServiceTest {
 
     /// ID of the level used for testing.
@@ -76,7 +76,8 @@ class LevelPublishServiceTest {
     /// A standard level used for testing.
     private Level testLevel;
 
-    /// A level that is ready to be published (it has a start flag and an exit door).
+    /// A level that is ready to be published (it has a start flag and an
+    /// exit door).
     private Level publishableLevel;
 
     /// Sets up the test data before each test.
@@ -84,9 +85,9 @@ class LevelPublishServiceTest {
     void setup() {
         this.owner = new User(OWNER_ID, OWNER_NAME);
         this.otherUser = new User(OTHER_USER_ID, OTHER_NAME);
-        
+
         this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESC, this.owner);
-        
+
         this.publishableLevel = new Level(LEVEL_TITLE, LEVEL_DESC, this.owner);
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
@@ -113,7 +114,7 @@ class LevelPublishServiceTest {
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                () -> service.publish(OWNER_ID, LEVEL_ID));
+                    () -> service.publish(OWNER_ID, LEVEL_ID));
 
             verify(levelRepository, never()).save(any());
         }
@@ -126,7 +127,7 @@ class LevelPublishServiceTest {
             when(userRepository.findById(OWNER_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(UserNotFoundException.class,
-                () -> service.publish(OWNER_ID, LEVEL_ID));
+                    () -> service.publish(OWNER_ID, LEVEL_ID));
 
             verify(levelRepository, never()).save(any());
         }
@@ -140,7 +141,7 @@ class LevelPublishServiceTest {
             when(userRepository.findById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
 
             Assertions.assertThrows(ForbiddenUserException.class,
-                () -> service.publish(OTHER_USER_ID, LEVEL_ID));
+                    () -> service.publish(OTHER_USER_ID, LEVEL_ID));
 
             verify(levelRepository, never()).save(any());
         }
@@ -154,7 +155,7 @@ class LevelPublishServiceTest {
             when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
 
             Assertions.assertThrows(ForbiddenLevelActionException.class,
-                () -> service.publish(OWNER_ID, LEVEL_ID));
+                    () -> service.publish(OWNER_ID, LEVEL_ID));
 
             verify(levelRepository, never()).save(any());
         }
@@ -186,8 +187,8 @@ class LevelPublishServiceTest {
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                () -> service.unpublishLevel(OWNER_ID, LEVEL_ID));
-                
+                    () -> service.unpublishLevel(OWNER_ID, LEVEL_ID));
+
             verify(levelRepository, never()).save(any());
         }
 
@@ -200,7 +201,7 @@ class LevelPublishServiceTest {
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
 
             Assertions.assertThrows(ForbiddenUserException.class,
-                () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID));
+                    () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID));
 
             verify(levelRepository, never()).save(any());
         }
@@ -252,8 +253,8 @@ class LevelPublishServiceTest {
         @DisplayName("throws ForbiddenUserException and does not save when a non-owner tries to validate")
         void nonOwnerCannotValidate() {
             Assertions.assertThrows(ForbiddenUserException.class,
-                () -> service.validateLevelPublishEligible(testLevel, OTHER_USER_ID));
-                
+                    () -> service.validateLevelPublishEligible(testLevel, OTHER_USER_ID));
+
             verify(levelRepository, never()).save(any());
         }
     }
@@ -282,8 +283,8 @@ class LevelPublishServiceTest {
             testLevel.validatePublishEligible(OWNER_ID);
 
             Assertions.assertThrows(ForbiddenUserException.class,
-                () -> service.invalidateLevelPublishEligible(testLevel, OTHER_USER_ID));
-                
+                    () -> service.invalidateLevelPublishEligible(testLevel, OTHER_USER_ID));
+
             verify(levelRepository, never()).save(any());
         }
     }
