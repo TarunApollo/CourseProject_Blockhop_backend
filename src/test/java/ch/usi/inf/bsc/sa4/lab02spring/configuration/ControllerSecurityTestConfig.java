@@ -33,11 +33,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 ///   https://www.baeldung.com/spring-mockmvc-vs-webmvctest
 /// - Spring Boot testing reference on slice tests and
 ///   `@ImportAutoConfiguration`:
-///   <https://docs.spring.io/spring-boot/4.0-SNAPSHOT/reference/testing/spring-boot-applications.html>
-/// - Spring Boot API docs for `@WebMvcTest`:
-///   <https://docs.spring.io/spring-boot/4.0-SNAPSHOT/api/java/org/springframework/boot/webmvc/test/autoconfigure/WebMvcTest.html>
-/// - Spring Boot API docs for
-///   `ServletWebSecurityAutoConfiguration`: <https://docs.spring.io/spring-boot/4.0-SNAPSHOT/api/java/org/springframework/boot/security/autoconfigure/web/servlet/ServletWebSecurityAutoConfiguration.html>
+///   https://docs.spring.io/spring-boot/4.0-SNAPSHOT/reference/testing/spring-boot-applications.html
+/// - `ServletWebSecurityAutoConfiguration`
 @SuppressWarnings("PMD.AtLeastOneConstructor")
 @TestConfiguration
 @ImportAutoConfiguration({
