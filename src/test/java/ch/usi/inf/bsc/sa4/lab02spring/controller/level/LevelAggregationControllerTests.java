@@ -39,7 +39,7 @@ class LevelAggregationControllerTests {
     /// The fake authenticated user ID used across tests.
     private static final String USER_ID = "userid1";
 
-    /// The fake authenticated user's display name.
+    /// The fake authenticated user display name.
     private static final String USER_NAME = "Test User";
 
     /// Mocked service for level aggregation.
@@ -54,9 +54,6 @@ class LevelAggregationControllerTests {
     @Autowired
     private RestTestClient restTestClient;
 
-    /// Shared test level instance.
-    private static Level testLevel;
-
     /// Shared test summary instance.
     private static LevelSummaryDto testSummary;
 
@@ -64,14 +61,15 @@ class LevelAggregationControllerTests {
     @BeforeAll
     static void setupData() {
         final User creator = new User("c1", "Creator");
-        testLevel = new Level("Title", "Desc", creator);
+        final Level testLevel = new Level("Title", "Desc", creator);
         testSummary = new LevelSummaryDto(testLevel, 10, 0.5, 5);
     }
 
     /// Configures the mocked JWT decoder before each test.
     @BeforeEach
     void setupJwt() {
-        ControllerSecurityTestSupport.mockJwtDecoder(this.jwtDecoder, USER_ID, USER_NAME);
+        ControllerSecurityTestSupport.mockJwtDecoder(
+                this.jwtDecoder, USER_ID, USER_NAME);
     }
 
     /// Tests for GET /levels/published.
@@ -81,15 +79,36 @@ class LevelAggregationControllerTests {
 
         /// Verifies that the endpoint returns a list of level summaries with 200 OK.
         @Test
-        @DisplayName("should return 200 OK and list of summaries")
-        void returnsSummaries() {
+        @DisplayName("should return 200 OK and list of summaries sorted by popularity")
+        void returnsSummariesSortedByPopularity() {
             final List<LevelSummaryDto> expected = List.of(testSummary);
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
                     ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME)))
                     .thenReturn(expected);
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/levels/published?sortBy=POPULARITY"))
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri(
+                            "/levels/published?sortBy=POPULARITY"))
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .isEqualTo(expected);
+        }
+
+        /// Verifies that sorting by clear rate works correctly.
+        @Test
+        @DisplayName("should return 200 OK and list of summaries sorted by clear rate")
+        void returnsSummariesSortedByClearRate() {
+            final List<LevelSummaryDto> expected = List.of(testSummary);
+            Mockito.when(levelAggregationService.getPublishedLevels(
+                    ArgumentMatchers.eq(PublishedLevelSortBy.CLEAR_RATE),
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME)))
+                    .thenReturn(expected);
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri(
+                            "/levels/published?sortBy=CLEAR_RATE"))
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -105,28 +124,60 @@ class LevelAggregationControllerTests {
                     ArgumentMatchers.any()))
                     .thenReturn(List.of());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/levels/published?sortBy=CLEAR_RATE"))
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri(
+                            "/levels/published?sortBy=CLEAR_RATE"))
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
                     .isEqualTo(List.of());
         }
 
-        /// Verifies that specifying a period works as expected.
+        /// Verifies that specifying a relative period works as expected.
         @Test
-        @DisplayName("should return 200 OK when period is specified")
-        void returnsSummariesWithPeriod() {
+        @DisplayName("should return 200 OK with summaries when a relative period is specified")
+        void returnsSummariesWithRelativePeriod() {
             final List<LevelSummaryDto> expected = List.of(testSummary);
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
-                    ArgumentMatchers.eq(DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS)))
+                    ArgumentMatchers.eq(
+                            DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS)))
                     .thenReturn(expected);
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/levels/published?sortBy=POPULARITY&period=LAST_7_DAYS"))
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri(
+                            "/levels/published?sortBy=POPULARITY&period=LAST_7_DAYS"))
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
                     .isEqualTo(expected);
+        }
+
+        /// Verifies that a missing required sortBy parameter returns 400 Bad Request.
+        @Test
+        @DisplayName("should return 400 Bad Request when sortBy parameter is missing")
+        void missingSortByReturnsBadRequest() {
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri("/levels/published"))
+                    .exchange()
+                    .expectStatus().isBadRequest();
+        }
+
+        /// Verifies that an invalid sortBy value returns 400 Bad Request
+        /// because the service throws IllegalStateException.
+        @Test
+        @DisplayName("should return 400 Bad Request when sortBy has an invalid value")
+        void invalidSortByReturnsBadRequest() {
+            Mockito.when(levelAggregationService.getPublishedLevels(
+                    ArgumentMatchers.any(), ArgumentMatchers.any()))
+                    .thenThrow(new IllegalStateException(
+                            "Unsupported published level sort: INVALID"));
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri(
+                            "/levels/published?sortBy=INVALID"))
+                    .exchange()
+                    .expectStatus().isBadRequest();
         }
     }
 }
