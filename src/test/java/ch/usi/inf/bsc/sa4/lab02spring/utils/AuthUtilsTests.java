@@ -19,7 +19,6 @@ import org.mockito.Mockito;
 
 /// Unit tests for [AuthUtils].
 @DisplayName("In the AuthUtils class")
-@SuppressWarnings("NullAway")
 class AuthUtilsTests {
 
     /// The subject claim used in test users.
@@ -61,7 +60,7 @@ class AuthUtilsTests {
         void validOAuth2User() {
             final DefaultOAuth2User oAuth2User = createOAuth2User(
                     Map.of(SUB_KEY, TEST_USER_ID, "name", TEST_USER_NAME));
-            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, null);
+            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, "");
 
             final String result = AuthUtils.getUserIdFromAuth(authentication);
             Assertions.assertEquals(TEST_USER_ID, result);
@@ -73,7 +72,7 @@ class AuthUtilsTests {
         void validJwt() {
             final Jwt jwt = Mockito.mock(Jwt.class);
             Mockito.when(jwt.getClaimAsString("sub")).thenReturn(TEST_USER_ID);
-            final Authentication authentication = new TestingAuthenticationToken(jwt, null);
+            final Authentication authentication = new TestingAuthenticationToken(jwt, "");
 
             final String result = AuthUtils.getUserIdFromAuth(authentication);
             Assertions.assertEquals(TEST_USER_ID, result);
@@ -85,7 +84,7 @@ class AuthUtilsTests {
         void nullSubAttributeThrows() {
             final OAuth2User oAuth2User = Mockito.mock(OAuth2User.class);
             Mockito.when(oAuth2User.getAttribute(SUB_KEY)).thenReturn(null);
-            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, null);
+            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, "");
 
             final Executable call = () -> AuthUtils.getUserIdFromAuth(authentication);
             Assertions.assertThrows(ResponseStatusException.class, call);
@@ -95,7 +94,7 @@ class AuthUtilsTests {
         @DisplayName("should throw NOT_IMPLEMENTED when principal is unsupported")
         @Test
         void nonOAuth2PrincipalThrows() {
-            final Authentication authentication = new TestingAuthenticationToken(NON_OAUTH_PRINCIPAL, null);
+            final Authentication authentication = new TestingAuthenticationToken(NON_OAUTH_PRINCIPAL, "");
 
             final Executable call = () -> AuthUtils.getUserIdFromAuth(authentication);
             Assertions.assertThrows(ResponseStatusException.class, call);
@@ -113,7 +112,7 @@ class AuthUtilsTests {
         void validOAuth2User() {
             final DefaultOAuth2User oAuth2User = createOAuth2User(
                     Map.of(SUB_KEY, TEST_USER_ID, "name", TEST_USER_NAME));
-            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, null);
+            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, "");
 
             final String result = AuthUtils.getUserNameFromAuth(authentication);
             Assertions.assertEquals(TEST_USER_NAME, result);
@@ -125,7 +124,7 @@ class AuthUtilsTests {
         void validJwt() {
             final Jwt jwt = Mockito.mock(Jwt.class);
             Mockito.when(jwt.getClaimAsString("name")).thenReturn(TEST_USER_NAME);
-            final Authentication authentication = new TestingAuthenticationToken(jwt, null);
+            final Authentication authentication = new TestingAuthenticationToken(jwt, "");
 
             final String result = AuthUtils.getUserNameFromAuth(authentication);
             Assertions.assertEquals(TEST_USER_NAME, result);
@@ -136,7 +135,7 @@ class AuthUtilsTests {
         @Test
         void missingNameAttributeThrows() {
             final DefaultOAuth2User oAuth2User = createOAuth2User(Map.of(SUB_KEY, TEST_USER_ID));
-            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, null);
+            final Authentication authentication = new TestingAuthenticationToken(oAuth2User, "");
 
             final Executable call = () -> AuthUtils.getUserNameFromAuth(authentication);
             Assertions.assertThrows(ResponseStatusException.class, call);
@@ -146,7 +145,7 @@ class AuthUtilsTests {
         @DisplayName("should throw UNAUTHORIZED when principal is unsupported")
         @Test
         void nonOAuth2PrincipalThrows() {
-            final Authentication authentication = new TestingAuthenticationToken(NON_OAUTH_PRINCIPAL, null);
+            final Authentication authentication = new TestingAuthenticationToken(NON_OAUTH_PRINCIPAL, "");
 
             final Executable call = () -> AuthUtils.getUserNameFromAuth(authentication);
             Assertions.assertThrows(ResponseStatusException.class, call);

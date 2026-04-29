@@ -6,11 +6,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.mongodb.lang.Nullable;
+
 /// Authentication helper methods for extracting user information.
 public final class AuthUtils {
 
     private AuthUtils() {
-        throw new UnsupportedOperationException("utility class");
     }
 
     /// Returns the authenticated user's id from the security context. Supports both
@@ -19,7 +20,7 @@ public final class AuthUtils {
     /// @param authentication the current authentication object
     /// @return the authenticated user's subject/id
     /// @throws ResponseStatusException if authentication is missing or unsupported
-    public static String getUserIdFromAuth(final Authentication authentication) {
+    public static String getUserIdFromAuth(@Nullable final Authentication authentication) {
         if (authentication == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         } else {
