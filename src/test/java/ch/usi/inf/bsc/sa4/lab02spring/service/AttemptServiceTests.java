@@ -20,12 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import static org.mockito.ArgumentMatchers.refEq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-/// tests for the AttemptService
-///
+/// Unit tests for [AttemptService].
 @SpringBootTest
 @DisplayName("The Attempt Service")
 class AttemptServiceTests {
@@ -39,21 +37,20 @@ class AttemptServiceTests {
     @Autowired
     private AttemptService attemptService;
 
-    /// Mocked repository to bypass MappingException while keeping @SpringBootTest
+    /// Mocked repository to isolate tests.
     @MockitoBean
     private AttemptRepository attemptRepository;
 
-    /// The test user.
+    /// The test user entity.
     private User testUser;
 
-    /// The test level.
+    /// The test level entity.
     private Level testLevel;
 
-    /// The expected Attempt entity created from the completed DTO
+    /// The expected Attempt entity after mapping.
     private Attempt expectedAttempt;
 
-    /// create the base User and Level objects and expected Attempt entity that the
-    /// service should produce.
+    /// Sets up test data before each test.
     @BeforeEach
     void setup() {
         this.testUser = new User("user-1", "Mario");
@@ -67,13 +64,12 @@ class AttemptServiceTests {
                 ATTEMPT_DTO.timeTaken());
     }
 
-    /// tests related to the retrieval of attempt statistics.
+    /// Tests related to retrieving statistics.
     @Nested
     @DisplayName("when retrieving statistics")
     class Stats {
 
-        /// Verifies that the service correctly delegates the request to the
-        /// underlying repository.
+        /// Verifies delegation to the repository for counting played levels.
         @Test
         @DisplayName("should count played levels correctly")
         void testGetPlayedLevelsCount() {
@@ -83,8 +79,7 @@ class AttemptServiceTests {
             Assertions.assertEquals(5L, count);
         }
 
-        /// Verifies that the service correctly delegates the request to the
-        /// underlying repository.
+        /// Verifies delegation to the repository for counting completed levels.
         @Test
         @DisplayName("should count completed levels correctly")
         void testGetCompletedLevelsCount() {
@@ -95,13 +90,12 @@ class AttemptServiceTests {
         }
     }
 
-    /// tests related to the submission of new attempts.
+    /// Tests related to submitting attempts.
     @Nested
     @DisplayName("when submitting an attempt")
     class Submission {
 
-        /// Verifies that the service correctly maps the AttemptDTO to an Attempt entity
-        /// and attempts to persist it via the repository.
+        /// Verifies that the service correctly maps and saves a new attempt.
         @Test
         @DisplayName("should save a new attempt with correct fields from DTO")
         void testSubmitAttemptSaves() {
