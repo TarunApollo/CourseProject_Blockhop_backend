@@ -11,6 +11,10 @@ import java.time.Instant;
 /// Shared helpers for controller tests that use real Spring Security filters.
 public final class ControllerSecurityTestSupport {
 
+    private ControllerSecurityTestSupport() {
+        throw new UnsupportedOperationException("utility class");
+    }
+
     /// Some fake bearer token value accepted by mocked JWT decoders.
     public static final String TOKEN = "test-token";
 
@@ -26,18 +30,19 @@ public final class ControllerSecurityTestSupport {
     /// Some fake name of the CSRF header used by `CookieCsrfTokenRepository`.
     private static final String CSRF_HEADER = "X-XSRF-TOKEN";
 
-    /// JWT "issued at" timestamp used for test tokens.
-    /// https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html#EPOCH
+    /// JWT "issued at" timestamp used for test
+    /// tokens. https://docs.oracle.com/javase/8/docs/api/java/time/Instant.html#EPOCH
     private static final Instant ISSUED_AT = Instant.EPOCH;
 
-    /// JWT exipration timestamp used for test tokens. Add ample time to complete tests.
+    /// JWT exipration timestamp used for test tokens. Add ample time to
+    /// complete tests.
     private static final Instant EXPIRES_AT = Instant.EPOCH.plusSeconds(3600);
 
     /// Configures a mocked JWT decoder to accept the shared bearer token.
     ///
     /// @param jwtDecoder mocked decoder used by the security filter
-    /// @param userId authenticated user's subject claim
-    /// @param userName authenticated user's display name claim
+    /// @param userId     authenticated user's subject claim
+    /// @param userName   authenticated user's display name claim
     public static void mockJwtDecoder(final JwtDecoder jwtDecoder,
             final String userId, final String userName) {
         final Jwt jwt = Jwt.withTokenValue(TOKEN)

@@ -9,8 +9,13 @@ import org.springframework.web.server.ResponseStatusException;
 /// Authentication helper methods for extracting user information.
 public final class AuthUtils {
 
-    /// Returns the authenticated user's id from the security context.
-    /// Supports both JWT and OAuth2 user principals.
+    private AuthUtils() {
+        throw new UnsupportedOperationException("utility class");
+    }
+
+    /// Returns the authenticated user's id from the security context. Supports both
+    /// JWT and OAuth2 user principals.
+    /// 
     /// @param authentication the current authentication object
     /// @return the authenticated user's subject/id
     /// @throws ResponseStatusException if authentication is missing or unsupported
@@ -32,6 +37,7 @@ public final class AuthUtils {
     }
 
     /// Returns the authenticated user's display name from the security context.
+    /// 
     /// @param authentication the current authentication object
     /// @return the authenticated user's name
     /// @throws ResponseStatusException if the name is unavailable
@@ -52,6 +58,5 @@ public final class AuthUtils {
 
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user name not available");
     }
-
 
 }

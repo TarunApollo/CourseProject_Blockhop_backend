@@ -31,10 +31,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 /// References and interesting reads:
 /// - Mockmvc vs Webmvctest and their inner workings:
 ///   https://www.baeldung.com/spring-mockmvc-vs-webmvctest
-/// - Spring Boot testing reference on slice tests and
-///   `@ImportAutoConfiguration`:
-///   https://docs.spring.io/spring-boot/4.0-SNAPSHOT/reference/testing/spring-boot-applications.html
-/// - `ServletWebSecurityAutoConfiguration`
+/// - Spring Boot testing reference: `@ImportAutoConfiguration`
+///   & `ServletWebSecurityAutoConfiguration`
 @SuppressWarnings("PMD.AtLeastOneConstructor")
 @TestConfiguration
 @ImportAutoConfiguration({
