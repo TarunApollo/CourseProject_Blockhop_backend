@@ -35,7 +35,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /// Black-box tests for [LevelPlayController] endpoints.
-/// Verifies playable map retrieval and attempt submission via the real security filter chain.
+/// Verifies playable map retrieval
+/// and attempt submission via the real security filter chain.
 @WebMvcTest(controllers = LevelPlayController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
@@ -186,7 +187,8 @@ class LevelPlayControllerTests {
     @DisplayName("GET /levels/play/{levelId}/map")
     class GetMap {
 
-        /// Verifies that 200 OK and the playable map are returned for a valid user and level.
+        /// Verifies that 200 OK
+        /// and the playable map are returned for a valid user and level.
         @Test
         @DisplayName("should return 200 OK and the playable map")
         void testGetMapSuccess() {
