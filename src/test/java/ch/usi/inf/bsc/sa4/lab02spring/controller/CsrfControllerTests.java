@@ -18,13 +18,12 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.Objects;
 
-/// Black-box tests for [CsrfController].
-/// Verifies that the CSRF token is correctly exposed to clients.
+/// Black-box tests for [CsrfController]. Verifies that the CSRF token is
+/// correctly exposed to clients.
 @WebMvcTest(controllers = CsrfController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("The Csrf Controller")
-@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 class CsrfControllerTests {
 
     /// The fake authenticated user ID.
@@ -72,8 +71,7 @@ class CsrfControllerTests {
             Assertions.assertAll(
                     () -> Assertions.assertEquals("X-CSRF-TOKEN", checkedBody.headerName()),
                     () -> Assertions.assertEquals("_csrf", checkedBody.parameterName()),
-                    () -> Assertions.assertNotNull(checkedBody.token(), "CSRF token should not be null")
-            );
+                    () -> Assertions.assertNotNull(checkedBody.token(), "CSRF token should not be null"));
         }
     }
 }

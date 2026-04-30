@@ -44,6 +44,9 @@ import java.util.List;
 @DisplayName("The Editor Controller")
 class EditorControllerTests {
 
+    /// path test
+    private static final String WORLD_LAYER_PATH = "/editor/{levelId}/world-layer";
+
     /// The authenticated user ID used across tests.
     private static final String USER_ID = "userid1";
 
@@ -82,7 +85,7 @@ class EditorControllerTests {
 
     /// Tests for PUT /editor/{levelId}/world-layer.
     @Nested
-    @DisplayName("PUT /editor/{levelId}/world-layer")
+    @DisplayName("PUT " + WORLD_LAYER_PATH)
     class ReplaceWorldLayer {
 
         /// Verifies that replacing the world layer returns 200 OK.
@@ -99,14 +102,15 @@ class EditorControllerTests {
                     List.of(EditorLevelDTO.create(new Position(0, 0), 1)));
 
             ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri("/editor/{levelId}/world-layer", LEVEL_ID))
+                    .uri(WORLD_LAYER_PATH, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(WorldLayerResponseDTO.class);
         }
 
-        /// Verifies that replacing the world layer returns 404 if the level is not found.
+        /// Verifies that replacing the world layer returns 404 if the level is
+        /// not found.
         @Test
         @DisplayName("should return 404 Not Found when level does not exist")
         void testReplaceWorldLayerReturnsNotFound() {
@@ -116,13 +120,14 @@ class EditorControllerTests {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
 
             ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri("/editor/{levelId}/world-layer", "invalid-id"))
+                    .uri(WORLD_LAYER_PATH, "invalid-id"))
                     .body(dto)
                     .exchange()
                     .expectStatus().isNotFound();
         }
 
-        /// Verifies that replacing the world layer returns 403 if the user is not authorized.
+        /// Verifies that replacing the world layer returns 403 if the user is
+        /// not authorized.
         @Test
         @DisplayName("should return 403 Forbidden when user is not authorized")
         void testReplaceWorldLayerReturnsForbidden() {
@@ -132,13 +137,14 @@ class EditorControllerTests {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
 
             ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri("/editor/{levelId}/world-layer", LEVEL_ID))
+                    .uri(WORLD_LAYER_PATH, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isForbidden();
         }
 
-        /// Verifies that replacing the world layer returns 400 if arguments are invalid.
+        /// Verifies that replacing the world layer returns 400 if arguments
+        /// are invalid.
         @Test
         @DisplayName("should return 400 Bad Request when arguments are invalid")
         void testReplaceWorldLayerReturnsBadRequest() {
@@ -148,7 +154,7 @@ class EditorControllerTests {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
 
             ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri("/editor/{levelId}/world-layer", LEVEL_ID))
+                    .uri(WORLD_LAYER_PATH, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isBadRequest();
@@ -181,7 +187,8 @@ class EditorControllerTests {
                     .expectBody(ObjectLayerResponseDTO.class);
         }
 
-        /// Verifies that replacing the object layer returns 403 if the level is published.
+        /// Verifies that replacing the object layer returns 403 if the level
+        /// is published.
         @Test
         @DisplayName("should return 403 Forbidden when level is published")
         void testReplaceObjectLayerReturnsForbidden() {
@@ -224,7 +231,8 @@ class EditorControllerTests {
                     .expectBody(ObjectLayerResponseDTO.class);
         }
 
-        /// Verifies that updating object properties returns 400 if properties are invalid.
+        /// Verifies that updating object properties returns 400 if properties
+        /// are invalid.
         @Test
         @DisplayName("should return 400 Bad Request when properties are invalid")
         void testUpdateObjectPropertiesReturnsBadRequest() {
