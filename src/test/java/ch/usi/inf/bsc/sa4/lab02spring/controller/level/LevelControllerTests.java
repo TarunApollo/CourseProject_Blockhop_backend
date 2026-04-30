@@ -16,7 +16,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,14 +30,13 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /// Black-box tests for [LevelController] CRUD endpoints.
 @WebMvcTest(controllers = LevelController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports"})
+@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
 @DisplayName("The Level Controller")
 class LevelControllerTests {
 
@@ -105,22 +103,13 @@ class LevelControllerTests {
                             Mockito.eq(USER_ID)))
                     .thenReturn(testLevel);
 
-            final LevelDTO body = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.post().uri("/levels"))
                     .body(new CreateLevelDTO("T", "D"))
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(LevelDTO.class)
-                    .returnResult()
-                    .getResponseBody();
-
-            final LevelDTO checkedBody = Objects.requireNonNull(body);
-
-            Assertions.assertAll(
-                    () -> Assertions.assertEquals("Title", checkedBody.title()),
-                    () -> Assertions.assertEquals("Desc", checkedBody.description()),
-                    () -> Assertions.assertEquals(USER_ID, checkedBody.creator().getId())
-            );
+                    .isEqualTo(new LevelDTO(testLevel));
         }
 
         /// Verifies that creating a level for an unknown user returns 404.
@@ -154,21 +143,13 @@ class LevelControllerTests {
                     Mockito.eq(testUser)))
                     .thenReturn(Optional.of(testLevel));
 
-            final LevelDTO body = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
                     .body(new CloneLevelDTO(LEVEL_ID))
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(LevelDTO.class)
-                    .returnResult()
-                    .getResponseBody();
-
-            final LevelDTO checkedBody = Objects.requireNonNull(body);
-
-            Assertions.assertAll(
-                    () -> Assertions.assertEquals("Title", checkedBody.title()),
-                    () -> Assertions.assertEquals(USER_ID, checkedBody.creator().getId())
-            );
+                    .isEqualTo(new LevelDTO(testLevel));
         }
 
         /// Verifies that cloning returns 403 Forbidden when cloning fails.
@@ -223,18 +204,13 @@ class LevelControllerTests {
                     Optional.of("U"), Optional.empty(),
                     Optional.of(new ClearCondition(
                             new Condition.NoClearCondition(), 0)));
-            final LevelDTO body = ControllerSecurityTestSupport
+            ControllerSecurityTestSupport
                     .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(LevelDTO.class)
-                    .returnResult()
-                    .getResponseBody();
-
-            final LevelDTO checkedBody = Objects.requireNonNull(body);
-
-            Assertions.assertEquals("Title", checkedBody.title());
+                    .isEqualTo(new LevelDTO(testLevel));
         }
 
         /// Verifies that updating properties returns 404 when user is missing.
