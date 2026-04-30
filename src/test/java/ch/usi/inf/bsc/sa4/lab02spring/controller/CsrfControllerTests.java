@@ -26,10 +26,6 @@ import java.util.Objects;
 @DisplayName("The Csrf Controller")
 class CsrfControllerTests {
 
-    /// Local DTO to represent the JSON structure of a CSRF token.
-    private record CsrfResponse(String token, String headerName, String parameterName) {
-    }
-
     /// The fake authenticated user ID.
     private static final String USER_ID = "userid1";
 
@@ -43,6 +39,10 @@ class CsrfControllerTests {
     /// The RestTestClient for performing requests.
     @Autowired
     private RestTestClient restTestClient;
+
+    /// Local DTO to represent the JSON structure of a CSRF token.
+    private record CsrfResponse(String token, String headerName, String parameterName) {
+    }
 
     /// Configures the mocked JWT decoder before each test.
     @BeforeEach
