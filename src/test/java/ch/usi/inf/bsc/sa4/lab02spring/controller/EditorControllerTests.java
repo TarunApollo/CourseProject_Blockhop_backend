@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
-import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.BoxPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ObjectLayerResponseDTO;
@@ -20,7 +19,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -47,22 +44,12 @@ class EditorControllerTests {
     /// path test
     private static final String WORLD_LAYER_PATH = "/editor/{levelId}/world-layer";
 
-    /// The authenticated user ID used across tests.
-    private static final String USER_ID = "userid1";
-
-    /// The authenticated user name used across tests.
-    private static final String USER_NAME = "Test User";
-
     /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
     /// The mocked editor service.
     @MockitoBean
     private EditorService editorService;
-
-    /// Mocked decoder used by the resource-server security filter.
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     /// The RestTestClient for performing requests.
     @Autowired
@@ -74,13 +61,9 @@ class EditorControllerTests {
     /// Initializes static test data.
     @BeforeAll
     static void setupData() {
-        testLevel = new Level("Editor Level", "A description", new User(USER_ID, USER_NAME));
-    }
-
-    /// Configures the mocked JWT decoder and common service stubs.
-    @BeforeEach
-    void setup() {
-        ControllerSecurityTestSupport.mockJwtDecoder(this.jwtDecoder, USER_ID, USER_NAME);
+        testLevel = new Level("Editor Level", "A description",
+                new User(ControllerSecurityTestConfig.DEFAULT_USER_ID,
+                        ControllerSecurityTestConfig.DEFAULT_USER_NAME));
     }
 
     /// Tests for PUT /editor/{levelId}/world-layer.
@@ -93,7 +76,7 @@ class EditorControllerTests {
         @DisplayName("should return 200 OK with updated world layer")
         void testReplaceWorldLayerReturnsOk() {
             Mockito.when(editorService.replaceWorldLayer(
-                    Mockito.eq(USER_ID),
+                    Mockito.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     Mockito.eq(LEVEL_ID),
                     Mockito.any(UpdateWorldLayerDTO.class)))
                     .thenReturn(testLevel);
@@ -101,8 +84,8 @@ class EditorControllerTests {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(
                     List.of(EditorLevelDTO.create(new Position(0, 0), 1)));
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri(WORLD_LAYER_PATH, LEVEL_ID))
+            restTestClient.put()
+                    .uri(WORLD_LAYER_PATH, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
@@ -119,8 +102,8 @@ class EditorControllerTests {
 
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri(WORLD_LAYER_PATH, "invalid-id"))
+            restTestClient.put()
+                    .uri(WORLD_LAYER_PATH, "invalid-id")
                     .body(dto)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -136,8 +119,8 @@ class EditorControllerTests {
 
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri(WORLD_LAYER_PATH, LEVEL_ID))
+            restTestClient.put()
+                    .uri(WORLD_LAYER_PATH, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isForbidden();
@@ -153,8 +136,8 @@ class EditorControllerTests {
 
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri(WORLD_LAYER_PATH, LEVEL_ID))
+            restTestClient.put()
+                    .uri(WORLD_LAYER_PATH, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isBadRequest();
@@ -171,7 +154,7 @@ class EditorControllerTests {
         @DisplayName("should return 200 OK with updated object layer")
         void testReplaceObjectLayerReturnsOk() {
             Mockito.when(editorService.replaceObjectLayer(
-                    Mockito.eq(USER_ID),
+                    Mockito.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     Mockito.eq(LEVEL_ID),
                     Mockito.any(UpdateObjectLayerDTO.class)))
                     .thenReturn(testLevel);
@@ -179,8 +162,8 @@ class EditorControllerTests {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(
                     List.of(EditorLevelDTO.create(new Position(1, 1), 42)));
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri("/editor/{levelId}/object-layer", LEVEL_ID))
+            restTestClient.put()
+                    .uri("/editor/{levelId}/object-layer", LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
@@ -197,8 +180,8 @@ class EditorControllerTests {
 
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.put()
-                    .uri("/editor/{levelId}/object-layer", LEVEL_ID))
+            restTestClient.put()
+                    .uri("/editor/{levelId}/object-layer", LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isForbidden();
@@ -215,7 +198,7 @@ class EditorControllerTests {
         @DisplayName("should return 200 OK with updated object layer")
         void testUpdateObjectPropertiesReturnsOk() {
             Mockito.when(editorService.updateObjectProperties(
-                    Mockito.eq(USER_ID),
+                    Mockito.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     Mockito.eq(LEVEL_ID),
                     Mockito.any(UpdateObjectPropertiesDTO.class)))
                     .thenReturn(testLevel);
@@ -223,8 +206,8 @@ class EditorControllerTests {
             final UpdateObjectPropertiesDTO dto = new BoxPropertyUpdateDTO(
                     new Position(2, 2), new Content.NoContent());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.patch()
-                    .uri("/editor/{levelId}/object-layer/properties", LEVEL_ID))
+            restTestClient.patch()
+                    .uri("/editor/{levelId}/object-layer/properties", LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
@@ -242,8 +225,8 @@ class EditorControllerTests {
             final UpdateObjectPropertiesDTO dto = new BoxPropertyUpdateDTO(
                     new Position(2, 2), new Content.NoContent());
 
-            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.patch()
-                    .uri("/editor/{levelId}/object-layer/properties", LEVEL_ID))
+            restTestClient.patch()
+                    .uri("/editor/{levelId}/object-layer/properties", LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isBadRequest();

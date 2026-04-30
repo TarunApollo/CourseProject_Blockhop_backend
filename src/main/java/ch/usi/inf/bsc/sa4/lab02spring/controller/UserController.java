@@ -7,7 +7,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -16,7 +16,8 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 /// The controller for users.
@@ -82,37 +83,36 @@ public class UserController {
     }
 
     /// Returns the profile information for the authenticated user.
-    /// @spec.requires authentication is not null.
-    /// @param authentication token containing information about the logged-in user
+    /// @spec.requires user is not null.
+    /// @param user the authenticated OAuth2 user
     /// @return a 200 OK response containing the user's profile information
     ///         (name, played levels count, completed levels count, and list of created levels),
     ///         or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileDTO> getProfile(final Authentication authentication) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
-
+    public ResponseEntity<UserProfileDTO> getProfile(
+            @AuthenticationPrincipal final OAuth2User oauth2User) {
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
         return ResponseEntity.of(this.userService.getById(userId)
-                .map(user -> new UserProfileDTO(
-                        user,
-                        this.attemptService.getPlayedLevelsCount(user),
-                        this.attemptService.getCompletedLevelsCount(user),
-                        this.levelService.getCreatedLevelsByUser(user))));
+                .map(profileUser -> new UserProfileDTO(
+                        profileUser,
+                        this.attemptService.getPlayedLevelsCount(profileUser),
+                        this.attemptService.getCompletedLevelsCount(profileUser),
+                        this.levelService.getCreatedLevelsByUser(profileUser))));
     }
 
     /// Authenticates a user using SwitchEduId Login.
     ///
-    /// @param authentication token containing information about logged user
+    /// @param user the authenticated OAuth2 user
     /// @return a 200 OK with the newly created user dto, 
     // otherwise return the existing user dto information
     
     @GetMapping(path = "/me")
-    public ResponseEntity<UserDTO> index(final Authentication authentication) {
-    // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
-        final String eduId = AuthUtils.getUserIdFromAuth(authentication);
-        final String fullName = AuthUtils.getUserNameFromAuth(authentication);
-
+    public ResponseEntity<UserDTO> index(
+            @AuthenticationPrincipal final OAuth2User oauth2User) {
+        final String eduId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
+        final String fullName = OAuth2UserUtils.getRequiredAttribute(oauth2User, "name");
         final Optional<User> optUser = this.userService.getById(eduId);
-        return optUser.map(user -> ResponseEntity.ok(new UserDTO(user)))
+        return optUser.map(existingUser -> ResponseEntity.ok(new UserDTO(existingUser)))
                 .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
     }
 }

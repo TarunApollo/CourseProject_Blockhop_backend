@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
-import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -10,7 +9,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,7 +19,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -36,19 +33,9 @@ import java.util.List;
 @DisplayName("The Level Aggregation Controller")
 class LevelAggregationControllerTests {
 
-    /// The fake authenticated user ID used across tests.
-    private static final String USER_ID = "userid1";
-
-    /// The fake authenticated user display name.
-    private static final String USER_NAME = "Test User";
-
     /// Mocked service for level aggregation.
     @MockitoBean
     private LevelAggregationService levelAggregationService;
-
-    /// Mocked decoder used by the resource-server security filter.
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
 
     /// Client used to perform REST calls.
     @Autowired
@@ -63,13 +50,6 @@ class LevelAggregationControllerTests {
         final User creator = new User("c1", "Creator");
         final Level testLevel = new Level("Title", "Desc", creator);
         testSummary = new LevelSummaryDto(testLevel, 10, 0.5, 5);
-    }
-
-    /// Configures the mocked JWT decoder before each test.
-    @BeforeEach
-    void setupJwt() {
-        ControllerSecurityTestSupport.mockJwtDecoder(
-                this.jwtDecoder, USER_ID, USER_NAME);
     }
 
     /// Tests for GET /levels/published.
@@ -87,9 +67,8 @@ class LevelAggregationControllerTests {
                     ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME)))
                     .thenReturn(expected);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri(
-                            "/levels/published?sortBy=POPULARITY"))
+            restTestClient.get().uri(
+                            "/levels/published?sortBy=POPULARITY")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -106,9 +85,8 @@ class LevelAggregationControllerTests {
                     ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME)))
                     .thenReturn(expected);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri(
-                            "/levels/published?sortBy=CLEAR_RATE"))
+            restTestClient.get().uri(
+                            "/levels/published?sortBy=CLEAR_RATE")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -124,9 +102,8 @@ class LevelAggregationControllerTests {
                     ArgumentMatchers.any()))
                     .thenReturn(List.of());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri(
-                            "/levels/published?sortBy=CLEAR_RATE"))
+            restTestClient.get().uri(
+                            "/levels/published?sortBy=CLEAR_RATE")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -144,9 +121,8 @@ class LevelAggregationControllerTests {
                             DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS)))
                     .thenReturn(expected);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri(
-                            "/levels/published?sortBy=POPULARITY&period=LAST_7_DAYS"))
+            restTestClient.get().uri(
+                            "/levels/published?sortBy=POPULARITY&period=LAST_7_DAYS")
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -157,8 +133,7 @@ class LevelAggregationControllerTests {
         @Test
         @DisplayName("should return 400 Bad Request when sortBy parameter is missing")
         void missingSortByReturnsBadRequest() {
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri("/levels/published"))
+            restTestClient.get().uri("/levels/published")
                     .exchange()
                     .expectStatus().isBadRequest();
         }
@@ -173,9 +148,8 @@ class LevelAggregationControllerTests {
                     .thenThrow(new IllegalStateException(
                             "Unsupported published level sort: INVALID"));
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri(
-                            "/levels/published?sortBy=INVALID"))
+            restTestClient.get().uri(
+                            "/levels/published?sortBy=INVALID")
                     .exchange()
                     .expectStatus().isBadRequest();
         }

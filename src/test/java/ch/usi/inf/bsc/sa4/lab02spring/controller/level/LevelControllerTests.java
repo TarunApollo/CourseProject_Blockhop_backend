@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
-import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
@@ -17,7 +16,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -39,12 +36,6 @@ import java.util.Optional;
 @SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", })
 @DisplayName("The Level Controller")
 class LevelControllerTests {
-
-    /// The fake authenticated user ID used across tests.
-    private static final String USER_ID = "userid1";
-
-    /// The fake authenticated user display name.
-    private static final String USER_NAME = "Test User";
 
     /// A fake level ID used across tests.
     private static final String LEVEL_ID = "level-1";
@@ -60,10 +51,6 @@ class LevelControllerTests {
     @MockitoBean
     private UserService userService;
 
-    /// Mocked decoder used by the resource-server security filter.
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
-
     /// Client used to perform REST calls.
     @Autowired
     private RestTestClient restTestClient;
@@ -77,15 +64,9 @@ class LevelControllerTests {
     /// Initializes static test data.
     @BeforeAll
     static void setupData() {
-        testUser = new User(USER_ID, USER_NAME);
+        testUser = new User(ControllerSecurityTestConfig.DEFAULT_USER_ID,
+                ControllerSecurityTestConfig.DEFAULT_USER_NAME);
         testLevel = new Level("Title", "Desc", testUser);
-    }
-
-    /// Configures the mocked JWT decoder used by authenticated requests.
-    @BeforeEach
-    void setupJwt() {
-        ControllerSecurityTestSupport.mockJwtDecoder(
-                this.jwtDecoder, USER_ID, USER_NAME);
     }
 
     /// Tests for POST /levels.
@@ -100,11 +81,10 @@ class LevelControllerTests {
             Mockito.when(
                     levelService.createLevel(
                             Mockito.any(CreateLevelDTO.class),
-                            Mockito.eq(USER_ID)))
+                            Mockito.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(testLevel);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels"))
+            restTestClient.post().uri("/levels")
                     .body(new CreateLevelDTO("T", "D"))
                     .exchange()
                     .expectStatus().isOk()
@@ -116,11 +96,11 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 404 Not Found when user does not exist")
         void shouldReturnNotFound() {
-            Mockito.when(levelService.createLevel(Mockito.any(), Mockito.eq(USER_ID)))
+            Mockito.when(levelService.createLevel(Mockito.any(),
+                    Mockito.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenThrow(new UserNotFoundException());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels"))
+            restTestClient.post().uri("/levels")
                     .body(new CreateLevelDTO("T", "D"))
                     .exchange()
                     .expectStatus().isNotFound();
@@ -136,15 +116,14 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 200 OK and the cloned level")
         void shouldReturnOk() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.of(testUser));
             Mockito.when(levelService.cloneLevel(
                     Mockito.any(CloneLevelDTO.class),
                     Mockito.eq(testUser)))
                     .thenReturn(Optional.of(testLevel));
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
+            restTestClient.post().uri("/levels/clone")
                     .body(new CloneLevelDTO(LEVEL_ID))
                     .exchange()
                     .expectStatus().isOk()
@@ -156,13 +135,12 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 403 Forbidden when cloning fails")
         void shouldReturnForbidden() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.of(testUser));
             Mockito.when(levelService.cloneLevel(Mockito.any(), Mockito.any()))
                     .thenReturn(Optional.empty());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
+            restTestClient.post().uri("/levels/clone")
                     .body(new CloneLevelDTO(LEVEL_ID))
                     .exchange()
                     .expectStatus().isForbidden();
@@ -172,11 +150,10 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 404 Not Found when user does not exist")
         void shouldReturnNotFound() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.empty());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/clone"))
+            restTestClient.post().uri("/levels/clone")
                     .body(new CloneLevelDTO(LEVEL_ID))
                     .exchange()
                     .expectStatus().isNotFound();
@@ -192,7 +169,7 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 200 OK and the updated level")
         void shouldReturnOk() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.of(testUser));
             Mockito.when(levelService.updateLevelProperties(
                     Mockito.eq(testUser),
@@ -204,8 +181,7 @@ class LevelControllerTests {
                     Optional.of("U"), Optional.empty(),
                     Optional.of(new ClearCondition(
                             new Condition.NoClearCondition(), 0)));
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
+            restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
@@ -217,13 +193,12 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 404 Not Found when user does not exist")
         void shouldReturnNotFoundForUser() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.empty());
 
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(), Optional.empty());
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
+            restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -233,7 +208,7 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 404 Not Found when level does not exist")
         void shouldReturnNotFoundForLevel() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.of(testUser));
             Mockito.when(levelService.updateLevelProperties(
                     Mockito.any(), Mockito.any(), Mockito.any()))
@@ -241,8 +216,7 @@ class LevelControllerTests {
 
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(), Optional.empty());
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
+            restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -252,7 +226,7 @@ class LevelControllerTests {
         @Test
         @DisplayName("should return 403 Forbidden when user is not the owner")
         void shouldReturnForbidden() {
-            Mockito.when(userService.getById(USER_ID))
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.of(testUser));
             Mockito.when(levelService.updateLevelProperties(
                     Mockito.any(), Mockito.any(), Mockito.any()))
@@ -260,8 +234,7 @@ class LevelControllerTests {
 
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(), Optional.empty());
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
+            restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID)
                     .body(dto)
                     .exchange()
                     .expectStatus().isForbidden();
@@ -278,10 +251,9 @@ class LevelControllerTests {
         @DisplayName("should return 204 No Content")
         void shouldReturnNoContent() {
             Mockito.doNothing().when(levelService)
-                    .deleteLevel(USER_ID, LEVEL_ID);
+                    .deleteLevel(ControllerSecurityTestConfig.DEFAULT_USER_ID, LEVEL_ID);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.delete().uri("/levels/{id}", LEVEL_ID))
+            restTestClient.delete().uri("/levels/{id}", LEVEL_ID)
                     .exchange()
                     .expectStatus().isNoContent();
         }
@@ -291,10 +263,10 @@ class LevelControllerTests {
         @DisplayName("should return 404 Not Found when level does not exist")
         void shouldReturnNotFound() {
             Mockito.doThrow(new LevelNotFoundException())
-                    .when(levelService).deleteLevel(USER_ID, LEVEL_ID);
+                    .when(levelService).deleteLevel(
+                            ControllerSecurityTestConfig.DEFAULT_USER_ID, LEVEL_ID);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.delete().uri("/levels/{id}", LEVEL_ID))
+            restTestClient.delete().uri("/levels/{id}", LEVEL_ID)
                     .exchange()
                     .expectStatus().isNotFound();
         }
@@ -304,10 +276,10 @@ class LevelControllerTests {
         @DisplayName("should return 403 Forbidden when user is not the owner")
         void shouldReturnForbidden() {
             Mockito.doThrow(new ForbiddenUserException("Forbidden"))
-                    .when(levelService).deleteLevel(USER_ID, LEVEL_ID);
+                    .when(levelService).deleteLevel(
+                            ControllerSecurityTestConfig.DEFAULT_USER_ID, LEVEL_ID);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.delete().uri("/levels/{id}", LEVEL_ID))
+            restTestClient.delete().uri("/levels/{id}", LEVEL_ID)
                     .exchange()
                     .expectStatus().isForbidden();
         }

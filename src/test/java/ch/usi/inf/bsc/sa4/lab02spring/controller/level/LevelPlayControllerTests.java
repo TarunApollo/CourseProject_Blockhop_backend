@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
-import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -13,7 +12,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,7 +22,6 @@ import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTe
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -43,12 +40,6 @@ import java.util.Optional;
 @DisplayName("The Level Play Controller")
 @SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports"})
 class LevelPlayControllerTests {
-
-    /// The authenticated user ID used across tests.
-    private static final String USER_ID = "user-1";
-
-    /// The authenticated user's display name.
-    private static final String USER_NAME = "Test User";
 
     /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
@@ -70,10 +61,6 @@ class LevelPlayControllerTests {
     @MockitoBean
     private UserService userService;
 
-    /// Mocked decoder used by the resource-server security filter.
-    @MockitoBean
-    private JwtDecoder jwtDecoder;
-
     /// Client for performing REST calls.
     @Autowired
     private RestTestClient restTestClient;
@@ -84,13 +71,8 @@ class LevelPlayControllerTests {
     /// Initializes static test data.
     @BeforeAll
     static void setupData() {
-        testUser = new User(USER_ID, USER_NAME);
-    }
-
-    /// Configures the mocked JWT decoder before each test.
-    @BeforeEach
-    void setupJwt() {
-        ControllerSecurityTestSupport.mockJwtDecoder(this.jwtDecoder, USER_ID, USER_NAME);
+        testUser = new User(ControllerSecurityTestConfig.DEFAULT_USER_ID,
+                ControllerSecurityTestConfig.DEFAULT_USER_NAME);
     }
 
     /// Tests for POST /levels/{levelId}/submit.
@@ -104,11 +86,10 @@ class LevelPlayControllerTests {
         void testSubmitAttemptSuccess() {
             Mockito.when(levelPlayService.handleLevelSubmission(
                     ArgumentMatchers.eq(LEVEL_ID),
-                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     ArgumentMatchers.any(AttemptDTO.class))).thenReturn("success");
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
+            restTestClient.post().uri(SUBMIT_URI, LEVEL_ID)
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isOk()
@@ -122,12 +103,11 @@ class LevelPlayControllerTests {
         void testSubmitAttemptUserNotFound() {
             Mockito.when(levelPlayService.handleLevelSubmission(
                     ArgumentMatchers.eq(LEVEL_ID),
-                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     ArgumentMatchers.any(AttemptDTO.class)))
                     .thenThrow(new UserNotFoundException());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
+            restTestClient.post().uri(SUBMIT_URI, LEVEL_ID)
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -139,12 +119,11 @@ class LevelPlayControllerTests {
         void testSubmitAttemptLevelNotFound() {
             Mockito.when(levelPlayService.handleLevelSubmission(
                     ArgumentMatchers.eq(LEVEL_ID),
-                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     ArgumentMatchers.any(AttemptDTO.class)))
                     .thenThrow(new LevelNotFoundException());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
+            restTestClient.post().uri(SUBMIT_URI, LEVEL_ID)
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -156,12 +135,11 @@ class LevelPlayControllerTests {
         void testSubmitAttemptForbiddenLevelAction() {
             Mockito.when(levelPlayService.handleLevelSubmission(
                     ArgumentMatchers.eq(LEVEL_ID),
-                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     ArgumentMatchers.any(AttemptDTO.class)))
                     .thenThrow(new ForbiddenLevelActionException(""));
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
+            restTestClient.post().uri(SUBMIT_URI, LEVEL_ID)
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isForbidden();
@@ -173,12 +151,11 @@ class LevelPlayControllerTests {
         void testSubmitAttemptForbiddenUser() {
             Mockito.when(levelPlayService.handleLevelSubmission(
                     ArgumentMatchers.eq(LEVEL_ID),
-                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID),
                     ArgumentMatchers.any(AttemptDTO.class)))
                     .thenThrow(new ForbiddenUserException(""));
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
+            restTestClient.post().uri(SUBMIT_URI, LEVEL_ID)
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isForbidden();
@@ -196,11 +173,11 @@ class LevelPlayControllerTests {
         @DisplayName("should return 200 OK and the playable map")
         void testGetMapSuccess() {
             final Map<String, Object> expectedMap = Map.of("key", "value");
-            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                    .thenReturn(Optional.of(testUser));
             Mockito.when(levelPlayService.getPlayableMap(testUser, LEVEL_ID)).thenReturn(expectedMap);
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID))
+            restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<Map<String, Object>>() {})
@@ -211,10 +188,10 @@ class LevelPlayControllerTests {
         @Test
         @DisplayName("should return 404 Not Found when the user does not exist")
         void testGetMapUserNotFound() {
-            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                    .thenReturn(Optional.empty());
 
-            ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID))
+            restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID)
                     .exchange()
                     .expectStatus().isNotFound();
         }

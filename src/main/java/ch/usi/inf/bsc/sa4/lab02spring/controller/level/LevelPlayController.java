@@ -4,7 +4,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPlayService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -14,7 +14,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,7 +56,7 @@ public class LevelPlayController {
     ///               is unpublished and owned by the authenticated user and the
     ///               attempt is successful, marks the level as publish eligible;
     ///               records the attempt through the attempt service.
-    /// @param authentication abstract token for authentication
+    /// @param user           the authenticated OAuth2 user
     /// @param levelId        the id of the level to submit an attempt for
     /// @param dto            the DTO containing the attempt details
     /// @return a 200 OK response containing the result of the attempt
@@ -67,10 +68,10 @@ public class LevelPlayController {
     ///         owner of the level when marking it as publish eligible
     @PostMapping("/{levelId}/submit")
     public ResponseEntity<String> submitAttempt(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User user,
             @PathVariable final String levelId,
             @RequestBody final AttemptDTO dto) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
         return ResponseEntity.ok(this.levelPlayService.handleLevelSubmission(levelId, userId, dto));
     }
 
@@ -80,15 +81,15 @@ public class LevelPlayController {
     /// @spec.effects resolves the authenticated user and delegates to the level
     ///               play service to validate access and export the requested
     ///               level as a frontend-consumable map structure.
-    /// @param authentication abstract token for authentication
+    /// @param user the authenticated OAuth2 user
     /// @param levelId        the id of the level to load for play
     /// @return a 200 OK response containing a Tiled/Phaser-compatible map payload
     /// @throws UserNotFoundException if the authenticated user does not exist
     @GetMapping("/play/{levelId}/map")
     public ResponseEntity<Map<String, Object>> getMap(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User oauth2User,
             @PathVariable final String levelId) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return ResponseEntity.ok(this.levelPlayService.getPlayableMap(user, levelId));
     }
