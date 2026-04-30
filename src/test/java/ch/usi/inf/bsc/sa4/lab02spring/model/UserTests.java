@@ -8,28 +8,33 @@ import org.junit.jupiter.api.Test;
 @DisplayName("The User Model")
 class UserTests {
 
-    /// Verifies reflexivity.
+    /// Verifies reflexivity (covers this == objectToCompare).
     @Test
     @DisplayName("equals is reflexive")
     void testReflexive() {
         final User user = new User("u1", "N");
-        Assertions.assertEquals(user, user);
+        // Use assertTrue to explicitly check the boolean result and exercise the branch
+        Assertions.assertTrue(user.equals(user), "User should be equal to itself");
     }
 
-    /// Verifies null handling.
+    /// Verifies null handling (covers objectToCompare != null).
     @Test
     @DisplayName("equals returns false for null")
+    @SuppressWarnings("NullAway")
     void testNull() {
         final User user = new User("u1", "N");
-        Assertions.assertNotEquals(null, user);
+        final Object nullReference = null;
+        // Exercise the null branch while satisfying/bypassing static analysis
+        Assertions.assertFalse(user.equals(nullReference), "User should not be equal to null");
     }
 
-    /// Verifies different types.
+    /// Verifies different types (covers getClass() == objectToCompare.getClass()).
     @Test
     @DisplayName("equals returns false for different types")
     void testType() {
         final User user = new User("u1", "N");
-        Assertions.assertNotEquals("string", user);
+        // Use assertFalse to exercise the class-comparison branch
+        Assertions.assertFalse(user.equals("not a user"), "User should not be equal to a String");
     }
 
     /// Verifies identical objects.
