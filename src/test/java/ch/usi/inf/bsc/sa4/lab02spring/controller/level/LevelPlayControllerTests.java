@@ -53,6 +53,9 @@ class LevelPlayControllerTests {
     /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
+     /// URI template for the submit endpoint.
+    private static final String SUBMIT_URI = "/levels/{levelId}/submit";
+
     /// A fixed attempt payload used across submit tests.
     private static final AttemptDTO ATTEMPT_DTO = new AttemptDTO(
             Map.of(), new Position(0, 0),
@@ -105,7 +108,7 @@ class LevelPlayControllerTests {
                     ArgumentMatchers.any(AttemptDTO.class))).thenReturn("success");
 
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isOk()
@@ -124,7 +127,7 @@ class LevelPlayControllerTests {
                     .thenThrow(new UserNotFoundException());
 
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -141,7 +144,7 @@ class LevelPlayControllerTests {
                     .thenThrow(new LevelNotFoundException());
 
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -158,7 +161,7 @@ class LevelPlayControllerTests {
                     .thenThrow(new ForbiddenLevelActionException(""));
 
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isForbidden();
@@ -175,7 +178,7 @@ class LevelPlayControllerTests {
                     .thenThrow(new ForbiddenUserException(""));
 
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.post().uri(SUBMIT_URI, LEVEL_ID))
                     .body(ATTEMPT_DTO)
                     .exchange()
                     .expectStatus().isForbidden();
