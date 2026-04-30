@@ -36,7 +36,7 @@ import java.util.Optional;
 @WebMvcTest(controllers = LevelController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
+@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", })
 @DisplayName("The Level Controller")
 class LevelControllerTests {
 

@@ -40,7 +40,7 @@ import java.util.List;
 @WebMvcTest(controllers = EditorController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
 @DisplayName("The Editor Controller")
 class EditorControllerTests {
 
