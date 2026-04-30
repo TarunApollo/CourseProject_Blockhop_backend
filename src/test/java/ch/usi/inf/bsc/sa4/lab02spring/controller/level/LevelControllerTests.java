@@ -37,7 +37,7 @@ import java.util.Optional;
 @WebMvcTest(controllers = LevelController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+@SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports"})
 @DisplayName("The Level Controller")
 class LevelControllerTests {
 
@@ -49,6 +49,9 @@ class LevelControllerTests {
 
     /// A fake level ID used across tests.
     private static final String LEVEL_ID = "level-1";
+
+    /// URI template for the level properties endpoint.
+    private static final String PROPERTIES_URI = "/levels/{id}/properties";
 
     /// Mocked service for core level operations.
     @MockitoBean
@@ -212,7 +215,7 @@ class LevelControllerTests {
                     Optional.of(new ClearCondition(
                             new Condition.NoClearCondition(), 0)));
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isOk()
@@ -234,7 +237,7 @@ class LevelControllerTests {
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(), Optional.empty());
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -253,7 +256,7 @@ class LevelControllerTests {
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(), Optional.empty());
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isNotFound();
@@ -272,7 +275,7 @@ class LevelControllerTests {
             final UpdateLevelDTO dto = new UpdateLevelDTO(
                     Optional.of("U"), Optional.empty(), Optional.empty());
             ControllerSecurityTestSupport
-                    .withAuthAndCsrf(restTestClient.put().uri("/levels/{id}/properties", LEVEL_ID))
+                    .withAuthAndCsrf(restTestClient.put().uri(PROPERTIES_URI, LEVEL_ID))
                     .body(dto)
                     .exchange()
                     .expectStatus().isForbidden();
