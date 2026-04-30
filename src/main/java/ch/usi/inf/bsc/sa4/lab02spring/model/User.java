@@ -42,11 +42,16 @@ public class User {
     ///
     @Override
     public boolean equals(final Object objectToCompare) {
-        if (this == objectToCompare) {
-            return true;
-        }
-        final User user = (User) objectToCompare;
-        return Objects.equals(id, user.id) && Objects.equals(name, user.name);
+        return this == objectToCompare || (objectToCompare != null
+                && getClass() == objectToCompare.getClass()
+                && Objects.equals(id, ((User) objectToCompare).id)
+                && Objects.equals(name, ((User) objectToCompare).name));
     }
 
+    /// @return the hash code of this [User].
+    ///
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
 }
