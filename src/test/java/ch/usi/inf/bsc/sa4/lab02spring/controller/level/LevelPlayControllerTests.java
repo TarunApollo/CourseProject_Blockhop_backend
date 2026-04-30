@@ -41,7 +41,7 @@ import java.util.Optional;
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("The Level Play Controller")
-@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+@SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports"})
 class LevelPlayControllerTests {
 
     /// The authenticated user ID used across tests.
