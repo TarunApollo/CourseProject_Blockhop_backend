@@ -23,11 +23,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,10 +43,10 @@ import static org.mockito.Mockito.when;
 
 /// Unit tests for the level CRUD service.
 /// Verifies create, clone, update, delete, and listing semantics.
-@DisplayName("LevelService")
-@ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports", "PMD.ExcessiveImports"})
-class LevelServiceTest {
+@SpringBootTest
+@DisplayName("The Level Service")
+// @SuppressWarnings({"NullAway", "PMD.TooManyStaticImports", "PMD.ExcessiveImports"})
+class LevelServiceTests {
 
     /// Identifier of the level under test.
     private static final String LEVEL_ID = "level-1";
@@ -74,15 +73,19 @@ class LevelServiceTest {
     /// New level description used by update tests.
     private static final String NEW_DESC = "new-desc";
 
-    /// Mocked level repository providing per-test fixtures.
-    @Mock private LevelRepository levelRepository;
-    /// Mocked attempt repository for play and completion counts.
-    @Mock private AttemptRepository attemptRepository;
-    /// Mocked user service for resolving the level creator.
-    @Mock private UserService userService;
+    /// Service under test.
+    @Autowired
+    private LevelService service;
 
-    /// Service under test, with mocks injected.
-    @InjectMocks private LevelService service;
+    /// Mocked level repository providing per-test fixtures.
+    @MockitoBean
+    private LevelRepository levelRepository;
+    /// Mocked attempt repository for play and completion counts.
+    @MockitoBean
+    private AttemptRepository attemptRepository;
+    /// Mocked user service for resolving the level creator.
+    @MockitoBean
+    private UserService userService;
 
     /// Shared owner user fixture.
     private User owner;
