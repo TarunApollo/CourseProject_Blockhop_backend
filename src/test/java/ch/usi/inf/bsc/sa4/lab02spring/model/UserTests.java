@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [User] model value-based equality.
 @DisplayName("The User Model")
+@SuppressWarnings("NullAway")
 class UserTests {
 
     /// Verifies reflexivity (covers this == objectToCompare).
@@ -20,7 +21,6 @@ class UserTests {
     /// Verifies null handling (covers objectToCompare != null).
     @Test
     @DisplayName("equals returns false for null")
-    @SuppressWarnings("NullAway")
     void testNull() {
         final User user = new User("u1", "N");
         final Object nullReference = null;
