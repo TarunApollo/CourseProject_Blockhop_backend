@@ -1,26 +1,30 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
+import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
+import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestSupport;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPlayService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
-import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
-import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -30,91 +34,184 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
 
-///
- /// Black-box tests for LevelPlayController.
- /// Verifies endpoints for playable map retrieval and attempt submission.
- ///
-@WebMvcTest(controllers = LevelPlayController.class, excludeAutoConfiguration = {
-        SecurityAutoConfiguration.class,
-        OAuth2ClientAutoConfiguration.class,
-        OAuth2ResourceServerAutoConfiguration.class
-})
+/// Black-box tests for [LevelPlayController] endpoints.
+/// Verifies playable map retrieval and attempt submission via the real security filter chain.
+@WebMvcTest(controllers = LevelPlayController.class)
 @AutoConfigureRestTestClient
-@DisplayName("Level Play Controller Logic Tests")
+@Import(ControllerSecurityTestConfig.class)
+@DisplayName("The Level Play Controller")
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 class LevelPlayControllerTests {
 
     /// The authenticated user ID used across tests.
-    private static final String USER_ID = "userid1";
+    private static final String USER_ID = "user-1";
+
+    /// The authenticated user's display name.
+    private static final String USER_NAME = "Test User";
 
     /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
-    /// A fixed timestamp used for attempt tests.
-    private static final ZonedDateTime FIXED_TIMESTAMP =
-            ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    /// A fixed attempt payload used across submit tests.
+    private static final AttemptDTO ATTEMPT_DTO = new AttemptDTO(
+            Map.of(), new Position(0, 0),
+            ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
+            Duration.ofSeconds(30), false);
 
-    /// A fixed duration used for attempt tests.
-    private static final Duration FIXED_DURATION = Duration.ofSeconds(30);
-
-    /// The mocked play service.
+    /// Mocked play service.
     @MockitoBean
     private LevelPlayService levelPlayService;
 
-    /// The mocked user service.
+    /// Mocked user service.
     @MockitoBean
     private UserService userService;
 
-    /// The RestTestClient for performing requests.
+    /// Mocked decoder used by the resource-server security filter.
+    @MockitoBean
+    private JwtDecoder jwtDecoder;
+
+    /// Client for performing REST calls.
     @Autowired
     private RestTestClient restTestClient;
 
     /// Shared test user instance.
     private static User testUser;
 
-    /// Initializes static test data. ///
+    /// Initializes static test data.
     @BeforeAll
     static void setupData() {
-        testUser = new User(USER_ID, "Test User");
+        testUser = new User(USER_ID, USER_NAME);
     }
 
-    /// Verifies that submitting an attempt returns 200 OK. ///
-    @Test
-    @DisplayName("POST /levels/{id}/submit should return 200 OK")
-    void testSubmitAttempt() {
-        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
-            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
+    /// Configures the mocked JWT decoder before each test.
+    @BeforeEach
+    void setupJwt() {
+        ControllerSecurityTestSupport.mockJwtDecoder(this.jwtDecoder, USER_ID, USER_NAME);
+    }
 
-            final AttemptDTO dto = new AttemptDTO(Map.of(), new Position(0, 0), 
-                    FIXED_TIMESTAMP, FIXED_DURATION, true);
-            
-            Mockito.when(levelPlayService.handleLevelSubmission(LEVEL_ID, USER_ID, dto))
-                    .thenReturn("success");
+    /// Tests for POST /levels/{levelId}/submit.
+    @Nested
+    @DisplayName("POST /levels/{levelId}/submit")
+    class SubmitAttempt {
 
-            final HttpStatusCode status = restTestClient.post()
-                    .uri("/levels/{levelId}/submit", LEVEL_ID)
-                    .body(dto)
+        /// Verifies that a valid attempt submission returns 200 OK with the result.
+        @Test
+        @DisplayName("should return 200 OK when the attempt is valid")
+        void testSubmitAttemptSuccess() {
+            Mockito.when(levelPlayService.handleLevelSubmission(
+                    ArgumentMatchers.eq(LEVEL_ID),
+                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.any(AttemptDTO.class))).thenReturn("success");
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .body(ATTEMPT_DTO)
                     .exchange()
-                    .returnResult(String.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.OK, status);
+                    .expectStatus().isOk()
+                    .expectBody(String.class)
+                    .isEqualTo("success");
+        }
+
+        /// Verifies that 404 is returned when the authenticated user does not exist.
+        @Test
+        @DisplayName("should return 404 Not Found when the user does not exist")
+        void testSubmitAttemptUserNotFound() {
+            Mockito.when(levelPlayService.handleLevelSubmission(
+                    ArgumentMatchers.eq(LEVEL_ID),
+                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.any(AttemptDTO.class)))
+                    .thenThrow(new UserNotFoundException());
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .body(ATTEMPT_DTO)
+                    .exchange()
+                    .expectStatus().isNotFound();
+        }
+
+        /// Verifies that 404 is returned when the requested level does not exist.
+        @Test
+        @DisplayName("should return 404 Not Found when the level does not exist")
+        void testSubmitAttemptLevelNotFound() {
+            Mockito.when(levelPlayService.handleLevelSubmission(
+                    ArgumentMatchers.eq(LEVEL_ID),
+                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.any(AttemptDTO.class)))
+                    .thenThrow(new LevelNotFoundException());
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .body(ATTEMPT_DTO)
+                    .exchange()
+                    .expectStatus().isNotFound();
+        }
+
+        /// Verifies that 403 is returned when the user attempts a forbidden level action.
+        @Test
+        @DisplayName("should return 403 Forbidden when the level action is not permitted")
+        void testSubmitAttemptForbiddenLevelAction() {
+            Mockito.when(levelPlayService.handleLevelSubmission(
+                    ArgumentMatchers.eq(LEVEL_ID),
+                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.any(AttemptDTO.class)))
+                    .thenThrow(new ForbiddenLevelActionException(""));
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .body(ATTEMPT_DTO)
+                    .exchange()
+                    .expectStatus().isForbidden();
+        }
+
+        /// Verifies that 403 is returned when the user is not authorized for the action.
+        @Test
+        @DisplayName("should return 403 Forbidden when the user is not authorized")
+        void testSubmitAttemptForbiddenUser() {
+            Mockito.when(levelPlayService.handleLevelSubmission(
+                    ArgumentMatchers.eq(LEVEL_ID),
+                    ArgumentMatchers.eq(USER_ID),
+                    ArgumentMatchers.any(AttemptDTO.class)))
+                    .thenThrow(new ForbiddenUserException(""));
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.post().uri("/levels/{levelId}/submit", LEVEL_ID))
+                    .body(ATTEMPT_DTO)
+                    .exchange()
+                    .expectStatus().isForbidden();
         }
     }
 
-    /// Verifies that getting a playable map returns 200 OK. ///
-    @Test
-    @DisplayName("GET /levels/play/{id}/map should return 200 OK")
-    void testGetMap() {
-        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
-            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
-            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
-            Mockito.when(levelPlayService.getPlayableMap(testUser, LEVEL_ID)).thenReturn(Map.of());
+    /// Tests for GET /levels/play/{levelId}/map.
+    @Nested
+    @DisplayName("GET /levels/play/{levelId}/map")
+    class GetMap {
 
-            final HttpStatusCode status = restTestClient.get()
-                    .uri("/levels/play/{levelId}/map", LEVEL_ID)
+        /// Verifies that 200 OK and the playable map are returned for a valid user and level.
+        @Test
+        @DisplayName("should return 200 OK and the playable map")
+        void testGetMapSuccess() {
+            final Map<String, Object> expectedMap = Map.of("key", "value");
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelPlayService.getPlayableMap(testUser, LEVEL_ID)).thenReturn(expectedMap);
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID))
                     .exchange()
-                    .returnResult(Object.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.OK, status);
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .isEqualTo(expectedMap);
+        }
+
+        /// Verifies that 404 is returned when the authenticated user does not exist.
+        @Test
+        @DisplayName("should return 404 Not Found when the user does not exist")
+        void testGetMapUserNotFound() {
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
+
+            ControllerSecurityTestSupport
+                    .withAuthAndCsrf(restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID))
+                    .exchange()
+                    .expectStatus().isNotFound();
         }
     }
 }
