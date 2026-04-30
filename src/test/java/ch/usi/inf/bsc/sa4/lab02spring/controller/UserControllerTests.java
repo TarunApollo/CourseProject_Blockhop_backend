@@ -109,6 +109,54 @@ class UserControllerTests {
         }
     }
 
+    /// Tests for GET /users/{id}.
+    @Nested
+    @DisplayName("GET /users/{id}")
+    class GetUser {
+
+        /// Verifies that a single user is returned when ID exists.
+        @Test
+        @DisplayName("should return 200 OK and user when ID exists")
+        void returnsUser() {
+            final UserDTO expected = new UserDTO(user1);
+
+            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/users/{id}", USER_ID))
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(UserDTO.class)
+                    .isEqualTo(expected);
+        }
+
+        /// Verifies that 404 is returned when user ID does not exist.
+        @Test
+        @DisplayName("should return 404 Not Found when ID does not exist")
+        void returnsNotFound() {
+            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/users/{id}", "nonexistent"))
+                    .exchange()
+                    .expectStatus().isNotFound();
+        }
+    }
+
+    /// Tests for GET /users/search.
+    @Nested
+    @DisplayName("GET /users/search")
+    class SearchUsers {
+
+        /// Verifies that searching users returns the matching list.
+        @Test
+        @DisplayName("should return 200 OK and matching users")
+        void returnsMatchingUsers() {
+            Mockito.when(userService.searchUsers("Alan")).thenReturn(List.of(user1));
+            final List<UserDTO> expected = List.of(new UserDTO(user1));
+
+            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/users/search?query=Alan"))
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<UserDTO>>() {})
+                    .isEqualTo(expected);
+        }
+    }
+
     /// Tests for GET /users/profile.
     @Nested
     @DisplayName("GET /users/profile")
@@ -131,6 +179,18 @@ class UserControllerTests {
                     .expectStatus().isOk()
                     .expectBody(UserProfileDTO.class)
                     .isEqualTo(expectedProfile);
+        }
+
+        /// Verifies that 404 is returned if the authenticated user's profile is not found.
+        @Test
+        @DisplayName("should return 404 Not Found if profile user does not exist")
+        void returnsNotFound() {
+            // Change identity to non-existent user
+            ControllerSecurityTestSupport.mockJwtDecoder(jwtDecoder, "missing", "Missing");
+
+            ControllerSecurityTestSupport.withAuthAndCsrf(restTestClient.get().uri("/users/profile"))
+                    .exchange()
+                    .expectStatus().isNotFound();
         }
     }
 

@@ -24,6 +24,7 @@ import java.util.Objects;
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("The Csrf Controller")
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 class CsrfControllerTests {
 
     /// The fake authenticated user ID.
