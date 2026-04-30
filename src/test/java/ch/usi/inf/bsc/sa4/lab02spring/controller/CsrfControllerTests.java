@@ -23,7 +23,6 @@ import java.util.Objects;
 @WebMvcTest(controllers = CsrfController.class)
 @AutoConfigureRestTestClient
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @DisplayName("The Csrf Controller")
 class CsrfControllerTests {
 
