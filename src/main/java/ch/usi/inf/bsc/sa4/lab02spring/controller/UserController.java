@@ -83,8 +83,8 @@ public class UserController {
     }
 
     /// Returns the profile information for the authenticated user.
-    /// @spec.requires user is not null.
-    /// @param user the authenticated OAuth2 user
+    /// @spec.requires oauth2User is not null.
+    /// @param oauth2User the authenticated OAuth2 user
     /// @return a 200 OK response containing the user's profile information
     ///         (name, played levels count, completed levels count, and list of created levels),
     ///         or a 404 Not Found response if the user does not exist
@@ -102,7 +102,7 @@ public class UserController {
 
     /// Authenticates a user using SwitchEduId Login.
     ///
-    /// @param user the authenticated OAuth2 user
+    /// @param oauth2User the authenticated OAuth2 user
     /// @return a 200 OK with the newly created user dto, 
     // otherwise return the existing user dto information
     

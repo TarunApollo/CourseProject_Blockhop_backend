@@ -81,7 +81,7 @@ public class LevelPlayController {
     /// @spec.effects resolves the authenticated user and delegates to the level
     ///               play service to validate access and export the requested
     ///               level as a frontend-consumable map structure.
-    /// @param user the authenticated OAuth2 user
+    /// @param oauth2User the authenticated OAuth2 user
     /// @param levelId        the id of the level to load for play
     /// @return a 200 OK response containing a Tiled/Phaser-compatible map payload
     /// @throws UserNotFoundException if the authenticated user does not exist

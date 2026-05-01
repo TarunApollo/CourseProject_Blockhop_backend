@@ -74,7 +74,7 @@ public class LevelController {
     /// @spec.requires authentication and cloneLevelDTO are not null.
     /// @spec.effects saves a clone of the level to the repository with the user as
     ///               the new creator.
-    /// @param user the authenticated OAuth2 user
+    /// @param oauth2User the authenticated OAuth2 user
     /// @param cloneLevelDTO  the DTO containing the id of the level to clone
     /// @return a 200 OK response containing the cloned level as a LevelDTO, or a 403
     ///         Forbidden response if the level does not exist or does not belong to
@@ -99,7 +99,7 @@ public class LevelController {
     /// @spec.modifies the level identified by levelId in the repository.
     /// @spec.effects updates the title, description, and/or clear condition of the
     ///               level
-    /// @param user the authenticated OAuth2 user
+    /// @param oauth2User the authenticated OAuth2 user
     /// @param levelId        the id of the level to update
     /// @param dto            the DTO containing the optional new values
     /// @return a 200 OK response containing the updated level
@@ -119,7 +119,7 @@ public class LevelController {
 
     /// Deletes a level owned by the authenticated user.
     /// 
-    /// @param user the authenticated OAuth2 user
+    /// @param oauth2User the authenticated OAuth2 user
     /// @param levelId        the ID of the level to delete
     /// @return 204 No Content when the level is deleted successfully
     /// @throws LevelNotFoundException if the level does not exist
