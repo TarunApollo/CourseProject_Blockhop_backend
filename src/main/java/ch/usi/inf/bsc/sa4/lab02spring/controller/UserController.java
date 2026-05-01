@@ -18,7 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /// The controller for users.
 ///
@@ -75,7 +79,7 @@ public class UserController {
     /// Searches for users whose name matches the given query string.
     /// @spec.requires partialName is not null.
     /// @param partialName the string to search for in user names
-    ///                    (request parameter "query")
+    ///        (request parameter "query")
     /// @return a list of matching users as UserDTOs
     @GetMapping("/search")
     public List<UserDTO> searchUsers(@RequestParam("query") final String partialName) {
@@ -103,9 +107,9 @@ public class UserController {
     /// Authenticates a user using SwitchEduId Login.
     ///
     /// @param oauth2User the authenticated OAuth2 user
-    /// @return a 200 OK with the newly created user dto, 
-    // otherwise return the existing user dto information
-    
+    /// @return a 200 OK with the newly created user dto,
+    ///         or the existing user dto information if the user
+    ///         already exists
     @GetMapping(path = "/me")
     public ResponseEntity<UserDTO> index(
             @AuthenticationPrincipal final OAuth2User oauth2User) {

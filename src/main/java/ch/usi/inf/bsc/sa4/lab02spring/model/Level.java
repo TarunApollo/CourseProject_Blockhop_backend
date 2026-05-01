@@ -52,7 +52,7 @@ public class Level {
 
     /// Indicates whether this level currently satisfies the conditions
     /// for publishing.
-    private boolean publishEligible = false;
+    private boolean publishEligible;
 
     /// The clear condition required to complete this level.
     private ClearCondition clearCondition;

@@ -45,7 +45,7 @@ public class SecurityConfiguration {
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
-                        // TODO: I'm too lazy to check if CSRF is only fetched after login. If so remove the next line.
+                        // Allow unauthenticated CSRF token retrieval for frontend setup.
                         .requestMatchers("/csrf").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(auth ->
