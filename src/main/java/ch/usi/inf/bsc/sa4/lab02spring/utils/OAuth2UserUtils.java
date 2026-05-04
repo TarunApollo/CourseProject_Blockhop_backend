@@ -17,6 +17,10 @@ public final class OAuth2UserUtils {
     /// @return the attribute value
     /// @throws ResponseStatusException if the attribute is missing
     public static String getRequiredAttribute(final OAuth2User user, final String attribute) {
+        // Return unauthorized if no authentication is provided.
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
         final String value = user.getAttribute(attribute);
         if (value == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
