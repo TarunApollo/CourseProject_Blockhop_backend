@@ -8,8 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,8 +20,8 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  /// Black-box tests for LevelPublishController.
  /// Verifies endpoints for publishing and unpublishing levels.
  ///
-@WebMvcTest(controllers = LevelPublishController.class)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("Level Publish Controller Logic Tests")
 class LevelPublishControllerTests {

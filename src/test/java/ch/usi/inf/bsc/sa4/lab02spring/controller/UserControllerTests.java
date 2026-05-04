@@ -9,19 +9,18 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.Collections;
@@ -30,8 +29,8 @@ import java.util.Optional;
 
 /// Black-box tests for [UserController] endpoints. Verifies user retrieval,
 /// profile aggregation, and identity resolution via security filters.
-@WebMvcTest(controllers = UserController.class)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @DisplayName("The User Controller")
@@ -150,12 +149,13 @@ class UserControllerTests {
                     .isEqualTo(expectedProfile);
         }
 
+        @Disabled("AM: This test does not actually check what corresponds to its description.")
         @Test
         @DisplayName("should return 404 Not Found if profile user does not exist")
         void returnsNotFound() {
             restTestClient.get().uri("/users/profile")
-                    .header(ControllerSecurityTestConfig.USER_ID_HEADER, "missing")
-                    .header(ControllerSecurityTestConfig.USER_NAME_HEADER, "Missing")
+//                    .header(ControllerSecurityTestConfig.USER_ID_HEADER, "missing")
+//                    .header(ControllerSecurityTestConfig.USER_NAME_HEADER, "Missing")
                     .exchange()
                     .expectStatus().isNotFound();
         }
@@ -177,6 +177,7 @@ class UserControllerTests {
                     .isEqualTo(expectedUserDTO);
         }
 
+        @Disabled("AM: There is actually no API to create new users, so this is not testing properly anything. Please remove.")
         @Test
         @DisplayName("should return 200 OK and create user when not exists")
         void createsAndReturnsNewMe() {
@@ -190,8 +191,8 @@ class UserControllerTests {
             final UserDTO expectedUserDTO = new UserDTO(newUser);
 
             restTestClient.get().uri("/users/me")
-                    .header(ControllerSecurityTestConfig.USER_ID_HEADER, newUserId)
-                    .header(ControllerSecurityTestConfig.USER_NAME_HEADER, newUserName)
+//                    .header(ControllerSecurityTestConfig.USER_ID_HEADER, newUserId)
+//                    .header(ControllerSecurityTestConfig.USER_NAME_HEADER, newUserName)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)

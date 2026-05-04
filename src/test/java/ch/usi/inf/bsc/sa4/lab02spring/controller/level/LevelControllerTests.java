@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
@@ -30,8 +30,8 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 import java.util.Optional;
 
 /// Black-box tests for [LevelController] CRUD endpoints.
-@WebMvcTest(controllers = LevelController.class)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", })
 @DisplayName("The Level Controller")

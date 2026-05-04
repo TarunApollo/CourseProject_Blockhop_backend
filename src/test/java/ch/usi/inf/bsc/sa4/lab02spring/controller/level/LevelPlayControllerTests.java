@@ -18,8 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -34,8 +34,8 @@ import java.util.Optional;
 /// Black-box tests for [LevelPlayController] endpoints.
 /// Verifies playable map retrieval
 /// and attempt submission via the real security filter chain.
-@WebMvcTest(controllers = LevelPlayController.class)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("The Level Play Controller")
 @SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports"})

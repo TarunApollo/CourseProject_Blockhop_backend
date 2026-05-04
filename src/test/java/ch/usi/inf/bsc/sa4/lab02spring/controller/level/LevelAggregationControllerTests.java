@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,8 +26,8 @@ import java.util.List;
 
 /// Black-box tests for [LevelAggregationController] endpoints.
 /// Verifies the retrieval and sorting of published level summaries.
-@WebMvcTest(controllers = LevelAggregationController.class)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 @DisplayName("The Level Aggregation Controller")
@@ -37,7 +37,6 @@ class LevelAggregationControllerTests {
     @MockitoBean
     private LevelAggregationService levelAggregationService;
 
-    /// Client used to perform REST calls.
     @Autowired
     private RestTestClient restTestClient;
 

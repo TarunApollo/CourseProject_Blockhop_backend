@@ -13,6 +13,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -25,17 +26,23 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.List;
 
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockOAuth2Login;
+
 /// Black-box tests for [EditorController]. Tests HTTP contract: status codes,
 /// response bodies, and content types.
-@WebMvcTest(controllers = EditorController.class)
-@AutoConfigureRestTestClient
+@SpringBootTest
+@AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings({ "PMD.ExcessiveImports", "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
 @DisplayName("The Editor Controller")
@@ -51,7 +58,6 @@ class EditorControllerTests {
     @MockitoBean
     private EditorService editorService;
 
-    /// The RestTestClient for performing requests.
     @Autowired
     private RestTestClient restTestClient;
 
@@ -162,7 +168,8 @@ class EditorControllerTests {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(
                     List.of(EditorLevelDTO.create(new Position(1, 1), 42)));
 
-            restTestClient.put()
+            restTestClient
+                    .put()
                     .uri("/editor/{levelId}/object-layer", LEVEL_ID)
                     .body(dto)
                     .exchange()
