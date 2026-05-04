@@ -38,7 +38,7 @@ import java.util.Optional;
 /// Verifies create, clone, update, delete, and listing semantics.
 @SpringBootTest
 @DisplayName("The Level Service")
-// @SuppressWarnings({"NullAway", "PMD.TooManyStaticImports", "PMD.ExcessiveImports"})
+// @SuppressWarnings({"NullAway", "PMD.ExcessiveImports"})
 class LevelServiceTests {
 
     /// Identifier of the level under test.
@@ -137,9 +137,10 @@ class LevelServiceTests {
         @Test
         @DisplayName("the created level has the title from the DTO")
         void createdLevelHasTitle() {
+            final Level expectedLevel = new Level(SAMPLE_TITLE, SAMPLE_DESC, owner);
+
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(ArgumentMatchers.refEq(expectedLevel))).thenReturn(expectedLevel);
 
             final Level result =
                 service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
@@ -151,9 +152,10 @@ class LevelServiceTests {
         @Test
         @DisplayName("the created level has the description from the DTO")
         void createdLevelHasDescription() {
+            final Level expectedLevel = new Level(SAMPLE_TITLE, SAMPLE_DESC, owner);
+
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(ArgumentMatchers.refEq(expectedLevel))).thenReturn(expectedLevel);
 
             final Level result =
                 service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
@@ -165,9 +167,10 @@ class LevelServiceTests {
         @Test
         @DisplayName("the created level is owned by the resolved user")
         void createdLevelHasOwner() {
+            final Level expectedLevel = new Level(SAMPLE_TITLE, SAMPLE_DESC, owner);
+
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(ArgumentMatchers.refEq(expectedLevel))).thenReturn(expectedLevel);
 
             final Level result =
                 service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
@@ -179,14 +182,16 @@ class LevelServiceTests {
         @Test
         @DisplayName("persists the new level via the repository")
         void createdLevelIsPersisted() {
+            final Level expectedLevel = new Level(SAMPLE_TITLE, SAMPLE_DESC, owner);
+
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.any(Level.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
 
             final Level result =
-                service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
+                    service.createLevel(new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC), OWNER_ID);
 
-            Mockito.verify(levelRepository).save(result);
+            Mockito.verify(levelRepository).save(Mockito.refEq(expectedLevel));
         }
     }
 
@@ -254,8 +259,10 @@ class LevelServiceTests {
             final Level source = newLevel("Adventure", owner);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.argThat(savedLevel ->
+                    "Adventure (2)".equals(savedLevel.getTitle())
+                            && owner.equals(savedLevel.getCreator())
+            ))).thenAnswer(inv -> inv.getArgument(0));
 
             final Optional<Level> result =
                 service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
@@ -272,13 +279,15 @@ class LevelServiceTests {
             final Level clone3 = newLevel("Quest (3)", owner);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source, clone2, clone3));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.argThat(savedLevel ->
+                    "Quest (4)".equals(savedLevel.getTitle())
+                            && owner.equals(savedLevel.getCreator())
+            ))).thenAnswer(inv -> inv.getArgument(0));
 
             final Optional<Level> result =
                 service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertEquals("Quest (4)", result.get().getTitle());
+            Assertions.assertEquals("Quest (4)", result.orElseThrow().getTitle());
         }
 
         /// Cloning a level that already has a (n) suffix should strip the suffix first.
@@ -288,14 +297,16 @@ class LevelServiceTests {
             final Level source = newLevel("Maze (5)", owner);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
-            Mockito.when(levelRepository.save(ArgumentMatchers.<Level>any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.argThat(savedLevel ->
+                    "Maze (2)".equals(savedLevel.getTitle())
+                            && owner.equals(savedLevel.getCreator())
+            ))).thenAnswer(inv -> inv.getArgument(0));
 
             final Optional<Level> result =
                 service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
             // "Maze (5)" → root "Maze" → next free is "Maze (2)"
-            Assertions.assertEquals("Maze (2)", result.get().getTitle());
+            Assertions.assertEquals("Maze (2)", result.orElseThrow().getTitle());
         }
     }
 
