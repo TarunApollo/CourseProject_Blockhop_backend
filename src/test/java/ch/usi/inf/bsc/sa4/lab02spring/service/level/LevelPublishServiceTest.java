@@ -24,14 +24,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.mockito.Mockito;
 
 /// Unit tests for the LevelPublishService.
 @SpringBootTest
 @DisplayName("The Level Publish Service")
-@SuppressWarnings({ "NullAway", "PMD.TooManyStaticImports" })
+//@SuppressWarnings({ "NullAway", "PMD.TooManyStaticImports" })
 class LevelPublishServiceTest {
 
     /// ID of the level used for testing.
@@ -111,25 +109,25 @@ class LevelPublishServiceTest {
         @Test
         @DisplayName("throws LevelNotFoundException and does not save when the level is missing")
         void levelNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
                     () -> service.publish(OWNER_ID, LEVEL_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
 
         /// A missing user throws UserNotFoundException and does not save.
         @Test
         @DisplayName("throws UserNotFoundException and does not save when the user is missing")
         void userNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            when(userRepository.findById(OWNER_ID)).thenReturn(Optional.empty());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(userRepository.findById(OWNER_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(UserNotFoundException.class,
                     () -> service.publish(OWNER_ID, LEVEL_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
 
         /// A user who is not the owner cannot publish the level.
@@ -137,13 +135,13 @@ class LevelPublishServiceTest {
         @DisplayName("throws ForbiddenUserException and does not save when a non-owner tries to publish")
         void nonOwnerCannotPublish() {
             publishableLevel.validatePublishEligible(OWNER_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
-            when(userRepository.findById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
+            Mockito.when(userRepository.findById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
 
             Assertions.assertThrows(ForbiddenUserException.class,
                     () -> service.publish(OTHER_USER_ID, LEVEL_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
 
         /// A level that is not eligible to be published is rejected.
@@ -151,13 +149,13 @@ class LevelPublishServiceTest {
         @DisplayName("throws ForbiddenLevelActionException and does not save when the level is not ready to publish")
         void notEligibleCannotPublish() {
             // Did NOT call validatePublishEligible
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
-            when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
+            Mockito.when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
 
             Assertions.assertThrows(ForbiddenLevelActionException.class,
                     () -> service.publish(OWNER_ID, LEVEL_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
 
         /// The owner can publish an eligible level.
@@ -165,13 +163,13 @@ class LevelPublishServiceTest {
         @DisplayName("marks the level as published and saves it")
         void ownerPublishesEligibleLevel() {
             publishableLevel.validatePublishEligible(OWNER_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
-            when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
+            Mockito.when(userRepository.findById(OWNER_ID)).thenReturn(Optional.of(owner));
 
             service.publish(OWNER_ID, LEVEL_ID);
 
             Assertions.assertTrue(publishableLevel.isPublished());
-            verify(levelRepository).save(publishableLevel);
+            Mockito.verify(levelRepository).save(publishableLevel);
         }
     }
 
@@ -184,12 +182,12 @@ class LevelPublishServiceTest {
         @Test
         @DisplayName("throws LevelNotFoundException and does not save when the level is missing")
         void levelNotFound() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
                     () -> service.unpublishLevel(OWNER_ID, LEVEL_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
 
         /// A user who is not the owner cannot unpublish a level.
@@ -198,12 +196,12 @@ class LevelPublishServiceTest {
         void nonOwnerCannotUnpublish() {
             publishableLevel.validatePublishEligible(OWNER_ID);
             publishableLevel.publish(OWNER_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
 
             Assertions.assertThrows(ForbiddenUserException.class,
                     () -> service.unpublishLevel(OTHER_USER_ID, LEVEL_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
 
         /// The owner can unpublish their own published level.
@@ -212,24 +210,24 @@ class LevelPublishServiceTest {
         void ownerUnpublishes() {
             publishableLevel.validatePublishEligible(OWNER_ID);
             publishableLevel.publish(OWNER_ID);
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishableLevel));
 
             service.unpublishLevel(OWNER_ID, LEVEL_ID);
 
             Assertions.assertFalse(publishableLevel.isPublished());
-            verify(levelRepository).save(publishableLevel);
+            Mockito.verify(levelRepository).save(publishableLevel);
         }
 
         /// Unpublishing a level that is already unpublished does nothing.
         @Test
         @DisplayName("does nothing if the level is already unpublished")
         void unpublishingUnpublishedIsIdempotent() {
-            when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
             service.unpublishLevel(OWNER_ID, LEVEL_ID);
 
             Assertions.assertFalse(testLevel.isPublished());
-            verify(levelRepository).save(testLevel);
+            Mockito.verify(levelRepository).save(testLevel);
         }
     }
 
@@ -245,7 +243,7 @@ class LevelPublishServiceTest {
             service.validateLevelPublishEligible(testLevel, OWNER_ID);
 
             Assertions.assertTrue(testLevel.isPublishEligible());
-            verify(levelRepository).save(testLevel);
+            Mockito.verify(levelRepository).save(testLevel);
         }
 
         /// A user who is not the owner cannot mark a level as ready to publish.
@@ -255,7 +253,7 @@ class LevelPublishServiceTest {
             Assertions.assertThrows(ForbiddenUserException.class,
                     () -> service.validateLevelPublishEligible(testLevel, OTHER_USER_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
     }
 
@@ -273,7 +271,7 @@ class LevelPublishServiceTest {
             service.invalidateLevelPublishEligible(testLevel, OWNER_ID);
 
             Assertions.assertFalse(testLevel.isPublishEligible());
-            verify(levelRepository).save(testLevel);
+            Mockito.verify(levelRepository).save(testLevel);
         }
 
         /// A user who is not the owner cannot remove the ready to publish status.
@@ -285,7 +283,7 @@ class LevelPublishServiceTest {
             Assertions.assertThrows(ForbiddenUserException.class,
                     () -> service.invalidateLevelPublishEligible(testLevel, OTHER_USER_ID));
 
-            verify(levelRepository, never()).save(any());
+            Mockito.verify(levelRepository, Mockito.never()).save(any());
         }
     }
 }
