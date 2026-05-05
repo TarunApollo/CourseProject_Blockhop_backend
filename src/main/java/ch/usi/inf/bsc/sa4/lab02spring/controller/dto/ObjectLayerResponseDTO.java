@@ -8,7 +8,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
-//TODO: docs
+/// Response DTO containing the object layer of a level.
 public record ObjectLayerResponseDTO(
     String levelId,
     @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
