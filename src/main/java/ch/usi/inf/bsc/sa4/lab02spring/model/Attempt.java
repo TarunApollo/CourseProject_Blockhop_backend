@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 /// Represents a user's attempt at playing a level. An attempt stores who
 /// played, when it happened, which level was played, whether the level was
 /// completed, and how long the attempt took.
-@SuppressWarnings("NullAway.Init")
+@SuppressWarnings({"NullAway.Init", "PMD.DataClass"})
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "attempts")
 public class Attempt {
