@@ -42,13 +42,18 @@ public class AttemptStatisticsRepositoryImpl implements AttemptStatisticsReposit
                 Aggregation.count().as("count")
         );
 
-        final Document result = mongoTemplate
+        final Document resultDoc = mongoTemplate
                 .aggregate(aggregation, "attempts", Document.class)
                 .getUniqueMappedResult();
 
-        if(result == null)return 0;
-        final Number count = (Number) result.get("count");
-        return count == null ? 0 : count.longValue();
+        long count = 0;
+        if (resultDoc != null) {
+            final Number raw = (Number) resultDoc.get("count");
+            if (raw != null) {
+                count = raw.longValue();
+            }
+        }
+        return count;
 
     }
 }
