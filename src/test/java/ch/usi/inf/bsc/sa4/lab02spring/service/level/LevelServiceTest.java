@@ -227,17 +227,14 @@ class LevelServiceTests {
         @DisplayName("clones with title 'X (2)' when no other clones exist")
         void firstCloneSuffix() {
             final Level source = newLevel(ADVENTURE_TITLE, owner);
+            final Level expectedClone = source.cloneFor(owner, ADVENTURE_FIRST_CLONE_TITLE);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
-            Mockito.when(levelRepository.save(Mockito.argThat(savedLevel ->
-                    ADVENTURE_FIRST_CLONE_TITLE.equals(savedLevel.getTitle())
-                            && owner.equals(savedLevel.getCreator())
-            ))).thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.refEq(expectedClone))).thenReturn(expectedClone);
 
-            final Optional<Level> result =
-                service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
+            final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertEquals(ADVENTURE_FIRST_CLONE_TITLE, result.orElseThrow().getTitle());
+            Assertions.assertSame(expectedClone, result.orElseThrow());
         }
 
         /// Subsequent clones should pick the next free index.
@@ -247,17 +244,14 @@ class LevelServiceTests {
             final Level source = newLevel(QUEST_TITLE, owner);
             final Level clone2 = newLevel(QUEST_SECOND_CLONE_TITLE, owner);
             final Level clone3 = newLevel(QUEST_THIRD_CLONE_TITLE, owner);
+            final Level expectedClone = source.cloneFor(owner, QUEST_FOURTH_CLONE_TITLE);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source, clone2, clone3));
-            Mockito.when(levelRepository.save(Mockito.argThat(savedLevel ->
-                    QUEST_FOURTH_CLONE_TITLE.equals(savedLevel.getTitle())
-                            && owner.equals(savedLevel.getCreator())
-            ))).thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.refEq(expectedClone))).thenReturn(expectedClone);
 
-            final Optional<Level> result =
-                service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
+            final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertEquals(QUEST_FOURTH_CLONE_TITLE, result.orElseThrow().getTitle());
+            Assertions.assertSame(expectedClone, result.orElseThrow());
         }
 
         /// Cloning a level that already has a (n) suffix should strip the suffix first.
@@ -265,17 +259,14 @@ class LevelServiceTests {
         @DisplayName("strips an existing (n) suffix from the source title before computing a new one")
         void stripsExistingSuffix() {
             final Level source = newLevel(MAZE_FIFTH_CLONE_TITLE, owner);
+            final Level expectedClone = source.cloneFor(owner, MAZE_SECOND_CLONE_TITLE);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
-            Mockito.when(levelRepository.save(Mockito.argThat(savedLevel ->
-                    MAZE_SECOND_CLONE_TITLE.equals(savedLevel.getTitle())
-                            && owner.equals(savedLevel.getCreator())
-            ))).thenAnswer(inv -> inv.getArgument(0));
+            Mockito.when(levelRepository.save(Mockito.refEq(expectedClone))).thenReturn(expectedClone);
 
-            final Optional<Level> result =
-                service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
+            final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertEquals(MAZE_SECOND_CLONE_TITLE, result.orElseThrow().getTitle());
+            Assertions.assertSame(expectedClone, result.orElseThrow());
         }
     }
 
@@ -351,49 +342,31 @@ class LevelServiceTests {
             Assertions.assertEquals(List.of(), service.getCreatedLevelsByUser(owner));
         }
 
-        /// One DTO should be produced per source level.
+        /// Verifies projection of created levels to profile DTOs with play and
+        /// completion counts.
         @Test
-        @DisplayName("returns one DTO per source level")
-        void oneDtoPerLevel() {
+        @DisplayName("maps levels to DTOs with correct play and completion counts")
+        void mapsLevelsToFullDTOProjection() {
             final Level a = newLevel(LIST_TITLE_A, owner);
             final Level b = newLevel(LIST_TITLE_B, owner);
+
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(a, b));
-            Mockito.when(attemptRepository.countByLevel(a)).thenReturn(0L);
-            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(0L);
-            Mockito.when(attemptRepository.countByLevel(b)).thenReturn(0L);
-            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(b)).thenReturn(0L);
+
+            Mockito.when(attemptRepository.countByLevel(a)).thenReturn(10L);
+            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
+
+            Mockito.when(attemptRepository.countByLevel(b)).thenReturn(5L);
+            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(b)).thenReturn(2L);
 
             final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
 
             Assertions.assertEquals(2, result.size());
-        }
-
-        /// DTOs should carry the per-level play count from the repository.
-        @Test
-        @DisplayName("populates each DTO with the level's play count")
-        void carriesPlayCount() {
-            final Level a = newLevel(LIST_TITLE_A, owner);
-            Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(a));
-            Mockito.when(attemptRepository.countByLevel(a)).thenReturn(10L);
-            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
-
-            final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
-
+            Assertions.assertEquals(a.getId(), result.get(0).id());
             Assertions.assertEquals(10L, result.get(0).playCount());
-        }
-
-        /// DTOs should carry the per-level completion count from the repository.
-        @Test
-        @DisplayName("populates each DTO with the level's completion count")
-        void carriesCompleteCount() {
-            final Level a = newLevel(LIST_TITLE_A, owner);
-            Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(a));
-            Mockito.when(attemptRepository.countByLevel(a)).thenReturn(10L);
-            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
-
-            final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
-
             Assertions.assertEquals(7L, result.get(0).completeCount());
+            Assertions.assertEquals(b.getId(), result.get(1).id());
+            Assertions.assertEquals(5L, result.get(1).playCount());
+            Assertions.assertEquals(2L, result.get(1).completeCount());
         }
     }
 
@@ -462,21 +435,31 @@ class LevelServiceTests {
             Mockito.verify(levelRepository).save(Mockito.same(level));
         }
 
-        /// A title-only DTO must not touch other fields.
+        /// Verifies that a partial update affecting only the title:
+        /// - Updates the title correctly
+        /// - Preserves all other fields (description and clear condition)
+        /// - Persists the changes via the repository
         @Test
-        @DisplayName("leaves the description unchanged when only a title is present")
-        void titleOnlyLeavesDescription() {
+        @DisplayName("leaves other fields unchanged when only title is present")
+        void titleOnlyLeavesOtherFieldsUnchanged() {
             final Level level = newLevel(OLD_TITLE, owner);
             level.setDescription(OLD_DESC);
+
+            final ClearCondition originalCondition = new ClearCondition(
+                    new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
+            level.setClearCondition(originalCondition);
+
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             Mockito.when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.empty(), Optional.empty()));
+                    new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.empty(), Optional.empty()));
 
+            Assertions.assertEquals(NEW_TITLE, level.getTitle());
             Assertions.assertEquals(OLD_DESC, level.getDescription());
+            Assertions.assertSame(originalCondition, level.getClearCondition());
 
-            Mockito.verify(levelRepository).save(Mockito.same(level));
+            Mockito.verify(levelRepository).save(level);
         }
 
         /// A full DTO should update the title.
