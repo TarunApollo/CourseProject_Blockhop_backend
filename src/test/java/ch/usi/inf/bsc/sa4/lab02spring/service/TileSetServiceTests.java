@@ -1,15 +1,17 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /// Unit tests for the TileSetService.
 /// Goal: Verify that the tileset is loaded correctly and GID classification works.
+
+@SpringBootTest
 @DisplayName("The TileSet Service (Unit)")
-@SuppressWarnings("NullAway")
 /* default */ class TileSetServiceTests {
 
     /// GID that is not expected to exist in the tileset.
@@ -19,13 +21,9 @@ import org.junit.jupiter.api.Test;
     private static final int UNKNOWN_GID = 99_999;
 
     /// The service under test.
+    @Autowired
     private TileSetService tileSetService;
 
-    /// Instantiates the service before each test.
-    @BeforeEach
-    /* default */ void setup() {
-        this.tileSetService = new TileSetService();
-    }
 
     /// Tests for the getTileSet method.
     @Nested

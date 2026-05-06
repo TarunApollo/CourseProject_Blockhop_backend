@@ -11,19 +11,19 @@ import org.junit.jupiter.api.function.Executable;
 @DisplayName(" In the ClearConditionType enum ")
 /* package */ class ClearConditionTypeTests {
 
-    /** JSON value for the BOX clear condition. */
+    /// JSON value for the BOX clear condition.
     private static final String BOX_VALUE = "box";
 
-    /** JSON value for the COIN clear condition. */
+    /// JSON value for the COIN clear condition.
     private static final String COIN_VALUE = "coin";
 
-    /** JSON value for the SLIME clear condition. */
+    /// JSON value for the SLIME clear condition.
     private static final String SLIME_VALUE = "slime";
 
-    /** JSON value for the SNAIL clear condition. */
+    /// JSON value for the SNAIL clear condition.
     private static final String SNAIL_VALUE = "snail";
 
-    /** A string that does not map to any ClearConditionType. */
+    /// A string that does not map to any ClearConditionType.
     private static final String UNKNOWN_VALUE = "unknown";
 
     /// Verifies that fromValue returns the correct constant
