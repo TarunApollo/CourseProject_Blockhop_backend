@@ -13,8 +13,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
-import java.util.HashMap;
-import java.util.Map;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
@@ -37,6 +35,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 /// Unit tests for [LevelService].
 /// Verifies create, clone, update, delete, and listing semantics.
@@ -75,7 +75,7 @@ class LevelServiceTests {
     /// Title of the first clone source level.
     private static final String ADVENTURE_TITLE = "Adventure";
     /// Expected title of the first cloned adventure level.
-    private static final String ADVENTURE_FIRST_CLONE_TITLE = "Adventure (2)";
+    private static final String ADVENT_FIRST_CLONE_TITLE = "Adventure (2)";
     /// Root title used by clone collision tests.
     private static final String QUEST_TITLE = "Quest";
     /// Existing second quest clone title.
@@ -138,14 +138,17 @@ class LevelServiceTests {
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
 
-        final Map<Position, GameObject> objectLayer = new HashMap<>();
+        final Map<Position, GameObject> objectLayer = new ConcurrentHashMap<>();
         objectLayer.put(flag, new StartFlag(68, flag));
         objectLayer.put(door, new ExitDoor(115, door));
 
-        final Map<Position, GroundObject> worldLayer = new HashMap<>();
+        final Map<Position, GroundObject> worldLayer = new ConcurrentHashMap<>();
 
-        return new Level(owner, DEFAULT_TITLE, DEFAULT_DESC, true,
-                new ClearCondition(new Condition.NoClearCondition(), 0), objectLayer, worldLayer);
+        final Level level = new Level(owner, DEFAULT_TITLE, DEFAULT_DESC, false,
+            new ClearCondition(new Condition.NoClearCondition(), 0), objectLayer, worldLayer);
+        level.validatePublishEligible(OWNER_ID);
+        level.publish(OWNER_ID);
+        return level;
     }
 
     /// Tests for the createLevel entry point.
@@ -174,7 +177,12 @@ class LevelServiceTests {
 
             final Level result = service.createLevel(CREATE_LEVEL_DTO, OWNER_ID);
 
-            Assertions.assertSame(expectedCreatedLevel, result);
+            Assertions.assertEquals(SAMPLE_TITLE, result.getTitle());
+            Assertions.assertEquals(SAMPLE_DESC, result.getDescription());
+            Assertions.assertEquals(owner, result.getCreator());
+            Assertions.assertFalse(result.isPublished());
+
+            Mockito.verify(levelRepository).save(Mockito.refEq(expectedCreatedLevel));
         }
     }
 
@@ -236,14 +244,18 @@ class LevelServiceTests {
         @DisplayName("clones with title 'X (2)' when no other clones exist")
         void firstCloneSuffix() {
             final Level source = newLevel(ADVENTURE_TITLE, owner);
-            final Level expectedClone = source.cloneFor(owner, ADVENTURE_FIRST_CLONE_TITLE);
+            final Level expectedClone = source.cloneFor(owner, ADVENT_FIRST_CLONE_TITLE);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
             Mockito.when(levelRepository.save(Mockito.refEq(expectedClone))).thenReturn(expectedClone);
 
             final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertSame(expectedClone, result.orElseThrow());
+            final Level clone = result.orElseThrow();
+            Assertions.assertEquals(ADVENT_FIRST_CLONE_TITLE, clone.getTitle());
+            Assertions.assertEquals(DEFAULT_DESC, clone.getDescription());
+            Assertions.assertEquals(owner, clone.getCreator());
+            Assertions.assertFalse(clone.isPublished());
         }
 
         /// Subsequent clones should pick the next free index.
@@ -260,7 +272,11 @@ class LevelServiceTests {
 
             final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertSame(expectedClone, result.orElseThrow());
+            final Level clone = result.orElseThrow();
+            Assertions.assertEquals(QUEST_FOURTH_CLONE_TITLE, clone.getTitle());
+            Assertions.assertEquals(DEFAULT_DESC, clone.getDescription());
+            Assertions.assertEquals(owner, clone.getCreator());
+            Assertions.assertFalse(clone.isPublished());
         }
 
         /// Cloning a level that already has a (n) suffix should strip the suffix first.
@@ -275,7 +291,11 @@ class LevelServiceTests {
 
             final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
-            Assertions.assertSame(expectedClone, result.orElseThrow());
+            final Level clone = result.orElseThrow();
+            Assertions.assertEquals(MAZE_SECOND_CLONE_TITLE, clone.getTitle());
+            Assertions.assertEquals(DEFAULT_DESC, clone.getDescription());
+            Assertions.assertEquals(owner, clone.getCreator());
+            Assertions.assertFalse(clone.isPublished());
         }
     }
 
@@ -374,7 +394,6 @@ class LevelServiceTests {
             Assertions.assertEquals(b.getId(), result.get(1).id());
             Assertions.assertEquals(5L, result.get(1).playCount());
             Assertions.assertEquals(2L, result.get(1).completeCount());
-            // Assertions.assertEquals(List.of(a.getId(), b.getId()), result.stream().map(CreatedLevelProfileDTO::id).toList());
         }
     }
 
@@ -463,15 +482,15 @@ class LevelServiceTests {
 
             Assertions.assertEquals(NEW_TITLE, level.getTitle());
             Assertions.assertEquals(OLD_DESC, level.getDescription());
-            Assertions.assertSame(originalCondition, level.getClearCondition());
+            Assertions.assertEquals(originalCondition, level.getClearCondition());
 
             Mockito.verify(levelRepository).save(level);
         }
 
-        /// A full DTO should update the title.
+        /// A full DTO should update the title, description, and clear condition.
         @Test
-        @DisplayName("updates the title when all fields are present")
-        void updatesAllFieldsTitle() {
+        @DisplayName("updates the title, description, and clear condition when all fields are present")
+        void updatesAllFieldsTitleDescriptionClearCondition() {
             final Level level = newLevel(OLD_TITLE, owner);
             final ClearCondition clearCondition = new ClearCondition(
                 new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
@@ -483,43 +502,7 @@ class LevelServiceTests {
                     Optional.of(clearCondition)));
 
             Assertions.assertEquals(NEW_TITLE, level.getTitle());
-
-            Mockito.verify(levelRepository).save(level);
-        }
-
-        /// A full DTO should update the description.
-        @Test
-        @DisplayName("updates the description when all fields are present")
-        void updatesAllFieldsDescription() {
-            final Level level = newLevel(OLD_TITLE, owner);
-            final ClearCondition clearCondition = new ClearCondition(
-                new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
-            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            Mockito.when(levelRepository.save(level)).thenReturn(level);
-
-            service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
-                    Optional.of(clearCondition)));
-
             Assertions.assertEquals(NEW_DESC, level.getDescription());
-
-            Mockito.verify(levelRepository).save(level);
-        }
-
-        /// A full DTO should update the clear condition.
-        @Test
-        @DisplayName("updates the clear condition when all fields are present")
-        void updatesAllFieldsClearCondition() {
-            final Level level = newLevel(OLD_TITLE, owner);
-            final ClearCondition clearCondition = new ClearCondition(
-                new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
-            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            Mockito.when(levelRepository.save(level)).thenReturn(level);
-
-            service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
-                    Optional.of(clearCondition)));
-
             Assertions.assertEquals(clearCondition, level.getClearCondition());
 
             Mockito.verify(levelRepository).save(level);
@@ -553,7 +536,13 @@ class LevelServiceTests {
             final Level result = service.updateLevelProperties(owner, LEVEL_ID,
                 new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty()));
 
-            Assertions.assertSame(level, result);
+            Assertions.assertEquals(DEFAULT_TITLE, result.getTitle());
+            Assertions.assertEquals(DEFAULT_DESC, result.getDescription());
+            Assertions.assertEquals(owner, result.getCreator());
+            Assertions.assertFalse(result.isPublished());
+            Assertions.assertFalse(result.isPublishEligible());
+
+            Mockito.verify(levelRepository).save(level);
         }
     }
 
@@ -571,7 +560,10 @@ class LevelServiceTests {
 
             final Optional<Level> result = service.getById(LEVEL_ID);
 
-            Assertions.assertSame(level, result.orElseThrow());
+            final Level found = result.orElseThrow();
+            Assertions.assertEquals(DEFAULT_TITLE, found.getTitle());
+            Assertions.assertEquals(DEFAULT_DESC, found.getDescription());
+            Assertions.assertEquals(owner, found.getCreator());
         }
 
         /// Missing level should yield an empty Optional.
