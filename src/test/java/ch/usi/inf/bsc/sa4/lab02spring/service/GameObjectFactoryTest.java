@@ -11,11 +11,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
-import ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactory.ObjectTypeEnum;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,235 +27,162 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.stream.Stream;
 
-/// Black-box tests for [GameObjectFactory].
-/// Verifies that the factory correctly dispatches tile-type strings
-/// to the corresponding [GameObject] subclasses.
+/// Service tests for [GameObjectFactory].
 @SpringBootTest
-@SuppressWarnings("PMD.TooManyStaticImports")
-@DisplayName("The Game Object Factory")
-class GameObjectFactoryTest {
+@DisplayName("The GameObjectFactory Service")
+class GameObjectFactoryTests {
 
-    /// Tile gid used by all dispatch fixtures.
+    /// Tile gid used by fixtures.
     private static final int GID = 42;
 
-    /// Position used by all dispatch fixtures.
+    /// Position used by fixtures.
     private static final Position POS = new Position(1, 2);
 
-    /// Tile-type string for the Box variant.
+    /// Tile type string for box objects.
     private static final String TYPE_BOX = "Box";
 
-    /// Tile-type string used to verify unknown-type rejection.
+    /// Tile type string for double box objects.
+    private static final String TYPE_BOX_DOUBLE = "BoxDouble";
+
+    /// Tile type string for decoration objects.
+    private static final String TYPE_DECORATION = "Decoration";
+
+    /// Tile type string for slime enemy objects.
+    private static final String TYPE_ENEMY_SLIME = "Enemy_Slime_Normal";
+
+    /// Tile type string for snail enemy objects.
+    private static final String TYPE_ENEMY_SNAIL = "Enemy_Snail";
+
+    /// Tile type string for start flag objects.
+    private static final String TYPE_START_FLAG = "Start_Flag";
+
+    /// Tile type string for door objects.
+    private static final String TYPE_DOOR_CLOSED = "Door_Closed";
+
+    /// Tile type string for gold coin objects.
+    private static final String TYPE_GOLD = "Item_Coin_Gold";
+
+    /// Tile type string for silver coin objects.
+    private static final String TYPE_SILVER = "Item_Coin_Silver";
+
+    /// Tile type string for bronze coin objects.
+    private static final String TYPE_BRONZE = "Item_Coin_Bronze";
+
+    /// Unknown tile type used for failure-path tests.
     private static final String TYPE_UNKNOWN = "Not_A_Real_Type";
 
-    /// The factory under test.
+    /// Factory under test.
     @Autowired
     private GameObjectFactory gameObjectFactory;
 
-    /// Mocked tileset service used to resolve gids to tile-type strings.
+    /// Mocked tileset service.
     @MockitoBean
     private TileSetService tileSetService;
 
-    /// Content used for box-type dispatch tests.
-    private static final Content BOX_CONTENT = new Content.SomeContent(CoinType.GOLD_COIN);
-
-    /// Content used for non-box dispatch tests.
-    private static final Content NO_CONTENT = new Content.NoContent();
-
-    /// Provides one row per ObjectTypeEnum constant: the json string,
-    /// the expected concrete class, and the content to pass in.
+    /// Provides tile type strings and their expected [GameObject] subtypes for
+    /// dispatch tests.
     private static Stream<Arguments> dispatchCases() {
         return Stream.of(
-                Arguments.of("Decoration", Decoration.class, NO_CONTENT),
-                Arguments.of("Enemy_Slime_Normal", Slime.class, NO_CONTENT),
-                Arguments.of("Enemy_Snail", Snail.class, NO_CONTENT),
-                Arguments.of(TYPE_BOX, Box.class, BOX_CONTENT),
-                Arguments.of("BoxDouble", Box.class, BOX_CONTENT),
-                Arguments.of("Start_Flag", StartFlag.class, NO_CONTENT),
-                Arguments.of("Door_Closed", ExitDoor.class, NO_CONTENT),
-                Arguments.of("Item_Coin_Gold", Coin.class, NO_CONTENT),
-                Arguments.of("Item_Coin_Silver", Coin.class, NO_CONTENT),
-                Arguments.of("Item_Coin_Bronze", Coin.class, NO_CONTENT)
-        );
+                Arguments.of(TYPE_DECORATION, Decoration.class),
+                Arguments.of(TYPE_ENEMY_SLIME, Slime.class),
+                Arguments.of(TYPE_ENEMY_SNAIL, Snail.class),
+                Arguments.of(TYPE_BOX, Box.class),
+                Arguments.of(TYPE_BOX_DOUBLE, Box.class),
+                Arguments.of(TYPE_START_FLAG, StartFlag.class),
+                Arguments.of(TYPE_DOOR_CLOSED, ExitDoor.class),
+                Arguments.of(TYPE_GOLD, Coin.class),
+                Arguments.of(TYPE_SILVER, Coin.class),
+                Arguments.of(TYPE_BRONZE, Coin.class));
     }
 
-    /// Tests for the [ObjectTypeEnum] dispatch logic.
-    @Nested
-    @DisplayName("ObjectTypeEnum dispatch")
-    class EnumDispatch {
-
-        /// Each enum constant must build the expected [GameObject] subtype.
-        @ParameterizedTest(name = "{0} -> {1}")
-        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTest#dispatchCases")
-        @DisplayName("dispatches each tile type to the right class")
-        void dispatchesToCorrectClass(
-                final String tileType,
-                final Class<? extends GameObject> expected,
-                final Content content) {
-            final GameObject result = ObjectTypeEnum.fromValue(tileType)
-                    .createGameObject(GID, POS, content);
-
-            Assertions.assertInstanceOf(expected, result);
-        }
-
-        /// The dispatched [GameObject] must preserve the supplied gid.
-        @ParameterizedTest(name = "{0} preserves gid")
-        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTest#dispatchCases")
-        @DisplayName("preserves gid for each tile type")
-        void preservesGid(
-                final String tileType,
-                final Class<? extends GameObject> expected,
-                final Content content) {
-            final GameObject result = ObjectTypeEnum.fromValue(tileType)
-                    .createGameObject(GID, POS, content);
-
-            Assertions.assertEquals(GID, result.gid());
-        }
-
-        /// The dispatched [GameObject] must preserve the supplied position.
-        @ParameterizedTest(name = "{0} preserves pos")
-        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTest#dispatchCases")
-        @DisplayName("preserves position for each tile type")
-        void preservesPosition(
-                final String tileType,
-                final Class<? extends GameObject> expected,
-                final Content content) {
-            final GameObject result = ObjectTypeEnum.fromValue(tileType)
-                    .createGameObject(GID, POS, content);
-
-            Assertions.assertEquals(POS, result.pos());
-        }
-
-        /// fromValue must reject any tile-type string not registered in the enum.
-        @Test
-        @DisplayName("rejects unregistered tile-type strings")
-        void rejectsUnknownType() {
-            Assertions.assertThrows(UnknownObjectTypeException.class,
-                    () -> ObjectTypeEnum.fromValue(TYPE_UNKNOWN));
-        }
+    /// Provides coin tile types and expected [CoinType] values.
+    private static Stream<Arguments> coinCases() {
+        return Stream.of(
+                Arguments.of(TYPE_GOLD, CoinType.GOLD_COIN),
+                Arguments.of(TYPE_SILVER, CoinType.SILVER_COIN),
+                Arguments.of(TYPE_BRONZE, CoinType.BRONZE_COIN));
     }
 
-    /// Tests for specific tile-type behavior.
+    /// Tests for `createGameObject`.
     @Nested
-    @DisplayName("specific tile types")
-    class SpecificTypes {
-
-        /// [Box] must carry the content passed by the factory caller.
-        @Test
-        @DisplayName("Box propagates the supplied content")
-        void boxCarriesContent() {
-            final Content content = new Content.SomeContent(CoinType.SILVER_COIN);
-
-            final Box box = (Box) ObjectTypeEnum.fromValue(TYPE_BOX)
-                    .createGameObject(GID, POS, content);
-
-            Assertions.assertEquals(content, box.content());
-        }
-
-        /// The gold-coin constant must hardcode CoinType.GOLD_COIN.
-        @Test
-        @DisplayName("Gold coin encodes GOLD_COIN type")
-        void goldCoinEncodesGold() {
-            final Coin coin = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Gold")
-                    .createGameObject(GID, POS, NO_CONTENT);
-
-            Assertions.assertEquals(CoinType.GOLD_COIN, coin.type());
-        }
-
-        /// The silver-coin constant must hardcode CoinType.SILVER_COIN.
-        @Test
-        @DisplayName("Silver coin encodes SILVER_COIN type")
-        void silverCoinEncodesSilver() {
-            final Coin coin = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Silver")
-                    .createGameObject(GID, POS, NO_CONTENT);
-
-            Assertions.assertEquals(CoinType.SILVER_COIN, coin.type());
-        }
-
-        /// The bronze-coin constant must hardcode CoinType.BRONZE_COIN.
-        @Test
-        @DisplayName("Bronze coin encodes BRONZE_COIN type")
-        void bronzeCoinEncodesBronze() {
-            final Coin coin = (Coin) ObjectTypeEnum.fromValue("Item_Coin_Bronze")
-                    .createGameObject(GID, POS, NO_CONTENT);
-
-            Assertions.assertEquals(CoinType.BRONZE_COIN, coin.type());
-        }
-    }
-
-    /// Tests for the @JsonValue accessor.
-    @Nested
-    @DisplayName("@JsonValue serialization")
-    class JsonValue {
-
-        /// The accessor must echo the BOX constant's wire string.
-        @Test
-        @DisplayName("returns the JSON tile-type string for BOX")
-        void boxValue() {
-            Assertions.assertEquals(TYPE_BOX, ObjectTypeEnum.BOX.value());
-        }
-
-        /// The accessor must echo the gold-coin wire string.
-        @Test
-        @DisplayName("returns the JSON tile-type string for ITEM_COIN_GOLD")
-        void goldCoinValue() {
-            Assertions.assertEquals("Item_Coin_Gold",
-                    ObjectTypeEnum.ITEM_COIN_GOLD.value());
-        }
-    }
-
-    /// Tests for the factory's public methods.
-    @Nested
-    @DisplayName("createGameObject")
+    @DisplayName("when creating game objects")
     class CreateGameObject {
 
-        /// The 3-arg entry point must dispatch to the type returned by [TileSetService].
-        @Test
-        @DisplayName("dispatches by resolved tile type with 3 arguments")
-        void threeArgDispatchesType() {
-            Mockito.when(tileSetService.getObjectTileType(GID))
-                    .thenReturn(TYPE_BOX);
+        /// The factory must dispatch each tile type to the correct subtype.
+        @ParameterizedTest(name = "{0} -> {1}")
+        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTests#dispatchCases")
+        @DisplayName("dispatches each tile type to the correct subtype")
+        void dispatchesToCorrectSubtype(final String tileType, final Class<? extends GameObject> expected) {
+            Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(tileType);
+            final GameObject result = gameObjectFactory.createGameObject(GID, POS);
 
-            final GameObject result = gameObjectFactory.createGameObject(GID, POS,
-                    new Content.SomeContent(CoinType.BRONZE_COIN));
+            Assertions.assertInstanceOf(expected, result);
 
-            Assertions.assertInstanceOf(Box.class, result);
+            Mockito.verify(tileSetService).getObjectTileType(GID);
         }
 
-        /// The 3-arg entry point must propagate the caller's content into the box.
-        @Test
-        @DisplayName("propagates content into the box with 3 arguments")
-        void threeArgPropagatesContent() {
-            Mockito.when(tileSetService.getObjectTileType(GID))
-                    .thenReturn(TYPE_BOX);
-            final Content content = new Content.SomeContent(CoinType.BRONZE_COIN);
+        /// The factory must propagate gid and pos into every constructed object.
+        @ParameterizedTest(name = "{0}")
+        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTests#dispatchCases")
+        @DisplayName("propagates gid and pos into every constructed object")
+        void propagatesGidAndPos(final String tileType) {
+            Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(tileType);
+            final GameObject result = gameObjectFactory.createGameObject(GID, POS);
 
+            Assertions.assertEquals(GID, result.gid());
+            Assertions.assertEquals(POS, result.pos());
+
+            Mockito.verify(tileSetService).getObjectTileType(GID);
+        }
+
+        /// Box objects must preserve caller-provided content.
+        @Test
+        @DisplayName("propagates content into box objects")
+        void propagatesBoxContent() {
+            Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(TYPE_BOX);
+            final Content content = new Content.SomeContent(CoinType.BRONZE_COIN);
             final Box box = (Box) gameObjectFactory.createGameObject(GID, POS, content);
 
             Assertions.assertEquals(content, box.content());
+
+            Mockito.verify(tileSetService).getObjectTileType(GID);
         }
 
-        /// The 2-arg overload must default content to NoContent.
+        /// The 2-argument overload must default to NoContent.
         @Test
-        @DisplayName("defaults content to NoContent with 2 arguments")
-        void twoArgDefaultsToNoContent() {
-            Mockito.when(tileSetService.getObjectTileType(GID))
-                    .thenReturn(TYPE_BOX);
-
+        @DisplayName("defaults content to NoContent in the 2-argument overload")
+        void defaultsToNoContent() {
+            Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(TYPE_BOX);
             final Box box = (Box) gameObjectFactory.createGameObject(GID, POS);
 
-            Assertions.assertEquals(new Content.NoContent(), box.content());
+            Assertions.assertInstanceOf(Content.NoContent.class, box.content());
+
+            Mockito.verify(tileSetService).getObjectTileType(GID);
         }
 
-        /// An unknown tile-type string from the tileset service must
-        /// surface as [UnknownObjectTypeException].
+        /// Coin tiles must produce coins with the expected [CoinType].
+        @ParameterizedTest(name = "{0} -> {1}")
+        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTests#coinCases")
+        @DisplayName("creates coin objects with the expected type")
+        void createsCoinsWithExpectedType(final String tileType, final CoinType expectedType) {
+            Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(tileType);
+            final Coin coin = (Coin) gameObjectFactory.createGameObject(GID, POS);
+
+            Assertions.assertEquals(expectedType, coin.type());
+
+            Mockito.verify(tileSetService).getObjectTileType(GID);
+        }
+
+        /// Unknown tile types must surface as exceptions.
         @Test
-        @DisplayName("propagates unknown tile types as exception")
-        void propagatesUnknownType() {
-            Mockito.when(tileSetService.getObjectTileType(GID))
-                    .thenReturn(TYPE_UNKNOWN);
+        @DisplayName("throws UnknownObjectTypeException for unknown tile types")
+        void rejectsUnknownTileTypes() {
+            Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(TYPE_UNKNOWN);
 
             Assertions.assertThrows(UnknownObjectTypeException.class,
                     () -> gameObjectFactory.createGameObject(GID, POS));
+
+            Mockito.verify(tileSetService).getObjectTileType(GID);
         }
     }
 }

@@ -184,7 +184,7 @@ class LevelServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
 
-        /// Source level not owned by the user should yield an empty Optional and not persist anything.
+        /// Non-owner should not be able to clone and should not persist anything.
         @Test
         @DisplayName("returns empty when the source level is not owned by the requesting user and does not persist")
         void notOwnedReturnsEmptyAndDoesNotPersist() {
@@ -411,10 +411,7 @@ class LevelServiceTests {
             Mockito.verify(levelRepository).save(level);
         }
 
-        /// Verifies that a partial update affecting only the title:
-        /// - Updates the title correctly
-        /// - Preserves all other fields (description and clear condition)
-        /// - Persists the changes via the repository
+        /// A title-only DTO should leave other fields unchanged.
         @Test
         @DisplayName("leaves other fields unchanged when only title is present")
         void titleOnlyLeavesOtherFieldsUnchanged() {
