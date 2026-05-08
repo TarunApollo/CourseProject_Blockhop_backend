@@ -6,6 +6,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -85,11 +86,35 @@ class LevelControllerTests {
                     .thenReturn(testLevel);
 
             restTestClient.post().uri("/levels")
-                    .body(new CreateLevelDTO("T", "D"))
+                    .body(new CreateLevelDTO("T", "D",
+                            new ClearCondition(new Condition.NoClearCondition(), 0)))
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(LevelDTO.class)
                     .isEqualTo(new LevelDTO(testLevel));
+        }
+
+        /// Verifies that creation accepts a clear condition in the request body.
+        @Test
+        @DisplayName("should accept a clear condition when creating a level")
+        void shouldAcceptClearCondition() {
+            final ClearCondition clearCondition = new ClearCondition(
+                    new Condition.SomeClearCondition(ClearConditionType.COIN), 3);
+            final Level levelWithCondition = new Level("Title", "Desc", testUser);
+            levelWithCondition.setClearCondition(clearCondition);
+
+            Mockito.when(
+                    levelService.createLevel(
+                            Mockito.any(CreateLevelDTO.class),
+                            Mockito.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
+                    .thenReturn(levelWithCondition);
+
+            restTestClient.post().uri("/levels")
+                    .body(new CreateLevelDTO("T", "D", clearCondition))
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(LevelDTO.class)
+                    .isEqualTo(new LevelDTO(levelWithCondition));
         }
 
         /// Verifies that creating a level for an unknown user returns 404.
@@ -101,7 +126,8 @@ class LevelControllerTests {
                     .thenThrow(new UserNotFoundException());
 
             restTestClient.post().uri("/levels")
-                    .body(new CreateLevelDTO("T", "D"))
+                    .body(new CreateLevelDTO("T", "D",
+                            new ClearCondition(new Condition.NoClearCondition(), 0)))
                     .exchange()
                     .expectStatus().isNotFound();
         }

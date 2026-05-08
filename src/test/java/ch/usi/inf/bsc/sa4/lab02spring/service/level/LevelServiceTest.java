@@ -61,7 +61,8 @@ class LevelServiceTests {
     private static final String SAMPLE_DESC = "Description";
     /// DTO used to create a level.
     private static final CreateLevelDTO CREATE_LEVEL_DTO =
-            new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC);
+            new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC,
+                    new ClearCondition(new Condition.NoClearCondition(), 0));
     /// Old level title used by update tests.
     private static final String OLD_TITLE = "old-title";
     /// New level title used by update tests.
@@ -166,6 +167,25 @@ class LevelServiceTests {
             final Level result = service.createLevel(CREATE_LEVEL_DTO, OWNER_ID);
 
             Assertions.assertSame(expectedCreatedLevel, result);
+        }
+
+        /// Verifies that an explicit clear condition is applied during creation.
+        @Test
+        @DisplayName("applies the clear condition from the create DTO")
+        void createLevelUsesProvidedClearCondition() {
+            final ClearCondition clearCondition = new ClearCondition(
+                    new Condition.SomeClearCondition(ClearConditionType.COIN), 4);
+            final CreateLevelDTO createLevelDTO =
+                    new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC, clearCondition);
+            expectedCreatedLevel.setClearCondition(clearCondition);
+
+            Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
+            Mockito.when(levelRepository.save(Mockito.refEq(expectedCreatedLevel)))
+                    .thenReturn(expectedCreatedLevel);
+
+            final Level result = service.createLevel(createLevelDTO, OWNER_ID);
+
+            Assertions.assertEquals(clearCondition, result.getClearCondition());
         }
     }
 
