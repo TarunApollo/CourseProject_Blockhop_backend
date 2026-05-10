@@ -11,15 +11,15 @@ public enum LevelAttitudeType {
     DISLIKE("dislike");
 
     /// External string representation used for JSON serialization.
-    private final String value;
+    private final String valueString;
 
     LevelAttitudeType(final String value) {
-        this.value = value;
+        this.valueString = value;
     }
 
     @JsonValue
     public String value() {
-        return value;
+        return valueString;
     }
 
     /// Converts a serialized string value back to the corresponding attitude type.
@@ -30,7 +30,7 @@ public enum LevelAttitudeType {
     @JsonCreator
     public static LevelAttitudeType fromValue(final String value) {
         for (final LevelAttitudeType type : values()) {
-            if (type.value.equals(value)) {
+            if (type.valueString.equals(value)) {
                 return type;
             }
         }

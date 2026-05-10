@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import java.util.Objects;
+
 /// Represents a user's attitude towards a level. An attitude stores who
 /// liked/disliked, which level was rated and whether a level is liked or disliked.
 @SuppressWarnings("NullAway.Init")
@@ -26,13 +28,8 @@ public class LevelAttitude {
     @DBRef
     /* package */ Level level;
 
-    /// The attitude's enum.
-    /* package */ enum Attitude {
-        DISLIKE,
-        LIKE
-    }
     /// The rating done by the user
-    /* package */ Attitude attitude;
+    /* package */ LevelAttitudeType attitude;
 
 
     /// Creates a new level attitude entry without an explicit id.
@@ -40,7 +37,7 @@ public class LevelAttitude {
     /// @param user      the user who made the attitude
     /// @param level     the level that was played
     /// @param attitude  the attitude towards a level
-    public LevelAttitude(final User user, final Level level, final Attitude attitude) {
+    public LevelAttitude(final User user, final Level level, final LevelAttitudeType attitude) {
         this.user = user;
         this.level = level;
         this.attitude = attitude;
@@ -53,7 +50,7 @@ public class LevelAttitude {
     /// @param level     the level that was played
     /// @param attitude  the attitude towards a level
     @PersistenceCreator
-    public LevelAttitude(final String id, final User user, final Level level, final Attitude attitude) {
+    public LevelAttitude(final String id, final User user, final Level level, final LevelAttitudeType attitude) {
         this.id = id;
         this.user = user;
         this.level = level;
@@ -72,7 +69,39 @@ public class LevelAttitude {
         return level;
     }
 
-    public void setAttitude(final Attitude attitude) {
+    public LevelAttitudeType getAttitude() {
+        return attitude;
+    }
+
+    public void setAttitude(final LevelAttitudeType attitude) {
         this.attitude = attitude;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof LevelAttitude)) {
+            return false;
+        }
+        final LevelAttitude other = (LevelAttitude) obj;
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.user, other.user)
+                && Objects.equals(this.level, other.level)
+                && this.attitude == other.attitude;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.id, this.user, this.level, this.attitude);
+    }
+
+    @Override
+    public String toString() {
+        final String userId = this.user == null ? "null" : this.user.getId();
+        final String levelId = this.level == null ? "null" : this.level.getId();
+        return "LevelAttitude{id=" + this.id + ", user=" + userId + ", level=" + levelId
+                + ", attitude=" + this.attitude + "}";
     }
 }
