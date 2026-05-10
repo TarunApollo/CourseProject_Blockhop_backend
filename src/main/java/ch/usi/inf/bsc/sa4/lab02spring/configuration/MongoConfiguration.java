@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
@@ -50,7 +51,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         entitySet.addAll(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
-                Snail.class, Slime.class
+                Bee.class, Snail.class, Slime.class
         ));
         return entitySet;
     }

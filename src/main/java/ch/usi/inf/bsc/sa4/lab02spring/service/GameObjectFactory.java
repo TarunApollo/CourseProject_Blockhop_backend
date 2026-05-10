@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
 import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
@@ -71,6 +72,13 @@ public class GameObjectFactory {
             @Override
             public GameObject createGameObject(final int gid, final Position pos, final Content content) {
                 return new Snail(gid, pos);
+            }
+        },
+
+        ENEMY_BEE("Enemy_Bee") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Bee(gid, pos);
             }
         },
 

@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
@@ -61,6 +62,7 @@ class GameObjectFactoryTest {
             Arguments.of("Decoration", Decoration.class, noContent),
             Arguments.of("Enemy_Slime_Normal", Slime.class, noContent),
             Arguments.of("Enemy_Snail", Snail.class, noContent),
+            Arguments.of("Enemy_Bee", Bee.class, noContent),
             Arguments.of(TYPE_BOX, Box.class, boxContent),
             Arguments.of("BoxDouble", Box.class, boxContent),
             Arguments.of("Start_Flag", StartFlag.class, noContent),
