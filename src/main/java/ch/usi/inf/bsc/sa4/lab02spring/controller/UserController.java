@@ -8,6 +8,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.service.LevelFavoriteService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -43,15 +46,26 @@ public class UserController {
     ///
     private final AttemptService attemptService;
 
+    ///
+    /// Service used to manage and retrieve favorite levels.
+    ///
+    private final LevelFavoriteService levelFavoriteService;
+
     /// Constructs a new UserController with the given dependencies.
     /// @param userService the service for accessing user data
     /// @param levelService the service for managing level operations
     /// @param attemptService the service for querying attempt-related statistics
+    /// @param levelFavoriteService the service for managing favorite levels
     @Autowired
-    public UserController(final UserService userService, final LevelService levelService, final AttemptService attemptService) {
+    public UserController(
+            final UserService userService,
+            final LevelService levelService,
+            final AttemptService attemptService,
+            final LevelFavoriteService levelFavoriteService) {
         this.userService = userService;
         this.levelService = levelService;
         this.attemptService = attemptService;
+        this.levelFavoriteService = levelFavoriteService;
     }
 
     /// @return a list of all existing users as UserDTOs
@@ -111,5 +125,21 @@ public class UserController {
         final Optional<User> optUser = this.userService.getById(eduId);
         return optUser.map(user -> ResponseEntity.ok(new UserDTO(user)))
                 .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
+    }
+
+    /// Returns the levels favorited by the authenticated user.
+    ///
+    /// @spec.requires authentication is not null.
+    /// @param authentication abstract token for authentication
+    /// @return a 200 OK response containing the user's favorited levels as DTOs
+    /// @throws UserNotFoundException if no user with the authenticated id exists
+    @GetMapping("/me/favorites")
+    public ResponseEntity<List<LevelDTO>> getFavorites(final Authentication authentication) {
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final List<LevelDTO> favorites = this.levelFavoriteService.getFavoritesByUser(user).stream()
+                .map(favorite -> new LevelDTO(favorite.getLevel()))
+                .toList();
+        return ResponseEntity.ok(favorites);
     }
 }
