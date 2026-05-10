@@ -65,6 +65,7 @@ public class LevelAttitude {
         return user;
     }
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Mongo-managed entity; DBRef reference is returned as stored")
     public Level getLevel() {
         return level;
     }
@@ -79,17 +80,19 @@ public class LevelAttitude {
 
     @Override
     public boolean equals(final Object obj) {
+        boolean result;
         if (this == obj) {
-            return true;
+            result = true;
+        } else if (!(obj instanceof LevelAttitude)) {
+            result = false;
+        } else {
+            final LevelAttitude other = (LevelAttitude) obj;
+            result = Objects.equals(this.id, other.id)
+                    && Objects.equals(this.user, other.user)
+                    && Objects.equals(this.level, other.level)
+                    && this.attitude == other.attitude;
         }
-        if (!(obj instanceof LevelAttitude)) {
-            return false;
-        }
-        final LevelAttitude other = (LevelAttitude) obj;
-        return Objects.equals(this.id, other.id)
-                && Objects.equals(this.user, other.user)
-                && Objects.equals(this.level, other.level)
-                && this.attitude == other.attitude;
+        return result;
     }
 
     @Override

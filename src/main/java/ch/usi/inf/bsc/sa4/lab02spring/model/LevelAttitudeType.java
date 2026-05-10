@@ -17,6 +17,8 @@ public enum LevelAttitudeType {
         this.valueString = value;
     }
 
+    /// Returns the external string representation of this attitude
+    /// type for JSON serialization.
     @JsonValue
     public String value() {
         return valueString;
