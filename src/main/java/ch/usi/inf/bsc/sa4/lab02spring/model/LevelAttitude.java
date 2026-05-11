@@ -7,8 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import java.util.Objects;
-
 /// Represents a user's attitude towards a level. An attitude stores who
 /// liked/disliked, which level was rated and whether a level is liked or disliked.
 @SuppressWarnings("NullAway.Init")
@@ -65,7 +63,6 @@ public class LevelAttitude {
         return user;
     }
 
-    @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Mongo-managed entity; DBRef reference is returned as stored")
     public Level getLevel() {
         return level;
     }
@@ -76,35 +73,5 @@ public class LevelAttitude {
 
     public void setAttitude(final LevelAttitudeType attitude) {
         this.attitude = attitude;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        boolean result;
-        if (this == obj) {
-            result = true;
-        } else if (!(obj instanceof LevelAttitude)) {
-            result = false;
-        } else {
-            final LevelAttitude other = (LevelAttitude) obj;
-            result = Objects.equals(this.id, other.id)
-                    && Objects.equals(this.user, other.user)
-                    && Objects.equals(this.level, other.level)
-                    && this.attitude == other.attitude;
-        }
-        return result;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.id, this.user, this.level, this.attitude);
-    }
-
-    @Override
-    public String toString() {
-        final String userId = this.user == null ? "null" : this.user.getId();
-        final String levelId = this.level == null ? "null" : this.level.getId();
-        return "LevelAttitude{id=" + this.id + ", user=" + userId + ", level=" + levelId
-                + ", attitude=" + this.attitude + "}";
     }
 }
