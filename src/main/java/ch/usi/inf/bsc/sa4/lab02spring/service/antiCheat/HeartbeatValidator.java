@@ -29,7 +29,8 @@ public class HeartbeatValidator {
 
     private static final double EPSILON = 0.001;
 
-    public HeartbeatResponseDTO validate(final HeartbeatDTO payload, final AntiCheatSessionState state) {
+    public HeartbeatResponseDTO validate(final HeartbeatDTO payload,
+                                         final AntiCheatSessionState state) {
         final List<ViolationCode> violations = new ArrayList<>();
 
         checkGravity(payload, violations);
@@ -38,7 +39,7 @@ public class HeartbeatValidator {
 
         state.setLastPlayerSnapshot(payload.player());
 
-        return new HeartbeatResponseDTO(payload.runId(), payload.frame(), violations);
+        return new HeartbeatResponseDTO(payload.frame(), violations);
     }
 
     private void checkGravity(final HeartbeatDTO payload, final List<ViolationCode> violations) {

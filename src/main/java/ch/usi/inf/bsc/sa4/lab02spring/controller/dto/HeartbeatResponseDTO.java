@@ -6,7 +6,6 @@ import java.util.List;
 
 /// Result of validating one heartbeat frame
 public record HeartbeatResponseDTO(
-    String runId,
     int frame,
     List<ViolationCode> violations
 ) {}

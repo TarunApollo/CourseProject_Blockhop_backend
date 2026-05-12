@@ -25,7 +25,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +49,8 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     private static final String USER_ID_ATTRIBUTE = "userId";
     private static final String INITIAL_TIME_ATTRIBUTE = "startTime";
     private static final String VALIDATE_FRAME_ATTRIBUTE = "frameCount";
+    private static final String PARALLEL_SESSION_MESSAGE =
+            "This run won't count for leaderboard because another session is currently running.";
 
     private static final int VALIDATE_FRAME_DEFAULT = 1;
     private static final long MAX_ACCEPTED_NETWORK_DELAY = 200;
@@ -60,6 +61,7 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     private final HeartbeatValidator validator;
     private final LevelRepository levelRepository;
     private final Map<String, AntiCheatSessionState> sessions = new ConcurrentHashMap<>();
+    private final Map<String, WebSocketSession> activeSockets = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AntiCheatWebSocketHandler(final HeartbeatValidator validator, final LevelRepository levelRepository) {
@@ -69,7 +71,7 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(final WebSocketSession session) throws IOException {
-        final long now = new Date().getTime();
+        final long now = System.currentTimeMillis();
         final Authentication authentication = getAuthentication(session);
         if (authentication == null) {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Unauthenticated"));
@@ -84,11 +86,31 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         }
 
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final WebSocketSession existingSession = activeSockets.get(userId);
+        // TODO: Move away from null.
+        if (existingSession != null && existingSession.isOpen()) {
+            sendErrorMessage(session, new HeartbeatErrorResponseDTO(
+                PARALLEL_SESSION_MESSAGE,
+                null,
+                null,
+                null,
+                null
+            ));
+            session.close(CloseStatus.POLICY_VIOLATION.withReason("Parallel anticheat sessions are not allowed"));
+            return;
+        }
+
+        if (existingSession != null) {
+            activeSockets.remove(userId, existingSession);
+            sessions.remove(userId);
+        }
+
+        activeSockets.put(userId, session);
         sessions.put(userId, new AntiCheatSessionState(supportTiles(level.orElseThrow())));
         session.getAttributes().put(INITIAL_TIME_ATTRIBUTE, now);
         session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
         session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, VALIDATE_FRAME_DEFAULT);
-        writeMessage(session, new HeartbeatResponseDTO(userId, 0, List.of()));
+        writeMessage(session, new HeartbeatResponseDTO(0, List.of()));
     }
 
     private static String readLevelId(final WebSocketSession session) {
@@ -109,23 +131,27 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(final WebSocketSession session, final CloseStatus status) {
         final Object userId = session.getAttributes().get(USER_ID_ATTRIBUTE);
         if (userId instanceof String id) {
-            sessions.remove(id);
+            activeSockets.remove(id, session);
+            if (!activeSockets.containsKey(id)) {
+                sessions.remove(id);
+            }
         }
     }
 
     @Override
     protected void handleTextMessage(final WebSocketSession session, final TextMessage message)
             throws IOException {
-        final long now = new Date().getTime();
+        final long now = System.currentTimeMillis();
         final Optional<HeartbeatDTO> payload = readHeartbeat(session, message);
         if (payload.isEmpty()) {
             return;
         }
 
         final HeartbeatDTO heartbeat = payload.orElseThrow();
+        final Optional<String> userId = readStringAttribute(session, USER_ID_ATTRIBUTE);
         final Optional<Integer> frameCount = readIntegerAttribute(session, VALIDATE_FRAME_ATTRIBUTE);
         final Optional<Long> startTime = readLongAttribute(session, INITIAL_TIME_ATTRIBUTE);
-        if (frameCount.isEmpty() || startTime.isEmpty()) {
+        if (userId.isEmpty() || frameCount.isEmpty() || startTime.isEmpty()) {
             log.warn("Missing anti-cheat session attributes");
             session.close(CloseStatus.SERVER_ERROR);
             return;
@@ -154,20 +180,28 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        final AntiCheatSessionState state = sessions.get(heartbeat.runId());
+        final AntiCheatSessionState state = sessions.get(userId.orElseThrow());
         if (state == null) {
-            log.warn("Unknown runID");
+            log.warn("Unknown anti cheat userId");
             session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         }
 
         final HeartbeatResponseDTO response = validator.validate(heartbeat, state);
         if (!response.violations().isEmpty()) {
-            log.warn("Anti-cheat violation runId={} frame={} violations={}",
-                    heartbeat.runId(), heartbeat.frame(), response.violations());
+            log.warn("Anticheat violation userId={} frame={} violations={}",
+                    userId.orElseThrow(), heartbeat.frame(), response.violations());
         }
         session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, heartbeat.frame() + 1);
         writeMessage(session, response);
+    }
+
+    private Optional<String> readStringAttribute(final WebSocketSession session, final String key) {
+        final Object attribute = session.getAttributes().get(key);
+        if (attribute instanceof String value) {
+            return Optional.of(value);
+        }
+        return Optional.empty();
     }
 
     private Optional<Integer> readIntegerAttribute(final WebSocketSession session, final String key) {
@@ -190,8 +224,8 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             throws IOException {
         try {
             return Optional.of(objectMapper.readValue(message.getPayload(), HeartbeatDTO.class));
-        } catch (final RuntimeException e) {
-            log.warn("Failed to parse heartbeat payload");
+        } catch (final Exception e) {
+            log.warn("Failed to parse heartbeat payload", e);
             session.close(CloseStatus.BAD_DATA);
             return Optional.empty();
         }
