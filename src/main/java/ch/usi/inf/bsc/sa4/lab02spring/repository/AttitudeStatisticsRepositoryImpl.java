@@ -2,8 +2,10 @@ package ch.usi.inf.bsc.sa4.lab02spring.repository;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
+
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 /// MongoDB-backed implementation of custom level attitude statistics queries.
@@ -32,6 +34,6 @@ public class AttitudeStatisticsRepositoryImpl implements AttitudeStatisticsRepos
     private long countByLevelAndAttitude(final Level level, final LevelAttitudeType attitudeType) {
         final Criteria criteria = Criteria.where("level.$id").is(level.getId())
                 .and("attitude").is(attitudeType);
-        return mongoTemplate.count(org.springframework.data.mongodb.core.query.Query.query(criteria), "ratings");
+        return mongoTemplate.count(Query.query(criteria), "ratings");
     }
 }
