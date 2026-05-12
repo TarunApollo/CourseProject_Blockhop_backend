@@ -159,8 +159,10 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
         final long maxRecieveTime = (long) (startTime.orElseThrow() + (heartbeat.frame() * FRAME_DELTA) + MAX_ACCEPTED_NETWORK_DELAY);
         if (heartbeat.frame() != frameCount.orElseThrow()) {
+            final String errorMessage = "Expected frame mismatch";
+            log.warn("{}. UserId={} is an invalid attempt.", errorMessage, userId.orElseThrow());
             final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
-                "Expected frame mismatch.",
+                errorMessage,
                 frameCount.orElseThrow(),
                 heartbeat.frame(),
                 null,
@@ -169,8 +171,10 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             sendErrorMessage(session, error);
             return;
         } else if (now > maxRecieveTime) {
+            final String errorMessage = "Network request timeout, network is unstable";
+            log.warn("{}. UserId={} is an invalid attempt.", errorMessage, userId.orElseThrow());
             final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
-                "Request timeout, network is unstable.",
+                errorMessage,
                 null,
                 null,
                 maxRecieveTime,
@@ -182,14 +186,14 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
         final AntiCheatSessionState state = sessions.get(userId.orElseThrow());
         if (state == null) {
-            log.warn("Unknown anti cheat userId");
+            log.warn("Unknown anti-cheat userId");
             session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         }
 
         final HeartbeatResponseDTO response = validator.validate(heartbeat, state);
         if (!response.violations().isEmpty()) {
-            log.warn("Anticheat violation userId={} frame={} violations={}",
+            log.warn("Anti-cheat violation userId={} frame={} violations={}",
                     userId.orElseThrow(), heartbeat.frame(), response.violations());
         }
         session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, heartbeat.frame() + 1);
