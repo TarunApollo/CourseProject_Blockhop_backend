@@ -2,6 +2,11 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSessionState;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.HeartbeatValidator;
 import org.slf4j.Logger;
@@ -17,8 +22,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /// Anticheat heartbeat endpoint.
 ///
@@ -39,19 +46,42 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     private static final Logger log = LoggerFactory.getLogger(AntiCheatWebSocketHandler.class);
 
     private final HeartbeatValidator validator;
+    private final LevelRepository levelRepository;
     private final Map<String, AntiCheatSessionState> sessions = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AntiCheatWebSocketHandler(final HeartbeatValidator validator) {
+    public AntiCheatWebSocketHandler(final HeartbeatValidator validator, final LevelRepository levelRepository) {
         this.validator = validator;
+        this.levelRepository = levelRepository;
     }
 
     @Override
     public void afterConnectionEstablished(final WebSocketSession session) throws IOException {
+        final Optional<Level> level = levelRepository.findById(readLevelId(session));
+        if (level.isEmpty()) {
+            log.warn("Unknown anti-cheat level path: {}", session.getUri());
+            session.close(CloseStatus.NOT_ACCEPTABLE);
+            return;
+        }
+
         final String runId = UUID.randomUUID().toString();
-        sessions.put(runId, new AntiCheatSessionState());
+        sessions.put(runId, new AntiCheatSessionState(supportTiles(level.orElseThrow())));
         session.getAttributes().put(RUN_ID_ATTRIBUTE, runId);
         writeMessage(session, new HeartbeatResponseDTO(runId, 0, List.of()));
+    }
+
+    private static String readLevelId(final WebSocketSession session) {
+        final String path = session.getUri() == null ? "" : session.getUri().getPath();
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    private static Set<Position> supportTiles(final Level level) {
+        final Set<Position> support = level.getWorldLayer().keySet().stream().collect(Collectors.toSet());
+        level.getObjectLayer().values().stream()
+                .filter(Box.class::isInstance)
+                .map(GameObject::pos)
+                .forEach(support::add);
+        return support;
     }
 
     @Override
