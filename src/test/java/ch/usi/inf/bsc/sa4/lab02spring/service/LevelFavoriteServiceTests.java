@@ -63,6 +63,7 @@ class LevelFavoriteServiceTests {
         this.expectedFavorite = new LevelFavorite(this.testUser, this.testLevel, ZonedDateTime.now());
     }
 
+    /// Tests for the addFavorite method.
     @Nested
     @DisplayName("when adding a favorite")
     class AddFavorite {
@@ -73,7 +74,7 @@ class LevelFavoriteServiceTests {
         @DisplayName("saves a new favorite with the correct user and level")
         void savesNewFavorite() {
             Mockito.when(levelFavoriteRepository.existsByUserAndLevel(testUser, testLevel))
-                    .thenReturn(false);
+                    .thenReturn(Boolean.FALSE);
 
             levelFavoriteService.addFavorite(testUser, testLevel);
 
@@ -87,7 +88,7 @@ class LevelFavoriteServiceTests {
         @DisplayName("does not save when the favorite already exists")
         void doesNotSaveExistingFavorite() {
             Mockito.when(levelFavoriteRepository.existsByUserAndLevel(testUser, testLevel))
-                    .thenReturn(true);
+                    .thenReturn(Boolean.TRUE);
 
             levelFavoriteService.addFavorite(testUser, testLevel);
 
@@ -96,6 +97,7 @@ class LevelFavoriteServiceTests {
         }
     }
 
+    /// Tests for the removeFavorite method.
     @Nested
     @DisplayName("when removing a favorite")
     class RemoveFavorite {
@@ -111,6 +113,7 @@ class LevelFavoriteServiceTests {
         }
     }
 
+    /// Tests for the getFavoritesByUser method.
     @Nested
     @DisplayName("when retrieving favorites")
     class Retrieval {
