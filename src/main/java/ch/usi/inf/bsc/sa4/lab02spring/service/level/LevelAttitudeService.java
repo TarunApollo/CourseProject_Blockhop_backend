@@ -26,9 +26,10 @@ public class LevelAttitudeService {
     private final UserService userService;
 
     /// Constructs a new LevelAttitudeService with the given dependencies.
-    /// @param levelRepository the repository for accessing level data
+    /// 
+    /// @param levelRepository    the repository for accessing level data
     /// @param attitudeRepository the repository for accessing attitude data
-    /// @param userService the service for accessing user data
+    /// @param userService        the service for accessing user data
     @Autowired
     public LevelAttitudeService(
             final LevelRepository levelRepository,
@@ -44,13 +45,13 @@ public class LevelAttitudeService {
     /// record is created.
     ///
     /// @spec.requires userId and levelId are not null.
-    /// @spec.effects creates a new LevelAttitude or updates an existing one 
-    ///               in the repository.
-    /// @param userId the unique identifier of the user
-    /// @param levelId the unique identifier of the level
-    /// @param attitude the attitude type (like or dislike)
+    /// @spec.effects creates a new LevelAttitude or updates an existing one in the
+    ///               repository.
+    /// @param userId       the unique identifier of the user
+    /// @param levelId      the unique identifier of the level
+    /// @param attitudeType the attitude type (like or dislike)
     /// @return the created or updated LevelAttitude
-    /// @throws UserNotFoundException if the user does not exist
+    /// @throws UserNotFoundException  if the user does not exist
     /// @throws LevelNotFoundException if the level does not exist
     public LevelAttitude setAttitude(final String userId, final String levelId, final LevelAttitudeType attitudeType) {
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
@@ -78,7 +79,7 @@ public class LevelAttitudeService {
     ///               exists.
     /// @param userId  the unique identifier of the user
     /// @param levelId the unique identifier of the level
-    /// @throws UserNotFoundException if the user does not exist
+    /// @throws UserNotFoundException  if the user does not exist
     /// @throws LevelNotFoundException if the level does not exist
     public void deleteAttitude(final String userId, final String levelId) {
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
