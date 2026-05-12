@@ -120,6 +120,9 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             );
             sendErrorMessage(session, error);
         }
+        else{
+            session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, frameCount + 1);
+        }
 
         final AntiCheatSessionState state = sessions.get(heartbeat.runId());
         if (state == null) {
