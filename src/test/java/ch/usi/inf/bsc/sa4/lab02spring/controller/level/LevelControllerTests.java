@@ -10,6 +10,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import org.junit.jupiter.api.Assertions;
@@ -56,6 +57,10 @@ class LevelControllerTests {
     /// Mocked service for user resolution.
     @MockitoBean
     private UserService userService;
+
+    /// Mocked service for level attitudes.
+    @MockitoBean
+    private LevelAttitudeService levelAttitudeService;
 
     /// Client used to perform REST calls.
     @Autowired
