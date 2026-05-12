@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatErrorResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSessionState;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.HeartbeatValidator;
@@ -19,6 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +42,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
     private static final String USER_ID_ATTRIBUTE = "userId";
+    private static final String INITIAL_TIME_ATTRIBUTE = "startTime";
+    private static final String VALIDATE_FRAME_ATTRIBUTE = "frameCount";
+
+    private static final int VALIDATE_FRAME_DEFAULT = 1;
+    private static final long MAX_ACCEPTED_NETWORK_DELAY = 200;
+    private static final double FRAME_DELTA = 16.67; // 60 FPS
 
     private static final Logger log = LoggerFactory.getLogger(AntiCheatWebSocketHandler.class);
 
@@ -53,6 +61,7 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(final WebSocketSession session) throws IOException {
+        final long now = new Date().getTime();
         final Authentication authentication = getAuthentication(session);
         if (authentication == null) {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Unauthenticated"));
@@ -60,7 +69,9 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         }
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         sessions.put(userId, new AntiCheatSessionState());
+        session.getAttributes().put(INITIAL_TIME_ATTRIBUTE, now);
         session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
+        session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, VALIDATE_FRAME_DEFAULT);
         writeMessage(session, new HeartbeatResponseDTO(userId, 0, List.of()));
     }
 
@@ -75,12 +86,37 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(final WebSocketSession session, final TextMessage message)
             throws IOException {
+        final long now = new Date().getTime();
         final Optional<HeartbeatDTO> payload = readHeartbeat(session, message);
         if (payload.isEmpty()) {
             return;
         }
 
         final HeartbeatDTO heartbeat = payload.orElseThrow();
+        final int frameCount = (int) session.getAttributes().get(VALIDATE_FRAME_ATTRIBUTE);
+        final long startTime = (long) session.getAttributes().get(INITIAL_TIME_ATTRIBUTE);
+        final long maxRecieveTime = (long) (startTime + (heartbeat.frame() * FRAME_DELTA) + MAX_ACCEPTED_NETWORK_DELAY);
+        if(heartbeat.frame() != frameCount){
+            final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
+                "Expected frame mismatch.",
+                frameCount,
+                heartbeat.frame(),
+                null,
+                null
+            );
+            sendErrorMessage(session, error);
+        }
+        else if(now > maxRecieveTime){
+            final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
+                "Request timeout, network is unstable.",
+                null,
+                null,
+                maxRecieveTime,
+                now
+            );
+            sendErrorMessage(session, error);
+        }
+
         final AntiCheatSessionState state = sessions.get(heartbeat.runId());
         if (state == null) {
             log.warn("Unknown runID");
@@ -105,6 +141,10 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             session.close(CloseStatus.BAD_DATA);
             return Optional.empty();
         }
+    }
+
+    private void sendErrorMessage(final WebSocketSession session, final HeartbeatErrorResponseDTO error) throws IOException{
+        session.sendMessage(new TextMessage(objectMapper.writeValueAsBytes(error)));
     }
 
     private void writeMessage(final WebSocketSession session, final HeartbeatResponseDTO response) throws IOException {
