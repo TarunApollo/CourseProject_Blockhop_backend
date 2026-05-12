@@ -4,8 +4,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSessionState;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.HeartbeatValidator;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -14,6 +18,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,13 +33,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /// TextWebSocketHandler lifecycle and text only behavior reference:
 /// https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/socket/handler/TextWebSocketHandler.html
 ///
-/// Similar raw TextWebSocketHandler example using
-/// afterConnectionEstablished and in memory (for now) session tracking:
-/// https://github.com/eugenp/tutorials/blob/master/webrtc/src/main/java/com/baeldung/webrtc/SocketHandler.java
+/// Similar raw TextWebSocketHandler example using afterConnectionEstablished and
+/// in memory (for now) session
+/// tracking: https://github.com/eugenp/tutorials/blob/master/webrtc/src/main/java/com/baeldung/webrtc/SocketHandler.java
 @Component
 public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
-    private static final String RUN_ID_ATTRIBUTE = "antiCheatRunId";
+    private static final String USER_ID_ATTRIBUTE = "userId";
 
     private static final Logger log = LoggerFactory.getLogger(AntiCheatWebSocketHandler.class);
 
@@ -48,16 +53,21 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(final WebSocketSession session) throws IOException {
-        final String runId = UUID.randomUUID().toString();
-        sessions.put(runId, new AntiCheatSessionState());
-        session.getAttributes().put(RUN_ID_ATTRIBUTE, runId);
-        writeMessage(session, new HeartbeatResponseDTO(runId, 0, List.of()));
+        final Authentication authentication = getAuthentication(session);
+        if (authentication == null) {
+            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Unauthenticated"));
+            return;
+        }
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        sessions.put(userId, new AntiCheatSessionState());
+        session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
+        writeMessage(session, new HeartbeatResponseDTO(userId, 0, List.of()));
     }
 
     @Override
     public void afterConnectionClosed(final WebSocketSession session, final CloseStatus status) {
-        final Object runId = session.getAttributes().get(RUN_ID_ATTRIBUTE);
-        if (runId instanceof String id) {
+        final Object userId = session.getAttributes().get(USER_ID_ATTRIBUTE);
+        if (userId instanceof String id) {
             sessions.remove(id);
         }
     }
@@ -86,7 +96,8 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         writeMessage(session, response);
     }
 
-    private Optional<HeartbeatDTO> readHeartbeat(final WebSocketSession session, final TextMessage message) throws IOException {
+    private Optional<HeartbeatDTO> readHeartbeat(final WebSocketSession session, final TextMessage message)
+            throws IOException {
         try {
             return Optional.of(objectMapper.readValue(message.getPayload(), HeartbeatDTO.class));
         } catch (final RuntimeException e) {
@@ -103,5 +114,14 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(final WebSocketSession session, final Throwable exception) {
         log.warn("WebSocket transport error");
+    }
+
+    private @Nullable Authentication getAuthentication(WebSocketSession session) {
+        final Principal principal = session.getPrincipal();
+        if (principal instanceof Authentication authentication) {
+            return authentication;
+        }
+
+        return null;
     }
 }
