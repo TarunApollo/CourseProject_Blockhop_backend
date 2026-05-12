@@ -5,6 +5,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,22 +19,22 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
 /// Unit tests for [LevelFavoriteService].
 @ExtendWith(MockitoExtension.class)
 @DisplayName("The LevelFavorite Service (Unit)")
 @SuppressWarnings("NullAway")
 class LevelFavoriteServiceTests {
 
-    /// User identifier used across tests.
+    /// Default user ID used in tests.
     private static final String USER_ID = "user-1";
-    /// User display name used across tests.
+
+    /// Default username used in tests.
     private static final String USER_NAME = "Mario";
-    /// Level title used across tests.
+
+    /// Default level title used in tests.
     private static final String LEVEL_TITLE = "Test Level";
-    /// Level description used across tests.
+
+    /// Default level description used in tests.
     private static final String LEVEL_DESCRIPTION = "desc";
 
     /// Mocked dependency.
@@ -44,8 +47,10 @@ class LevelFavoriteServiceTests {
 
     /// Test user, rebuilt per test.
     private User testUser;
+
     /// Test level, rebuilt per test.
     private Level testLevel;
+
     /// Expected favorite the service should save (timestamp ignored in
     /// comparisons because it is generated internally).
     private LevelFavorite expectedFavorite;
