@@ -46,6 +46,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/users/me").authenticated()
                         .requestMatchers("/users/**").authenticated()
                         .requestMatchers("/levels/published").authenticated()
+                        .requestMatchers("/ws/anti-cheat/**").permitAll()
                         // .requestMatchers("/levels/**").authenticated()
                         .anyRequest().permitAll())
                 // .anyRequest().authenticated() // oauth2 for every request (TODO: replace line 19 with this after backend phase)
