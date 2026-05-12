@@ -3,6 +3,11 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatErrorResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSessionState;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.HeartbeatValidator;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
@@ -24,8 +29,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /// Anticheat heartbeat endpoint.
 ///
@@ -52,11 +58,13 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     private static final Logger log = LoggerFactory.getLogger(AntiCheatWebSocketHandler.class);
 
     private final HeartbeatValidator validator;
+    private final LevelRepository levelRepository;
     private final Map<String, AntiCheatSessionState> sessions = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AntiCheatWebSocketHandler(final HeartbeatValidator validator) {
+    public AntiCheatWebSocketHandler(final HeartbeatValidator validator, final LevelRepository levelRepository) {
         this.validator = validator;
+        this.levelRepository = levelRepository;
     }
 
     @Override
@@ -67,12 +75,34 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Unauthenticated"));
             return;
         }
+
+        final Optional<Level> level = levelRepository.findById(readLevelId(session));
+        if (level.isEmpty()) {
+            log.warn("Unknown anti-cheat level path: {}", session.getUri());
+            session.close(CloseStatus.NOT_ACCEPTABLE);
+            return;
+        }
+
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
-        sessions.put(userId, new AntiCheatSessionState());
+        sessions.put(userId, new AntiCheatSessionState(supportTiles(level.orElseThrow())));
         session.getAttributes().put(INITIAL_TIME_ATTRIBUTE, now);
         session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
         session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, VALIDATE_FRAME_DEFAULT);
         writeMessage(session, new HeartbeatResponseDTO(userId, 0, List.of()));
+    }
+
+    private static String readLevelId(final WebSocketSession session) {
+        final String path = session.getUri() == null ? "" : session.getUri().getPath();
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
+    private static Set<Position> supportTiles(final Level level) {
+        final Set<Position> support = level.getWorldLayer().keySet().stream().collect(Collectors.toSet());
+        level.getObjectLayer().values().stream()
+                .filter(Box.class::isInstance)
+                .map(GameObject::pos)
+                .forEach(support::add);
+        return support;
     }
 
     @Override
@@ -107,8 +137,8 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
                 null
             );
             sendErrorMessage(session, error);
-        }
-        else if(now > maxRecieveTime){
+            return;
+        } else if (now > maxRecieveTime) {
             final String errorMessage = "Nework Request timeout, network is unstable";
             log.warn("{}. RunId={} is an invalid attempt.", errorMessage, heartbeat.runId());
             final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
@@ -119,6 +149,7 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
                 now
             );
             sendErrorMessage(session, error);
+            return;
         }
         else{
             session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, frameCount + 1);
@@ -136,7 +167,24 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             log.warn("Anti-cheat violation runId={} frame={} violations={}",
                     heartbeat.runId(), heartbeat.frame(), response.violations());
         }
+        session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, heartbeat.frame() + 1);
         writeMessage(session, response);
+    }
+
+    private Optional<Integer> readIntegerAttribute(final WebSocketSession session, final String key) {
+        final Object attribute = session.getAttributes().get(key);
+        if (attribute instanceof Integer value) {
+            return Optional.of(value);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Long> readLongAttribute(final WebSocketSession session, final String key) {
+        final Object attribute = session.getAttributes().get(key);
+        if (attribute instanceof Long value) {
+            return Optional.of(value);
+        }
+        return Optional.empty();
     }
 
     private Optional<HeartbeatDTO> readHeartbeat(final WebSocketSession session, final TextMessage message)
@@ -150,7 +198,7 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void sendErrorMessage(final WebSocketSession session, final HeartbeatErrorResponseDTO error) throws IOException{
+    private void sendErrorMessage(final WebSocketSession session, final HeartbeatErrorResponseDTO error) throws IOException {
         session.sendMessage(new TextMessage(objectMapper.writeValueAsBytes(error)));
     }
 

@@ -1,12 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import org.jspecify.annotations.Nullable;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public record HeartbeatErrorResponseDTO(
     String error,
-    Integer expectedFrame,
-    Integer receivedFrame,
-    Long maxDelayMs,
-    Long recivedDelayMs
+    @Nullable Integer expectedFrame,
+    @Nullable Integer receivedFrame,
+    @Nullable Long maxDelayMs,
+    @Nullable Long recivedDelayMs
 ){};
