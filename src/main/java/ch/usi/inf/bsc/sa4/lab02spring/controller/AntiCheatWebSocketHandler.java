@@ -97,8 +97,10 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         final long startTime = (long) session.getAttributes().get(INITIAL_TIME_ATTRIBUTE);
         final long maxRecieveTime = (long) (startTime + (heartbeat.frame() * FRAME_DELTA) + MAX_ACCEPTED_NETWORK_DELAY);
         if(heartbeat.frame() != frameCount){
+            final String errorMessage = "Expected frame mismatch";
+            log.warn("{}. RunId={} is an invalid attempt.", errorMessage, heartbeat.runId());
             final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
-                "Expected frame mismatch.",
+                errorMessage,
                 frameCount,
                 heartbeat.frame(),
                 null,
@@ -107,8 +109,10 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             sendErrorMessage(session, error);
         }
         else if(now > maxRecieveTime){
+            final String errorMessage = "Nework Request timeout, network is unstable";
+            log.warn("{}. RunId={} is an invalid attempt.", errorMessage, heartbeat.runId());
             final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
-                "Request timeout, network is unstable.",
+                errorMessage,
                 null,
                 null,
                 maxRecieveTime,
