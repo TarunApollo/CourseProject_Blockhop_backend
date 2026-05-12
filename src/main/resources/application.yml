@@ -1,4 +1,7 @@
 spring:
+  threads:
+    virtual:
+      enabled: true
   data:
     mongodb:
       database: users_tutorial_lab02
