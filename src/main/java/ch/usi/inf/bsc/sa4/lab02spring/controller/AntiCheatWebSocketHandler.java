@@ -9,8 +9,11 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSessionState;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.HeartbeatValidator;
+
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -19,6 +22,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,9 +39,9 @@ import java.util.stream.Collectors;
 /// TextWebSocketHandler lifecycle and text only behavior reference:
 /// https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/socket/handler/TextWebSocketHandler.html
 ///
-/// Similar raw TextWebSocketHandler example using
-/// afterConnectionEstablished and in memory (for now) session tracking:
-/// https://github.com/eugenp/tutorials/blob/master/webrtc/src/main/java/com/baeldung/webrtc/SocketHandler.java
+/// Similar raw TextWebSocketHandler example using afterConnectionEstablished and
+/// in memory (for now) session
+/// tracking: https://github.com/eugenp/tutorials/blob/master/webrtc/src/main/java/com/baeldung/webrtc/SocketHandler.java
 @Component
 public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
@@ -57,6 +61,12 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(final WebSocketSession session) throws IOException {
+        final Authentication authentication = getAuthentication(session);
+        if (authentication == null) {
+            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Unauthenticated"));
+            return;
+        }
+
         final Optional<Level> level = levelRepository.findById(readLevelId(session));
         if (level.isEmpty()) {
             log.warn("Unknown anti-cheat level path: {}", session.getUri());
@@ -116,7 +126,8 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         writeMessage(session, response);
     }
 
-    private Optional<HeartbeatDTO> readHeartbeat(final WebSocketSession session, final TextMessage message) throws IOException {
+    private Optional<HeartbeatDTO> readHeartbeat(final WebSocketSession session, final TextMessage message)
+            throws IOException {
         try {
             return Optional.of(objectMapper.readValue(message.getPayload(), HeartbeatDTO.class));
         } catch (final RuntimeException e) {
@@ -133,5 +144,14 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(final WebSocketSession session, final Throwable exception) {
         log.warn("WebSocket transport error");
+    }
+
+    private @Nullable Authentication getAuthentication(WebSocketSession session) {
+        final Principal principal = session.getPrincipal();
+        if (principal instanceof Authentication authentication) {
+            return authentication;
+        }
+
+        return null;
     }
 }
