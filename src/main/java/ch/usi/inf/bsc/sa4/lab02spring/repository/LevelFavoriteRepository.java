@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,8 +25,11 @@ public interface LevelFavoriteRepository extends MongoRepository<LevelFavorite, 
     /// @return true if a favorite already exists for this user-level pair
     boolean existsByUserAndLevel(User user, Level level);
 
-    /// Removes the favorite (if any) for the given user-level pair.
-    /// @param user  the user
-    /// @param level the level
-    void deleteByUserAndLevel(User user, Level level);
+    /// Removes the favorite (if any) for the given user and level id.
+    /// Querying by levelId (not the Level entity) lets users clean
+    /// up favorites whose underlying level was deleted from the DB.
+    /// @param user    the user
+    /// @param levelId the id of the level
+    @Query(value = "{ 'user': ?0, 'level.$id': ?1 }", delete = true)
+    void deleteByUserAndLevelId(User user, String levelId);
 }

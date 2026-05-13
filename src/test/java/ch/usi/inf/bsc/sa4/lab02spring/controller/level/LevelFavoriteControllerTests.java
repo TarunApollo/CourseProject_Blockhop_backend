@@ -94,14 +94,14 @@ class LevelFavoriteControllerTests {
     }
 
     /// Verifies that unfavoriting a level returns 204 No Content and
-    /// delegates to the favorite service with the resolved entities.
+    /// delegates to the favorite service with the level id (does not
+    /// require the level entity to be resolved).
     @Test
     @DisplayName("DELETE /levels/{id}/favorite should return 204")
     void testRemoveFavorite() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
             Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
-            Mockito.when(levelService.getById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
             final HttpStatusCode status = restTestClient.delete()
                     .uri("/levels/{levelId}/favorite", LEVEL_ID)
@@ -110,7 +110,7 @@ class LevelFavoriteControllerTests {
                     .getStatus();
 
             Assertions.assertEquals(HttpStatus.NO_CONTENT, status);
-            Mockito.verify(levelFavoriteService).removeFavorite(testUser, testLevel);
+            Mockito.verify(levelFavoriteService).removeFavorite(testUser, LEVEL_ID);
         }
     }
 }

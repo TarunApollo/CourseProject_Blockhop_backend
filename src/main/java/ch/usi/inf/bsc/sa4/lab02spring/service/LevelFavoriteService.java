@@ -41,16 +41,18 @@ public class LevelFavoriteService {
         this.levelFavoriteRepository.save(favorite);
     }
 
-    /// Removes the favorite of the given level for the given user.
+    /// Removes the favorite of the level with the given id for the
+    /// given user. Idempotent: deleting a non-existent favorite is
+    /// a no-op. Works even if the underlying level has been deleted.
     ///
-    /// @spec.requires user and level are not null.
-    /// @spec.effects deletes the LevelFavorite for the given user-level pair
-    ///               from the repository; if no such favorite exists, no
-    ///               operation is performed (idempotent).
-    /// @param user  the user removing the favorite
-    /// @param level the level being unfavorited
-    public void removeFavorite(final User user, final Level level) {
-        this.levelFavoriteRepository.deleteByUserAndLevel(user, level);
+    /// @spec.requires user and levelId are not null.
+    /// @spec.effects deletes the LevelFavorite for the given user
+    ///               and levelId from the repository; if no such
+    ///               favorite exists, no operation is performed.
+    /// @param user    the user removing the favorite
+    /// @param levelId the id of the level being unfavorited
+    public void removeFavorite(final User user, final String levelId) {
+        this.levelFavoriteRepository.deleteByUserAndLevelId(user, levelId);
     }
 
     /// Returns all favorites belonging to the given user.

@@ -72,24 +72,24 @@ public class LevelFavoriteController {
     }
 
     /// Removes the specified level from the authenticated user's favorites.
+    /// Does not require the underlying level to still exist; users can
+    /// remove favorites whose levels have been deleted.
     ///
     /// @spec.requires authentication and levelId are not null.
     /// @spec.effects deletes the LevelFavorite for the authenticated user
-    ///               and the given level if one exists; otherwise no
-    ///               operation is performed.
+    ///               and the given levelId if one exists; otherwise no
+    ///               operation is performed (idempotent).
     /// @param authentication abstract token for authentication
     /// @param levelId        the id of the level to unfavorite
     /// @return a 204 No Content response on success
     /// @throws UserNotFoundException if no user with the authenticated id exists
-    /// @throws LevelNotFoundException if no level with the given levelId exists
     @DeleteMapping("/{levelId}/favorite")
     public ResponseEntity<Void> removeFavorite(
             final Authentication authentication,
             @PathVariable final String levelId) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        final Level level = this.levelService.getById(levelId).orElseThrow(LevelNotFoundException::new);
-        this.levelFavoriteService.removeFavorite(user, level);
+        this.levelFavoriteService.removeFavorite(user, levelId);
         return ResponseEntity.noContent().build();
     }
 }

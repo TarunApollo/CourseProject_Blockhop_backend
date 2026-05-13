@@ -37,6 +37,9 @@ class LevelFavoriteServiceTests {
     /// Default level description used in tests.
     private static final String LEVEL_DESCRIPTION = "desc";
 
+    /// Default level id used in tests.
+    private static final String LEVEL_ID = "level-1";
+
     /// Mocked dependency.
     @Mock
     private LevelFavoriteRepository levelFavoriteRepository;
@@ -103,13 +106,13 @@ class LevelFavoriteServiceTests {
     class RemoveFavorite {
 
         /// Verifies the service delegates removal to the repository's
-        /// derived delete query.
+        /// derived delete query using only the level id.
         @Test
-        @DisplayName("delegates to repository.deleteByUserAndLevel")
+        @DisplayName("delegates to repository.deleteByUserAndLevelId")
         void delegatesDelete() {
-            levelFavoriteService.removeFavorite(testUser, testLevel);
+            levelFavoriteService.removeFavorite(testUser, LEVEL_ID);
 
-            Mockito.verify(levelFavoriteRepository).deleteByUserAndLevel(testUser, testLevel);
+            Mockito.verify(levelFavoriteRepository).deleteByUserAndLevelId(testUser, LEVEL_ID);
         }
     }
 
