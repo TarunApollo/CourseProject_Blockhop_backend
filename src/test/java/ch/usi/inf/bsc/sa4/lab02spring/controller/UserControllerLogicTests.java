@@ -1,8 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
@@ -27,6 +30,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -187,6 +191,31 @@ class UserControllerLogicTests {
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)
                     .isEqualTo(expectedUserDTO));
+        }
+    }
+
+    /**
+     * Verifies that GET /users/me/favorites returns the list of
+     * favorited levels for the authenticated user.
+     */
+    @Test
+    @DisplayName("GET /users/me/favorites should return the favorited levels")
+    void testGetFavorites() {
+        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn("userid1");
+
+            final Level favoritedLevel = new Level("Favorited", "desc", user1);
+            final LevelFavorite favorite = new LevelFavorite(user1, favoritedLevel, ZonedDateTime.now());
+            Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(favorite));
+
+            final List<LevelDTO> expected = List.of(new LevelDTO(favoritedLevel));
+
+            Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users/me/favorites")
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<LevelDTO>>() {
+                    })
+                    .isEqualTo(expected));
         }
     }
 
