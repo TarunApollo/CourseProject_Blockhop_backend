@@ -43,6 +43,9 @@ class LevelFavoriteControllerTests {
     /// A level ID used across tests.
     private static final String LEVEL_ID = "level-1";
 
+    /// The endpoint URI template for favorite actions.
+    private static final String FAVORITE_URI = "/levels/{levelId}/favorite";
+
     /// The mocked favorite service.
     @MockitoBean
     private LevelFavoriteService levelFavoriteService;
@@ -83,7 +86,7 @@ class LevelFavoriteControllerTests {
             Mockito.when(levelService.getById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
             final HttpStatusCode status = restTestClient.put()
-                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .uri(FAVORITE_URI, LEVEL_ID)
                     .exchange()
                     .returnResult(Void.class)
                     .getStatus();
@@ -104,7 +107,7 @@ class LevelFavoriteControllerTests {
             Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
 
             final HttpStatusCode status = restTestClient.delete()
-                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .uri(FAVORITE_URI, LEVEL_ID)
                     .exchange()
                     .returnResult(Void.class)
                     .getStatus();
@@ -124,7 +127,7 @@ class LevelFavoriteControllerTests {
             Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
 
             restTestClient.put()
-                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .uri(FAVORITE_URI, LEVEL_ID)
                     .exchange()
                     .expectStatus().isNotFound();
 
@@ -144,7 +147,7 @@ class LevelFavoriteControllerTests {
             Mockito.when(levelService.getById(LEVEL_ID)).thenReturn(Optional.empty());
 
             restTestClient.put()
-                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .uri(FAVORITE_URI, LEVEL_ID)
                     .exchange()
                     .expectStatus().isNotFound();
 
@@ -163,7 +166,7 @@ class LevelFavoriteControllerTests {
             Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
 
             restTestClient.delete()
-                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .uri(FAVORITE_URI, LEVEL_ID)
                     .exchange()
                     .expectStatus().isNotFound();
 
