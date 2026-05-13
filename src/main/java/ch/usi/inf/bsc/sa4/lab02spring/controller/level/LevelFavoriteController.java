@@ -23,9 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 /// REST endpoints for marking and unmarking levels as favorites.
 @RestController
 @RequestMapping("/levels")
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Spring-managed singleton; injected services are intentionally shared")
 public class LevelFavoriteController {
 
     /// Service for managing user favorites.
@@ -39,6 +36,9 @@ public class LevelFavoriteController {
     /// @param levelFavoriteService the service for managing favorites
     /// @param userService          the service for accessing user data
     /// @param levelService         the service for accessing level data
+    @SuppressFBWarnings(
+            value = "EI_EXPOSE_REP2",
+            justification = "Spring-managed singleton; injected services are intentionally shared")
     @Autowired
     public LevelFavoriteController(
             final LevelFavoriteService levelFavoriteService,
