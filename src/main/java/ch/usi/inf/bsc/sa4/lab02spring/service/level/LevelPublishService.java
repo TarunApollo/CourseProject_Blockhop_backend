@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
@@ -15,16 +16,21 @@ import org.springframework.stereotype.Service;
 public class LevelPublishService {
     /// Persists publication-state updates on levels.
     private final LevelRepository levelRepository;
+    /// Removes favorite entries for levels that become unavailable.
+    private final LevelFavoriteRepository levelFavoriteRepository;
     /// Verifies that referenced users exist.
     private final UserRepository userRepository;
 
     /// Creates a publish service with repository dependencies.
     ///
     /// @param levelRepository persists level publication state
+    /// @param levelFavoriteRepository persists favorite entries referencing levels
     /// @param userRepository resolves users involved in publication
     @Autowired
-    public LevelPublishService(final LevelRepository levelRepository, final UserRepository userRepository) {
+    public LevelPublishService(final LevelRepository levelRepository,
+            final LevelFavoriteRepository levelFavoriteRepository, final UserRepository userRepository) {
         this.levelRepository = levelRepository;
+        this.levelFavoriteRepository = levelFavoriteRepository;
         this.userRepository = userRepository;
     }
 
@@ -48,6 +54,11 @@ public class LevelPublishService {
     }
 
     /// Unpublishes an existing level owned by the given user.
+    ///
+    /// @spec.requires userId and levelId are not null.
+    /// @spec.modifies the level identified by levelId and favorites pointing to it.
+    /// @spec.effects marks the target level as unpublished, saves the updated
+    ///               level, and removes favorites pointing to that level.
     /// @param userId the authenticated user's ID
     /// @param levelId the ID of the level to unpublish
     /// @throws LevelNotFoundException if the level does not exist
@@ -56,6 +67,8 @@ public class LevelPublishService {
         final Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
+        this.levelRepository.save(level);
+        this.levelFavoriteRepository.deleteByLevelId(levelId);
     }
 
     /// Marks the given level as eligible for publishing on behalf of the given user.
