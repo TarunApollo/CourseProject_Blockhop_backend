@@ -113,4 +113,62 @@ class LevelFavoriteControllerTests {
             Mockito.verify(levelFavoriteService).removeFavorite(testUser, LEVEL_ID);
         }
     }
+
+    /// Verifies that PUT favorite returns 404 when the authenticated
+    /// user does not exist, and that the favorite service is not called.
+    @Test
+    @DisplayName("PUT /levels/{id}/favorite should return 404 when user not found")
+    void testAddFavoriteUserNotFound() {
+        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
+
+            restTestClient.put()
+                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .exchange()
+                    .expectStatus().isNotFound();
+
+            Mockito.verify(levelFavoriteService, Mockito.never())
+                    .addFavorite(Mockito.any(User.class), Mockito.any(Level.class));
+        }
+    }
+
+    /// Verifies that PUT favorite returns 404 when the target level
+    /// does not exist, and that the favorite service is not called.
+    @Test
+    @DisplayName("PUT /levels/{id}/favorite should return 404 when level not found")
+    void testAddFavoriteLevelNotFound() {
+        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(testUser));
+            Mockito.when(levelService.getById(LEVEL_ID)).thenReturn(Optional.empty());
+
+            restTestClient.put()
+                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .exchange()
+                    .expectStatus().isNotFound();
+
+            Mockito.verify(levelFavoriteService, Mockito.never())
+                    .addFavorite(Mockito.any(User.class), Mockito.any(Level.class));
+        }
+    }
+
+    /// Verifies that DELETE favorite returns 404 when the authenticated
+    /// user does not exist, and that the favorite service is not called.
+    @Test
+    @DisplayName("DELETE /levels/{id}/favorite should return 404 when user not found")
+    void testRemoveFavoriteUserNotFound() {
+        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
+            Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.empty());
+
+            restTestClient.delete()
+                    .uri("/levels/{levelId}/favorite", LEVEL_ID)
+                    .exchange()
+                    .expectStatus().isNotFound();
+
+            Mockito.verify(levelFavoriteService, Mockito.never())
+                    .removeFavorite(Mockito.any(User.class), Mockito.anyString());
+        }
+    }
 }
