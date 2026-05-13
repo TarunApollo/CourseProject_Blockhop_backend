@@ -41,6 +41,7 @@ import java.util.Optional;
  * We disable Spring's Security and mock the existence of authenticated users,
  * testing business-logic only.
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 @WebMvcTest(controllers = UserController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
