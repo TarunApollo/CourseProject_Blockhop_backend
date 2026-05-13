@@ -464,4 +464,14 @@ public class Level {
         }
         this.objectLayer.put(position, box.withContent(content));
     }
+
+    /// Ensures that this level is published.
+    ///
+    /// @throws ForbiddenLevelActionException if the level is not published
+    public void ensurePublished() {
+        if (!this.published) {
+            throw new ForbiddenLevelActionException("Only published levels can be favorited");
+        }
+    }
+
 }

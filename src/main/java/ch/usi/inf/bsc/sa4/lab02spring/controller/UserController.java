@@ -9,7 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.service.LevelFavoriteService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelFavoriteService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

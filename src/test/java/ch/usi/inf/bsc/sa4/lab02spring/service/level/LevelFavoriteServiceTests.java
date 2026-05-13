@@ -1,12 +1,16 @@
-package ch.usi.inf.bsc.sa4.lab02spring.service;
+package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +66,13 @@ class LevelFavoriteServiceTests {
     @BeforeEach
     void setup() {
         this.testUser = new User(USER_ID, USER_NAME);
-        this.testLevel = new Level(LEVEL_TITLE, LEVEL_DESCRIPTION, this.testUser);
+        this.testLevel = createLevel(true);
         this.expectedFavorite = new LevelFavorite(this.testUser, this.testLevel, ZonedDateTime.now());
+    }
+
+    private Level createLevel(final boolean published) {
+        return new Level(this.testUser, LEVEL_TITLE, LEVEL_DESCRIPTION, published,
+                new ClearCondition(new Condition.NoClearCondition(), 0), Map.of(), Map.of());
     }
 
     /// Tests for the addFavorite method.
@@ -94,6 +103,19 @@ class LevelFavoriteServiceTests {
                     .thenReturn(Boolean.TRUE);
 
             levelFavoriteService.addFavorite(testUser, testLevel);
+
+            Mockito.verify(levelFavoriteRepository, Mockito.never())
+                    .save(Mockito.any(LevelFavorite.class));
+        }
+
+        /// Verifies that unpublished levels cannot be favorited.
+        @Test
+        @DisplayName("rejects unpublished levels")
+        void rejectsUnpublishedLevel() {
+            final Level unpublishedLevel = createLevel(false);
+
+            Assertions.assertThrows(ForbiddenLevelActionException.class,
+                    () -> levelFavoriteService.addFavorite(testUser, unpublishedLevel));
 
             Mockito.verify(levelFavoriteRepository, Mockito.never())
                     .save(Mockito.any(LevelFavorite.class));

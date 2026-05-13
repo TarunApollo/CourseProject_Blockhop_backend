@@ -9,7 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.LevelFavoriteService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelFavoriteService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import org.junit.jupiter.api.Assertions;

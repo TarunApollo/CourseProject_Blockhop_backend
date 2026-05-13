@@ -32,4 +32,11 @@ public interface LevelFavoriteRepository extends MongoRepository<LevelFavorite, 
     /// @param levelId the id of the level
     @Query(value = "{ 'user': ?0, 'level.$id': ?1 }", delete = true)
     void deleteByUserAndLevelId(User user, String levelId);
+
+    /// Removes all favorites pointing to the level with the given id.
+    /// Used when a level becomes unavailable to keep favorite lists
+    /// restricted to published levels.
+    /// @param levelId the id of the level
+    @Query(value = "{ 'level.$id': ?0 }", delete = true)
+    void deleteByLevelId(String levelId);
 }
