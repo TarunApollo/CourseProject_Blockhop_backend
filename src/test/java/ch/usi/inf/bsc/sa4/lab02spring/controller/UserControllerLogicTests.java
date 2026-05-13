@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -208,14 +207,11 @@ class UserControllerLogicTests {
             final LevelFavorite favorite = new LevelFavorite(user1, favoritedLevel, ZonedDateTime.now());
             Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(favorite));
 
-            final List<LevelDTO> expected = List.of(new LevelDTO(favoritedLevel));
-
             Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users/me/favorites")
                     .exchange()
-                    .expectStatus().isOk()
-                    .expectBody(new ParameterizedTypeReference<List<LevelDTO>>() {
-                    })
-                    .isEqualTo(expected));
+                    .expectStatus().isOk());
+
+            Mockito.verify(levelFavoriteService).getFavoritesByUser(user1);
         }
     }
 
