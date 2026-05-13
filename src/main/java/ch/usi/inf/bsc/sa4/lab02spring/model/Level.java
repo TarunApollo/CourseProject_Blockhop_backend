@@ -21,7 +21,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /// A level contains metadata such as title and description, ownership
 /// information, publication state, a clear condition, and the object and world
 /// layers that define the actual game map.
-@SuppressWarnings("NullAway.Init")
+@SuppressWarnings({"NullAway.Init", "PMD.TooManyMethods"})
 @Document(collection = "levels")
 public class Level {
     /// Fixed width shared by all levels.
