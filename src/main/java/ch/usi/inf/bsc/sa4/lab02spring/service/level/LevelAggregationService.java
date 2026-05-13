@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
@@ -20,22 +21,28 @@ public class LevelAggregationService {
     private final LevelRepository levelRepository;
     /// Provides attempt statistics used in summaries.
     private final AttemptRepository attemptRepository;
+    /// Provides attitude statistics (likes/dislikes) used in summaries.
+    private final AttitudeRepository attitudeRepository;
 
     /// Creates an aggregation service with repository dependencies.
     ///
-    /// @param levelRepository loads levels to summarize
-    /// @param attemptRepository provides attempt statistics
+    /// @param levelRepository    loads levels to summarize
+    /// @param attemptRepository  provides attempt statistics
+    /// @param attitudeRepository provides attitude statistics (likes/dislikes)
     @Autowired
     public LevelAggregationService(
             final LevelRepository levelRepository,
-            final AttemptRepository attemptRepository) {
+            final AttemptRepository attemptRepository,
+            final AttitudeRepository attitudeRepository) {
         this.levelRepository = levelRepository;
         this.attemptRepository = attemptRepository;
+        this.attitudeRepository = attitudeRepository;
     }
 
-    /// Builds a summary for the given level.
-    /// Computes play count, clear rate, and popularity.
-    /// @param level the level to summarize
+    /// Builds a summary for the given level. Computes play count, clear rate,
+    /// popularity, likes, and dislikes.
+    /// 
+    /// @param level  the level to summarize
     /// @param period the time range used to compute popularity
     /// @return a LevelSummaryDto with computed statistics
     private LevelSummaryDto toLevelSummary(
@@ -49,15 +56,18 @@ public class LevelAggregationService {
         if (sortBy == PublishedLevelSortBy.POPULARITY && period instanceof RelativeDateRangePreset relative) {
             popularity = this.attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
         }
+        final long likes = this.attitudeRepository.countLikesByLevel(level);
+        final long dislikes = this.attitudeRepository.countDislikesByLevel(level);
 
-        return new LevelSummaryDto(level, playCount, clearRate, popularity);
+        return new LevelSummaryDto(level, playCount, clearRate, popularity, likes, dislikes);
     }
 
-    /// Returns all published levels as summaries.
-    /// Applies the requested sorting strategy.
+    /// Returns all published levels as summaries. Applies the requested sorting
+    /// strategy.
+    /// 
     /// @param sortBy the sorting strategy for published level summaries
-    /// @param period the time range used for popularity; use ALL_TIME to fall
-    ///               back to total play count
+    /// @param period the time range used for popularity; use ALL_TIME to fall back
+    ///               to total play count
     /// @return a sorted list of LevelSummaryDto for all published levels
     public List<LevelSummaryDto> getPublishedLevels(
             final PublishedLevelSortBy sortBy,

@@ -3,9 +3,12 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LikeDislikeCountDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
@@ -40,20 +43,25 @@ public class LevelController {
     private final UserService userService;
     /// Handles operations related to level attitudes (likes and dislikes).
     private final LevelAttitudeService levelAttitudeService;
+    /// Persists and loads level entities.
+    private final LevelRepository levelRepository;
 
     /// Constructs a new LevelController.
     /// 
     /// @param levelService         the service for managing core level operations
     /// @param userService          the service for accessing user data
     /// @param levelAttitudeService the service for managing level attitudes
+    /// @param levelRepository      the repository for accessing level data
     @Autowired
     public LevelController(
             final LevelService levelService,
             final UserService userService,
-            final LevelAttitudeService levelAttitudeService) {
+            final LevelAttitudeService levelAttitudeService,
+            final LevelRepository levelRepository) {
         this.levelService = levelService;
         this.userService = userService;
         this.levelAttitudeService = levelAttitudeService;
+        this.levelRepository = levelRepository;
     }
 
     /// Creates a new empty level and returns a level DTO.
@@ -146,17 +154,24 @@ public class LevelController {
     /// @param authentication the current authenticated user
     /// @param levelId        the ID of the level to set attitude for
     /// @param dto            the DTO containing the attitude (like or dislike)
-    /// @return 200 OK when the attitude is set successfully
+    /// @return 200 OK when the attitude is set successfully, with the updated
+    ///         like/dislike counts
     /// @throws UserNotFoundException  if the authenticated user does not exist
     /// @throws LevelNotFoundException if the level does not exist
     @PutMapping("/{levelId}/attitude")
-    public ResponseEntity<Void> setLevelAttitude(
+    public ResponseEntity<LikeDislikeCountDTO> setLevelAttitude(
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final SetLevelAttitudeDTO dto) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelAttitudeService.setAttitude(userId, levelId, dto.attitude());
-        return ResponseEntity.ok().build();
+
+        // Fetch the level and compute updated counts
+        final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
+        final long likes = this.levelAttitudeService.countLikesByLevel(level);
+        final long dislikes = this.levelAttitudeService.countDislikesByLevel(level);
+
+        return ResponseEntity.ok(new LikeDislikeCountDTO(likes, dislikes));
     }
 
     /// Deletes the authenticated user's attitude (like/dislike) towards a level if

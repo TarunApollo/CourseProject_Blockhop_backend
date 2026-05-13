@@ -89,4 +89,20 @@ public class LevelAttitudeService {
         this.attitudeRepository.findByLevelAndUser(level, user)
                 .ifPresent(a -> this.attitudeRepository.deleteByLevelAndUser(level, user));
     }
+
+    /// Counts the total likes for a given level.
+    /// 
+    /// @param level the level to count likes for
+    /// @return the number of likes for the level
+    public long countLikesByLevel(final Level level) {
+        return this.attitudeRepository.countLikesByLevel(level);
+    }
+
+    /// Counts the total dislikes for a given level.
+    /// 
+    /// @param level the level to count dislikes for
+    /// @return the number of dislikes for the level
+    public long countDislikesByLevel(final Level level) {
+        return this.attitudeRepository.countDislikesByLevel(level);
+    }
 }

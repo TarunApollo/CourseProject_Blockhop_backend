@@ -12,43 +12,46 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.Map;
 
-@SuppressFBWarnings(
-        value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2", "US_USELESS_SUPPRESSION_ON_CLASS"},
-        justification = "Transient response DTO; mutability is intentional and not shared concurrently")
+@SuppressFBWarnings(value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2",
+                "US_USELESS_SUPPRESSION_ON_CLASS" }, justification = "Transient response DTO; mutability is intentional and not shared concurrently")
 public record LevelSummaryDto(
-        String id,
-        String title,
-        String description,
-        String creatorName,
-        long playCount,
-        double clearRate,
-        long popularity,
-        @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class)
-        @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
-        Map<Position, GameObject> objectLayer,
-        @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class)
-        @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class)
-        Map<Position, GroundObject> worldLayer) {
+                String id,
+                String title,
+                String description,
+                String creatorName,
+                long playCount,
+                double clearRate,
+                long popularity,
+                long likes,
+                long dislikes,
+                @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GameObject> objectLayer,
+                @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GroundObject> worldLayer) {
 
-    /// Constructs a LevelSummaryDto from the given Level entity and statistics.
-    /// 
-    /// @param level     the level to summarize
-    /// @param playCount the total number of attempts on this level
-    /// @param clearRate the ratio of completed attempts to total attempts
-    /// @param popularity the number of attempts within a recent time period
-    public LevelSummaryDto(final Level level, 
-        final long playCount, 
-        final double clearRate, 
-        final long popularity) {
-        this(
-                level.getId(),
-                level.getTitle(),
-                level.getDescription(),
-                level.getCreator().getName(),
-                playCount,
-                clearRate,
-                popularity,
-                level.getObjectLayer(),
-                level.getWorldLayer());
-    }
+        /// Constructs a LevelSummaryDto from the given Level entity and statistics.
+        /// 
+        /// @param level      the level to summarize
+        /// @param playCount  the total number of attempts on this level
+        /// @param clearRate  the ratio of completed attempts to total attempts
+        /// @param popularity the number of attempts within a recent time period
+        /// @param likes      the total number of likes for this level
+        /// @param dislikes   the total number of dislikes for this level
+        public LevelSummaryDto(final Level level,
+                        final long playCount,
+                        final double clearRate,
+                        final long popularity,
+                        final long likes,
+                        final long dislikes) {
+                this(
+                                level.getId(),
+                                level.getTitle(),
+                                level.getDescription(),
+                                level.getCreator().getName(),
+                                playCount,
+                                clearRate,
+                                popularity,
+                                likes,
+                                dislikes,
+                                level.getObjectLayer(),
+                                level.getWorldLayer());
+        }
 }

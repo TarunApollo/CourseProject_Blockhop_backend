@@ -8,6 +8,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
@@ -61,6 +62,10 @@ class LevelControllerTests {
     /// Mocked service for level attitudes.
     @MockitoBean
     private LevelAttitudeService levelAttitudeService;
+
+    /// Mocked repository for level data.
+    @MockitoBean
+    private LevelRepository levelRepository;
 
     /// Client used to perform REST calls.
     @Autowired
