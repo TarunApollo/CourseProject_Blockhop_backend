@@ -62,7 +62,8 @@ class LevelAggregationControllerTests {
                                 new LevelSummaryDto(testLevel, 10, 0.5, 5, 3, 2));
                 Mockito.when(levelAggregationService.getPublishedLevels(
                                 Mockito.eq(PublishedLevelSortBy.CLEAR_RATE),
-                                Mockito.any(DateRangePreset.class)))
+                                Mockito.any(DateRangePreset.class),
+                                Mockito.isNull()))
                                 .thenReturn(summaries);
 
                 Assertions.assertDoesNotThrow(() -> restTestClient.get()

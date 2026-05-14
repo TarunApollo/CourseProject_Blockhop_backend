@@ -9,6 +9,7 @@ import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
@@ -24,6 +25,7 @@ public record LevelSummaryDto(
                 long popularity,
                 long likes,
                 long dislikes,
+                @Nullable String userAttitude,
                 @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GameObject> objectLayer,
                 @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GroundObject> worldLayer) {
 
@@ -41,6 +43,26 @@ public record LevelSummaryDto(
                         final long popularity,
                         final long likes,
                         final long dislikes) {
+                this(level, playCount, clearRate, popularity, likes, dislikes, null);
+        }
+
+        /// Constructs a LevelSummaryDto from the given Level entity and statistics,
+        /// enriched with the current user's attitude if available.
+        ///
+        /// @param level        the level to summarize
+        /// @param playCount    the total number of attempts on this level
+        /// @param clearRate    the ratio of completed attempts to total attempts
+        /// @param popularity   the number of attempts within a recent time period
+        /// @param likes        the total number of likes for this level
+        /// @param dislikes     the total number of dislikes for this level
+        /// @param userAttitude the current user's attitude for this level, or null
+        public LevelSummaryDto(final Level level,
+                        final long playCount,
+                        final double clearRate,
+                        final long popularity,
+                        final long likes,
+                        final long dislikes,
+                        final @Nullable String userAttitude) {
                 this(
                                 level.getId(),
                                 level.getTitle(),
@@ -51,6 +73,7 @@ public record LevelSummaryDto(
                                 popularity,
                                 likes,
                                 dislikes,
+                                userAttitude,
                                 level.getObjectLayer(),
                                 level.getWorldLayer());
         }
