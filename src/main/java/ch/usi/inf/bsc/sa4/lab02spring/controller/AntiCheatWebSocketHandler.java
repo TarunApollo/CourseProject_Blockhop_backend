@@ -1,7 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatErrorResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.HeartbeatResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
@@ -10,6 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSessionState;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.HeartbeatValidator;
+import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.ViolationCode;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import org.jspecify.annotations.Nullable;
@@ -25,6 +25,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,29 +33,23 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-/// Anticheat heartbeat endpoint.
-///
-/// Raw Spring WebSocket handler shape based on:
-/// https://docs.spring.io/spring-framework/reference/web/websocket/server.html
-///
-/// TextWebSocketHandler lifecycle and text only behavior reference:
-/// https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/socket/handler/TextWebSocketHandler.html
-///
-/// Similar raw TextWebSocketHandler example using afterConnectionEstablished and
-/// in memory (for now) session
-/// tracking: https://github.com/eugenp/tutorials/blob/master/webrtc/src/main/java/com/baeldung/webrtc/SocketHandler.java
+/// WebSocket endpoint for anti-cheat heartbeats.
 @Component
 public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
     private static final String USER_ID_ATTRIBUTE = "userId";
     private static final String INITIAL_TIME_ATTRIBUTE = "startTime";
     private static final String VALIDATE_FRAME_ATTRIBUTE = "frameCount";
-    private static final String PARALLEL_SESSION_MESSAGE =
-            "This run won't count for leaderboard because another session is currently running.";
-
+    private static final String FRAME_MISMATCH_LOGGED_ATTRIBUTE = "frameMismatchLogged";
+    private static final String HEARTBEAT_TIMEOUT_LOGGED_ATTRIBUTE = "heartbeatTimeoutLogged";
+    /// First frame expected from a new socket.
     private static final int VALIDATE_FRAME_DEFAULT = 1;
-    private static final long MAX_ACCEPTED_NETWORK_DELAY = 200;
-    private static final double FRAME_DELTA = 16.67; // 60 FPS
+    /// Allowed delay beyond the 60 FPS schedule.
+    private static final long MAX_ACCEPTED_NETWORK_DELAY = 500;
+    /// Small buffer to avoid logging timer jitter.
+    private static final long TIMEOUT_LOG_JITTER = 50;
+    /// Same fixed 60 FPS cadence used by the frontend.
+    private static final double FRAME_DELTA = 16.67;
 
     private static final Logger log = LoggerFactory.getLogger(AntiCheatWebSocketHandler.class);
 
@@ -86,17 +81,9 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         }
 
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
-        final WebSocketSession prev = activeSockets.putIfAbsent(userId, session);
+        final WebSocketSession prev = activeSockets.put(userId, session);
         if (prev != null) {
-            sendErrorMessage(session, new HeartbeatErrorResponseDTO(
-                PARALLEL_SESSION_MESSAGE,
-                null,
-                null,
-                null,
-                null
-            ));
-            session.close(CloseStatus.POLICY_VIOLATION.withReason("Parallel anticheat sessions are not allowed"));
-            return;
+            prev.close(CloseStatus.NORMAL.withReason("Replaced by a newer anti-cheat session"));
         }
 
         sessions.put(userId, new AntiCheatSessionState(supportTiles(level.orElseThrow())));
@@ -112,6 +99,7 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
     }
 
     private static Set<Position> supportTiles(final Level level) {
+        // Support means surfaces the player can actually stand on.
         final Set<Position> support = level.getWorldLayer().keySet().stream().collect(Collectors.toSet());
         level.getObjectLayer().values().stream()
                 .filter(Box.class::isInstance)
@@ -150,31 +138,46 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        final long maxRecieveTime = (long) (startTime.orElseThrow() + (heartbeat.frame() * FRAME_DELTA) + MAX_ACCEPTED_NETWORK_DELAY);
+        // Frame 1 starts the run clock, not the WebSocket open time.
+        final long effectiveStartTime = heartbeat.frame() == 1 ? now : startTime.orElseThrow();
+        if (heartbeat.frame() == 1) {
+            session.getAttributes().put(INITIAL_TIME_ATTRIBUTE, effectiveStartTime);
+        }
+
+        final List<ViolationCode> cadenceViolations = new ArrayList<>();
+        final long maxReceiveTime = (long) (effectiveStartTime + (heartbeat.frame() * FRAME_DELTA) + MAX_ACCEPTED_NETWORK_DELAY);
         if (heartbeat.frame() != frameCount.orElseThrow()) {
-            log.warn("Expected frame mismatch. UserId={} is an invalid attempt.", userId.orElseThrow());
-            session.close(CloseStatus.POLICY_VIOLATION.withReason("Frame mismatch"));
-            return;
-        } else if (now > maxRecieveTime) {
-            log.warn("Network request timeout. UserId={} is an invalid attempt.", userId.orElseThrow());
-            session.close(CloseStatus.POLICY_VIOLATION.withReason("Heartbeat timeout"));
-            return;
+            if (!readBooleanAttribute(session, FRAME_MISMATCH_LOGGED_ATTRIBUTE)) {
+                log.warn("Expected frame mismatch. got={} expected={} UserId={}",
+                        heartbeat.frame(), frameCount.orElseThrow(), userId.orElseThrow());
+                session.getAttributes().put(FRAME_MISMATCH_LOGGED_ATTRIBUTE, Boolean.TRUE);
+                cadenceViolations.add(ViolationCode.FRAME_MISMATCH);
+            }
+        } else if (now > maxReceiveTime + TIMEOUT_LOG_JITTER) {
+            if (!readBooleanAttribute(session, HEARTBEAT_TIMEOUT_LOGGED_ATTRIBUTE)) {
+                log.warn("Network request timeout. UserId={} frame={} delayMs={}",
+                        userId.orElseThrow(), heartbeat.frame(), now - maxReceiveTime);
+                session.getAttributes().put(HEARTBEAT_TIMEOUT_LOGGED_ATTRIBUTE, Boolean.TRUE);
+                cadenceViolations.add(ViolationCode.HEARTBEAT_TIMEOUT);
+            }
         }
 
         final AntiCheatSessionState state = sessions.get(userId.orElseThrow());
         if (state == null) {
-            log.warn("Unknown anti-cheat userId");
+            log.warn("Unknown anticheat userId");
             session.close(CloseStatus.NOT_ACCEPTABLE);
             return;
         }
 
-        final HeartbeatResponseDTO response = validator.validate(heartbeat, state);
-        if (!response.violations().isEmpty()) {
-            log.warn("Anti-cheat violation userId={} frame={} violations={}",
-                    userId.orElseThrow(), heartbeat.frame(), response.violations());
+        final HeartbeatResponseDTO validationResponse = validator.validate(heartbeat, state);
+        if (!validationResponse.violations().isEmpty()) {
+            log.warn("Anticheat violation userId={} frame={} violations={}",
+                    userId.orElseThrow(), heartbeat.frame(), validationResponse.violations());
         }
+        final List<ViolationCode> violations = new ArrayList<>(cadenceViolations);
+        violations.addAll(validationResponse.violations());
         session.getAttributes().put(VALIDATE_FRAME_ATTRIBUTE, heartbeat.frame() + 1);
-        writeMessage(session, response);
+        writeMessage(session, new HeartbeatResponseDTO(heartbeat.frame(), violations));
     }
 
     private Optional<String> readStringAttribute(final WebSocketSession session, final String key) {
@@ -201,6 +204,10 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         return Optional.empty();
     }
 
+    private boolean readBooleanAttribute(final WebSocketSession session, final String key) {
+        return Boolean.TRUE.equals(session.getAttributes().get(key));
+    }
+
     private Optional<HeartbeatDTO> readHeartbeat(final WebSocketSession session, final TextMessage message)
             throws IOException {
         try {
@@ -210,10 +217,6 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             session.close(CloseStatus.BAD_DATA);
             return Optional.empty();
         }
-    }
-
-    private void sendErrorMessage(final WebSocketSession session, final HeartbeatErrorResponseDTO error) throws IOException {
-        session.sendMessage(new TextMessage(objectMapper.writeValueAsBytes(error)));
     }
 
     private void writeMessage(final WebSocketSession session, final HeartbeatResponseDTO response) throws IOException {
