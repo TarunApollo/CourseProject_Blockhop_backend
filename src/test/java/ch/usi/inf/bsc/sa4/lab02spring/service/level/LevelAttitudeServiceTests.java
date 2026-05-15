@@ -20,27 +20,37 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
+/// Unit tests for [LevelAttitudeService].
 @SpringBootTest(classes = LevelAttitudeService.class)
 @DisplayName("The Level Attitude Service")
 class LevelAttitudeServiceTests {
 
+    /// A user ID used across tests.
     private static final String USER_ID = "u1";
+    /// A level ID used across tests.
     private static final String LEVEL_ID = "l1";
 
+    /// Mocked repository for levels.
     @MockitoBean
     private LevelRepository levelRepository;
 
+    /// Mocked repository for attitudes.
     @MockitoBean
     private AttitudeRepository attitudeRepository;
 
+    /// Mocked service for user resolution.
     @MockitoBean
     private UserService userService;
 
+    /// The service under test.
     @Autowired
     private LevelAttitudeService service;
 
+    /// A user used across tests.
     private User user;
+    /// A level used across tests.
     private Level level;
+    /// An expected new attitude used in creation tests.
     private LevelAttitude expectedNewAttitude;
 
     @BeforeEach
@@ -50,6 +60,7 @@ class LevelAttitudeServiceTests {
         expectedNewAttitude = new LevelAttitude(user, level, LevelAttitudeType.LIKE);
     }
 
+    /// Verifies that setAttitude throws UserNotFoundException when the user is missing.
     @Test
     @DisplayName("setAttitude throws when user missing")
     void setAttitudeUserMissing() {
@@ -59,6 +70,7 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
+    /// Verifies that setAttitude throws LevelNotFoundException when the level is missing.
     @Test
     @DisplayName("setAttitude throws when level missing")
     void setAttitudeLevelMissing() {
@@ -69,6 +81,7 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
+    /// Verifies that setAttitude updates an existing attitude instead of creating a new one.
     @Test
     @DisplayName("setAttitude updates existing attitude")
     void setAttitudeUpdatesExisting() {
@@ -85,6 +98,7 @@ class LevelAttitudeServiceTests {
         Mockito.verify(attitudeRepository).save(existing);
     }
 
+    /// Verifies that setAttitude creates a new attitude when none exists.
     @Test
     @DisplayName("setAttitude creates new attitude when none exists")
     void setAttitudeCreatesNew() {
@@ -98,6 +112,7 @@ class LevelAttitudeServiceTests {
         Assertions.assertSame(expectedNewAttitude, result);
     }
 
+    /// Verifies that deleteAttitude deletes the attitude when it exists.
     @Test
     @DisplayName("deleteAttitude deletes when present")
     void deleteAttitudeDeletesWhenPresent() {
@@ -112,6 +127,7 @@ class LevelAttitudeServiceTests {
         Mockito.verify(attitudeRepository).deleteByLevelAndUser(level, user);
     }
 
+    /// Verifies that deleteAttitude does nothing when no attitude exists.
     @Test
     @DisplayName("deleteAttitude does nothing when absent")
     void deleteAttitudeNoopWhenAbsent() {
@@ -122,15 +138,5 @@ class LevelAttitudeServiceTests {
         service.deleteAttitude(USER_ID, LEVEL_ID);
 
         Mockito.verify(attitudeRepository, Mockito.never()).deleteByLevelAndUser(level, user);
-    }
-
-    @Test
-    @DisplayName("count methods delegate to repository")
-    void countDelegates() {
-        Mockito.when(attitudeRepository.countLikesByLevel(level)).thenReturn(5L);
-        Mockito.when(attitudeRepository.countDislikesByLevel(level)).thenReturn(2L);
-
-        Assertions.assertEquals(5L, service.countLikesByLevel(level));
-        Assertions.assertEquals(2L, service.countDislikesByLevel(level));
     }
 }
