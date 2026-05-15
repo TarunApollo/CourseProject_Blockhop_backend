@@ -86,9 +86,8 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
         }
 
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
-        final WebSocketSession existingSession = activeSockets.get(userId);
-        // TODO: Move away from null.
-        if (existingSession != null && existingSession.isOpen()) {
+        final WebSocketSession prev = activeSockets.putIfAbsent(userId, session);
+        if (prev != null) {
             sendErrorMessage(session, new HeartbeatErrorResponseDTO(
                 PARALLEL_SESSION_MESSAGE,
                 null,
@@ -100,12 +99,6 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        if (existingSession != null) {
-            activeSockets.remove(userId, existingSession);
-            sessions.remove(userId);
-        }
-
-        activeSockets.put(userId, session);
         sessions.put(userId, new AntiCheatSessionState(supportTiles(level.orElseThrow())));
         session.getAttributes().put(INITIAL_TIME_ATTRIBUTE, now);
         session.getAttributes().put(USER_ID_ATTRIBUTE, userId);
@@ -159,28 +152,12 @@ public class AntiCheatWebSocketHandler extends TextWebSocketHandler {
 
         final long maxRecieveTime = (long) (startTime.orElseThrow() + (heartbeat.frame() * FRAME_DELTA) + MAX_ACCEPTED_NETWORK_DELAY);
         if (heartbeat.frame() != frameCount.orElseThrow()) {
-            final String errorMessage = "Expected frame mismatch";
-            log.warn("{}. UserId={} is an invalid attempt.", errorMessage, userId.orElseThrow());
-            final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
-                errorMessage,
-                frameCount.orElseThrow(),
-                heartbeat.frame(),
-                null,
-                null
-            );
-            sendErrorMessage(session, error);
+            log.warn("Expected frame mismatch. UserId={} is an invalid attempt.", userId.orElseThrow());
+            session.close(CloseStatus.POLICY_VIOLATION.withReason("Frame mismatch"));
             return;
         } else if (now > maxRecieveTime) {
-            final String errorMessage = "Network request timeout, network is unstable";
-            log.warn("{}. UserId={} is an invalid attempt.", errorMessage, userId.orElseThrow());
-            final HeartbeatErrorResponseDTO error = new HeartbeatErrorResponseDTO(
-                errorMessage,
-                null,
-                null,
-                maxRecieveTime,
-                now
-            );
-            sendErrorMessage(session, error);
+            log.warn("Network request timeout. UserId={} is an invalid attempt.", userId.orElseThrow());
+            session.close(CloseStatus.POLICY_VIOLATION.withReason("Heartbeat timeout"));
             return;
         }
 

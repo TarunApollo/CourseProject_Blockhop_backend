@@ -2,22 +2,22 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PlayerStateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
 
 /// In memory anticheat state for one run
-@SuppressWarnings("NullAway.Init")
 public class AntiCheatSessionState {
 
     private final Set<Position> supportTiles;
-    private PlayerStateDTO lastPlayerSnapshot;
+    private @Nullable PlayerStateDTO lastPlayerSnapshot;
     private int unsupportedStableFrames;
 
     public AntiCheatSessionState(final Set<Position> supportTiles) {
         this.supportTiles = Set.copyOf(supportTiles);
     }
 
-    public PlayerStateDTO getLastPlayerSnapshot() {
+    public @Nullable PlayerStateDTO getLastPlayerSnapshot() {
         return lastPlayerSnapshot;
     }
 

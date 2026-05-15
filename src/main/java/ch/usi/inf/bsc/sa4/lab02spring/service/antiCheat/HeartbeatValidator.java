@@ -15,9 +15,8 @@ public class HeartbeatValidator {
 
     private static final double EXPECTED_GRAVITY = 2.5;
 
-    // The bounds here are generous/have extra margin but should
-    // still catch teleports and obvious speed hacks.
-    // might need finetuning.
+    // TODO: Tighten these tolerances through play testing.
+    // They are way too generous right now.
     private static final double MAX_DX = 25;
     private static final double MAX_DY = 42.5;
     private static final double TILE_SIZE = 128;
@@ -25,6 +24,8 @@ public class HeartbeatValidator {
     private static final double FOOT_SENSOR_HALF_WIDTH = 32;
     private static final double FOOT_SENSOR_MARGIN = 4;
     private static final double MAX_STABLE_UNSUPPORTED_DY = 0.5;
+    // TODO: 8 frames means a cheater can fly in 7-frame bursts. 
+    // So we need to tighten here too.
     private static final int FLYING_FRAME_THRESHOLD = 8;
 
     private static final double EPSILON = 0.001;
