@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
@@ -56,6 +57,8 @@ class LevelPublishServiceTest {
     @Mock private LevelRepository levelRepository;
     /// Mocked favorite repository for cleaning favorites of unpublished levels.
     @Mock private LevelFavoriteRepository levelFavoriteRepository;
+    /// Mocked attitude repository for cleaning attitudes of unpublished levels.
+    @Mock private AttitudeRepository attitudeRepository;
     /// Mocked user repository for verifying user existence.
     @Mock private UserRepository userRepository;
 
@@ -212,6 +215,7 @@ class LevelPublishServiceTest {
             assertFalse(level.isPublished());
             verify(levelRepository).save(level);
             verify(levelFavoriteRepository).deleteByLevelId(LEVEL_ID);
+            verify(attitudeRepository).deleteByLevelId(LEVEL_ID);
         }
 
         /// Unpublishing an already-unpublished level is a no-op.
@@ -226,6 +230,7 @@ class LevelPublishServiceTest {
             assertFalse(level.isPublished());
             verify(levelRepository).save(level);
             verify(levelFavoriteRepository).deleteByLevelId(LEVEL_ID);
+            verify(attitudeRepository).deleteByLevelId(LEVEL_ID);
         }
     }
 

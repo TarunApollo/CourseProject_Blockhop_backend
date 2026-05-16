@@ -4,12 +4,16 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +45,7 @@ import java.util.Optional;
 })
 @AutoConfigureRestTestClient
 @DisplayName("Level Controller CRUD Logic Tests")
+@SuppressWarnings("PMD.ExcessiveImports") // justification: the imports are necessary for mocking and testing
 class LevelControllerTests {
 
     /// The authenticated user ID used across tests.
@@ -56,6 +61,14 @@ class LevelControllerTests {
     /// Mocked service for user resolution.
     @MockitoBean
     private UserService userService;
+
+    /// Mocked service for level attitudes.
+    @MockitoBean
+    private LevelAttitudeService levelAttitudeService;
+
+    /// Mocked repository for level data.
+    @MockitoBean
+    private LevelRepository levelRepository;
 
     /// Client used to perform REST calls.
     @Autowired
@@ -132,15 +145,32 @@ class LevelControllerTests {
         }
     }
 
-    /// Verifies that deleting a level returns 204 No Content.
+    /// Verifies that setting an attitude returns 200 OK.
     @Test
-    @DisplayName("DELETE /levels/{id} should return 204")
-    void testDeleteLevel() {
+    @DisplayName("PUT /levels/{id}/attitude should return 200 OK")
+    void testUpdateLevelAttitude() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
-            Mockito.doNothing().when(levelService).deleteLevel(USER_ID, LEVEL_ID);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
-            final HttpStatusCode status = restTestClient.delete().uri("/levels/{id}", LEVEL_ID)
+            final HttpStatusCode status = restTestClient.put().uri("/levels/{id}/attitude", LEVEL_ID)
+                    .body(new SetLevelAttitudeDTO(LevelAttitudeType.LIKE))
+                    .exchange()
+                    .returnResult(Void.class)
+                    .getStatus();
+            Assertions.assertEquals(HttpStatus.OK, status);
+        }
+    }
+
+    /// Verifies that deleting an attitude returns 204 No Content.
+    @Test
+    @DisplayName("DELETE /levels/{id}/attitude should return 204 No Content")
+    void testDeleteLevelAttitude() {
+        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
+            Mockito.doNothing().when(levelAttitudeService).deleteAttitude(USER_ID, LEVEL_ID);
+
+            final HttpStatusCode status = restTestClient.delete().uri("/levels/{id}/attitude", LEVEL_ID)
                     .exchange()
                     .returnResult(Void.class)
                     .getStatus();

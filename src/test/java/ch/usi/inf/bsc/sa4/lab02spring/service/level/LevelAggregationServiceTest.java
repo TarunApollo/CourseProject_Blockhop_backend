@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
@@ -26,11 +27,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/// Unit tests for the published-levels aggregation service.
-/// Verifies sort strategies, popularity windows, and clear-rate computation.
+/// Unit tests for the published-levels aggregation service. Verifies sort
+/// strategies, popularity windows, and clear-rate computation.
 @DisplayName("LevelAggregationService.getPublishedLevels")
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"NullAway", "PMD.TooManyStaticImports"})
+@SuppressWarnings({ "NullAway", "PMD.TooManyStaticImports" })
 class LevelAggregationServiceTest {
 
     /// Default level description used in fixtures.
@@ -43,12 +44,18 @@ class LevelAggregationServiceTest {
     private static final String SAMPLE_TITLE = "My Title";
 
     /// Mocked level repository providing per-test fixtures.
-    @Mock private LevelRepository levelRepository;
+    @Mock
+    private LevelRepository levelRepository;
     /// Mocked attempt repository providing aggregation counts.
-    @Mock private AttemptRepository attemptRepository;
+    @Mock
+    private AttemptRepository attemptRepository;
+    /// Mocked attitude repository providing likes/dislikes counts.
+    @Mock
+    private AttitudeRepository attitudeRepository;
 
     /// Service under test, with mocks injected.
-    @InjectMocks private LevelAggregationService service;
+    @InjectMocks
+    private LevelAggregationService service;
 
     /// Shared creator used as the owner of fixture levels.
     private User creator;
@@ -70,8 +77,7 @@ class LevelAggregationServiceTest {
     void emptyWhenNoLevels() {
         when(levelRepository.findByPublishedTrue()).thenReturn(List.of());
 
-        final List<LevelSummaryDto> result =
-            service.getPublishedLevels(PublishedLevelSortBy.CLEAR_RATE,
+        final List<LevelSummaryDto> result = service.getPublishedLevels(PublishedLevelSortBy.CLEAR_RATE,
                 DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         assertEquals(List.of(), result);
@@ -100,11 +106,11 @@ class LevelAggregationServiceTest {
             stubAttempts(c, 10, 5);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             assertEquals(List.of("high-rate", "mid-rate", "low-rate"),
-                result.stream().map(LevelSummaryDto::title).toList());
+                    result.stream().map(LevelSummaryDto::title).toList());
         }
 
         /// playCount=0 should yield clearRate=0 to avoid a division by zero.
@@ -116,8 +122,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 0, 0);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             assertEquals(0.0, result.get(0).clearRate());
         }
@@ -131,8 +137,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 4, 2);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             assertEquals(0.5, result.get(0).clearRate());
         }
@@ -146,8 +152,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 5, 3);
 
             service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
 
             verify(attemptRepository, never()).countByLevelAndTimestampAfter(any(), any());
         }
@@ -161,8 +167,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 7, 3);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             assertEquals(7L, result.get(0).popularity());
         }
@@ -190,11 +196,11 @@ class LevelAggregationServiceTest {
             stubAttempts(c, 50, 20);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             assertEquals(List.of("high-pop", "mid-pop", "low-pop"),
-                result.stream().map(LevelSummaryDto::title).toList());
+                    result.stream().map(LevelSummaryDto::title).toList());
         }
 
         /// ALL_TIME period should populate popularity from the total play count.
@@ -206,8 +212,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 42, 10);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             assertEquals(42L, result.get(0).popularity());
         }
@@ -221,8 +227,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 42, 10);
 
             service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             verify(attemptRepository, never()).countByLevelAndTimestampAfter(any(), any());
         }
@@ -237,8 +243,8 @@ class LevelAggregationServiceTest {
             when(attemptRepository.countByLevelAndTimestampAfter(eq(a), any())).thenReturn(7L);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
 
             assertEquals(7L, result.get(0).popularity());
         }
@@ -255,8 +261,8 @@ class LevelAggregationServiceTest {
             when(attemptRepository.countByLevelAndTimestampAfter(any(), any())).thenReturn(0L);
 
             service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.RelativeDateRangePreset.LAST_30_DAYS);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.RelativeDateRangePreset.LAST_30_DAYS);
 
             verify(attemptRepository).countByLevelAndTimestampAfter(eq(a), any());
             verify(attemptRepository).countByLevelAndTimestampAfter(eq(b), any());
@@ -276,8 +282,8 @@ class LevelAggregationServiceTest {
         stubAttempts(a, 0, 0);
 
         final List<LevelSummaryDto> result = service.getPublishedLevels(
-            PublishedLevelSortBy.CLEAR_RATE,
-            DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                PublishedLevelSortBy.CLEAR_RATE,
+                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         assertEquals(SAMPLE_TITLE, result.get(0).title());
     }
@@ -291,8 +297,8 @@ class LevelAggregationServiceTest {
         stubAttempts(a, 0, 0);
 
         final List<LevelSummaryDto> result = service.getPublishedLevels(
-            PublishedLevelSortBy.CLEAR_RATE,
-            DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                PublishedLevelSortBy.CLEAR_RATE,
+                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         assertEquals(DESC, result.get(0).description());
     }
@@ -306,8 +312,8 @@ class LevelAggregationServiceTest {
         stubAttempts(a, 0, 0);
 
         final List<LevelSummaryDto> result = service.getPublishedLevels(
-            PublishedLevelSortBy.CLEAR_RATE,
-            DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                PublishedLevelSortBy.CLEAR_RATE,
+                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         assertEquals(CREATOR_NAME, result.get(0).creatorName());
     }
@@ -325,8 +331,8 @@ class LevelAggregationServiceTest {
         stubAttempts(c, 0, 0);
 
         final List<LevelSummaryDto> result = service.getPublishedLevels(
-            PublishedLevelSortBy.CLEAR_RATE,
-            DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                PublishedLevelSortBy.CLEAR_RATE,
+                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         assertEquals(3, result.size());
     }
@@ -338,8 +344,8 @@ class LevelAggregationServiceTest {
         when(levelRepository.findByPublishedTrue()).thenReturn(List.of());
 
         service.getPublishedLevels(
-            PublishedLevelSortBy.POPULARITY,
-            DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                PublishedLevelSortBy.POPULARITY,
+                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         verify(levelRepository).findByPublishedTrue();
     }
@@ -353,4 +359,5 @@ class LevelAggregationServiceTest {
         lenient().when(attemptRepository.countByLevel(level)).thenReturn(plays);
         lenient().when(attemptRepository.countByLevelAndCompletedTrue(level)).thenReturn(clears);
     }
+    
 }

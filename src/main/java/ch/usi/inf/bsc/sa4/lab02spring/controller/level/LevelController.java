@@ -3,9 +3,11 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
@@ -36,17 +38,22 @@ public class LevelController {
     private final LevelService levelService;
     /// Resolves authenticated users for controller actions.
     private final UserService userService;
+    /// Handles operations related to level attitudes (likes and dislikes).
+    private final LevelAttitudeService levelAttitudeService;
 
     /// Constructs a new LevelController.
     /// 
-    /// @param levelService the service for managing core level operations
-    /// @param userService  the service for accessing user data
+    /// @param levelService         the service for managing core level operations
+    /// @param userService          the service for accessing user data
+    /// @param levelAttitudeService the service for managing level attitudes
     @Autowired
     public LevelController(
             final LevelService levelService,
-            final UserService userService) {
+            final UserService userService,
+            final LevelAttitudeService levelAttitudeService) {
         this.levelService = levelService;
         this.userService = userService;
+        this.levelAttitudeService = levelAttitudeService;
     }
 
     /// Creates a new empty level and returns a level DTO.
@@ -129,6 +136,45 @@ public class LevelController {
             @PathVariable final String levelId) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelService.deleteLevel(userId, levelId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /// Sets or updates the authenticated user's attitude (like/dislike) towards a
+    /// level. If the user already has an attitude for the level, it will be updated.
+    /// Otherwise, a new attitude record will be created.
+    /// 
+    /// @param authentication the current authenticated user
+    /// @param levelId        the ID of the level to set attitude for
+    /// @param dto            the DTO containing the attitude (like or dislike)
+    /// @return 200 OK when the attitude is set successfully, with the updated
+    ///         like/dislike counts
+    /// @throws UserNotFoundException  if the authenticated user does not exist
+    /// @throws LevelNotFoundException if the level does not exist
+    @PutMapping("/{levelId}/attitude")
+    public ResponseEntity<Void> updateLevelAttitude(
+            final Authentication authentication,
+            @PathVariable final String levelId,
+            @RequestBody final SetLevelAttitudeDTO dto) {
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        this.levelAttitudeService.setAttitude(userId, levelId, dto.attitude());
+        return ResponseEntity.ok().build();
+    }
+
+    /// Deletes the authenticated user's attitude (like/dislike) towards a level if
+    /// it exists.
+    /// 
+    /// @param authentication the current authenticated user
+    /// @param levelId        the ID of the level to delete attitude for
+    /// @return 204 No Content when the attitude is deleted successfully or if no
+    ///         attitude existed
+    /// @throws UserNotFoundException  if the authenticated user does not exist
+    /// @throws LevelNotFoundException if the level does not exist
+    @DeleteMapping("/{levelId}/attitude")
+    public ResponseEntity<Void> deleteLevelAttitude(
+            final Authentication authentication,
+            @PathVariable final String levelId) {
+        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        this.levelAttitudeService.deleteAttitude(userId, levelId);
         return ResponseEntity.noContent().build();
     }
 }
