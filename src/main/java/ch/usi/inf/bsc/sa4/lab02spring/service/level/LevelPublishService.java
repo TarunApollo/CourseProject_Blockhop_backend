@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
@@ -18,6 +19,8 @@ public class LevelPublishService {
     private final LevelRepository levelRepository;
     /// Removes favorite entries for levels that become unavailable.
     private final LevelFavoriteRepository levelFavoriteRepository;
+    /// Removes attitude entries for levels that become unavailable.
+    private final AttitudeRepository attitudeRepository;
     /// Verifies that referenced users exist.
     private final UserRepository userRepository;
 
@@ -25,12 +28,16 @@ public class LevelPublishService {
     ///
     /// @param levelRepository persists level publication state
     /// @param levelFavoriteRepository persists favorite entries referencing levels
+    /// @param attitudeRepository persists attitude entries referencing levels
     /// @param userRepository resolves users involved in publication
     @Autowired
     public LevelPublishService(final LevelRepository levelRepository,
-            final LevelFavoriteRepository levelFavoriteRepository, final UserRepository userRepository) {
+            final LevelFavoriteRepository levelFavoriteRepository,
+            final AttitudeRepository attitudeRepository,
+            final UserRepository userRepository) {
         this.levelRepository = levelRepository;
         this.levelFavoriteRepository = levelFavoriteRepository;
+        this.attitudeRepository = attitudeRepository;
         this.userRepository = userRepository;
     }
 
@@ -56,9 +63,11 @@ public class LevelPublishService {
     /// Unpublishes an existing level owned by the given user.
     ///
     /// @spec.requires userId and levelId are not null.
-    /// @spec.modifies the level identified by levelId and favorites pointing to it.
+    /// @spec.modifies the level identified by levelId and published-level reactions
+    ///                pointing to it.
     /// @spec.effects marks the target level as unpublished, saves the updated
-    ///               level, and removes favorites pointing to that level.
+    ///               level, and removes favorites and attitudes pointing to that
+    ///               level.
     /// @param userId the authenticated user's ID
     /// @param levelId the ID of the level to unpublish
     /// @throws LevelNotFoundException if the level does not exist
@@ -69,6 +78,7 @@ public class LevelPublishService {
         level.unpublish(userId);
         this.levelRepository.save(level);
         this.levelFavoriteRepository.deleteByLevelId(levelId);
+        this.attitudeRepository.deleteByLevelId(levelId);
     }
 
     /// Marks the given level as eligible for publishing on behalf of the given user.

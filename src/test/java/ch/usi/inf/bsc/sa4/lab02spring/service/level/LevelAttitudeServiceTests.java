@@ -1,12 +1,16 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitude;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
+import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,10 +61,22 @@ class LevelAttitudeServiceTests {
     void setUp() {
         user = new User(USER_ID, "Name");
         level = new Level("T", "D", user);
+        publishLevel(level);
         expectedNewAttitude = new LevelAttitude(user, level, LevelAttitudeType.LIKE);
     }
 
-    /// Verifies that setAttitude throws UserNotFoundException when 
+    /// Marks the given test level as published.
+    /// @param levelToPublish the level to publish for service tests
+    private static void publishLevel(final Level levelToPublish) {
+        final Position flag = new Position(1, 1);
+        final Position door = new Position(2, 1);
+        levelToPublish.putObjectLayer(flag, new StartFlag(68, flag));
+        levelToPublish.putObjectLayer(door, new ExitDoor(115, door));
+        levelToPublish.validatePublishEligible(USER_ID);
+        levelToPublish.publish(USER_ID);
+    }
+
+    /// Verifies that setAttitude throws UserNotFoundException when
     /// the user is missing.
     @Test
     @DisplayName("setAttitude throws when user missing")
@@ -71,7 +87,7 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
-    /// Verifies that setAttitude throws LevelNotFoundException when 
+    /// Verifies that setAttitude throws LevelNotFoundException when
     /// the level is missing.
     @Test
     @DisplayName("setAttitude throws when level missing")
@@ -83,7 +99,23 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
-    /// Verifies that setAttitude updates an existing attitude instead 
+    /// Verifies that setAttitude rejects unpublished levels.
+    @Test
+    @DisplayName("setAttitude throws when level unpublished")
+    void setAttitudeLevelUnpublished() {
+        final Level unpublishedLevel = new Level("T", "D", user);
+        Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(user));
+        Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(unpublishedLevel));
+
+        Assertions.assertThrows(ForbiddenLevelActionException.class,
+                () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
+
+        Mockito.verify(attitudeRepository, Mockito.never())
+                .findByLevelAndUser(Mockito.any(Level.class), Mockito.any(User.class));
+        Mockito.verify(attitudeRepository, Mockito.never()).save(Mockito.any(LevelAttitude.class));
+    }
+
+    /// Verifies that setAttitude updates an existing attitude instead
     /// of creating a new one.
     @Test
     @DisplayName("setAttitude updates existing attitude")

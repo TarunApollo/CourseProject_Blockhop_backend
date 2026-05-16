@@ -55,7 +55,7 @@ public class LevelAttitudeService {
     public void setAttitude(final String userId, final String levelId, final LevelAttitudeType attitudeType) {
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-
+        level.ensurePublished();
         final Optional<LevelAttitude> existing = this.attitudeRepository.findByLevelAndUser(level, user);
 
         if (existing.isPresent()) {

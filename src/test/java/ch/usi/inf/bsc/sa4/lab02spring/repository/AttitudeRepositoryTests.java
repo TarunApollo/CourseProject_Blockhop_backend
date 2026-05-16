@@ -26,4 +26,11 @@ class AttitudeRepositoryTests {
         final Method m = AttitudeRepository.class.getMethod("deleteByLevelAndUser", Level.class, User.class);
         Assertions.assertNotNull(m, "Expected method deleteByLevelAndUser(Level, User) to be present");
     }
+
+    @Test
+    @DisplayName("deleteByLevelId exists with correct signature")
+    void deleteByLevelIdExists() throws NoSuchMethodException {
+        final Method m = AttitudeRepository.class.getMethod("deleteByLevelId", String.class);
+        Assertions.assertNotNull(m, "Expected method deleteByLevelId(String) to be present");
+    }
 }

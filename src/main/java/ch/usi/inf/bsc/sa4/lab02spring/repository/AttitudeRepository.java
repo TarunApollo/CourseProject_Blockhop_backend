@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -26,4 +27,9 @@ public interface AttitudeRepository extends MongoRepository<LevelAttitude, Strin
     /// @param level the level
     /// @param user  the user
     void deleteByLevelAndUser(Level level, User user);
+
+    /// Deletes all attitudes for the given level.
+    /// @param levelId the level id
+    @Query(value = "{ 'level.$id': ?0 }", delete = true)
+    void deleteByLevelId(String levelId);
 }
