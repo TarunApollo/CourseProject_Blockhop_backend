@@ -32,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/levels")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring-managed singleton; injected services are intentionally shared")
 public class LevelController {
+    /// OAuth2 subject attribute name.
+    private static final String OAUTH_SUB_ATTRIBUTE = "sub";
 
     /// Handles core CRUD operations on levels.
     private final LevelService levelService;
@@ -64,7 +66,7 @@ public class LevelController {
     public ResponseEntity<LevelDTO> createLevel(
             @AuthenticationPrincipal final OAuth2User user,
             @RequestBody final CreateLevelDTO createLevelDTO) {
-        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, OAUTH_SUB_ATTRIBUTE);
         return ResponseEntity.ok(new LevelDTO(this.levelService.createLevel(createLevelDTO, userId)));
     }
 
@@ -84,7 +86,7 @@ public class LevelController {
     public ResponseEntity<LevelDTO> cloneLevel(
             @AuthenticationPrincipal final OAuth2User oauth2User,
             @RequestBody final CloneLevelDTO cloneLevelDTO) {
-        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return this.levelService.cloneLevel(cloneLevelDTO, user)
                 .map(LevelDTO::new)
@@ -112,7 +114,7 @@ public class LevelController {
             @AuthenticationPrincipal final OAuth2User oauth2User,
             @PathVariable final String levelId,
             @RequestBody final UpdateLevelDTO dto) {
-        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
         final User creator = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         return ResponseEntity.ok(new LevelDTO(this.levelService.updateLevelProperties(creator, levelId, dto)));
     }
@@ -128,7 +130,7 @@ public class LevelController {
     public ResponseEntity<Void> deleteLevel(
             @AuthenticationPrincipal final OAuth2User oauth2User,
             @PathVariable final String levelId) {
-        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
         this.levelService.deleteLevel(userId, levelId);
         return ResponseEntity.noContent().build();
     }

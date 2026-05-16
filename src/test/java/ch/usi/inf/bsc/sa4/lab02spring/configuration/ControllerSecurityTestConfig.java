@@ -47,7 +47,7 @@ public class ControllerSecurityTestConfig {
     /// it manually via `RestTestClient.bindTo(mockMvc).build()`.
     @Bean
     /* default */ 
-    RestTestClient restTestClient(MockMvc mockMvc) {
+    RestTestClient restTestClient(final MockMvc mockMvc) {
         return RestTestClient.bindTo(mockMvc).build();
     }
 
