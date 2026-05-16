@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 /// `SecurityConfiguration`. A test-only argument resolver ensures
 /// `@AuthenticationPrincipal OAuth2User` is consistently injected.
 @TestConfiguration
-@SuppressWarnings("PMD.AtLeastOneConstructor")
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "PMD.TooManyStaticImports" })
 public class ControllerSecurityTestConfig {
 
     /// The default authenticated user ID used by controller tests.
