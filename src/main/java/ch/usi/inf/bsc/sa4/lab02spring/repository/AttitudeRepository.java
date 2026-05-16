@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /// Repository for managing level attitudes (likes/dislikes) in the database.
 @Repository
-public interface AttitudeRepository extends MongoRepository<LevelAttitude, String> {
+public interface AttitudeRepository extends MongoRepository<LevelAttitude, String>, AttitudeStatisticsRepository {
 
     /// Find a single attitude for a given level and user. Since each user can have
     /// at most one attitude per level, return an Optional.

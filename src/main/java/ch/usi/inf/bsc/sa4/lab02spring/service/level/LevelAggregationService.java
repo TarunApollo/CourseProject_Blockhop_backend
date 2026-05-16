@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
@@ -69,8 +70,9 @@ public class LevelAggregationService {
                 : this.attitudeRepository.findByLevelAndUser(level, this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new))
                         .map(attitude -> attitude.getAttitude().value())
                         .orElse(null);
-
-        return new LevelSummaryDto(level, playCount, clearRate, popularity, userAttitude);
+        final long likeCount = this.attitudeRepository.countByLevelAttitude(level, LevelAttitudeType.LIKE);
+        final long dislikeCount = this.attitudeRepository.countByLevelAttitude(level, LevelAttitudeType.DISLIKE);
+        return new LevelSummaryDto(level, playCount, clearRate, popularity, userAttitude, likeCount, dislikeCount);
     }
 
     /// Returns all published levels as summaries. Applies the requested sorting

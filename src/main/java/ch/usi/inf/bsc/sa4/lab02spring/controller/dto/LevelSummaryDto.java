@@ -24,6 +24,8 @@ public record LevelSummaryDto(
                 double clearRate,
                 long popularity,
                 @Nullable String userAttitude,
+                long likeCount,
+                long dislikeCount,
                 @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GameObject> objectLayer,
                 @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GroundObject> worldLayer) {
 
@@ -37,7 +39,7 @@ public record LevelSummaryDto(
                         final long playCount,
                         final double clearRate,
                         final long popularity) {
-                this(level, playCount, clearRate, popularity, null);
+                this(level, playCount, clearRate, popularity, null, 0, 0);
         }
 
         /// Constructs a LevelSummaryDto from the given Level entity and statistics,
@@ -52,7 +54,9 @@ public record LevelSummaryDto(
                         final long playCount,
                         final double clearRate,
                         final long popularity,
-                        final @Nullable String userAttitude) {
+                        final @Nullable String userAttitude,
+                        final long likeCount,
+                        final long dislikeCount) {
                 this(
                                 level.getId(),
                                 level.getTitle(),
@@ -62,6 +66,8 @@ public record LevelSummaryDto(
                                 clearRate,
                                 popularity,
                                 userAttitude,
+                                likeCount,
+                                dislikeCount,
                                 level.getObjectLayer(),
                                 level.getWorldLayer());
         }
