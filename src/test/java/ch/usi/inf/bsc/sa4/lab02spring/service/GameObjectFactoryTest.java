@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,14 +96,6 @@ class GameObjectFactoryTests {
                 Arguments.of(TYPE_BRONZE, Coin.class));
     }
 
-    /// Provides coin tile types and expected [CoinType] values.
-    private static Stream<Arguments> coinCases() {
-        return Stream.of(
-                Arguments.of(TYPE_GOLD, CoinType.GOLD_COIN),
-                Arguments.of(TYPE_SILVER, CoinType.SILVER_COIN),
-                Arguments.of(TYPE_BRONZE, CoinType.BRONZE_COIN));
-    }
-
     /// Tests for `createGameObject`.
     @Nested
     @DisplayName("when creating game objects")
@@ -162,7 +155,11 @@ class GameObjectFactoryTests {
 
         /// Coin tiles must produce coins with the expected [CoinType].
         @ParameterizedTest(name = "{0} -> {1}")
-        @MethodSource("ch.usi.inf.bsc.sa4.lab02spring.service.GameObjectFactoryTests#coinCases")
+        @CsvSource({
+            "Item_Coin_Gold,GOLD_COIN",
+            "Item_Coin_Silver,SILVER_COIN",
+            "Item_Coin_Bronze,BRONZE_COIN"
+        })
         @DisplayName("creates coin objects with the expected type")
         void createsCoinsWithExpectedType(final String tileType, final CoinType expectedType) {
             Mockito.when(tileSetService.getObjectTileType(GID)).thenReturn(tileType);
