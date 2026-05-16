@@ -148,7 +148,7 @@ class LevelControllerTests {
     /// Verifies that setting an attitude returns 200 OK.
     @Test
     @DisplayName("PUT /levels/{id}/attitude should return 200 OK")
-    void testSetLevelAttitude() {
+    void testUpdateLevelAttitude() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));

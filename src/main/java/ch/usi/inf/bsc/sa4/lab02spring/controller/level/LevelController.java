@@ -151,7 +151,7 @@ public class LevelController {
     /// @throws UserNotFoundException  if the authenticated user does not exist
     /// @throws LevelNotFoundException if the level does not exist
     @PutMapping("/{levelId}/attitude")
-    public ResponseEntity<Void> setLevelAttitude(
+    public ResponseEntity<Void> updateLevelAttitude(
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final SetLevelAttitudeDTO dto) {
