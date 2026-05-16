@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 
-/// Unit tests for [LevelService].
-/// Verifies create, clone, update, delete, and listing semantics.
+/// Unit tests for [LevelService]. Verifies create, clone, update, delete, and
+/// listing semantics.
 @SpringBootTest
 @DisplayName("The Level Service")
 class LevelServiceTests {
@@ -57,9 +57,8 @@ class LevelServiceTests {
     /// Sample level description used by createLevel tests.
     private static final String SAMPLE_DESC = "Description";
     /// DTO used to create a level.
-    private static final CreateLevelDTO CREATE_LEVEL_DTO =
-            new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC,
-                    new ClearCondition(new Condition.NoClearCondition(), 0));
+    private static final CreateLevelDTO CREATE_LEVEL_DTO = new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC,
+            new ClearCondition(new Condition.NoClearCondition(), 0));
     /// Old level title used by update tests.
     private static final String OLD_TITLE = "old-title";
     /// New level title used by update tests.
@@ -69,7 +68,7 @@ class LevelServiceTests {
     /// Title of the first clone source level.
     private static final String ADVENTURE_TITLE = "Adventure";
     /// Expected title of the first cloned adventure level.
-    private static final String ADVENTURE_FIRST_CLONE_TITLE = "Adventure (2)";
+    private static final String ADVENTURE_CLONE_2_TITLE = "Adventure (2)";
     /// Root title used by clone collision tests.
     private static final String QUEST_TITLE = "Quest";
     /// Existing second quest clone title.
@@ -126,12 +125,12 @@ class LevelServiceTests {
     private Level newLevel(final String title, final User creator) {
         return new Level(title, DEFAULT_DESC, creator);
     }
-    
+
     /// Builds a published level without invoking domain publish logic.
     private Level publishedLevel() {
-        return new Level(owner, DEFAULT_TITLE, DEFAULT_DESC, true, 
-            new ClearCondition(new Condition.NoClearCondition(), 0), 
-            Map.of(), Map.of());
+        return new Level(owner, DEFAULT_TITLE, DEFAULT_DESC, true,
+                new ClearCondition(new Condition.NoClearCondition(), 0),
+                Map.of(), Map.of());
     }
 
     /// Tests for the createLevel entry point.
@@ -145,7 +144,7 @@ class LevelServiceTests {
         void userNotFound() {
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.empty());
             Assertions.assertThrows(UserNotFoundException.class,
-                () -> service.createLevel(CREATE_LEVEL_DTO, OWNER_ID));
+                    () -> service.createLevel(CREATE_LEVEL_DTO, OWNER_ID));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
@@ -171,8 +170,7 @@ class LevelServiceTests {
         void createLevelUsesProvidedClearCondition() {
             final ClearCondition clearCondition = new ClearCondition(
                     new Condition.SomeClearCondition(ClearConditionType.COIN), 4);
-            final CreateLevelDTO createLevelDTO =
-                    new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC, clearCondition);
+            final CreateLevelDTO createLevelDTO = new CreateLevelDTO(SAMPLE_TITLE, SAMPLE_DESC, clearCondition);
             expectedCreatedLevel.setClearCondition(clearCondition);
 
             Mockito.when(userService.getById(OWNER_ID)).thenReturn(Optional.of(owner));
@@ -190,14 +188,14 @@ class LevelServiceTests {
     @DisplayName("when cloning a level")
     class CloneLevel {
 
-        /// Missing source level should yield an empty Optional and not persist anything.
+        /// Missing source level should yield an empty Optional and not
+        /// persist anything.
         @Test
         @DisplayName("returns empty when the source level does not exist and does not persist")
         void sourceNotFoundReturnsEmptyAndDoesNotPersist() {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
-            final Optional<Level> result =
-                service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
+            final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), owner);
 
             Assertions.assertTrue(result.isEmpty());
 
@@ -211,8 +209,7 @@ class LevelServiceTests {
             final Level source = newLevel(DEFAULT_TITLE, owner);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
 
-            final Optional<Level> result =
-                service.cloneLevel(new CloneLevelDTO(LEVEL_ID), otherUser);
+            final Optional<Level> result = service.cloneLevel(new CloneLevelDTO(LEVEL_ID), otherUser);
 
             Assertions.assertTrue(result.isEmpty());
 
@@ -224,7 +221,7 @@ class LevelServiceTests {
         @DisplayName("clones with title 'X (2)' when no other clones exist")
         void firstCloneSuffix() {
             final Level source = newLevel(ADVENTURE_TITLE, owner);
-            final Level expectedClone = source.cloneFor(owner, ADVENTURE_FIRST_CLONE_TITLE);
+            final Level expectedClone = source.cloneFor(owner, ADVENTURE_CLONE_2_TITLE);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(source));
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(source));
             Mockito.when(levelRepository.save(Mockito.refEq(expectedClone))).thenReturn(expectedClone);
@@ -282,7 +279,7 @@ class LevelServiceTests {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
+                    () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
 
             Mockito.verify(levelRepository, Mockito.never()).deleteById(LEVEL_ID);
         }
@@ -295,7 +292,7 @@ class LevelServiceTests {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(ForbiddenUserException.class,
-                () -> service.deleteLevel(OTHER_USER_ID, LEVEL_ID));
+                    () -> service.deleteLevel(OTHER_USER_ID, LEVEL_ID));
 
             Mockito.verify(levelRepository, Mockito.never()).deleteById(LEVEL_ID);
         }
@@ -308,7 +305,7 @@ class LevelServiceTests {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(LevelPublishedException.class,
-                () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
+                    () -> service.deleteLevel(OWNER_ID, LEVEL_ID));
 
             Mockito.verify(levelRepository, Mockito.never()).deleteById(LEVEL_ID);
         }
@@ -380,8 +377,8 @@ class LevelServiceTests {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                () -> service.updateLevelProperties(owner, LEVEL_ID,
-                    new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty())));
+                    () -> service.updateLevelProperties(owner, LEVEL_ID,
+                            new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty())));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
@@ -394,8 +391,8 @@ class LevelServiceTests {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(ForbiddenUserException.class,
-                () -> service.updateLevelProperties(otherUser, LEVEL_ID,
-                    new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty())));
+                    () -> service.updateLevelProperties(otherUser, LEVEL_ID,
+                            new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty())));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
@@ -408,8 +405,8 @@ class LevelServiceTests {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
             Assertions.assertThrows(LevelPublishedException.class,
-                () -> service.updateLevelProperties(owner, LEVEL_ID,
-                    new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty())));
+                    () -> service.updateLevelProperties(owner, LEVEL_ID,
+                            new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty())));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
@@ -424,7 +421,7 @@ class LevelServiceTests {
             Mockito.when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.empty(), Optional.empty()));
+                    new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.empty(), Optional.empty()));
 
             Assertions.assertEquals(NEW_TITLE, level.getTitle());
 
@@ -461,13 +458,13 @@ class LevelServiceTests {
         void updatesAllFieldsTitleDescriptionClearCondition() {
             final Level level = newLevel(OLD_TITLE, owner);
             final ClearCondition clearCondition = new ClearCondition(
-                new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
+                    new Condition.SomeClearCondition(ClearConditionType.SLIME), 3);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             Mockito.when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
-                    Optional.of(clearCondition)));
+                    new UpdateLevelDTO(Optional.of(NEW_TITLE), Optional.of(NEW_DESC),
+                            Optional.of(clearCondition)));
 
             Assertions.assertEquals(NEW_TITLE, level.getTitle());
             Assertions.assertEquals(NEW_DESC, level.getDescription());
@@ -486,7 +483,7 @@ class LevelServiceTests {
             Mockito.when(levelRepository.save(level)).thenReturn(level);
 
             service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.of(INVALIDATING_TITLE), Optional.empty(), Optional.empty()));
+                    new UpdateLevelDTO(Optional.of(INVALIDATING_TITLE), Optional.empty(), Optional.empty()));
 
             Assertions.assertFalse(level.isPublishEligible());
 
@@ -502,7 +499,7 @@ class LevelServiceTests {
             Mockito.when(levelRepository.save(level)).thenReturn(level);
 
             final Level result = service.updateLevelProperties(owner, LEVEL_ID,
-                new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty()));
+                    new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty()));
 
             Assertions.assertSame(level, result);
 
