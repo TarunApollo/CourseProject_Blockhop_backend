@@ -6,6 +6,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,12 +50,8 @@ class LevelAggregationServiceTest {
     /// Mocked attempt repository providing aggregation counts.
     @Mock
     private AttemptRepository attemptRepository;
-    /// Mocked attitude repository providing likes/dislikes counts.
-    @Mock
-    private AttitudeRepository attitudeRepository;
 
-    /// Service under test, with mocks injected.
-    @InjectMocks
+    /// Service under test.
     private LevelAggregationService service;
 
     /// Shared creator used as the owner of fixture levels.
@@ -63,6 +60,10 @@ class LevelAggregationServiceTest {
     /// Initializes the level creator used by all tests.
     @BeforeEach
     void setUp() {
+        final AttitudeRepository attitudeRepository = mock(AttitudeRepository.class);
+        final UserService userService = mock(UserService.class);
+        service = new LevelAggregationService(levelRepository, attemptRepository,
+                attitudeRepository, userService);
         creator = new User(CREATOR_ID, CREATOR_NAME);
     }
 
