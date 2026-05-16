@@ -53,6 +53,7 @@ class UserControllerTests {
     private static User user2;
 
     @BeforeAll
+    /* default */ 
     static void setupData() {
         user1 = new User(ControllerSecurityTestConfig.DEFAULT_USER_ID,
                 ControllerSecurityTestConfig.DEFAULT_USER_NAME);
@@ -60,6 +61,7 @@ class UserControllerTests {
     }
 
     @BeforeEach
+    /* default */ 
     void setup() {
         Mockito.when(userService.getById(ArgumentMatchers.any())).thenReturn(Optional.empty());
         Mockito.when(userService.getById(user1.getId())).thenReturn(Optional.of(user1));
@@ -69,10 +71,12 @@ class UserControllerTests {
 
     @Nested
     @DisplayName("GET /users")
+    /* default */ 
     class GetUsers {
 
         @Test
         @DisplayName("should return 200 OK and list of users")
+        /* default */ 
         void returnsUserList() {
             final List<UserDTO> expectedUsers = List.of(new UserDTO(user1), new UserDTO(user2));
 
@@ -87,10 +91,12 @@ class UserControllerTests {
 
     @Nested
     @DisplayName("GET /users/{id}")
+    /* default */ 
     class GetUser {
 
         @Test
         @DisplayName("should return 200 OK and user when ID exists")
+        /* default */ 
         void returnsUser() {
             final UserDTO expected = new UserDTO(user1);
 
@@ -103,6 +109,7 @@ class UserControllerTests {
 
         @Test
         @DisplayName("should return 404 Not Found when ID does not exist")
+        /* default */ 
         void returnsNotFound() {
             restTestClient.get().uri("/users/{id}", "nonexistent")
                     .exchange()
@@ -112,10 +119,12 @@ class UserControllerTests {
 
     @Nested
     @DisplayName("GET /users/search")
+    /* default */ 
     class SearchUsers {
 
         @Test
         @DisplayName("should return 200 OK and matching users")
+        /* default */ 
         void returnsMatchingUsers() {
             Mockito.when(userService.searchUsers("Alan")).thenReturn(List.of(user1));
             final List<UserDTO> expected = List.of(new UserDTO(user1));
@@ -130,10 +139,12 @@ class UserControllerTests {
 
     @Nested
     @DisplayName("GET /users/profile")
+    /* default */ 
     class GetProfile {
 
         @Test
         @DisplayName("should return 200 OK and full profile for authenticated user")
+        /* default */ 
         void returnsAuthenticatedProfile() {
             Mockito.when(attemptService.getPlayedLevelsCount(user1)).thenReturn(5L);
             Mockito.when(attemptService.getCompletedLevelsCount(user1)).thenReturn(3L);
@@ -152,6 +163,7 @@ class UserControllerTests {
         @Disabled("AM: This test does not actually check what corresponds to its description.")
         @Test
         @DisplayName("should return 404 Not Found if profile user does not exist")
+        /* default */ 
         void returnsNotFound() {
             restTestClient.get().uri("/users/profile")
 //                    .header(ControllerSecurityTestConfig.USER_ID_HEADER, "missing")
@@ -163,10 +175,12 @@ class UserControllerTests {
 
     @Nested
     @DisplayName("GET /users/me")
+    /* default */ 
     class GetMe {
 
         @Test
         @DisplayName("should return 200 OK and current user when already exists")
+        /* default */ 
         void returnsExistingMe() {
             final UserDTO expectedUserDTO = new UserDTO(user1);
 
@@ -180,6 +194,7 @@ class UserControllerTests {
         @Disabled("AM: There is actually no API to create new users, so this is not testing properly anything. Please remove.")
         @Test
         @DisplayName("should return 200 OK and create user when not exists")
+        /* default */ 
         void createsAndReturnsNewMe() {
             final String newUserId = "new-userid";
             final String newUserName = "New User";

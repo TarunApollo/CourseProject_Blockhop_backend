@@ -34,6 +34,7 @@ public class ControllerSecurityTestConfig {
     ///
     /// @return a customizer that applies the default security post-processors
     @Bean
+    /* default */ 
     MockMvcBuilderCustomizer securityDefaults() {
         return builder -> builder.defaultRequest(get("/")
                 .with(csrf())
@@ -45,6 +46,7 @@ public class ControllerSecurityTestConfig {
     /// Tests can inject this directly with `@Autowired` instead of building
     /// it manually via `RestTestClient.bindTo(mockMvc).build()`.
     @Bean
+    /* default */ 
     RestTestClient restTestClient(MockMvc mockMvc) {
         return RestTestClient.bindTo(mockMvc).build();
     }
