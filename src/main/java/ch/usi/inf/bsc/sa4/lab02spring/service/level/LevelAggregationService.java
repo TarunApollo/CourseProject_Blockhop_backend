@@ -5,9 +5,11 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ public class LevelAggregationService {
     private final AttemptRepository attemptRepository;
     /// Provides attitude statistics (likes/dislikes) used in summaries.
     private final AttitudeRepository attitudeRepository;
+    /// Resolves users for enriching summaries with user-specific attitudes.
+    private final UserService userService;
 
     /// Creates an aggregation service with repository dependencies.
     ///
@@ -34,10 +38,12 @@ public class LevelAggregationService {
     public LevelAggregationService(
             final LevelRepository levelRepository,
             final AttemptRepository attemptRepository,
-            final AttitudeRepository attitudeRepository) {
+            final AttitudeRepository attitudeRepository,
+            final UserService userService) {
         this.levelRepository = levelRepository;
         this.attemptRepository = attemptRepository;
         this.attitudeRepository = attitudeRepository;
+        this.userService = userService;
     }
 
     /// Builds a summary for the given level. Computes play count, clear rate,
@@ -58,15 +64,13 @@ public class LevelAggregationService {
         if (sortBy == PublishedLevelSortBy.POPULARITY && period instanceof RelativeDateRangePreset relative) {
             popularity = this.attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
         }
-        final long likes = this.attitudeRepository.countLikesByLevel(level);
-        final long dislikes = this.attitudeRepository.countDislikesByLevel(level);
         final String userAttitude = currentUserId == null
                 ? null
-                : this.attitudeRepository.findByLevelIdAndUserId(level.getId(), currentUserId)
+                : this.attitudeRepository.findByLevelAndUser(level, this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new))
                         .map(attitude -> attitude.getAttitude().value())
                         .orElse(null);
 
-        return new LevelSummaryDto(level, playCount, clearRate, popularity, likes, dislikes, userAttitude);
+        return new LevelSummaryDto(level, playCount, clearRate, popularity, userAttitude);
     }
 
     /// Returns all published levels as summaries. Applies the requested sorting

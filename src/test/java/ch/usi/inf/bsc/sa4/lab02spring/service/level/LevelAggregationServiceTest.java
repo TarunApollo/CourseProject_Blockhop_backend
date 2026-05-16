@@ -358,12 +358,6 @@ class LevelAggregationServiceTest {
     private void stubAttempts(final Level level, final long plays, final long clears) {
         lenient().when(attemptRepository.countByLevel(level)).thenReturn(plays);
         lenient().when(attemptRepository.countByLevelAndCompletedTrue(level)).thenReturn(clears);
-        stubAttitudes(level, 0, 0); // Default to 0 likes and 0 dislikes
     }
-
-    /// Stubs the attitude repository to return the given like and dislike counts.
-    private void stubAttitudes(final Level level, final long likes, final long dislikes) {
-        lenient().when(attitudeRepository.countLikesByLevel(level)).thenReturn(likes);
-        lenient().when(attitudeRepository.countDislikesByLevel(level)).thenReturn(dislikes);
-    }
+    
 }

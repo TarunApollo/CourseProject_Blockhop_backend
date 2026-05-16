@@ -59,7 +59,7 @@ class LevelAggregationControllerTests {
         @DisplayName("should return list of published levels sorted by CLEAR_RATE")
         void testGetPublishedLevels() {
                 final List<LevelSummaryDto> summaries = List.of(
-                                new LevelSummaryDto(testLevel, 10, 0.5, 5, 3, 2));
+                                new LevelSummaryDto(testLevel, 10, 0.5, 2));
                 Mockito.when(levelAggregationService.getPublishedLevels(
                                 Mockito.eq(PublishedLevelSortBy.CLEAR_RATE),
                                 Mockito.any(DateRangePreset.class),

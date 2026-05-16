@@ -23,8 +23,6 @@ public record LevelSummaryDto(
                 long playCount,
                 double clearRate,
                 long popularity,
-                long likes,
-                long dislikes,
                 @Nullable String userAttitude,
                 @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GameObject> objectLayer,
                 @JsonSerialize(using = FieldSerializer.LevelDTOWorldLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GroundObject> worldLayer) {
@@ -40,10 +38,8 @@ public record LevelSummaryDto(
         public LevelSummaryDto(final Level level,
                         final long playCount,
                         final double clearRate,
-                        final long popularity,
-                        final long likes,
-                        final long dislikes) {
-                this(level, playCount, clearRate, popularity, likes, dislikes, null);
+                        final long popularity) {
+                this(level, playCount, clearRate, popularity, null);
         }
 
         /// Constructs a LevelSummaryDto from the given Level entity and statistics,
@@ -60,8 +56,6 @@ public record LevelSummaryDto(
                         final long playCount,
                         final double clearRate,
                         final long popularity,
-                        final long likes,
-                        final long dislikes,
                         final @Nullable String userAttitude) {
                 this(
                                 level.getId(),
@@ -71,8 +65,6 @@ public record LevelSummaryDto(
                                 playCount,
                                 clearRate,
                                 popularity,
-                                likes,
-                                dislikes,
                                 userAttitude,
                                 level.getObjectLayer(),
                                 level.getWorldLayer());

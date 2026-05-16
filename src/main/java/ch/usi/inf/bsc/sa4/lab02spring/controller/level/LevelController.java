@@ -3,12 +3,9 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LikeDislikeCountDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
@@ -43,8 +40,6 @@ public class LevelController {
     private final UserService userService;
     /// Handles operations related to level attitudes (likes and dislikes).
     private final LevelAttitudeService levelAttitudeService;
-    /// Persists and loads level entities.
-    private final LevelRepository levelRepository;
 
     /// Constructs a new LevelController.
     /// 
@@ -56,12 +51,10 @@ public class LevelController {
     public LevelController(
             final LevelService levelService,
             final UserService userService,
-            final LevelAttitudeService levelAttitudeService,
-            final LevelRepository levelRepository) {
+            final LevelAttitudeService levelAttitudeService) {
         this.levelService = levelService;
         this.userService = userService;
         this.levelAttitudeService = levelAttitudeService;
-        this.levelRepository = levelRepository;
     }
 
     /// Creates a new empty level and returns a level DTO.
@@ -159,19 +152,13 @@ public class LevelController {
     /// @throws UserNotFoundException  if the authenticated user does not exist
     /// @throws LevelNotFoundException if the level does not exist
     @PutMapping("/{levelId}/attitude")
-    public ResponseEntity<LikeDislikeCountDTO> setLevelAttitude(
+    public ResponseEntity<Void> setLevelAttitude(
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final SetLevelAttitudeDTO dto) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
         this.levelAttitudeService.setAttitude(userId, levelId, dto.attitude());
-
-        // Fetch the level and compute updated counts
-        final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
-        final long likes = this.levelAttitudeService.countLikesByLevel(level);
-        final long dislikes = this.levelAttitudeService.countDislikesByLevel(level);
-
-        return ResponseEntity.ok(new LikeDislikeCountDTO(likes, dislikes));
+        return ResponseEntity.ok().build();
     }
 
     /// Deletes the authenticated user's attitude (like/dislike) towards a level if

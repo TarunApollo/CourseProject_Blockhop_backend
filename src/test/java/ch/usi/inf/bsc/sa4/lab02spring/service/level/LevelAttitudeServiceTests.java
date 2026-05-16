@@ -60,7 +60,8 @@ class LevelAttitudeServiceTests {
         expectedNewAttitude = new LevelAttitude(user, level, LevelAttitudeType.LIKE);
     }
 
-    /// Verifies that setAttitude throws UserNotFoundException when the user is missing.
+    /// Verifies that setAttitude throws UserNotFoundException when 
+    /// the user is missing.
     @Test
     @DisplayName("setAttitude throws when user missing")
     void setAttitudeUserMissing() {
@@ -70,7 +71,8 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
-    /// Verifies that setAttitude throws LevelNotFoundException when the level is missing.
+    /// Verifies that setAttitude throws LevelNotFoundException when 
+    /// the level is missing.
     @Test
     @DisplayName("setAttitude throws when level missing")
     void setAttitudeLevelMissing() {
@@ -81,7 +83,8 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
-    /// Verifies that setAttitude updates an existing attitude instead of creating a new one.
+    /// Verifies that setAttitude updates an existing attitude instead 
+    /// of creating a new one.
     @Test
     @DisplayName("setAttitude updates existing attitude")
     void setAttitudeUpdatesExisting() {

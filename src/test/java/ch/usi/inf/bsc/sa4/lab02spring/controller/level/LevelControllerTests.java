@@ -4,6 +4,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
@@ -142,37 +144,18 @@ class LevelControllerTests {
         }
     }
 
-    /// Verifies that deleting a level returns 204 No Content.
+    /// Verifies that setting an attitude returns 200 OK.
     @Test
-    @DisplayName("DELETE /levels/{id} should return 204")
-    void testDeleteLevel() {
-        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
-            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
-            Mockito.doNothing().when(levelService).deleteLevel(USER_ID, LEVEL_ID);
-
-            final HttpStatusCode status = restTestClient.delete().uri("/levels/{id}", LEVEL_ID)
-                    .exchange()
-                    .returnResult(Void.class)
-                    .getStatus();
-            Assertions.assertEquals(HttpStatus.NO_CONTENT, status);
-        }
-    }
-
-    /// Verifies that setting an attitude returns 200 OK with updated counts.
-    @Test
-    @DisplayName("PUT /levels/{id}/attitude should return 200 OK with counts")
+    @DisplayName("PUT /levels/{id}/attitude should return 200 OK")
     void testSetLevelAttitude() {
         try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
             mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn(USER_ID);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(levelAttitudeService.countLikesByLevel(testLevel)).thenReturn(1L);
-            Mockito.when(levelAttitudeService.countDislikesByLevel(testLevel)).thenReturn(0L);
 
             final HttpStatusCode status = restTestClient.put().uri("/levels/{id}/attitude", LEVEL_ID)
-                    .body(new ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO(
-                            ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType.LIKE))
+                    .body(new SetLevelAttitudeDTO(LevelAttitudeType.LIKE))
                     .exchange()
-                    .returnResult(ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LikeDislikeCountDTO.class)
+                    .returnResult(Void.class)
                     .getStatus();
             Assertions.assertEquals(HttpStatus.OK, status);
         }
