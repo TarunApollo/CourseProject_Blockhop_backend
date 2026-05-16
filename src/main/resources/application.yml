@@ -1,4 +1,7 @@
 spring:
+  output:
+    ansi:
+      enabled: always
   data:
     mongodb:
       database: users_tutorial_lab02
