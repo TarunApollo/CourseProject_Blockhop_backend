@@ -95,9 +95,9 @@ class LevelAttitudeServiceTests {
         Mockito.when(attitudeRepository.findByLevelAndUser(level, user)).thenReturn(Optional.of(existing));
         Mockito.when(attitudeRepository.save(existing)).thenAnswer(i -> i.getArgument(0));
 
-        final LevelAttitude result = service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE);
+        service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE);
 
-        Assertions.assertEquals(LevelAttitudeType.LIKE, result.getAttitude());
+        Assertions.assertEquals(LevelAttitudeType.LIKE, existing.getAttitude());
         Mockito.verify(attitudeRepository).save(existing);
     }
 
@@ -110,9 +110,9 @@ class LevelAttitudeServiceTests {
         Mockito.when(attitudeRepository.findByLevelAndUser(level, user)).thenReturn(Optional.empty());
         Mockito.when(attitudeRepository.save(Mockito.refEq(expectedNewAttitude))).thenReturn(expectedNewAttitude);
 
-        final LevelAttitude result = service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE);
+        service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE);
 
-        Assertions.assertSame(expectedNewAttitude, result);
+        Mockito.verify(attitudeRepository).save(Mockito.refEq(expectedNewAttitude));
     }
 
     /// Verifies that deleteAttitude deletes the attitude when it exists.

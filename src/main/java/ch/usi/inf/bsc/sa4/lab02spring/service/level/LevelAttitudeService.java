@@ -53,20 +53,19 @@ public class LevelAttitudeService {
     /// @return the created or updated LevelAttitude
     /// @throws UserNotFoundException  if the user does not exist
     /// @throws LevelNotFoundException if the level does not exist
-    public LevelAttitude setAttitude(final String userId, final String levelId, final LevelAttitudeType attitudeType) {
+    public void setAttitude(final String userId, final String levelId, final LevelAttitudeType attitudeType) {
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
 
-        // Find existing attitude by level and user (at most one per user-level pair)
         final Optional<LevelAttitude> existing = this.attitudeRepository.findByLevelAndUser(level, user);
 
         if (existing.isPresent()) {
             final LevelAttitude att = existing.get();
             att.setAttitude(attitudeType);
-            return this.attitudeRepository.save(att);
+            this.attitudeRepository.save(att);
         } else {
             final LevelAttitude newAttitude = new LevelAttitude(user, level, attitudeType);
-            return this.attitudeRepository.save(newAttitude);
+            this.attitudeRepository.save(newAttitude);
         }
     }
 

@@ -45,6 +45,7 @@ import java.util.Optional;
 })
 @AutoConfigureRestTestClient
 @DisplayName("Level Controller CRUD Logic Tests")
+@SuppressWarnings("PMD.TooManyImports") // justification: the imports are necessary for mocking and testing
 class LevelControllerTests {
 
     /// The authenticated user ID used across tests.

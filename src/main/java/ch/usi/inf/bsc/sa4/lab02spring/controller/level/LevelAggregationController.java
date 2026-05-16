@@ -54,14 +54,15 @@ public class LevelAggregationController {
     }
 
     private @Nullable String resolveCurrentUserId(final Authentication authentication) {
-        if (authentication == null) {
-            return null;
+        String userId = null;
+        if (authentication != null) {
+            try {
+                userId = AuthUtils.getUserIdFromAuth(authentication);
+            } catch (ResponseStatusException ignored) {
+                // leave userId as null
+            }
         }
 
-        try {
-            return AuthUtils.getUserIdFromAuth(authentication);
-        } catch (ResponseStatusException ignored) {
-            return null;
-        }
+        return userId;
     }
 }
