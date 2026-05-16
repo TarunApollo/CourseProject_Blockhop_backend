@@ -42,20 +42,20 @@ import java.util.Optional;
 @DisplayName("The User Controller")
 class UserControllerTests {
 
-    @MockitoBean
     /// Mocked user service used across all user endpoint tests.
+    @MockitoBean
     private UserService userService;
 
-    @MockitoBean
     /// Mocked level service used by profile-related tests.
+    @MockitoBean
     private LevelService levelService;
 
-    @MockitoBean
     /// Mocked attempt service used for played/completed level counters.
+    @MockitoBean
     private AttemptService attemptService;
 
-    @Autowired
     /// HTTP client bound to MockMvc for black-box endpoint assertions.
+    @Autowired
     private RestTestClient restTestClient;
 
     /// Static fixture user used in controller test scenarios.
@@ -81,10 +81,10 @@ class UserControllerTests {
         Mockito.when(userService.getAllUsers()).thenReturn(List.of(user1, user2));
     }
 
+    /// Tests for listing users.
     @Nested
     @DisplayName("GET /users")
     /* default */ 
-    /// Tests for listing users.
     class GetUsers {
 
         @Test
@@ -102,10 +102,10 @@ class UserControllerTests {
         }
     }
 
+    /// Tests for fetching a user by id.
     @Nested
     @DisplayName("GET /users/{id}")
     /* default */ 
-    /// Tests for fetching a user by id.
     class GetUser {
 
         @Test
@@ -131,10 +131,10 @@ class UserControllerTests {
         }
     }
 
+    /// Tests for user search endpoint behavior.
     @Nested
     @DisplayName("GET /users/search")
     /* default */ 
-    /// Tests for user search endpoint behavior.
     class SearchUsers {
 
         @Test
@@ -152,10 +152,10 @@ class UserControllerTests {
         }
     }
 
+    /// Tests for authenticated profile aggregation endpoint.
     @Nested
     @DisplayName("GET /users/profile")
     /* default */ 
-    /// Tests for authenticated profile aggregation endpoint.
     class GetProfile {
 
         @Test
@@ -189,10 +189,10 @@ class UserControllerTests {
         }
     }
 
+    /// Tests for resolving the current authenticated user.
     @Nested
     @DisplayName("GET /users/me")
     /* default */ 
-    /// Tests for resolving the current authenticated user.
     class GetMe {
 
         @Test

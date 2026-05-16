@@ -55,8 +55,8 @@ class EditorControllerTests {
     @MockitoBean
     private EditorService editorService;
 
+    /// HTTP client bound to MockMvc for controller endpoint checks.
     @Autowired
-    // HTTP client bound to MockMvc for controller endpoint checks.
     private RestTestClient restTestClient;
 
     /// A test level owned by the test user.
