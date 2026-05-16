@@ -3,10 +3,13 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelFavoriteService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
 
 import org.junit.jupiter.api.Assertions;
@@ -26,6 +29,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +41,7 @@ import java.util.Optional;
  * We disable Spring's Security and mock the existence of authenticated users,
  * testing business-logic only.
  */
+@SuppressWarnings("PMD.ExcessiveImports")
 @WebMvcTest(controllers = UserController.class, excludeAutoConfiguration = {
         SecurityAutoConfiguration.class,
         OAuth2ClientAutoConfiguration.class,
@@ -63,6 +68,12 @@ class UserControllerLogicTests {
      */
     @MockitoBean
     private AttemptService attemptService;
+
+    /**
+     * The mocked favorite service.
+     */
+    @MockitoBean
+    private LevelFavoriteService levelFavoriteService;
 
     /**
      * The RestTestClient for performing requests.
@@ -180,6 +191,28 @@ class UserControllerLogicTests {
                     .expectStatus().isOk()
                     .expectBody(UserDTO.class)
                     .isEqualTo(expectedUserDTO));
+        }
+    }
+
+    /**
+     * Verifies that GET /users/me/favorites returns the list of
+     * favorited levels for the authenticated user.
+     */
+    @Test
+    @DisplayName("GET /users/me/favorites should return the favorited levels")
+    void testGetFavorites() {
+        try (MockedStatic<AuthUtils> mockedAuth = Mockito.mockStatic(AuthUtils.class)) {
+            mockedAuth.when(() -> AuthUtils.getUserIdFromAuth(Mockito.any())).thenReturn("userid1");
+
+            final Level favoritedLevel = new Level("Favorited", "desc", user1);
+            final LevelFavorite favorite = new LevelFavorite(user1, favoritedLevel, ZonedDateTime.now());
+            Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(favorite));
+
+            Assertions.assertDoesNotThrow(() -> restTestClient.get().uri("/users/me/favorites")
+                    .exchange()
+                    .expectStatus().isOk());
+
+            Mockito.verify(levelFavoriteService).getFavoritesByUser(user1);
         }
     }
 
