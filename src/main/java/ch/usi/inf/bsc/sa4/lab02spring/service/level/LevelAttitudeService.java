@@ -50,7 +50,6 @@ public class LevelAttitudeService {
     /// @param userId       the unique identifier of the user
     /// @param levelId      the unique identifier of the level
     /// @param attitudeType the attitude type (like or dislike)
-    /// @return the created or updated LevelAttitude
     /// @throws UserNotFoundException  if the user does not exist
     /// @throws LevelNotFoundException if the level does not exist
     public void setAttitude(final String userId, final String levelId, final LevelAttitudeType attitudeType) {
