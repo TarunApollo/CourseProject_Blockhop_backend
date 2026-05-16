@@ -37,7 +37,11 @@ import java.util.List;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.UnitTestShouldIncludeAssert",
+    "PMD.CommentRequired"
+})
 @DisplayName("The Editor Controller")
 class EditorControllerTests {
 

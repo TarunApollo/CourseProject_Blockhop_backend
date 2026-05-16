@@ -34,23 +34,28 @@ import java.util.Optional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.AtLeastOneConstructor" })
+@SuppressWarnings({
+    "PMD.UnitTestShouldIncludeAssert",
+    "PMD.AtLeastOneConstructor",
+    "PMD.CommentRequired"
+})
 @DisplayName("The User Controller")
 class UserControllerTests {
 
     @MockitoBean
+    /// Mocked user service used across all user endpoint tests.
     private UserService userService;
 
     @MockitoBean
-    // Mocked level service used by profile-related tests.
+    /// Mocked level service used by profile-related tests.
     private LevelService levelService;
 
     @MockitoBean
-    // Mocked attempt service used for played/completed level counters.
+    /// Mocked attempt service used for played/completed level counters.
     private AttemptService attemptService;
 
     @Autowired
-    // HTTP client bound to MockMvc for black-box endpoint assertions.
+    /// HTTP client bound to MockMvc for black-box endpoint assertions.
     private RestTestClient restTestClient;
 
     /// Static fixture user used in controller test scenarios.
@@ -79,7 +84,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users")
     /* default */ 
-    // Tests for listing users.
+    /// Tests for listing users.
     class GetUsers {
 
         @Test
@@ -100,7 +105,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/{id}")
     /* default */ 
-    // Tests for fetching a user by id.
+    /// Tests for fetching a user by id.
     class GetUser {
 
         @Test
@@ -129,7 +134,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/search")
     /* default */ 
-    // Tests for user search endpoint behavior.
+    /// Tests for user search endpoint behavior.
     class SearchUsers {
 
         @Test
@@ -150,7 +155,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/profile")
     /* default */ 
-    // Tests for authenticated profile aggregation endpoint.
+    /// Tests for authenticated profile aggregation endpoint.
     class GetProfile {
 
         @Test
@@ -187,7 +192,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/me")
     /* default */ 
-    // Tests for resolving the current authenticated user.
+    /// Tests for resolving the current authenticated user.
     class GetMe {
 
         @Test
