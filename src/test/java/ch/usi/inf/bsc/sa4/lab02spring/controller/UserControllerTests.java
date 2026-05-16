@@ -40,16 +40,21 @@ class UserControllerTests {
     private UserService userService;
 
     @MockitoBean
+    /// Mocked level service used by profile-related tests.
     private LevelService levelService;
 
     @MockitoBean
+    /// Mocked attempt service used for played/completed level counters.
     private AttemptService attemptService;
 
     @Autowired
+    /// HTTP client bound to MockMvc for black-box endpoint assertions.
     private RestTestClient restTestClient;
 
+    /// Static fixture user used in controller test scenarios.
     private static User user1;
 
+    /// Secondary static fixture user used in list/search tests.
     private static User user2;
 
     @BeforeAll
@@ -72,6 +77,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users")
     /* default */ 
+    /// Tests for listing users.
     class GetUsers {
 
         @Test
@@ -92,6 +98,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/{id}")
     /* default */ 
+    /// Tests for fetching a user by id.
     class GetUser {
 
         @Test
@@ -120,6 +127,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/search")
     /* default */ 
+    /// Tests for user search endpoint behavior.
     class SearchUsers {
 
         @Test
@@ -140,6 +148,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/profile")
     /* default */ 
+    /// Tests for authenticated profile aggregation endpoint.
     class GetProfile {
 
         @Test
@@ -176,6 +185,7 @@ class UserControllerTests {
     @Nested
     @DisplayName("GET /users/me")
     /* default */ 
+    /// Tests for resolving the current authenticated user.
     class GetMe {
 
         @Test
