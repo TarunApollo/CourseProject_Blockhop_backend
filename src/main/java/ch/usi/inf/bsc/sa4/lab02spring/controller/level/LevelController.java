@@ -46,7 +46,6 @@ public class LevelController {
     /// @param levelService         the service for managing core level operations
     /// @param userService          the service for accessing user data
     /// @param levelAttitudeService the service for managing level attitudes
-    /// @param levelRepository      the repository for accessing level data
     @Autowired
     public LevelController(
             final LevelService levelService,

@@ -3,21 +3,27 @@ package ch.usi.inf.bsc.sa4.lab02spring.repository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
-import org.springframework.data.mongodb.repository.Query;
 
 import java.lang.reflect.Method;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+
 /// Unit tests for AttitudeRepository
-@DisplayName("AttitudeRepository annotation checks")
+@DisplayName("AttitudeRepository method checks")
 class AttitudeRepositoryTests {
 
-    /// Verifies that findByLevelIdAndUserId has the correct @Query annotation.
     @Test
-    @DisplayName("findByLevelIdAndUserId should have a Query annotation with expected JSON")
-    void queryAnnotationPresent() throws NoSuchMethodException {
-        final Method m = AttitudeRepository.class.getMethod("findByLevelIdAndUserId", String.class, String.class);
-        final Query q = m.getAnnotation(Query.class);
-        Assertions.assertNotNull(q, "Expected @Query on findByLevelIdAndUserId");
-        Assertions.assertEquals("{ 'level.id': ?0, 'user.id': ?1 }", q.value());
+    @DisplayName("findByLevelAndUser exists with correct signature")
+    void findByLevelAndUserExists() throws NoSuchMethodException {
+        final Method m = AttitudeRepository.class.getMethod("findByLevelAndUser", Level.class, User.class);
+        Assertions.assertNotNull(m, "Expected method findByLevelAndUser(Level, User) to be present");
+    }
+
+    @Test
+    @DisplayName("deleteByLevelAndUser exists with correct signature")
+    void deleteByLevelAndUserExists() throws NoSuchMethodException {
+        final Method m = AttitudeRepository.class.getMethod("deleteByLevelAndUser", Level.class, User.class);
+        Assertions.assertNotNull(m, "Expected method deleteByLevelAndUser(Level, User) to be present");
     }
 }

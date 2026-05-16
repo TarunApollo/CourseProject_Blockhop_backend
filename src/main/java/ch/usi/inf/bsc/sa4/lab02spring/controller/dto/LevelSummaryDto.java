@@ -33,8 +33,6 @@ public record LevelSummaryDto(
         /// @param playCount  the total number of attempts on this level
         /// @param clearRate  the ratio of completed attempts to total attempts
         /// @param popularity the number of attempts within a recent time period
-        /// @param likes      the total number of likes for this level
-        /// @param dislikes   the total number of dislikes for this level
         public LevelSummaryDto(final Level level,
                         final long playCount,
                         final double clearRate,
@@ -49,8 +47,6 @@ public record LevelSummaryDto(
         /// @param playCount    the total number of attempts on this level
         /// @param clearRate    the ratio of completed attempts to total attempts
         /// @param popularity   the number of attempts within a recent time period
-        /// @param likes        the total number of likes for this level
-        /// @param dislikes     the total number of dislikes for this level
         /// @param userAttitude the current user's attitude for this level, or null
         public LevelSummaryDto(final Level level,
                         final long playCount,
