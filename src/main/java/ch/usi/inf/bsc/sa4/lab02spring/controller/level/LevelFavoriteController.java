@@ -57,7 +57,7 @@ public class LevelFavoriteController {
     /// @spec.effects creates a new LevelFavorite for the authenticated user and the
     ///               given level if no such favorite exists yet; otherwise no
     ///               operation is performed.
-    /// @param authentication abstract token for authentication
+    /// @param oauth2User the authenticated OAuth2 user
     /// @param levelId        the id of the level to favorite
     /// @return a 204 No Content response on success
     /// @throws UserNotFoundException  if no user with the authenticated id exists
@@ -81,7 +81,7 @@ public class LevelFavoriteController {
     /// @spec.effects deletes the LevelFavorite for the authenticated user and the
     ///               given levelId if one exists; otherwise no operation is
     ///               performed (idempotent).
-    /// @param authentication abstract token for authentication
+    /// @param oauth2User the authenticated OAuth2 user
     /// @param levelId        the id of the level to unfavorite
     /// @return a 204 No Content response on success
     /// @throws UserNotFoundException if no user with the authenticated id exists

@@ -45,6 +45,7 @@ public class LevelAggregationController {
     ///               ALL_TIME): ALL_TIME, TODAY, LAST_7_DAYS, LAST_30_DAYS,
     ///               LAST_365_DAYS. Only relevant when sortBy is POPULARITY; ignored
     ///               for CLEAR_RATE.
+    /// @param oauth2User the authenticated OAuth2 user
     /// @return a list of published levels sorted by the specified criteria
     @GetMapping("/published")
     public List<LevelSummaryDto> getPublishedLevels(

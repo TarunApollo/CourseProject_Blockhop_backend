@@ -136,8 +136,8 @@ public class UserController {
 
     /// Returns the levels favorited by the authenticated user.
     ///
-    /// @spec.requires authentication is not null.
-    /// @param authentication abstract token for authentication
+    /// @spec.requires oAuth2User is not null.
+    /// @param oAuth2User the authenticated OAuth2 user
     /// @return a 200 OK response containing the user's favorited levels as DTOs
     /// @throws UserNotFoundException if no user with the authenticated id exists
     @GetMapping("/me/favorites")

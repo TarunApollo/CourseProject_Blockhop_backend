@@ -146,7 +146,7 @@ public class LevelController {
     /// level. If the user already has an attitude for the level, it will be updated.
     /// Otherwise, a new attitude record will be created.
     /// 
-    /// @param authentication the current authenticated user
+    /// @param oauth2User the current authenticated user
     /// @param levelId        the ID of the level to set attitude for
     /// @param dto            the DTO containing the attitude (like or dislike)
     /// @return 200 OK when the attitude is set successfully, with the updated
@@ -166,7 +166,7 @@ public class LevelController {
     /// Deletes the authenticated user's attitude (like/dislike) towards a level if
     /// it exists.
     /// 
-    /// @param authentication the current authenticated user
+    /// @param oauth2User the current authenticated user
     /// @param levelId        the ID of the level to delete attitude for
     /// @return 204 No Content when the attitude is deleted successfully or if no
     ///         attitude existed
