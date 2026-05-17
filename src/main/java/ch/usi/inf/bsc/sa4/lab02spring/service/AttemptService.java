@@ -3,9 +3,12 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateAttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AttemptNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,7 +57,7 @@ public class AttemptService {
     /// @param level     the level the attempt was made on
     /// @param dto       the DTO containing the attempt timestamp and time taken
     ///                  condition
-    public void submitAttempt(final User user, final Level level, final AttemptDTO dto) {
+    public Attempt submitAttempt(final User user, final Level level, final AttemptDTO dto) {
         final Attempt attempt = new Attempt(
                 user,
                 dto.timestamp(),
@@ -62,6 +65,26 @@ public class AttemptService {
                 dto.completed(),
                 dto.timeTaken()
         );
+        return this.attemptRepository.save(attempt);
+    }
+
+    public Attempt getAttemptById(final String attemptId) {
+        return this.attemptRepository.findById(attemptId)
+                .orElseThrow(AttemptNotFoundException::new);
+    }
+
+    public void updateAntiCheatStatus(final String attemptId,
+                                      final User user,
+                                      final String levelId,
+                                      final AttemptVerificationStatus antiCheatStatus) {
+        final Attempt attempt = getAttemptById(attemptId);
+        if (!attempt.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenUserException("Attempt does not belong to this user");
+        }
+        if (!attempt.getLevel().getId().equals(levelId)) {
+            throw new IllegalArgumentException("Attempt does not belong to this level");
+        }
+        attempt.setAntiCheatStatus(antiCheatStatus);
         this.attemptRepository.save(attempt);
     }
 }

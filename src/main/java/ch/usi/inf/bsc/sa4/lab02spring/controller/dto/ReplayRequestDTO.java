@@ -4,6 +4,7 @@ import java.util.List;
 
 public record ReplayRequestDTO(
         String levelId,
+        String attemptId,
         int totalFrames,
         List<InputFrameDTO> inputLog
 ) {

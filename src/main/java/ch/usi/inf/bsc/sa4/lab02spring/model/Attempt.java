@@ -5,8 +5,6 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
@@ -14,7 +12,6 @@ import java.time.ZonedDateTime;
 /// played, when it happened, which level was played, whether the level was
 /// completed, and how long the attempt took.
 @SuppressWarnings("NullAway.Init")
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "attempts")
 public class Attempt {
 
@@ -39,7 +36,10 @@ public class Attempt {
     /// Time spent on the attempt.
     /* package */ Duration timeTaken;
 
-    /// Creates a new attempt without an explicit id.
+    /// Result of replay based anti cheat verification for this attempt.
+    /* package */ AttemptVerificationStatus antiCheatStatus;
+
+    /// Creates a new attempt. An id is auto-generated.
     ///
     /// @param user      the user who made the attempt
     /// @param timestamp the creation timestamp
@@ -53,6 +53,7 @@ public class Attempt {
         this.level = level;
         this.completed = completed;
         this.timeTaken = timeTaken;
+        this.antiCheatStatus = AttemptVerificationStatus.NOT_VERIFIED;
     }
 
     /// Creates a persisted attempt with an explicit id.
@@ -65,13 +66,15 @@ public class Attempt {
     /// @param timeTaken the duration of the attempt
     @PersistenceCreator
     public Attempt(final String id, final User user, final ZonedDateTime timestamp, final Level level,
-            final boolean completed, final Duration timeTaken) {
+            final boolean completed, final Duration timeTaken,
+            final AttemptVerificationStatus antiCheatStatus) {
         this.id = id;
         this.user = user;
         this.timestamp = timestamp;
         this.level = level;
         this.completed = completed;
         this.timeTaken = timeTaken;
+        this.antiCheatStatus = antiCheatStatus;
     }
 
     public String getId() {
@@ -100,5 +103,13 @@ public class Attempt {
 
     public void setCompleted(final boolean completed) {
         this.completed = completed;
+    }
+
+    public AttemptVerificationStatus getAntiCheatStatus() {
+        return antiCheatStatus;
+    }
+
+    public void setAntiCheatStatus(final AttemptVerificationStatus antiCheatStatus) {
+        this.antiCheatStatus = antiCheatStatus;
     }
 }

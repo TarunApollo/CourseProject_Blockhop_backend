@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPlayService;
@@ -66,12 +67,12 @@ public class LevelPlayController {
     /// @throws ForbiddenUserException if the authenticated user is not the
     ///         owner of the level when marking it as publish eligible
     @PostMapping("/{levelId}/submit")
-    public ResponseEntity<String> submitAttempt(
+    public ResponseEntity<AttemptResponseDTO> submitAttempt(
             final Authentication authentication,
             @PathVariable final String levelId,
             @RequestBody final AttemptDTO dto) {
         final String userId = AuthUtils.getUserIdFromAuth(authentication);
-        return ResponseEntity.ok(this.levelPlayService.handleLevelSubmission(levelId, userId, dto));
+        return ResponseEntity.ok(new AttemptResponseDTO(this.levelPlayService.handleLevelSubmission(levelId, userId, dto)));
     }
 
     /// Returns a Tiled/Phaser-compatible map for the requested playable level.

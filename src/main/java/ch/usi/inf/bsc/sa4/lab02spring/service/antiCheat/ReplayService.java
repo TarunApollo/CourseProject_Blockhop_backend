@@ -38,12 +38,12 @@ public class ReplayService {
 
         if (npx == null) {
             AntiCheatLog.replayError(userId, levelId, "npx not found on PATH");
-            return new ReplayResultDTO(false, "npx_not_found", 0);
+            return new ReplayResultDTO(false, "error:npx_not_found", 0);
         }
 
         if (script == null) {
             AntiCheatLog.replayError(userId, levelId, "Replay script not found");
-            return new ReplayResultDTO(false, "script_not_found", 0);
+            return new ReplayResultDTO(false, "error:script_not_found", 0);
         }
 
         Path levelFile = null;
@@ -78,7 +78,7 @@ public class ReplayService {
             if (!process.waitFor(REPLAY_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
                 AntiCheatLog.replayTimeout(userId, levelId);
-                return new ReplayResultDTO(false, "timeout", 0);
+                return new ReplayResultDTO(false, "error:process_timeout", 0);
             }
 
             final String resultLine = output.toString().trim();
@@ -89,17 +89,11 @@ public class ReplayService {
 
             final ReplayProcessResult parsed = objectMapper.readValue(lastLine, ReplayProcessResult.class);
 
-            if (parsed.valid()) {
-                AntiCheatLog.replayValid(userId, levelId, parsed.reason());
-            } else {
-                AntiCheatLog.replayInvalid(userId, levelId, parsed.reason());
-            }
-
             return new ReplayResultDTO(parsed.valid(), parsed.reason(), parsed.frame());
 
         } catch (final Exception e) {
             AntiCheatLog.replayError(userId, levelId, String.valueOf(e.getMessage()));
-            return new ReplayResultDTO(false, "execution_error", 0);
+            return new ReplayResultDTO(false, "error:execution_error", 0);
         } finally {
             try {
                 if (levelFile != null) {

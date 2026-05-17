@@ -33,7 +33,12 @@ public final class AntiCheatLog {
 
     public static void replayValid(final String userId, final String levelId, final String reason) {
         log.info("{} {} for player {} on level {}: {}",
-                green("[ANTICHEAT]"), bold("REPLAY VALID"), userId, levelId, reason);
+                green("[ANTICHEAT]"), bold("REPLAY VERIFIED"), userId, levelId, reason);
+    }
+
+    public static void replayMismatch(final String userId, final String levelId, final String reason) {
+        log.warn("{} {} for player {} on level {}: {}",
+                red("[ANTICHEAT]"), bold("REPLAY MISMATCH"), userId, levelId, reason);
     }
 
     public static void replayInvalid(final String userId, final String levelId, final String reason) {

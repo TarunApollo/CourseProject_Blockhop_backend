@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -92,7 +93,23 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     ///
+    /// Converts a Date read from MongoDB (BSON date) to a ZonedDateTime in UTC.
+    /// The writing converter stores ZonedDateTime as Instant, which the MongoDB
+    /// driver serialises to BSON Date. On read the driver returns Date, so this
+    /// converter accepts Date rather than Instant.
+    ///
+    @ReadingConverter
+    public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
+        @Override
+        public ZonedDateTime convert(final Date date) {
+            return date.toInstant().atZone(ZoneOffset.UTC);
+        }
+    }
+
+    ///
     /// Converts an Instant read from MongoDB to a ZonedDateTime in UTC.
+    /// Defensive fallback — covers cases where the stored type reaches the
+    /// Java layer as Instant rather than Date.
     ///
     @ReadingConverter
     public static class InstantToZonedDateTimeConverter implements Converter<Instant, ZonedDateTime> {
@@ -108,6 +125,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToInstantConverter());
+        custom.add(new DateToZonedDateTimeConverter());
         custom.add(new InstantToZonedDateTimeConverter());
         return new MongoCustomConversions(custom);
     }
