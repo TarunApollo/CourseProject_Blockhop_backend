@@ -1,6 +1,9 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
@@ -86,9 +89,21 @@ class LevelPlayControllerTests {
 
             final AttemptDTO dto = new AttemptDTO(Map.of(), new Position(0, 0), 
                     FIXED_TIMESTAMP, FIXED_DURATION, true);
-            
+
+            final Level mockLevel = Mockito.mock(Level.class);
+            Mockito.when(mockLevel.getId()).thenReturn(LEVEL_ID);
+
+            final Attempt mockAttempt = Mockito.mock(Attempt.class);
+            Mockito.when(mockAttempt.getId()).thenReturn("mock-attempt-id");
+            Mockito.when(mockAttempt.getUser()).thenReturn(testUser);
+            Mockito.when(mockAttempt.getTimestamp()).thenReturn(FIXED_TIMESTAMP);
+            Mockito.when(mockAttempt.getLevel()).thenReturn(mockLevel);
+            Mockito.when(mockAttempt.isCompleted()).thenReturn(true);
+            Mockito.when(mockAttempt.getTimeTaken()).thenReturn(FIXED_DURATION);
+            Mockito.when(mockAttempt.getAntiCheatStatus()).thenReturn(AttemptVerificationStatus.NOT_VERIFIED);
+
             Mockito.when(levelPlayService.handleLevelSubmission(LEVEL_ID, USER_ID, dto))
-                    .thenReturn("success");
+                    .thenReturn(mockAttempt);
 
             final HttpStatusCode status = restTestClient.post()
                     .uri("/levels/{levelId}/submit", LEVEL_ID)

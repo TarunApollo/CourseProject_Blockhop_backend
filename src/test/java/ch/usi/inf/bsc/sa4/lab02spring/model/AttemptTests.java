@@ -35,7 +35,7 @@ class AttemptTests {
     /** Fixed duration reused across all tests. */
     private static final Duration DURATION = Duration.ofMinutes(5);
 
-    /** ATTEMPT_ID for the six-argument constructor tests. */
+    /** ATTEMPT_ID for the seven-argument constructor tests. */
     private static final String ATTEMPT_ID = "attempt-1";
 
     /**
@@ -168,7 +168,8 @@ class AttemptTests {
             final User user = createTestUser();
             final Level level = createTestLevel();
             this.attempt = new Attempt(
-                    ATTEMPT_ID, user, TIMESTAMP, level, false, DURATION);
+                    ATTEMPT_ID, user, TIMESTAMP, level, false, DURATION,
+                    AttemptVerificationStatus.NOT_VERIFIED);
         }
 
         /**

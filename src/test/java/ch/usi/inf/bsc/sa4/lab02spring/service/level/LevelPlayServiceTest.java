@@ -1,6 +1,8 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
@@ -24,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +61,6 @@ class LevelPlayServiceTest {
     private static final String LEVEL_TITLE = "Title";
     /// Default level description used by fixtures.
     private static final String LEVEL_DESC = "desc";
-    /// Canonical success message returned by handleLevelSubmission.
-    private static final String SUBMISSION_OK_MSG = "Successful level submission.";
     /// JSON key for the layers entry of a Tiled map.
     private static final String LAYERS_KEY = "layers";
 
@@ -328,20 +329,25 @@ class LevelPlayServiceTest {
             verify(attemptService).submitAttempt(any(), any(), any());
         }
 
-        /// Successful submission should return the canonical success message.
+        /// Successful submission should return the created Attempt.
         @Test
-        @DisplayName("returns the success message after a valid submission")
-        void returnsSuccessMessage() {
+        @DisplayName("returns the created attempt after a valid submission")
+        void returnsCreatedAttempt() {
             final Level level = publishableLevel();
             level.validatePublishEligible(OWNER_ID);
             level.publish(OWNER_ID);
             when(userService.getById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
             when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
 
-            final String result =
+            final Attempt savedAttempt = new Attempt(otherUser, ZonedDateTime.now(ZoneOffset.UTC),
+                    level, true, Duration.ofSeconds(10));
+            when(attemptService.submitAttempt(any(), any(), any())).thenReturn(savedAttempt);
+
+            final Attempt result =
                 service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, completedAttempt());
 
-            assertEquals(SUBMISSION_OK_MSG, result);
+            assertNotNull(result);
+            assertEquals(savedAttempt, result);
         }
     }
 }
