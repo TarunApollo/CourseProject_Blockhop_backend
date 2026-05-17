@@ -37,6 +37,7 @@ class LevelAggregationControllerTests {
     @MockitoBean
     private LevelAggregationService levelAggregationService;
 
+    /// Client used to perform REST calls.
     @Autowired
     private RestTestClient restTestClient;
 
