@@ -63,7 +63,7 @@ public class AttemptService {
                 user,
                 status,
                 after,
-                currentAttemptObjectId(excludedAttemptId));
+                getValidObjectId(excludedAttemptId));
     }
 
 
@@ -130,13 +130,14 @@ public class AttemptService {
 
         final MetadataRanges ranges = metadataRanges(fingerprint);
         return this.attemptRepository.findExactFingerprintDuplicateInMetadataRange(
-                level,
+                getValidObjectId(level.getId()),
                 fingerprint.exactHash(),
-                currentAttemptObjectId(currentAttemptId),
+                getValidObjectId(currentAttemptId),
                 ranges.minFrameCount(),
                 ranges.maxFrameCount(),
                 ranges.minInputChangeCount(),
-                ranges.maxInputChangeCount());
+                ranges.maxInputChangeCount()
+            ).stream().findFirst();
     }
 
     public Optional<Attempt> findFuzzyFingerprintDuplicate(final Level level,
@@ -147,13 +148,14 @@ public class AttemptService {
         }
         final MetadataRanges ranges = metadataRanges(fingerprint);
         return this.attemptRepository.findFuzzyFingerprintDuplicateInMetadataRange(
-                level,
+                getValidObjectId(level.getId()),
                 fingerprint.changeBucketHashes(),
-                currentAttemptObjectId(currentAttemptId),
+                getValidObjectId(currentAttemptId),
                 ranges.minFrameCount(),
                 ranges.maxFrameCount(),
                 ranges.minInputChangeCount(),
-                ranges.maxInputChangeCount());
+                ranges.maxInputChangeCount()
+            ).stream().findFirst();
     }
 
     private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint) {
@@ -179,11 +181,11 @@ public class AttemptService {
         return Math.max(minTolerance, (int) Math.ceil(value * toleranceRatio));
     }
 
-    private static ObjectId currentAttemptObjectId(final String currentAttemptId) {
-        if (!ObjectId.isValid(currentAttemptId)) {
-            throw new IllegalArgumentException("Attempt id is not a valid ObjectId");
+    private static ObjectId getValidObjectId(final String id) {
+        if (!ObjectId.isValid(id)) {
+            throw new IllegalArgumentException(id+" is not a valid ObjectId");
         }
-        return new ObjectId(currentAttemptId);
+        return new ObjectId(id);
     }
 
     private record MetadataRanges(
