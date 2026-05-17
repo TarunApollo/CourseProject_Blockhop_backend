@@ -33,8 +33,7 @@ class UserTests {
     @DisplayName("equals returns false for different types")
     void testType() {
         final User user = new User("u1", "N");
-        // Use assertFalse to exercise the class-comparison branch
-        Assertions.assertFalse(user.equals("not a user"), "User should not be equal to a String");
+        Assertions.assertNotEquals("not a user", user, "User should not be equal to a String");
     }
 
     /// Verifies identical objects.
