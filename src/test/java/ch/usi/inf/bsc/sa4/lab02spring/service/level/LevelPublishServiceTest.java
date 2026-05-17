@@ -223,8 +223,8 @@ class LevelPublishServiceTest {
 
             Assertions.assertFalse(publishableLevel.isPublished());
             Mockito.verify(levelRepository).save(publishableLevel);
-            Mockito.verify(levelFavoriteRepository).deleteByLevel_Id(LEVEL_ID);
-            Mockito.verify(attitudeRepository).deleteByLevel_Id(LEVEL_ID);
+            Mockito.verify(levelFavoriteRepository).deleteByLevelId(LEVEL_ID);
+            Mockito.verify(attitudeRepository).deleteByLevelId(LEVEL_ID);
         }
 
         /// Unpublishing a level that is already unpublished does nothing.
@@ -237,8 +237,8 @@ class LevelPublishServiceTest {
 
             Assertions.assertFalse(testLevel.isPublished());
             Mockito.verify(levelRepository).save(testLevel);
-            Mockito.verify(levelFavoriteRepository).deleteByLevel_Id(LEVEL_ID);
-            Mockito.verify(attitudeRepository).deleteByLevel_Id(LEVEL_ID);
+            Mockito.verify(levelFavoriteRepository).deleteByLevelId(LEVEL_ID);
+            Mockito.verify(attitudeRepository).deleteByLevelId(LEVEL_ID);
         }
     }
 

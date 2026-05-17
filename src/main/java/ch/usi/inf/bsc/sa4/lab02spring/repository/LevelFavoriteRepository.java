@@ -35,5 +35,5 @@ public interface LevelFavoriteRepository extends MongoRepository<LevelFavorite, 
     /// Used when a level becomes unavailable to keep favorite lists
     /// restricted to published levels.
     /// @param levelId the id of the level
-    void deleteByLevel_Id(String levelId);
+    void deleteByLevelId(String levelId);
 }

@@ -36,5 +36,5 @@ public interface AttitudeRepository extends MongoRepository<LevelAttitude, Strin
 
     /// Deletes all attitudes for the given level id.
     /// @param levelId the level id
-    void deleteByLevel_Id(String levelId);
+    void deleteByLevelId(String levelId);
 }

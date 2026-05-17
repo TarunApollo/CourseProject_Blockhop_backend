@@ -77,8 +77,8 @@ public class LevelPublishService {
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
         this.levelRepository.save(level);
-        this.levelFavoriteRepository.deleteByLevel_Id(levelId);
-        this.attitudeRepository.deleteByLevel_Id(levelId);
+        this.levelFavoriteRepository.deleteByLevelId(levelId);
+        this.attitudeRepository.deleteByLevelId(levelId);
     }
 
     /// Marks the given level as eligible for publishing on behalf of the given
