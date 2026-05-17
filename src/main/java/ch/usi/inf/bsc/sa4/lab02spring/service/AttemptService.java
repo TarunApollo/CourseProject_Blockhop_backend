@@ -4,6 +4,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateAttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
@@ -86,5 +87,41 @@ public class AttemptService {
         }
         attempt.setAntiCheatStatus(antiCheatStatus);
         this.attemptRepository.save(attempt);
+    }
+
+    public void updateFingerprint(final String attemptId,
+                                      final User user,
+                                      final String levelId,
+                                    final InputLogFingerprint fingerprint){
+        final Attempt attempt = getAttemptById(attemptId);
+        if (!attempt.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenUserException("Attempt does not belong to this user");
+        }
+        if (!attempt.getLevel().getId().equals(levelId)) {
+            throw new IllegalArgumentException("Attempt does not belong to this level");
+        }
+        attempt.setFingerprint(fingerprint);
+        this.attemptRepository.save(attempt);
+    }
+
+    public boolean hasExactFingerprintDuplicate(final Level level,
+                                                final String currentAttemptId,
+                                                final InputLogFingerprint fingerprint) {
+        return this.attemptRepository.existsByLevelAndFingerprintExactHashAndIdNot(
+                level,
+                fingerprint.exactHash(),
+                currentAttemptId);
+    }
+
+    public boolean hasFuzzyFingerprintDuplicate(final Level level,
+                                                final String currentAttemptId,
+                                                final InputLogFingerprint fingerprint) {
+        if (fingerprint.changeBucketHashes().isEmpty()) {
+            return false;
+        }
+        return this.attemptRepository.existsByLevelAndFingerprintChangeBucketHashesInAndIdNot(
+                level,
+                fingerprint.changeBucketHashes(),
+                currentAttemptId);
     }
 }

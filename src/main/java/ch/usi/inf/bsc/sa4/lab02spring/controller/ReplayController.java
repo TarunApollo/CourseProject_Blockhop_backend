@@ -4,6 +4,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayRequestDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayResultDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -11,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatLog;
+import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.InputLogFingerprintService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.ReplayService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
@@ -41,19 +43,22 @@ public class ReplayController {
     private final TileSetService tileSetService;
     private final UserService userService;
     private final ObjectMapper objectMapper;
+    private final InputLogFingerprintService fingerprintService;
 
     public ReplayController(final ReplayService replayService,
                             final AttemptService attemptService,
                             final LevelRepository levelRepository,
                             final TileSetService tileSetService,
                             final UserService userService,
-                            final ObjectMapper objectMapper) {
+                            final ObjectMapper objectMapper,
+                            final InputLogFingerprintService fingerprintService) {
         this.replayService = replayService;
         this.attemptService = attemptService;
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.userService = userService;
         this.objectMapper = objectMapper;
+        this.fingerprintService = fingerprintService;
     }
 
     @PostMapping("/start")
@@ -100,6 +105,9 @@ public class ReplayController {
             throw new ForbiddenUserException("Attempt does not belong to this user");
         }
         final boolean playerCompleted = attempt.isCompleted();
+
+        final InputLogFingerprint fingerprint = fingerprintService.fingerprint(request.inputLog());
+        attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
 
         AntiCheatLog.levelCompleted(userId, request.levelId(), request.totalFrames());
 

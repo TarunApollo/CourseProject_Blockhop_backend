@@ -50,4 +50,13 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     /// @param after the lower time bound
     /// @return the number of attempts after the given timestamp
     long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
+
+    /// Returns whether another attempt on the same level has the same exact input fingerprint.
+    boolean existsByLevelAndFingerprintExactHashAndIdNot(Level level, String exactHash, String id);
+
+    /// Returns whether another attempt on the same level shares any fuzzy input-change fingerprint.
+    boolean existsByLevelAndFingerprintChangeBucketHashesInAndIdNot(
+            Level level,
+            List<String> changeBucketHashes,
+            String id);
 }

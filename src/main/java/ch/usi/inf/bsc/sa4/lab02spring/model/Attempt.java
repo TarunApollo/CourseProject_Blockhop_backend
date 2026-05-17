@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 /// Represents a user's attempt at playing a level. An attempt stores who
 /// played, when it happened, which level was played, whether the level was
@@ -39,6 +40,8 @@ public class Attempt {
     /// Result of replay based anti cheat verification for this attempt.
     /* package */ AttemptVerificationStatus antiCheatStatus;
 
+    InputLogFingerprint fingerprint;
+
     /// Creates a new attempt. An id is auto-generated.
     ///
     /// @param user      the user who made the attempt
@@ -54,6 +57,7 @@ public class Attempt {
         this.completed = completed;
         this.timeTaken = timeTaken;
         this.antiCheatStatus = AttemptVerificationStatus.NOT_VERIFIED;
+        this.fingerprint = InputLogFingerprint.empty();
     }
 
     /// Creates a persisted attempt with an explicit id.
@@ -111,5 +115,9 @@ public class Attempt {
 
     public void setAntiCheatStatus(final AttemptVerificationStatus antiCheatStatus) {
         this.antiCheatStatus = antiCheatStatus;
+    }
+
+    public void setFingerprint(final InputLogFingerprint fingerprint){
+        this.fingerprint = fingerprint;
     }
 }
