@@ -14,11 +14,11 @@ import java.util.List;
 @Service
 public class InputLogFingerprintService {
 
-    private static final int DEFAULT_BUCKET_SIZE = 6;
-    private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 3);
+    private static final int DEFAULT_BUCKET_SIZE = 300;
+    private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 150);
 
     public InputLogFingerprint fingerprint(final List<InputFrameDTO> inputLog) {
-        final List<InputChange> changes = inputChanges(inputLog);
+        final List<InputChange> changes = nonNeutralInputChanges(inputLog);
         final String exactCanonical = canonicalExact(inputLog);
         final List<String> changeBucketHashes = DEFAULT_BUCKET_OFFSETS.stream()
                 .map(offset -> canonicalBucketedChanges(changes, DEFAULT_BUCKET_SIZE, offset))
@@ -69,12 +69,15 @@ public class InputLogFingerprintService {
         return canonical.toString();
     }
 
-    public List<InputChange> inputChanges(final List<InputFrameDTO> inputLog) {
+    public List<InputChange> nonNeutralInputChanges(final List<InputFrameDTO> inputLog) {
         InputState previous = null;
         final java.util.ArrayList<InputChange> changes = new java.util.ArrayList<>();
 
         for (final InputFrameDTO frame : inputLog) {
             final InputState current = InputState.from(frame);
+            if (current.isNeutral()) {
+                continue;
+            }
             if (!current.equals(previous)) {
                 changes.add(new InputChange(frame.frame(), current.canonical()));
                 previous = current;
@@ -117,6 +120,10 @@ public class InputLogFingerprintService {
                     + "R" + bit(right)
                     + "J" + bit(jump)
                     + "S" + bit(run);
+        }
+
+        boolean isNeutral() {
+            return !left && !right && !jump && !run;
         }
 
         private static int bit(final boolean value) {

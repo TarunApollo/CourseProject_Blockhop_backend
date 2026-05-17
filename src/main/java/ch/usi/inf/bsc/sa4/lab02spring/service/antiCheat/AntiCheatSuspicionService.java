@@ -49,7 +49,7 @@ public class AntiCheatSuspicionService {
             double currentSuspicion,
             final long previousSuspiciousAttempts,
             final long previousCheatedAttempts) {
-        currentSuspicion *= PREVIOUS_SUSPICIOUS_ATTEMPT_SCORE;
+        currentSuspicion = PREVIOUS_SUSPICIOUS_ATTEMPT_SCORE;
         if (isCheatingSuspicion(suspicionWithHistory(
                 currentSuspicion,
                 previousSuspiciousAttempts,

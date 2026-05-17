@@ -58,15 +58,15 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     @Query(value = """
             {
               'level.$id': ?0,
-              'user': ?1,
+              'user.$id': ?1,
               'antiCheatStatus': ?2,
               'timestamp': { $gt: ?3 },
               '_id': { $ne: ?4 }
             }
             """, count = true)
     long countByLevelUserStatusAndTimestampAfterExcludingAttempt(
-            Level level,
-            User user,
+            ObjectId levelId,
+            String userId,
             AttemptVerificationStatus antiCheatStatus,
             ZonedDateTime after,
             ObjectId id);
@@ -93,7 +93,7 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     /// Returns another attempt on the same level that shares any fuzzy input-change fingerprint and similar metadata.
     @Query("""
             {
-              'level': ?0,
+              'level.$id': ?0,
               'fingerprint.changeBucketHashes': { $in: ?1 },
               '_id': { $ne: ?2 },
               'fingerprint.inputFrameCount': { $gte: ?3, $lte: ?4 },

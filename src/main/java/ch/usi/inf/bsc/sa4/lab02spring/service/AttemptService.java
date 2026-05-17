@@ -22,8 +22,10 @@ import java.util.Optional;
 /// Service handling creation and querying of player attempts.
 @Service
 public class AttemptService {
-    private static final double FRAME_COUNT_TOLERANCE_RATIO = 0.02;
-    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO = 0.1;
+    private static final double FRAME_COUNT_TOLERANCE_RATIO_EXACT = 0.02;
+    private static final double FRAME_COUNT_TOLERANCE_RATIO_FUZZY = 0.1;
+    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_EXACT = 0.0;
+    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY = 0.0;
     private static final int MIN_FRAME_COUNT_TOLERANCE = 5;
     private static final int MIN_INPUT_CHANGE_COUNT_TOLERANCE = 2;
 
@@ -59,8 +61,8 @@ public class AttemptService {
                                                     final ZonedDateTime after,
                                                     final String excludedAttemptId) {
         return this.attemptRepository.countByLevelUserStatusAndTimestampAfterExcludingAttempt(
-                level,
-                user,
+                getValidObjectId(level.getId()),
+                user.getId(),
                 status,
                 after,
                 getValidObjectId(excludedAttemptId));
@@ -128,7 +130,7 @@ public class AttemptService {
                                                            final InputLogFingerprint fingerprint) {
         if(fingerprint.exactHash().isEmpty()) return Optional.empty();
 
-        final MetadataRanges ranges = metadataRanges(fingerprint);
+        final MetadataRanges ranges = metadataRanges(fingerprint, FRAME_COUNT_TOLERANCE_RATIO_EXACT, INPUT_CHANGE_COUNT_TOLERANCE_RATIO_EXACT);
         return this.attemptRepository.findExactFingerprintDuplicateInMetadataRange(
                 getValidObjectId(level.getId()),
                 fingerprint.exactHash(),
@@ -146,7 +148,7 @@ public class AttemptService {
         if (fingerprint.changeBucketHashes().isEmpty()) {
             return Optional.empty();
         }
-        final MetadataRanges ranges = metadataRanges(fingerprint);
+        final MetadataRanges ranges = metadataRanges(fingerprint, FRAME_COUNT_TOLERANCE_RATIO_FUZZY, INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY);
         return this.attemptRepository.findFuzzyFingerprintDuplicateInMetadataRange(
                 getValidObjectId(level.getId()),
                 fingerprint.changeBucketHashes(),
@@ -158,15 +160,15 @@ public class AttemptService {
             ).stream().findFirst();
     }
 
-    private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint) {
+    private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint, double frameCountToleranceRatio, double inputChangeToleranceRatio) {
         final int frameTolerance = tolerance(
                 fingerprint.inputFrameCount(),
                 MIN_FRAME_COUNT_TOLERANCE,
-                FRAME_COUNT_TOLERANCE_RATIO);
+                frameCountToleranceRatio);
         final int inputChangeTolerance = tolerance(
                 fingerprint.inputChangeCount(),
                 MIN_INPUT_CHANGE_COUNT_TOLERANCE,
-                INPUT_CHANGE_COUNT_TOLERANCE_RATIO);
+                inputChangeToleranceRatio);
 
         return new MetadataRanges(
                 Math.max(0, fingerprint.inputFrameCount() - frameTolerance),
