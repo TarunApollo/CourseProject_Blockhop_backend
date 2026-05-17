@@ -26,14 +26,14 @@ public class AttemptService {
     /// @spec.requires user is not null.
     /// @param user the user whose played levels to count
     /// @return the number of distinct levels the user has at least one attempt on
-    public long getPlayedLevelsCount(User user) {
+    public long getPlayedLevelsCount(final User user) {
         return this.attemptRepository.countDistinctPlayedLevelsByUser(user);
     }
 
     /// Returns the number of distinct levels the given user has completed.
     /// @param user the user whose completed levels to count
     /// @return the number of distinct levels the user has completed at least once
-    public long getCompletedLevelsCount(User user) {
+    public long getCompletedLevelsCount(final User user) {
         return this.attemptRepository.countDistinctCompletedLevelsByUser(user);
     }
 
