@@ -55,7 +55,7 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
 
     /// Counts attempts for the given level, user, status, and lower timestamp bound, excluding one attempt.
-    @Query("""
+    @Query(value = """
             {
               'level': ?0,
               'user': ?1,
@@ -63,7 +63,7 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
               'timestamp': { $gt: ?3 },
               '_id': { $ne: ?4 }
             }
-            """)
+            """, count = true)
     long countByLevelUserStatusAndTimestampAfterExcludingAttempt(
             Level level,
             User user,
