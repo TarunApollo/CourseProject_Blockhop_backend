@@ -50,9 +50,11 @@ class LevelAggregationServiceTest {
     @MockitoBean
     private AttemptRepository attemptRepository;
 
+    /// Mocked attitude repository providing likes/dislikes counts.
     @MockitoBean
     private AttitudeRepository attitudeRepository;
 
+    /// Mocked user service used for resolving optional current-user attitudes.
     @MockitoBean
     private UserService userService;
 

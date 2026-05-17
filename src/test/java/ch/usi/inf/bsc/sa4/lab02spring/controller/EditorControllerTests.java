@@ -38,9 +38,7 @@ import java.util.List;
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.UnitTestShouldIncludeAssert",
-    "PMD.CommentRequired"
+    "PMD.UnitTestShouldIncludeAssert"
 })
 @DisplayName("The Editor Controller")
 class EditorControllerTests {

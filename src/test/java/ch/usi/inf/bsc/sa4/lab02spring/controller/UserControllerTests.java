@@ -35,9 +35,7 @@ import java.util.Optional;
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings({
-    "PMD.UnitTestShouldIncludeAssert",
-    "PMD.AtLeastOneConstructor",
-    "PMD.CommentRequired"
+    "PMD.UnitTestShouldIncludeAssert"
 })
 @DisplayName("The User Controller")
 class UserControllerTests {
