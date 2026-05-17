@@ -7,10 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /// Entry point for the Lab 02 Spring Boot application.
 ///
 @SpringBootApplication
-@SuppressWarnings("PMD.UseUtilityClass")
 public class Lab02SpringApplication {
-
-  private Lab02SpringApplication() { }
 
   /// Starts the Spring Boot application.
   /// @param args command-line arguments passed to the application

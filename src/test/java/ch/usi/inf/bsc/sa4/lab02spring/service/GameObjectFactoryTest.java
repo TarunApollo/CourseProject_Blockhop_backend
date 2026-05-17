@@ -86,7 +86,7 @@ class GameObjectFactoryTests {
 
     /// Provides tile type strings and their expected [GameObject] subtypes for
     /// dispatch tests.
-    private static Stream<Arguments> dispatchCases() {
+    /* package */ static Stream<Arguments> dispatchCases() {
         return Stream.of(
                 Arguments.of(TYPE_DECORATION, Decoration.class),
                 Arguments.of(TYPE_ENEMY_SLIME, Slime.class),

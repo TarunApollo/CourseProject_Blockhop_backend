@@ -18,7 +18,8 @@ import java.util.Map;
 ///
 /// Jackson serializers and deserializers for map-based level fields.
 ///
-public class FieldSerializer {
+@SuppressWarnings("PMD.MissingStaticMethodInNonInstantiatableClass")
+public final class FieldSerializer {
 
     /// Prevents instantiation of this utility class.
     private FieldSerializer() { }

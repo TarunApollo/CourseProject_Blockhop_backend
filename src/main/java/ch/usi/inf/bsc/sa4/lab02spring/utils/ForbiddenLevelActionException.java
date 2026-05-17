@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 ///
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "This action is not allowed on this level.")
 public class ForbiddenLevelActionException extends RuntimeException {
+    /// Serialization version for this exception type.
     private static final long serialVersionUID = 1L;
     ///
     /// Creates a new exception with the provided message.
