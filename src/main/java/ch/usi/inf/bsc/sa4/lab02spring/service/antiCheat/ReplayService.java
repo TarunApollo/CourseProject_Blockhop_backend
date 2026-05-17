@@ -25,6 +25,9 @@ public class ReplayService {
     @Nullable
     private String replayScriptPath;
 
+    @Nullable
+    private Path frontendDirectory;
+
     public ReplayService(final ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
@@ -62,7 +65,7 @@ public class ReplayService {
             final ProcessBuilder pb = new ProcessBuilder(
                     npx, "tsx", script, levelFile.toString(), inputFile.toString()
             );
-            pb.directory(Path.of("../clone/frontend").toFile());
+            pb.directory(resolveFrontendDirectory().toFile());
             pb.redirectErrorStream(true);
 
             final Process process = pb.start();
@@ -130,18 +133,32 @@ public class ReplayService {
         if (replayScriptPath != null) {
             return replayScriptPath.isEmpty() ? null : replayScriptPath;
         }
-        final String[] candidates = {
-                "../clone/frontend/replay/replay.ts",
-                "replay/replay.ts"
-        };
-        for (final String candidate : candidates) {
-            if (Files.exists(Path.of(candidate))) {
-                replayScriptPath = Path.of(candidate).toAbsolutePath().normalize().toString();
-                return replayScriptPath;
-            }
+        final Path candidate = resolveFrontendDirectory().resolve("replay/replay.ts");
+        if (Files.exists(candidate)) {
+            replayScriptPath = candidate.toAbsolutePath().normalize().toString();
+            return replayScriptPath;
         }
         replayScriptPath = "";
         return null;
+    }
+
+    private Path resolveFrontendDirectory() {
+        if (frontendDirectory != null) {
+            return frontendDirectory;
+        }
+        final Path[] candidates = {
+                Path.of("../frontend"),
+                Path.of("../clone/frontend"),
+                Path.of("frontend")
+        };
+        for (final Path candidate : candidates) {
+            if (Files.isDirectory(candidate) && Files.exists(candidate.resolve("package.json"))) {
+                frontendDirectory = candidate.toAbsolutePath().normalize();
+                return frontendDirectory;
+            }
+        }
+        frontendDirectory = Path.of("../frontend").toAbsolutePath().normalize();
+        return frontendDirectory;
     }
 
     private record ReplayProcessResult(boolean valid, String reason, int frame) {
