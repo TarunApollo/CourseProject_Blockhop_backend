@@ -5,6 +5,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CloneLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateLevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateLevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.SetLevelAttitudeDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
@@ -15,6 +17,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAttitudeService;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +37,7 @@ import java.util.Optional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", })
+@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
 @DisplayName("The Level Controller")
 class LevelControllerTests {
 
@@ -51,6 +54,10 @@ class LevelControllerTests {
     /// Mocked service for user resolution.
     @MockitoBean
     private UserService userService;
+
+    /// Mocked service for level attitudes.
+    @MockitoBean
+    private LevelAttitudeService levelAttitudeService;
 
     /// Client used to perform REST calls.
     @Autowired
@@ -272,7 +279,6 @@ class LevelControllerTests {
     @DisplayName("DELETE /levels/{id}")
     class DeleteLevel {
 
-        /// Verifies that deleting a level returns 204 No Content.
         @Test
         @DisplayName("should return 204 No Content")
         void shouldReturnNoContent() {
@@ -284,7 +290,6 @@ class LevelControllerTests {
                     .expectStatus().isNoContent();
         }
 
-        /// Verifies that deleting a level returns 404 when level is missing.
         @Test
         @DisplayName("should return 404 Not Found when level does not exist")
         void shouldReturnNotFound() {
@@ -297,7 +302,6 @@ class LevelControllerTests {
                     .expectStatus().isNotFound();
         }
 
-        /// Verifies that deleting a level returns 403 when user is unauthorized.
         @Test
         @DisplayName("should return 403 Forbidden when user is not the owner")
         void shouldReturnForbidden() {
@@ -308,6 +312,37 @@ class LevelControllerTests {
             restTestClient.delete().uri("/levels/{id}", LEVEL_ID)
                     .exchange()
                     .expectStatus().isForbidden();
+        }
+    }
+
+    /// Tests for level attitudes.
+    @Nested
+    @DisplayName("Level attitudes")
+    class LevelAttitude {
+
+        @Test
+        @DisplayName("PUT /levels/{id}/attitude should return 200 OK")
+        void shouldUpdateLevelAttitude() {
+            Mockito.doNothing().when(levelAttitudeService).setAttitude(
+                    ControllerSecurityTestConfig.DEFAULT_USER_ID,
+                    LEVEL_ID,
+                    LevelAttitudeType.LIKE);
+
+            restTestClient.put().uri("/levels/{id}/attitude", LEVEL_ID)
+                    .body(new SetLevelAttitudeDTO(LevelAttitudeType.LIKE))
+                    .exchange()
+                    .expectStatus().isOk();
+        }
+
+        @Test
+        @DisplayName("DELETE /levels/{id}/attitude should return 204 No Content")
+        void shouldDeleteLevelAttitude() {
+            Mockito.doNothing().when(levelAttitudeService)
+                    .deleteAttitude(ControllerSecurityTestConfig.DEFAULT_USER_ID, LEVEL_ID);
+
+            restTestClient.delete().uri("/levels/{id}/attitude", LEVEL_ID)
+                    .exchange()
+                    .expectStatus().isNoContent();
         }
     }
 }

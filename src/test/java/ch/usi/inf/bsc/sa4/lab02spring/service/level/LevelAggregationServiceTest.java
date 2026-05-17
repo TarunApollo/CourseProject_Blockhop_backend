@@ -3,8 +3,10 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
@@ -48,12 +50,20 @@ class LevelAggregationServiceTest {
     @MockitoBean
     private AttemptRepository attemptRepository;
 
+    @MockitoBean
+    private AttitudeRepository attitudeRepository;
+
+    @MockitoBean
+    private UserService userService;
+
     /// Shared creator used as the owner of fixture levels.
     private User creator;
 
     /// Initializes the level creator used by all tests.
     @BeforeEach
     void setUp() {
+        service = new LevelAggregationService(levelRepository, attemptRepository,
+                attitudeRepository, userService);
         creator = new User(CREATOR_ID, CREATOR_NAME);
     }
 
@@ -68,8 +78,7 @@ class LevelAggregationServiceTest {
     void emptyWhenNoLevels() {
         Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of());
 
-        final List<LevelSummaryDto> result =
-            service.getPublishedLevels(PublishedLevelSortBy.CLEAR_RATE,
+        final List<LevelSummaryDto> result = service.getPublishedLevels(PublishedLevelSortBy.CLEAR_RATE,
                 DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
         Assertions.assertEquals(List.of(), result);
@@ -93,12 +102,12 @@ class LevelAggregationServiceTest {
             stubAttempts(c, 10, 5);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Assertions.assertEquals(List.of("high-rate", "mid-rate", "low-rate"),
                 result.stream().map(LevelSummaryDto::title).toList());
-        }
+            }
 
         /// playCount=0 should yield clearRate=0 to avoid a division by zero.
         @Test
@@ -109,8 +118,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 0, 0);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Assertions.assertEquals(0.0, result.get(0).clearRate());
         }
@@ -124,8 +133,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 4, 2);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Assertions.assertEquals(0.5, result.get(0).clearRate());
         }
@@ -139,8 +148,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 5, 3);
 
             service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
 
             Mockito.verify(attemptRepository, Mockito.never())
                 .countByLevelAndTimestampAfter(ArgumentMatchers.any(), ArgumentMatchers.any());
@@ -155,8 +164,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 7, 3);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.CLEAR_RATE,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Assertions.assertEquals(7L, result.get(0).popularity());
         }
@@ -180,8 +189,8 @@ class LevelAggregationServiceTest {
             stubAttempts(c, 50, 20);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Assertions.assertEquals(List.of("high-pop", "mid-pop", "low-pop"),
                 result.stream().map(LevelSummaryDto::title).toList());
@@ -196,8 +205,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 42, 10);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Assertions.assertEquals(42L, result.get(0).popularity());
         }
@@ -211,8 +220,8 @@ class LevelAggregationServiceTest {
             stubAttempts(a, 42, 10);
 
             service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Mockito.verify(attemptRepository, Mockito.never())
                 .countByLevelAndTimestampAfter(ArgumentMatchers.any(), ArgumentMatchers.any());
@@ -229,8 +238,8 @@ class LevelAggregationServiceTest {
                 ArgumentMatchers.eq(a), ArgumentMatchers.any())).thenReturn(7L);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
 
             Assertions.assertEquals(7L, result.get(0).popularity());
         }
@@ -248,8 +257,8 @@ class LevelAggregationServiceTest {
                 ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(0L);
 
             service.getPublishedLevels(
-                PublishedLevelSortBy.POPULARITY,
-                DateRangePreset.RelativeDateRangePreset.LAST_30_DAYS);
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.RelativeDateRangePreset.LAST_30_DAYS);
 
             Mockito.verify(attemptRepository).countByLevelAndTimestampAfter(
                 ArgumentMatchers.eq(a), ArgumentMatchers.any());
@@ -346,4 +355,5 @@ class LevelAggregationServiceTest {
         Mockito.when(attemptRepository.countByLevel(level)).thenReturn(plays);
         Mockito.when(attemptRepository.countByLevelAndCompletedTrue(level)).thenReturn(clears);
     }
+    
 }

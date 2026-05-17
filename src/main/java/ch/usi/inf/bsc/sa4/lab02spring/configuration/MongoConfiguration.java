@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
@@ -25,6 +26,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +49,7 @@ public class MongoConfiguration {
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
                 Snail.class, Slime.class, User.class,
+                Bee.class,
                 Level.class, Attempt.class));
         mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
         return mappingContext;
@@ -95,6 +98,16 @@ public class MongoConfiguration {
         }
     }
 
+    /// Converts a [Date] read from MongoDB to a [ZonedDateTime] in UTC.
+    ///
+    @ReadingConverter
+    public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
+        @Override
+        public ZonedDateTime convert(final Date date) {
+            return date.toInstant().atZone(ZoneOffset.UTC);
+        }
+    }
+
     /// Configures the custom conversions for MongoDB.
     ///
     /// @return the custom conversions
@@ -105,6 +118,7 @@ public class MongoConfiguration {
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToInstantConverter());
         custom.add(new InstantToZonedDateTimeConverter());
+        custom.add(new DateToZonedDateTimeConverter());
         return new MongoCustomConversions(custom);
     }
 }

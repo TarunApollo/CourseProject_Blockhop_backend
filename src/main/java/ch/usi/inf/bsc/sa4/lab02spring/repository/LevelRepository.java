@@ -13,11 +13,14 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 public interface LevelRepository extends MongoRepository<Level, String> {
 
     /// Returns all levels created by the given user.
+    /// 
     /// @param user the creator whose levels should be returned
     /// @return all levels created by the user
     List<Level> findByCreator(User user);
 
     /// Returns all published levels.
+    /// 
     /// @return all levels marked as published
     List<Level> findByPublishedTrue();
+
 }

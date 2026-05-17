@@ -1,6 +1,8 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
@@ -15,16 +17,27 @@ import org.springframework.stereotype.Service;
 public class LevelPublishService {
     /// Persists publication-state updates on levels.
     private final LevelRepository levelRepository;
+    /// Removes favorite entries for levels that become unavailable.
+    private final LevelFavoriteRepository levelFavoriteRepository;
+    /// Removes attitude entries for levels that become unavailable.
+    private final AttitudeRepository attitudeRepository;
     /// Verifies that referenced users exist.
     private final UserRepository userRepository;
 
     /// Creates a publish service with repository dependencies.
     ///
-    /// @param levelRepository persists level publication state
-    /// @param userRepository resolves users involved in publication
+    /// @param levelRepository         persists level publication state
+    /// @param levelFavoriteRepository persists favorite entries referencing levels
+    /// @param attitudeRepository      persists attitude entries referencing levels
+    /// @param userRepository          resolves users involved in publication
     @Autowired
-    public LevelPublishService(final LevelRepository levelRepository, final UserRepository userRepository) {
+    public LevelPublishService(final LevelRepository levelRepository,
+            final LevelFavoriteRepository levelFavoriteRepository,
+            final AttitudeRepository attitudeRepository,
+            final UserRepository userRepository) {
         this.levelRepository = levelRepository;
+        this.levelFavoriteRepository = levelFavoriteRepository;
+        this.attitudeRepository = attitudeRepository;
         this.userRepository = userRepository;
     }
 
@@ -49,7 +62,13 @@ public class LevelPublishService {
     }
 
     /// Unpublishes an existing level owned by the given user.
-    /// @param userId the authenticated user's ID
+    ///
+    /// @spec.requires userId and levelId are not null.
+    /// @spec.modifies the level identified by levelId and published-level reactions
+    ///                pointing to it.
+    /// @spec.effects marks the target level as unpublished, saves the updated level,
+    ///               and removes favorites and attitudes pointing to that level.
+    /// @param userId  the authenticated user's ID
     /// @param levelId the ID of the level to unpublish
     /// @throws LevelNotFoundException if the level does not exist
     /// @throws ForbiddenUserException if the user is not the owner of the level
@@ -58,30 +77,35 @@ public class LevelPublishService {
                 .orElseThrow(LevelNotFoundException::new);
         level.unpublish(userId);
         this.levelRepository.save(level);
+        this.levelFavoriteRepository.deleteByLevel_Id(levelId);
+        this.attitudeRepository.deleteByLevel_Id(levelId);
     }
 
-    /// Marks the given level as eligible for publishing on behalf of the given user.
+    /// Marks the given level as eligible for publishing on behalf of the given
+    /// user.
     ///
     /// @spec.requires level and userId are not null.
     /// @spec.modifies the given level in the repository.
     /// @spec.effects sets the level's publishEligible flag to true and saves it.
     /// @param level  the level to mark as publish eligible
     /// @param userId the unique identifier of the user requesting the validation
-    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    /// @throws ForbiddenUserException if the given user is not the owner of
+    ///                                the level
     public void validateLevelPublishEligible(final Level level, final String userId) {
         level.validatePublishEligible(userId);
         this.levelRepository.save(level);
     }
 
-    /// Marks the given level as not eligible for publishing.
-    /// Applies the change on behalf of the given user.
+    /// Marks the given level as not eligible for publishing. Applies the change on
+    /// behalf of the given user.
     ///
     /// @spec.requires level and userId are not null.
     /// @spec.modifies the given level in the repository.
     /// @spec.effects sets the level's publishEligible flag to false and saves it.
     /// @param level  the level to mark as not publish eligible
     /// @param userId the unique identifier of the user requesting the invalidation
-    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    /// @throws ForbiddenUserException if the given user is not the owner of
+    ///                                the level
     public void invalidateLevelPublishEligible(final Level level, final String userId) {
         level.invalidatePublishEligible(userId);
         this.levelRepository.save(level);

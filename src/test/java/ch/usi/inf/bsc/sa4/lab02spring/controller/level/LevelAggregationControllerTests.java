@@ -24,8 +24,8 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.List;
 
-/// Black-box tests for [LevelAggregationController] endpoints.
-/// Verifies the retrieval and sorting of published level summaries.
+/// Black-box tests for [LevelAggregationController] endpoints. Verifies the
+/// retrieval and sorting of published level summaries.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
@@ -63,14 +63,16 @@ class LevelAggregationControllerTests {
             final List<LevelSummaryDto> expected = List.of(testSummary);
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
-                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME)))
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(expected);
 
             restTestClient.get().uri(
-                            "/levels/published?sortBy=POPULARITY")
+                    "/levels/published?sortBy=POPULARITY")
                     .exchange()
                     .expectStatus().isOk()
-                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {
+                    })
                     .isEqualTo(expected);
         }
 
@@ -81,31 +83,36 @@ class LevelAggregationControllerTests {
             final List<LevelSummaryDto> expected = List.of(testSummary);
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.CLEAR_RATE),
-                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME)))
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(expected);
 
             restTestClient.get().uri(
-                            "/levels/published?sortBy=CLEAR_RATE")
+                    "/levels/published?sortBy=CLEAR_RATE")
                     .exchange()
                     .expectStatus().isOk()
-                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {
+                    })
                     .isEqualTo(expected);
         }
 
-        /// Verifies that the endpoint returns an empty list when no levels are published.
+        /// Verifies that the endpoint returns an empty list when no levels
+        /// are published.
         @Test
         @DisplayName("should return 200 OK and empty list when no levels found")
         void returnsEmptyList() {
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.CLEAR_RATE),
-                    ArgumentMatchers.any()))
+                    ArgumentMatchers.any(),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(List.of());
 
             restTestClient.get().uri(
-                            "/levels/published?sortBy=CLEAR_RATE")
+                    "/levels/published?sortBy=CLEAR_RATE")
                     .exchange()
                     .expectStatus().isOk()
-                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {
+                    })
                     .isEqualTo(List.of());
         }
 
@@ -117,14 +124,16 @@ class LevelAggregationControllerTests {
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
                     ArgumentMatchers.eq(
-                            DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS)))
+                            DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(expected);
 
             restTestClient.get().uri(
-                            "/levels/published?sortBy=POPULARITY&period=LAST_7_DAYS")
+                    "/levels/published?sortBy=POPULARITY&period=LAST_7_DAYS")
                     .exchange()
                     .expectStatus().isOk()
-                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {
+                    })
                     .isEqualTo(expected);
         }
 
@@ -137,18 +146,18 @@ class LevelAggregationControllerTests {
                     .expectStatus().isBadRequest();
         }
 
-        /// Verifies that an invalid sortBy value returns 400 Bad Request
-        /// because the service throws IllegalStateException.
+        /// Verifies that an invalid sortBy value returns 400 Bad Request because the
+        /// service throws IllegalStateException.
         @Test
         @DisplayName("should return 400 Bad Request when sortBy has an invalid value")
         void invalidSortByReturnsBadRequest() {
             Mockito.when(levelAggregationService.getPublishedLevels(
-                    ArgumentMatchers.any(), ArgumentMatchers.any()))
+                    ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
                     .thenThrow(new IllegalStateException(
                             "Unsupported published level sort: INVALID"));
 
             restTestClient.get().uri(
-                            "/levels/published?sortBy=INVALID")
+                    "/levels/published?sortBy=INVALID")
                     .exchange()
                     .expectStatus().isBadRequest();
         }

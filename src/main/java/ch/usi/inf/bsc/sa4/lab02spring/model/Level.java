@@ -21,7 +21,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 /// A level contains metadata such as title and description, ownership
 /// information, publication state, a clear condition, and the object and world
 /// layers that define the actual game map.
-@SuppressWarnings({"NullAway.Init", "PMD.UseConcurrentHashMap"})
+@SuppressWarnings({ "NullAway.Init", "PMD.TooManyMethods" })
 @Document(collection = "levels")
 public class Level {
     /// Fixed width shared by all levels.
@@ -80,7 +80,6 @@ public class Level {
         this.creator = user;
         this.clearCondition = new ClearCondition(new Condition.NoClearCondition(), 0);
     }
-    
 
     /// Persistence constructor used by Spring Data MongoDB to recreate a Level from
     /// the database.
@@ -464,4 +463,14 @@ public class Level {
         }
         this.objectLayer.put(position, box.withContent(content));
     }
+
+    /// Ensures that this level is published.
+    ///
+    /// @throws ForbiddenLevelActionException if the level is not published
+    public void ensurePublished() {
+        if (!this.published) {
+            throw new ForbiddenLevelActionException("Only published levels can be favorited");
+        }
+    }
+
 }

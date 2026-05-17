@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
@@ -54,6 +55,9 @@ class GameObjectFactoryTests {
     /// Tile type string for snail enemy objects.
     private static final String TYPE_ENEMY_SNAIL = "Enemy_Snail";
 
+    /// Tile type string for bee enemy objects.
+    private static final String TYPE_ENEMY_BEE = "Enemy_Bee";
+
     /// Tile type string for start flag objects.
     private static final String TYPE_START_FLAG = "Start_Flag";
 
@@ -93,7 +97,8 @@ class GameObjectFactoryTests {
                 Arguments.of(TYPE_DOOR_CLOSED, ExitDoor.class),
                 Arguments.of(TYPE_GOLD, Coin.class),
                 Arguments.of(TYPE_SILVER, Coin.class),
-                Arguments.of(TYPE_BRONZE, Coin.class));
+                Arguments.of(TYPE_BRONZE, Coin.class),
+                Arguments.of(TYPE_ENEMY_BEE, Bee.class));
     }
 
     /// Tests for `createGameObject`.

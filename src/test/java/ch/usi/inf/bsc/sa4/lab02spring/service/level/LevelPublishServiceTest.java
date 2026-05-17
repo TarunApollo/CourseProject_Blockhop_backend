@@ -5,6 +5,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.UserRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
@@ -63,6 +65,12 @@ class LevelPublishServiceTest {
     /// Mocked user repository to verify if users exist.
     @MockitoBean
     private UserRepository userRepository;
+    /// Mocked favorite repository used by unpublish cleanup.
+    @MockitoBean
+    private LevelFavoriteRepository levelFavoriteRepository;
+    /// Mocked attitude repository used by unpublish cleanup.
+    @MockitoBean
+    private AttitudeRepository attitudeRepository;
 
     /// The user who owns the test level.
     private User owner;
@@ -215,6 +223,8 @@ class LevelPublishServiceTest {
 
             Assertions.assertFalse(publishableLevel.isPublished());
             Mockito.verify(levelRepository).save(publishableLevel);
+            Mockito.verify(levelFavoriteRepository).deleteByLevel_Id(LEVEL_ID);
+            Mockito.verify(attitudeRepository).deleteByLevel_Id(LEVEL_ID);
         }
 
         /// Unpublishing a level that is already unpublished does nothing.
@@ -227,6 +237,8 @@ class LevelPublishServiceTest {
 
             Assertions.assertFalse(testLevel.isPublished());
             Mockito.verify(levelRepository).save(testLevel);
+            Mockito.verify(levelFavoriteRepository).deleteByLevel_Id(LEVEL_ID);
+            Mockito.verify(attitudeRepository).deleteByLevel_Id(LEVEL_ID);
         }
     }
 
