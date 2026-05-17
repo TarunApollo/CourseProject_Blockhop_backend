@@ -11,6 +11,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.AttemptNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,11 @@ import java.util.Optional;
 /// Service handling creation and querying of player attempts.
 @Service
 public class AttemptService {
+    private static final double FRAME_COUNT_TOLERANCE_RATIO = 0.02;
+    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO = 0.1;
+    private static final int MIN_FRAME_COUNT_TOLERANCE = 5;
+    private static final int MIN_INPUT_CHANGE_COUNT_TOLERANCE = 2;
+
     /// Repository handling attempt persistence.
     private final AttemptRepository attemptRepository;
 
@@ -45,6 +51,19 @@ public class AttemptService {
     /// @return the number of distinct levels the user has completed at least once
     public long getCompletedLevelsCount(User user) {
         return this.attemptRepository.countDistinctCompletedLevelsByUser(user);
+    }
+
+    public long countAttemptsByLevelUserStatusAfter(final Level level,
+                                                    final User user,
+                                                    final AttemptVerificationStatus status,
+                                                    final ZonedDateTime after,
+                                                    final String excludedAttemptId) {
+        return this.attemptRepository.countByLevelUserStatusAndTimestampAfterExcludingAttempt(
+                level,
+                user,
+                status,
+                after,
+                currentAttemptObjectId(excludedAttemptId));
     }
 
 
@@ -104,24 +123,74 @@ public class AttemptService {
         this.attemptRepository.save(attempt);
     }
 
-    public boolean hasExactFingerprintDuplicate(final Level level,
-                                                final String currentAttemptId,
-                                                final InputLogFingerprint fingerprint) {
-        return this.attemptRepository.existsByLevelAndFingerprintExactHashAndIdNot(
+    public Optional<Attempt> findExactFingerprintDuplicate(final Level level,
+                                                           final String currentAttemptId,
+                                                           final InputLogFingerprint fingerprint) {
+        if(fingerprint.exactHash().isEmpty()) return Optional.empty();
+
+        final MetadataRanges ranges = metadataRanges(fingerprint);
+        return this.attemptRepository.findExactFingerprintDuplicateInMetadataRange(
                 level,
                 fingerprint.exactHash(),
-                currentAttemptId);
+                currentAttemptObjectId(currentAttemptId),
+                ranges.minFrameCount(),
+                ranges.maxFrameCount(),
+                ranges.minInputChangeCount(),
+                ranges.maxInputChangeCount());
     }
 
-    public boolean hasFuzzyFingerprintDuplicate(final Level level,
-                                                final String currentAttemptId,
-                                                final InputLogFingerprint fingerprint) {
+    public Optional<Attempt> findFuzzyFingerprintDuplicate(final Level level,
+                                                           final String currentAttemptId,
+                                                           final InputLogFingerprint fingerprint) {
         if (fingerprint.changeBucketHashes().isEmpty()) {
-            return false;
+            return Optional.empty();
         }
-        return this.attemptRepository.existsByLevelAndFingerprintChangeBucketHashesInAndIdNot(
+        final MetadataRanges ranges = metadataRanges(fingerprint);
+        return this.attemptRepository.findFuzzyFingerprintDuplicateInMetadataRange(
                 level,
                 fingerprint.changeBucketHashes(),
-                currentAttemptId);
+                currentAttemptObjectId(currentAttemptId),
+                ranges.minFrameCount(),
+                ranges.maxFrameCount(),
+                ranges.minInputChangeCount(),
+                ranges.maxInputChangeCount());
+    }
+
+    private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint) {
+        final int frameTolerance = tolerance(
+                fingerprint.inputFrameCount(),
+                MIN_FRAME_COUNT_TOLERANCE,
+                FRAME_COUNT_TOLERANCE_RATIO);
+        final int inputChangeTolerance = tolerance(
+                fingerprint.inputChangeCount(),
+                MIN_INPUT_CHANGE_COUNT_TOLERANCE,
+                INPUT_CHANGE_COUNT_TOLERANCE_RATIO);
+
+        return new MetadataRanges(
+                Math.max(0, fingerprint.inputFrameCount() - frameTolerance),
+                fingerprint.inputFrameCount() + frameTolerance,
+                Math.max(0, fingerprint.inputChangeCount() - inputChangeTolerance),
+                fingerprint.inputChangeCount() + inputChangeTolerance);
+    }
+
+    private static int tolerance(final int value,
+                                 final int minTolerance,
+                                 final double toleranceRatio) {
+        return Math.max(minTolerance, (int) Math.ceil(value * toleranceRatio));
+    }
+
+    private static ObjectId currentAttemptObjectId(final String currentAttemptId) {
+        if (!ObjectId.isValid(currentAttemptId)) {
+            throw new IllegalArgumentException("Attempt id is not a valid ObjectId");
+        }
+        return new ObjectId(currentAttemptId);
+    }
+
+    private record MetadataRanges(
+            int minFrameCount,
+            int maxFrameCount,
+            int minInputChangeCount,
+            int maxInputChangeCount
+    ) {
     }
 }

@@ -41,6 +41,11 @@ public final class AntiCheatLog {
                 red("[ANTICHEAT]"), bold("REPLAY MISMATCH"), userId, levelId, reason);
     }
 
+    public static void replaySuspicious(final String userId, final String levelId, final String reason) {
+        log.warn("{} {} for player {} on level {}: {}",
+                yellow("[ANTICHEAT]"), bold("REPLAY SUSPICIOUS"), userId, levelId, reason);
+    }
+
     public static void replayInvalid(final String userId, final String levelId, final String reason) {
         log.warn("{} {} for player {} on level {}: {}",
                 red("[ANTICHEAT]"), bold("REPLAY INVALID"), userId, levelId, reason);

@@ -12,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatLog;
+import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSuspicionService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.InputLogFingerprintService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.ReplayService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
@@ -20,6 +21,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.converter.LayerToTiledMapConverter;
+
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +32,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/replay")
 public class ReplayController {
+
+    private static final int RECENT_ATTEMPT_WINDOW_DAYS = 7;
 
     private final ReplayService replayService;
     private final AttemptService attemptService;
@@ -43,7 +49,8 @@ public class ReplayController {
     private final TileSetService tileSetService;
     private final UserService userService;
     private final ObjectMapper objectMapper;
-    private final InputLogFingerprintService fingerprintService;
+    private final InputLogFingerprintService inputLogFingerprintService;
+    private final AntiCheatSuspicionService antiCheatSuspicionService;
 
     public ReplayController(final ReplayService replayService,
                             final AttemptService attemptService,
@@ -51,14 +58,16 @@ public class ReplayController {
                             final TileSetService tileSetService,
                             final UserService userService,
                             final ObjectMapper objectMapper,
-                            final InputLogFingerprintService fingerprintService) {
+                            final InputLogFingerprintService inputLogFingerprintService,
+                            final AntiCheatSuspicionService antiCheatSuspicionService) {
         this.replayService = replayService;
         this.attemptService = attemptService;
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.userService = userService;
         this.objectMapper = objectMapper;
-        this.fingerprintService = fingerprintService;
+        this.inputLogFingerprintService = inputLogFingerprintService;
+        this.antiCheatSuspicionService = antiCheatSuspicionService;
     }
 
     @PostMapping("/start")
@@ -105,11 +114,10 @@ public class ReplayController {
             throw new ForbiddenUserException("Attempt does not belong to this user");
         }
         final boolean playerCompleted = attempt.isCompleted();
-
-        final InputLogFingerprint fingerprint = fingerprintService.fingerprint(request.inputLog());
-        attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
-
         AntiCheatLog.levelCompleted(userId, request.levelId(), request.totalFrames());
+
+        final InputLogFingerprint fingerprint = inputLogFingerprintService.fingerprint(request.inputLog());
+        attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
 
         final TileSet tileSet = tileSetService.getTileSet();
         final Map<String, Object> tiledMap = LayerToTiledMapConverter.convertPipeline(
@@ -128,11 +136,37 @@ public class ReplayController {
         final ReplayResultDTO result = replayService.replay(
                 userId, request.levelId(), levelJson, inputJson);
 
-        final AttemptVerificationStatus status = toAttemptVerificationStatus(result, playerCompleted, request.totalFrames());
+        AttemptVerificationStatus status = toAttemptVerificationStatus(result, playerCompleted, request.totalFrames());
+
+        if(status == AttemptVerificationStatus.LEGIT){
+            final Optional<Attempt> exactDuplicate = attemptService.findExactFingerprintDuplicate(level, attemptId, fingerprint);
+            final Optional<Attempt> fuzzyDuplicate = attemptService.findFuzzyFingerprintDuplicate(level, attemptId, fingerprint);
+            final ZonedDateTime recentAttemptWindowStart = ZonedDateTime.now().minusDays(RECENT_ATTEMPT_WINDOW_DAYS);
+            final long previousSuspiciousAttempts = attemptService.countAttemptsByLevelUserStatusAfter(
+                    level,
+                    user,
+                    AttemptVerificationStatus.SUSPICIOUS,
+                    recentAttemptWindowStart,
+                    attemptId);
+            final long previousCheatedAttempts = attemptService.countAttemptsByLevelUserStatusAfter(
+                    level,
+                    user,
+                    AttemptVerificationStatus.CHEATED,
+                    recentAttemptWindowStart,
+                    attemptId);
+            status = antiCheatSuspicionService.classifyFingerprintSuspicion(
+                    fingerprint,
+                    exactDuplicate,
+                    fuzzyDuplicate,
+                    previousSuspiciousAttempts,
+                    previousCheatedAttempts);
+        }
 
         switch (status) {
             case LEGIT ->
                 AntiCheatLog.replayValid(userId, request.levelId(), result.reason() + " @ " + result.frames() + " frames");
+            case SUSPICIOUS ->
+                AntiCheatLog.replaySuspicious(userId, request.levelId(), "InputLogFingerprint was found suspicious.");
             case CHEATED ->
                 AntiCheatLog.replayMismatch(userId, request.levelId(), mismatchedReason(result, playerCompleted, request.totalFrames()));
             case REPLAY_ERROR ->

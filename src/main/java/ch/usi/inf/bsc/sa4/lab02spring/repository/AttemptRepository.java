@@ -1,9 +1,12 @@
 package ch.usi.inf.bsc.sa4.lab02spring.repository;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
@@ -51,12 +54,58 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     /// @return the number of attempts after the given timestamp
     long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
 
-    /// Returns whether another attempt on the same level has the same exact input fingerprint.
-    boolean existsByLevelAndFingerprintExactHashAndIdNot(Level level, String exactHash, String id);
+    /// Counts attempts for the given level, user, status, and lower timestamp bound, excluding one attempt.
+    @Query("""
+            {
+              'level': ?0,
+              'user': ?1,
+              'antiCheatStatus': ?2,
+              'timestamp': { $gt: ?3 },
+              '_id': { $ne: ?4 }
+            }
+            """)
+    long countByLevelUserStatusAndTimestampAfterExcludingAttempt(
+            Level level,
+            User user,
+            AttemptVerificationStatus antiCheatStatus,
+            ZonedDateTime after,
+            ObjectId id);
 
-    /// Returns whether another attempt on the same level shares any fuzzy input-change fingerprint.
-    boolean existsByLevelAndFingerprintChangeBucketHashesInAndIdNot(
+    /// Returns another attempt on the same level with the same exact input fingerprint and similar metadata.
+    @Query("""
+            {
+              'level': ?0,
+              'fingerprint.exactHash': ?1,
+              '_id': { $ne: ?2 },
+              'fingerprint.inputFrameCount': { $gte: ?3, $lte: ?4 },
+              'fingerprint.inputChangeCount': { $gte: ?5, $lte: ?6 }
+            }
+            """)
+    Optional<Attempt> findExactFingerprintDuplicateInMetadataRange(
+            Level level,
+            String exactHash,
+            ObjectId id,
+            int minFrameCount,
+            int maxFrameCount,
+            int minInputChangeCount,
+            int maxInputChangeCount);
+
+    /// Returns another attempt on the same level that shares any fuzzy input-change fingerprint and similar metadata.
+    @Query("""
+            {
+              'level': ?0,
+              'fingerprint.changeBucketHashes': { $in: ?1 },
+              '_id': { $ne: ?2 },
+              'fingerprint.inputFrameCount': { $gte: ?3, $lte: ?4 },
+              'fingerprint.inputChangeCount': { $gte: ?5, $lte: ?6 }
+            }
+            """)
+    Optional<Attempt> findFuzzyFingerprintDuplicateInMetadataRange(
             Level level,
             List<String> changeBucketHashes,
-            String id);
+            ObjectId id,
+            int minFrameCount,
+            int maxFrameCount,
+            int minInputChangeCount,
+            int maxInputChangeCount);
 }

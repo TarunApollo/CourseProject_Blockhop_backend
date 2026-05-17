@@ -4,5 +4,6 @@ public enum AttemptVerificationStatus {
     NOT_VERIFIED,
     LEGIT,
     CHEATED,
-    REPLAY_ERROR
+    REPLAY_ERROR,
+    SUSPICIOUS
 }

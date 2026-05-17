@@ -24,9 +24,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-/// MongoDB configuration for the application.
-/// Registers MongoDB mapping packages, entity classes, and custom converters
-/// used to persist and read domain objects.
+/// MongoDB configuration for the application. Registers MongoDB mapping
+/// packages, entity classes, and custom converters used to persist and read
+/// domain objects.
 ///
 @Configuration
 public class MongoConfiguration extends AbstractMongoClientConfiguration {
@@ -36,10 +36,16 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         return "test";
     }
 
-    /// Tells Spring Data MongoDB to scan the model package, discover classes with @TypeAlias annotations
-    /// (e.g., @TypeAlias("box") on Box), and resolve type aliases to their corresponding classes when deserializing.
-    /// Without this, Spring cannot map "_class": "box" back to Box.class.
-    /// So the batch endpoints would fail for example.
+    @Override
+    protected boolean autoIndexCreation() {
+        return true;
+    }
+
+    /// Tells Spring Data MongoDB to scan the model package, discover classes
+    /// with @TypeAlias annotations (e.g., @TypeAlias("box") on Box), and resolve
+    /// type aliases to their corresponding classes when deserializing. Without this,
+    /// Spring cannot map "_class": "box" back to Box.class. So the batch endpoints
+    /// would fail for example.
     @Override
     protected Set<String> getMappingBasePackages() {
         return Set.of("ch.usi.inf.bsc.sa4.lab02spring.model");
@@ -47,33 +53,30 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
     @Override
     protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-        final Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
+        final Set<Class<?>> entitySet = super.getInitialEntitySet(); // gets @Document classes
         entitySet.addAll(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
-                Snail.class, Slime.class
-        ));
+                Snail.class, Slime.class));
         return entitySet;
     }
 
-    ///
     /// Converts a Position to its compact string representation.
     ///
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
         @Override
-        public String convert(final Position position){
+        public String convert(final Position position) {
             return position.compactString();
         }
     }
 
-    ///
     /// Converts a compact string representation to a Position.
     ///
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
         @Override
-        public Position convert(final String string){
+        public Position convert(final String string) {
             final String[] parts = string.split(",");
             final int posX = Integer.parseInt(parts[0]);
             final int posY = Integer.parseInt(parts[1]);
@@ -81,7 +84,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
-    ///
     /// Converts a ZonedDateTime to an Instant for MongoDB storage.
     ///
     @WritingConverter
@@ -92,11 +94,10 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
-    ///
-    /// Converts a Date read from MongoDB (BSON date) to a ZonedDateTime in UTC.
-    /// The writing converter stores ZonedDateTime as Instant, which the MongoDB
-    /// driver serialises to BSON Date. On read the driver returns Date, so this
-    /// converter accepts Date rather than Instant.
+    /// Converts a Date read from MongoDB (BSON date) to a ZonedDateTime in UTC. The
+    /// writing converter stores ZonedDateTime as Instant, which the MongoDB driver
+    /// serialises to BSON Date. On read the driver returns Date, so this converter
+    /// accepts Date rather than Instant.
     ///
     @ReadingConverter
     public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
@@ -106,10 +107,9 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
-    ///
-    /// Converts an Instant read from MongoDB to a ZonedDateTime in UTC.
-    /// Defensive fallback — covers cases where the stored type reaches the
-    /// Java layer as Instant rather than Date.
+    /// Converts an Instant read from MongoDB to a ZonedDateTime in UTC. Defensive
+    /// fallback — covers cases where the stored type reaches the Java layer as
+    /// Instant rather than Date.
     ///
     @ReadingConverter
     public static class InstantToZonedDateTimeConverter implements Converter<Instant, ZonedDateTime> {
@@ -120,7 +120,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     @Override
-    public MongoCustomConversions customConversions(){
+    public MongoCustomConversions customConversions() {
         final List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());

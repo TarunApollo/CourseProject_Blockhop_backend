@@ -3,17 +3,23 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 /// Represents a user's attempt at playing a level. An attempt stores who
 /// played, when it happened, which level was played, whether the level was
 /// completed, and how long the attempt took.
 @SuppressWarnings("NullAway.Init")
 @Document(collection = "attempts")
+@CompoundIndex(
+        name = "attempt_level_exact_fingerprint_metadata",
+        def = "{'level': 1, 'fingerprint.exactHash': 1, 'fingerprint.inputFrameCount': 1, 'fingerprint.inputChangeCount': 1}")
+@CompoundIndex(
+        name = "attempt_level_fuzzy_fingerprint_metadata",
+        def = "{'level': 1, 'fingerprint.changeBucketHashes': 1, 'fingerprint.inputFrameCount': 1, 'fingerprint.inputChangeCount': 1}")
 public class Attempt {
 
     /// Database identifier of the attempt.
@@ -119,5 +125,9 @@ public class Attempt {
 
     public void setFingerprint(final InputLogFingerprint fingerprint){
         this.fingerprint = fingerprint;
+    }
+
+    public InputLogFingerprint getFingerprint() {
+        return fingerprint;
     }
 }
