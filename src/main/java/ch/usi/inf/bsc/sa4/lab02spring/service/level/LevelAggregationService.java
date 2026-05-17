@@ -67,11 +67,13 @@ public class LevelAggregationService {
         }
         final String userAttitude = currentUserId == null
                 ? null
-                : this.attitudeRepository.findByLevelAndUser(level, this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new))
+                : this.attitudeRepository
+                        .findByLevelAndUser(level,
+                                this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new))
                         .map(attitude -> attitude.getAttitude().value())
                         .orElse(null);
-        final long likeCount = this.attitudeRepository.countByLevelAttitude(level, LevelAttitudeType.LIKE);
-        final long dislikeCount = this.attitudeRepository.countByLevelAttitude(level, LevelAttitudeType.DISLIKE);
+        final long likeCount = this.attitudeRepository.countByLevelAndAttitude(level, LevelAttitudeType.LIKE);
+        final long dislikeCount = this.attitudeRepository.countByLevelAndAttitude(level, LevelAttitudeType.DISLIKE);
         return new LevelSummaryDto(level, playCount, clearRate, popularity, userAttitude, likeCount, dislikeCount);
     }
 

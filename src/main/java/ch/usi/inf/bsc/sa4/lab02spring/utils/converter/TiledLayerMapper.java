@@ -52,17 +52,16 @@ final class TiledLayerMapper {
         }
 
         return Map.of(
-            "id", 1,
-            KEY_NAME, "World",
-            KEY_TYPE, "tilelayer",
-            KEY_WIDTH, width,
-            KEY_HEIGHT, height,
-            "opacity", 1,
-            KEY_VISIBLE, Boolean.TRUE,
-            "x", 0,
-            "y", 0,
-            "data", data
-        );
+                "id", 1,
+                KEY_NAME, "World",
+                KEY_TYPE, "tilelayer",
+                KEY_WIDTH, width,
+                KEY_HEIGHT, height,
+                "opacity", 1,
+                KEY_VISIBLE, Boolean.TRUE,
+                "x", 0,
+                "y", 0,
+                "data", data);
     }
 
     /// Package-private helper that exports the object layer in Tiled format.
@@ -77,16 +76,15 @@ final class TiledLayerMapper {
         }
 
         return Map.of(
-            "id", 2,
-            KEY_NAME, "QMLayer",
-            KEY_TYPE, "objectgroup",
-            "draworder", "topdown",
-            "opacity", 1,
-            KEY_VISIBLE, Boolean.TRUE,
-            "x", 0,
-            "y", 0,
-            "objects", objects
-        );
+                "id", 2,
+                KEY_NAME, "QMLayer",
+                KEY_TYPE, "objectgroup",
+                "draworder", "topdown",
+                "opacity", 1,
+                KEY_VISIBLE, Boolean.TRUE,
+                "x", 0,
+                "y", 0,
+                "objects", objects);
     }
 
     private static Map<String, Object> toTiledObject(
@@ -99,17 +97,16 @@ final class TiledLayerMapper {
         final String type = tileSetService.getObjectTileType(gameObject.gid());
 
         final List<Map.Entry<String, Object>> entries = new ArrayList<>(List.of(
-            Map.entry("id", id),
-            Map.entry("gid", gameObject.gid()),
-            Map.entry("x", x),
-            Map.entry("y", y),
-            Map.entry(KEY_WIDTH, TILE_SIZE),
-            Map.entry(KEY_HEIGHT, TILE_SIZE),
-            Map.entry(KEY_VISIBLE, Boolean.TRUE),
-            Map.entry("rotation", 0),
-            Map.entry(KEY_NAME, ""),
-            Map.entry(KEY_TYPE, type)
-        ));
+                Map.entry("id", id),
+                Map.entry("gid", gameObject.gid()),
+                Map.entry("x", x),
+                Map.entry("y", y),
+                Map.entry(KEY_WIDTH, TILE_SIZE),
+                Map.entry(KEY_HEIGHT, TILE_SIZE),
+                Map.entry(KEY_VISIBLE, Boolean.TRUE),
+                Map.entry("rotation", 0),
+                Map.entry(KEY_NAME, ""),
+                Map.entry(KEY_TYPE, type)));
         if (gameObject instanceof Box box && box.content() instanceof Content.SomeContent) {
             entries.add(Map.entry("properties", buildBoxProperties(box)));
         }
@@ -120,10 +117,9 @@ final class TiledLayerMapper {
         final List<Map<String, Object>> properties = new ArrayList<>();
         if (box.content() instanceof Content.SomeContent someContent) {
             properties.add(Map.of(
-                KEY_NAME, "Content",
-                KEY_TYPE, "string",
-                "value", someContent.coinType().value()
-            ));
+                    KEY_NAME, "Content",
+                    KEY_TYPE, "string",
+                    "value", someContent.coinType().value()));
         }
         return properties;
     }

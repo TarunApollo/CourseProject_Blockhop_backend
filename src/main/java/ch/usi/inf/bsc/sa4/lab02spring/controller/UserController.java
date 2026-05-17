@@ -7,7 +7,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelFavoriteService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
@@ -19,8 +19,13 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /// The controller for users.
 ///
@@ -87,7 +92,8 @@ public class UserController {
 
     /// Searches for users whose name matches the given query string.
     /// @spec.requires partialName is not null.
-    /// @param partialName the string to search for in user names (request parameter "query")
+    /// @param partialName the string to search for in user names
+    ///        (request parameter "query")
     /// @return a list of matching users as UserDTOs
     @GetMapping("/search")
     public List<UserDTO> searchUsers(@RequestParam("query") final String partialName) {
@@ -95,47 +101,48 @@ public class UserController {
     }
 
     /// Returns the profile information for the authenticated user.
-    /// @spec.requires authentication is not null.
-    /// @param authentication token containing information about the logged-in user
+    /// @spec.requires oauth2User is not null.
+    /// @param oauth2User the authenticated OAuth2 user
     /// @return a 200 OK response containing the user's profile information
     ///         (name, played levels count, completed levels count, and list of created levels),
     ///         or a 404 Not Found response if the user does not exist
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileDTO> getProfile(final Authentication authentication) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
-
+    public ResponseEntity<UserProfileDTO> getProfile(
+            @AuthenticationPrincipal final OAuth2User oauth2User) {
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
         return ResponseEntity.of(this.userService.getById(userId)
-                .map(user -> new UserProfileDTO(
-                        user,
-                        this.attemptService.getPlayedLevelsCount(user),
-                        this.attemptService.getCompletedLevelsCount(user),
-                        this.levelService.getCreatedLevelsByUser(user))));
+                .map(profileUser -> new UserProfileDTO(
+                        profileUser,
+                        this.attemptService.getPlayedLevelsCount(profileUser),
+                        this.attemptService.getCompletedLevelsCount(profileUser),
+                        this.levelService.getCreatedLevelsByUser(profileUser))));
     }
 
     /// Authenticates a user using SwitchEduId Login.
     ///
-    /// @param authentication token containing information about logged user
-    /// @return a 200 OK with the newly created user dto, otherwise return the existing user dto information
+    /// @param oauth2User the authenticated OAuth2 user
+    /// @return a 200 OK with the newly created user dto,
+    ///         or the existing user dto information if the user
+    ///         already exists
     @GetMapping(path = "/me")
-    public ResponseEntity<UserDTO> index(final Authentication authentication) {
-        // Reuse the shared auth helper so /me and /profile resolve the current user id the same way.
-        final String eduId = AuthUtils.getUserIdFromAuth(authentication);
-        final String fullName = AuthUtils.getUserNameFromAuth(authentication);
-
+    public ResponseEntity<UserDTO> index(
+            @AuthenticationPrincipal final OAuth2User oauth2User) {
+        final String eduId = OAuth2UserUtils.getRequiredAttribute(oauth2User, "sub");
+        final String fullName = OAuth2UserUtils.getRequiredAttribute(oauth2User, "name");
         final Optional<User> optUser = this.userService.getById(eduId);
-        return optUser.map(user -> ResponseEntity.ok(new UserDTO(user)))
+        return optUser.map(existingUser -> ResponseEntity.ok(new UserDTO(existingUser)))
                 .orElseGet(() -> ResponseEntity.ok(new UserDTO(this.userService.createUser(new CreateUserDTO(eduId, fullName)))));
     }
 
     /// Returns the levels favorited by the authenticated user.
     ///
-    /// @spec.requires authentication is not null.
-    /// @param authentication abstract token for authentication
+    /// @spec.requires oAuth2User is not null.
+    /// @param oAuth2User the authenticated OAuth2 user
     /// @return a 200 OK response containing the user's favorited levels as DTOs
     /// @throws UserNotFoundException if no user with the authenticated id exists
     @GetMapping("/me/favorites")
-    public ResponseEntity<List<LevelDTO>> getFavorites(final Authentication authentication) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+    public ResponseEntity<List<LevelDTO>> getFavorites(@AuthenticationPrincipal final OAuth2User oAuth2User) {
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oAuth2User, "sub");
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         final List<LevelDTO> favorites = this.levelFavoriteService.getFavoritesByUser(user).stream()
                 .map(favorite -> new LevelDTO(favorite.getLevel()))

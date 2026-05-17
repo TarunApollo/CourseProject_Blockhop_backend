@@ -26,10 +26,10 @@ public class LevelPublishService {
 
     /// Creates a publish service with repository dependencies.
     ///
-    /// @param levelRepository persists level publication state
+    /// @param levelRepository         persists level publication state
     /// @param levelFavoriteRepository persists favorite entries referencing levels
-    /// @param attitudeRepository persists attitude entries referencing levels
-    /// @param userRepository resolves users involved in publication
+    /// @param attitudeRepository      persists attitude entries referencing levels
+    /// @param userRepository          resolves users involved in publication
     @Autowired
     public LevelPublishService(final LevelRepository levelRepository,
             final LevelFavoriteRepository levelFavoriteRepository,
@@ -58,6 +58,7 @@ public class LevelPublishService {
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         this.userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         level.publish(userId);
+        this.levelRepository.save(level);
     }
 
     /// Unpublishes an existing level owned by the given user.
@@ -65,10 +66,9 @@ public class LevelPublishService {
     /// @spec.requires userId and levelId are not null.
     /// @spec.modifies the level identified by levelId and published-level reactions
     ///                pointing to it.
-    /// @spec.effects marks the target level as unpublished, saves the updated
-    ///               level, and removes favorites and attitudes pointing to that
-    ///               level.
-    /// @param userId the authenticated user's ID
+    /// @spec.effects marks the target level as unpublished, saves the updated level,
+    ///               and removes favorites and attitudes pointing to that level.
+    /// @param userId  the authenticated user's ID
     /// @param levelId the ID of the level to unpublish
     /// @throws LevelNotFoundException if the level does not exist
     /// @throws ForbiddenUserException if the user is not the owner of the level
@@ -81,28 +81,31 @@ public class LevelPublishService {
         this.attitudeRepository.deleteByLevelId(levelId);
     }
 
-    /// Marks the given level as eligible for publishing on behalf of the given user.
+    /// Marks the given level as eligible for publishing on behalf of the given
+    /// user.
     ///
     /// @spec.requires level and userId are not null.
     /// @spec.modifies the given level in the repository.
     /// @spec.effects sets the level's publishEligible flag to true and saves it.
     /// @param level  the level to mark as publish eligible
     /// @param userId the unique identifier of the user requesting the validation
-    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    /// @throws ForbiddenUserException if the given user is not the owner of
+    ///                                the level
     public void validateLevelPublishEligible(final Level level, final String userId) {
         level.validatePublishEligible(userId);
         this.levelRepository.save(level);
     }
 
-    /// Marks the given level as not eligible for publishing.
-    /// Applies the change on behalf of the given user.
+    /// Marks the given level as not eligible for publishing. Applies the change on
+    /// behalf of the given user.
     ///
     /// @spec.requires level and userId are not null.
     /// @spec.modifies the given level in the repository.
     /// @spec.effects sets the level's publishEligible flag to false and saves it.
     /// @param level  the level to mark as not publish eligible
     /// @param userId the unique identifier of the user requesting the invalidation
-    /// @throws ForbiddenUserException if the given user is not the owner of the level
+    /// @throws ForbiddenUserException if the given user is not the owner of
+    ///                                the level
     public void invalidateLevelPublishEligible(final Level level, final String userId) {
         level.invalidatePublishEligible(userId);
         this.levelRepository.save(level);

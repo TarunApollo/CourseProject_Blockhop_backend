@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /// Enumeration of supported coin types.
 ///
 /// Each constant maps to the external string value used in JSON payloads.
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public enum CoinType {
     GOLD_COIN("Item_Coin_Gold"),
     SILVER_COIN("Item_Coin_Silver"),

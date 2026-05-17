@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-///
 /// Tests for LevelAttitude model: construction and getters.
 ///
 @DisplayName(" In the LevelAttitude class ")
@@ -69,9 +68,8 @@ class LevelAttitudeTests {
             this.attitude = new LevelAttitude(this.user, this.level, LevelAttitudeType.DISLIKE);
         }
 
-        ///
-        /// Verifies that getUser returns the exact user reference passed at
-        /// construction.
+        /// Verifies that getUser returns the exact user reference passed
+        /// at construction.
         ///
         @DisplayName(" should return the correct user ")
         @Test
@@ -79,9 +77,8 @@ class LevelAttitudeTests {
             Assertions.assertSame(this.user, this.attitude.getUser());
         }
 
-        ///
-        /// Verifies that getLevel returns the exact level reference passed at
-        /// construction.
+        /// Verifies that getLevel returns the exact level reference passed
+        /// at construction.
         ///
         @DisplayName(" should return the correct level ")
         @Test
@@ -97,7 +94,6 @@ class LevelAttitudeTests {
         }
     }
 
-    ///
     /// Tests for the four-argument LevelAttitude constructor, which additionally
     /// accepts an ID.
     ///
@@ -108,7 +104,6 @@ class LevelAttitudeTests {
         /// The LevelAttitude under test, created in setUp.
         private LevelAttitude attitude;
 
-        ///
         /// Creates a LevelAttitude via the four-argument constructor before each test.
         ///
         @BeforeEach

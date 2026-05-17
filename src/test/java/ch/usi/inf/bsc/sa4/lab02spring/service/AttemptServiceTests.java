@@ -16,114 +16,91 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/**
- * Unit tests for the AttemptService.
- * Goal: Test service logic in isolation using Mockito.
- */
-@ExtendWith(MockitoExtension.class)
-@DisplayName("The Attempt Service (Unit)")
-@SuppressWarnings("NullAway")
-/* default */ class AttemptServiceTests {
+/// Unit tests for [AttemptService].
+@SpringBootTest
+@DisplayName("The Attempt Service")
+class AttemptServiceTests {
 
-    /** The mocked attempt repository. */
-    @Mock
-    private AttemptRepository attemptRepository;
+    /// Default attempt DTO for testing attempts.
+    private static final AttemptDTO ATTEMPT_DTO = new AttemptDTO(
+            Map.of(), new Position(0, 0),
+            ZonedDateTime.now(), Duration.ofSeconds(15), false);
 
-    /** The service under test. */
-    @InjectMocks
+    /// The service under test.
+    @Autowired
     private AttemptService attemptService;
 
-    /** The test user. */
+    /// Mocked repository to isolate tests.
+    @MockitoBean
+    private AttemptRepository attemptRepository;
+
+    /// The test user entity.
     private User testUser;
 
-    /**
-     * Sets up test data before each test.
-     */
+    /// The test level entity.
+    private Level testLevel;
+
+    /// The expected Attempt entity after mapping.
+    private Attempt expectedAttempt;
+
+    /// Sets up test data before each test.
     @BeforeEach
-    /* default */ void setup() {
+    void setup() {
         this.testUser = new User("user-1", "Mario");
+        this.testLevel = new Level("Test Level", "desc", testUser);
+
+        this.expectedAttempt = new Attempt(
+                this.testUser,
+                ATTEMPT_DTO.timestamp(),
+                this.testLevel,
+                ATTEMPT_DTO.completed(),
+                ATTEMPT_DTO.timeTaken());
     }
 
-    /**
-     * Tests for retrieval and statistics methods.
-     */
+    /// Tests related to retrieving statistics.
     @Nested
-    @DisplayName("when retrieving attempts and stats")
-    /* default */ class Stats {
+    @DisplayName("when retrieving statistics")
+    class Stats {
 
-        /**
-         * Verifies played levels count returns correct value.
-         */
+        /// Verifies delegation to the repository for counting played levels.
         @Test
         @DisplayName("should count played levels correctly")
-        /* default */ void testGetPlayedLevelsCount() {
+        void testGetPlayedLevelsCount() {
             Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
+
             final long count = attemptService.getPlayedLevelsCount(testUser);
             Assertions.assertEquals(5L, count);
         }
 
-        /**
-         * Verifies played levels count delegates to repository.
-         */
-        @Test
-        @DisplayName("should delegate to the repository when counting played levels")
-        /* default */ void testGetPlayedLevelsCountCallsRepo() {
-            Mockito.when(attemptRepository.countDistinctPlayedLevelsByUser(testUser)).thenReturn(5L);
-            attemptService.getPlayedLevelsCount(testUser);
-            Mockito.verify(attemptRepository).countDistinctPlayedLevelsByUser(testUser);
-        }
-
-        /**
-         * Verifies completed levels count returns correct value.
-         */
+        /// Verifies delegation to the repository for counting completed levels.
         @Test
         @DisplayName("should count completed levels correctly")
-        /* default */ void testGetCompletedLevelsCount() {
+        void testGetCompletedLevelsCount() {
             Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
+
             final long count = attemptService.getCompletedLevelsCount(testUser);
             Assertions.assertEquals(3L, count);
         }
-
-        /**
-         * Verifies completed levels count delegates to repository.
-         */
-        @Test
-        @DisplayName("should delegate to the repository when counting completed levels")
-        /* default */ void testGetCompletedLevelsCountCallsRepo() {
-            Mockito.when(attemptRepository.countDistinctCompletedLevelsByUser(testUser)).thenReturn(3L);
-            attemptService.getCompletedLevelsCount(testUser);
-            Mockito.verify(attemptRepository).countDistinctCompletedLevelsByUser(testUser);
-        }
     }
 
-    /**
-     * Tests for the submitAttempt method.
-     */
+    /// Tests related to submitting attempts.
     @Nested
     @DisplayName("when submitting an attempt")
-    /* default */ class Submission {
+    class Submission {
 
-        /**
-         * Verifies submitAttempt persists a new Attempt built from
-         * the given user/level/dto.
-         */
+        /// Verifies that the service correctly maps and saves a new attempt.
         @Test
-        @DisplayName("should save a new attempt to the repository")
-        /* default */ void testSubmitAttemptSaves() {
-            final Level level = new Level("Test Level", "desc", testUser);
-            final AttemptDTO dto = new AttemptDTO(
-                    Map.of(), new Position(0, 0),
-                    ZonedDateTime.now(), Duration.ofSeconds(10), true);
+        @DisplayName("should save a new attempt with correct fields from DTO")
+        void testSubmitAttemptSaves() {
+            attemptService.submitAttempt(testUser, testLevel, ATTEMPT_DTO);
 
-            attemptService.submitAttempt(testUser, level, dto);
-
-            Mockito.verify(attemptRepository).save(Mockito.any(Attempt.class));
+            Mockito.verify(attemptRepository).save(ArgumentMatchers.refEq(expectedAttempt));
         }
     }
 }

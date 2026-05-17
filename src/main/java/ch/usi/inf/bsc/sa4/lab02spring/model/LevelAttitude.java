@@ -8,7 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /// Represents a user's attitude towards a level. An attitude stores who
-/// liked/disliked, which level was rated and whether a level is liked or disliked.
+/// liked/disliked, which level was rated and whether a level is liked
+/// or disliked.
 @SuppressWarnings("NullAway.Init")
 @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "ratings")
@@ -29,12 +30,11 @@ public class LevelAttitude {
     /// The rating done by the user
     /* package */ LevelAttitudeType attitude;
 
-
     /// Creates a new level attitude entry without an explicit id.
     ///
-    /// @param user      the user who made the attitude
-    /// @param level     the level that was played
-    /// @param attitude  the attitude towards a level
+    /// @param user     the user who made the attitude
+    /// @param level    the level that was played
+    /// @param attitude the attitude towards a level
     public LevelAttitude(final User user, final Level level, final LevelAttitudeType attitude) {
         this.user = user;
         this.level = level;
@@ -43,10 +43,10 @@ public class LevelAttitude {
 
     /// Creates a new level attitude entry with an explicit id.
     ///
-    /// @param id        the attitude id
-    /// @param user      the user who made the attitude
-    /// @param level     the level that was played
-    /// @param attitude  the attitude towards a level
+    /// @param id       the attitude id
+    /// @param user     the user who made the attitude
+    /// @param level    the level that was played
+    /// @param attitude the attitude towards a level
     @PersistenceCreator
     public LevelAttitude(final String id, final User user, final Level level, final LevelAttitudeType attitude) {
         this.id = id;

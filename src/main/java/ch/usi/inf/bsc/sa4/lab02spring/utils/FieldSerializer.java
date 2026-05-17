@@ -20,6 +20,9 @@ import java.util.Map;
 ///
 public class FieldSerializer {
 
+    /// Prevents instantiation of this utility class.
+    private FieldSerializer() { }
+
     ///
     /// Serializes the object layer of a level DTO as a JSON object keyed by position.
     ///

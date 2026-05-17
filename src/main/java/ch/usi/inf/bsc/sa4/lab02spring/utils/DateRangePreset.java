@@ -19,6 +19,7 @@ public sealed interface DateRangePreset
     /// @param value the textual preset value
     /// @return the matching date range preset
     ///
+    @SuppressWarnings("PMD.OnlyOneReturn")
     static DateRangePreset fromValue(final String value) {
         final String normalized = value.trim().toUpperCase(Locale.ROOT);
 
@@ -43,6 +44,7 @@ public sealed interface DateRangePreset
     ///
     /// A preset representing a time range relative to the current day.
     ///
+    @SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
     enum RelativeDateRangePreset implements DateRangePreset {
         TODAY(Duration.ofDays(1)),
         LAST_7_DAYS(Duration.ofDays(7)),

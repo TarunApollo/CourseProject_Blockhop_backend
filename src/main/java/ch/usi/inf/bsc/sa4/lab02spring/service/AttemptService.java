@@ -1,18 +1,12 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateAttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
 
 /// Service handling creation and querying of player attempts.
 @Service

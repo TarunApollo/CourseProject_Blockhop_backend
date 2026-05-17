@@ -1,5 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
@@ -10,12 +12,15 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Shell;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -24,56 +29,47 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/// MongoDB configuration for the application.
-/// Registers MongoDB mapping packages, entity classes, and custom converters
-/// used to persist and read domain objects.
+/// MongoDB configuration for the application. Registers MongoDB mapping
+/// packages, entity classes, and custom converters used to persist and read
+/// domain objects.
 ///
 @Configuration
-public class MongoConfiguration extends AbstractMongoClientConfiguration {
+@SuppressWarnings("PMD.AtLeastOneConstructor")
+public class MongoConfiguration {
 
-    @Override
-    protected String getDatabaseName() {
-        return "test";
-    }
-
-    /// Tells Spring Data MongoDB to scan the model package, discover classes with @TypeAlias annotations
-    /// (e.g., @TypeAlias("box") on Box), and resolve type aliases to their corresponding classes when deserializing.
-    /// Without this, Spring cannot map "_class": "box" back to Box.class.
-    /// So the batch endpoints would fail for example.
-    @Override
-    protected Set<String> getMappingBasePackages() {
-        return Set.of("ch.usi.inf.bsc.sa4.lab02spring.model");
-    }
-
-    @Override
-    protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
-        final Set<Class<?>> entitySet = super.getInitialEntitySet();  // gets @Document classes
-        entitySet.addAll(Set.of(
+    /// Configures the Mongo mapping context with initial entities.
+    ///
+    /// @param customConversions the custom conversions to use
+    /// @return the configured mapping context
+    @Bean
+    public MongoMappingContext mongoMappingContext(final MongoCustomConversions customConversions) {
+        final MongoMappingContext mappingContext = new MongoMappingContext();
+        mappingContext.setInitialEntitySet(Set.of(
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
-                Bee.class, Snail.class, Slime.class
-        ));
-        return entitySet;
+                Snail.class, Slime.class, User.class,
+                Bee.class,
+                Level.class, Attempt.class));
+        mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
+        return mappingContext;
     }
 
-    ///
-    /// Converts a Position to its compact string representation.
+    /// Converts a [Position] to its compact string representation.
     ///
     @WritingConverter
     public static class PositionToStringConverter implements Converter<Position, String> {
         @Override
-        public String convert(final Position position){
+        public String convert(final Position position) {
             return position.compactString();
         }
     }
 
-    ///
-    /// Converts a compact string representation to a Position.
+    /// Converts a compact string representation to a [Position].
     ///
     @ReadingConverter
     public static class StringToPositionConverter implements Converter<String, Position> {
         @Override
-        public Position convert(final String string){
+        public Position convert(final String string) {
             final String[] parts = string.split(",");
             final int posX = Integer.parseInt(parts[0]);
             final int posY = Integer.parseInt(parts[1]);
@@ -81,8 +77,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
-    ///
-    /// Converts a ZonedDateTime to an Instant for MongoDB storage.
+    /// Converts a [ZonedDateTime] to an [Instant] for MongoDB storage.
     ///
     @WritingConverter
     public static class ZonedDateTimeToInstantConverter implements Converter<ZonedDateTime, Instant> {
@@ -92,8 +87,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
-    ///
-    /// Converts an Instant read from MongoDB to a ZonedDateTime in UTC.
+    /// Converts an [Instant] read from MongoDB to a [ZonedDateTime] in UTC.
     ///
     @ReadingConverter
     public static class InstantToZonedDateTimeConverter implements Converter<Instant, ZonedDateTime> {
@@ -103,13 +97,19 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
         }
     }
 
-    @Override
-    public MongoCustomConversions customConversions(){
+    /// Configures the custom conversions for MongoDB.
+    ///
+    /// @return the custom conversions
+    @Bean
+    public MongoCustomConversions customConversions() {
         final List<Converter<?, ?>> custom = new ArrayList<>();
         custom.add(new PositionToStringConverter());
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToInstantConverter());
         custom.add(new InstantToZonedDateTimeConverter());
-        return new MongoCustomConversions(custom);
+        return MongoCustomConversions.create(adapter -> {
+            adapter.useNativeDriverJavaTimeCodecs();
+            adapter.registerConverters(custom);
+        });
     }
 }

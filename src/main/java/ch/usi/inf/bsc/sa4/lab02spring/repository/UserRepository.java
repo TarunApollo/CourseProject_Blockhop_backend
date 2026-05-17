@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 /// Repository for storing and querying users.
 @Repository
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface UserRepository extends MongoRepository<User, String> {
 
   /// Finds all users whose name contains the given text.

@@ -156,12 +156,11 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        switch (dto) {
-            case BoxPropertyUpdateDTO boxUpdate ->
-                level.updateBoxContent(dto.position(), boxUpdate.content());
-            default ->
-                throw new IllegalArgumentException(
-                    "Unsupported object type for property update: " + dto.getClass().getSimpleName());
+        if (dto instanceof BoxPropertyUpdateDTO boxUpdate) {
+            level.updateBoxContent(dto.position(), boxUpdate.content());
+        } else {
+            throw new IllegalArgumentException(
+                "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
         this.levelPublishService.invalidateLevelPublishEligible(level, userId);

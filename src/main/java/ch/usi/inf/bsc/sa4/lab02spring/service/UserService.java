@@ -34,11 +34,12 @@ public class UserService {
     return this.userRepository.findAll();
   }
 
-  /// Creates a new user (using SwitchEduId login information) and persists it in the DB.
-  /// 
+  /// Creates a new user (using SwitchEduId login information)
+  /// and persists it in the DB.
+  ///
   /// @param dto the data to create a new user.
   /// @return the newly created user.
-  /// @spec.requires <code>createUserDTO != null</code>
+  /// @spec.requires `createUserDTO != null`
   /// 
   public User createUser(final CreateUserDTO dto) {
     final User newUser = new User(dto.id(), dto.fullName());

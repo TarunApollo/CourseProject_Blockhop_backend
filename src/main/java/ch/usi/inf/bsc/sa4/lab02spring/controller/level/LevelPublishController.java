@@ -1,7 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPublishService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 
@@ -9,7 +9,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +35,7 @@ public class LevelPublishController {
 
     /// Unpublishes a level owned by the authenticated user.
     /// 
-    /// @param authentication the current authenticated user
+    /// @param user the authenticated OAuth2 user
     /// @param levelId        the ID of the level to unpublish
     /// @return 204 No Content when the level is unpublished successfully
     /// @throws LevelNotFoundException if the level does not exist
@@ -42,9 +43,9 @@ public class LevelPublishController {
     ///                                the level
     @PutMapping("/{levelId}/unpublish")
     public ResponseEntity<Void> unpublishLevel(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User user,
             @PathVariable final String levelId) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
         this.levelPublishService.unpublishLevel(userId, levelId);
         return ResponseEntity.noContent().build();
     }
@@ -54,14 +55,14 @@ public class LevelPublishController {
     /// @spec.requires authentication and levelId are not null.
     /// @spec.effects forwards the authenticated user and target level id to the
     ///               level service, which publishes the level.
-    /// @param authentication the current authenticated user
+    /// @param user the authenticated OAuth2 user
     /// @param levelId        the id of the target level
     /// @return a 204 No Content response when the level is published successfully
     @PutMapping(path = "/{levelId}/publish")
     public ResponseEntity<Void> publishLevel(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User user,
             @PathVariable final String levelId) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
         this.levelPublishService.publish(userId, levelId);
         return ResponseEntity.noContent().build();
     }
