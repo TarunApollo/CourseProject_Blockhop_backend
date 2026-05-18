@@ -7,8 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-import java.time.ZonedDateTime;
-
+import java.time.Instant;
 /// Represents a user's favorite level. A favorite stores who marked the level
 /// as favorite, which level was favorited, and when it happened.
 @SuppressWarnings({ "NullAway.Init", "PMD.DataClass" })
@@ -30,14 +29,14 @@ public class LevelFavorite {
     /* package */ Level level;
 
     /// Timestamp when the favorite was created.
-    /* package */ ZonedDateTime timestamp;
+    /* package */ Instant timestamp;
 
     /// Creates a new favorite without an explicit id.
     ///
     /// @param user      the user who favorited the level
     /// @param level     the level that was favorited
     /// @param timestamp the creation timestamp
-    public LevelFavorite(final User user, final Level level, final ZonedDateTime timestamp) {
+    public LevelFavorite(final User user, final Level level, final Instant timestamp) {
         this.user = user;
         this.level = level;
         this.timestamp = timestamp;
@@ -50,7 +49,7 @@ public class LevelFavorite {
     /// @param level     the level that was favorited
     /// @param timestamp the creation timestamp
     @PersistenceCreator
-    public LevelFavorite(final String id, final User user, final Level level, final ZonedDateTime timestamp) {
+    public LevelFavorite(final String id, final User user, final Level level, final Instant timestamp) {
         this.id = id;
         this.user = user;
         this.level = level;
@@ -69,7 +68,7 @@ public class LevelFavorite {
         return level;
     }
 
-    public ZonedDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 }
