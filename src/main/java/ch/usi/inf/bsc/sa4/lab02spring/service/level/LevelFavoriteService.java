@@ -35,6 +35,7 @@ public class LevelFavoriteService {
     /// @param user  the user adding the favorite
     /// @param level the level being favorited
     public void addFavorite(final User user, final Level level) {
+        level.ensurePublished();
         if (this.levelFavoriteRepository.existsByUserAndLevel(user, level)) {
             return;
         }
