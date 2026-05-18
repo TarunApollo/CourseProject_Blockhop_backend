@@ -112,7 +112,7 @@ class LevelFavoriteServiceTests {
         @DisplayName("allows favoriting unpublished levels")
         void allowsFavoritingUnpublishedLevel() {
             final Level unpublishedLevel = createLevel(false);
-            final LevelFavorite expectedUnpublishedFavorite =
+            final LevelFavorite expected =
                     new LevelFavorite(testUser, unpublishedLevel, Instant.now());
 
             Mockito.when(levelFavoriteRepository.existsByUserAndLevel(testUser, unpublishedLevel))
@@ -121,7 +121,7 @@ class LevelFavoriteServiceTests {
             levelFavoriteService.addFavorite(testUser, unpublishedLevel);
 
             Mockito.verify(levelFavoriteRepository)
-                    .save(Mockito.refEq(expectedUnpublishedFavorite, "timestamp"));
+                    .save(Mockito.refEq(expected, "timestamp"));
         }
     }
 

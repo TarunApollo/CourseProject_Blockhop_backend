@@ -1,6 +1,9 @@
-package ch.usi.inf.bsc.sa4.lab02spring.model;
+package ch.usi.inf.bsc.sa4.lab02spring.model.level;
 
 import java.time.Instant;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +15,10 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("NullAway")
 class LevelFavoriteTests {
 
+    /// Test user, rebuilt per test.
     private User testUser;
+
+    /// Test level, rebuilt per test.
     private Level testLevel;
 
     @BeforeEach

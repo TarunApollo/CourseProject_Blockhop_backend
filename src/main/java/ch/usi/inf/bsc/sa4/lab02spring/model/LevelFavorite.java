@@ -11,8 +11,8 @@ import java.time.Instant;
 /// Represents a user's favorite level. A favorite stores who marked the level
 /// as favorite, which level was favorited, and when it happened.
 @SuppressWarnings({ "NullAway.Init", "PMD.DataClass" })
-@SuppressFBWarnings(value = { "EI_EXPOSE_REP",
-        "EI_EXPOSE_REP2" }, justification = "Mongo-managed entity; references are exposed intentionally for persistence and DTO mapping")
+@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Mongo-managed entity; references are exposed intentionally " +
+        "for persistence and DTO mapping")
 @Document(collection = "favorites")
 public class LevelFavorite {
 
