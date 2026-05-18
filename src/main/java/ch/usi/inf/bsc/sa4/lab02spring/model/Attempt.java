@@ -20,6 +20,9 @@ import java.time.ZonedDateTime;
 @CompoundIndex(
         name = "attempt_level_fuzzy_fingerprint_metadata",
         def = "{'level': 1, 'fingerprint.changeBucketHashes': 1, 'fingerprint.inputFrameCount': 1, 'fingerprint.inputChangeCount': 1}")
+@CompoundIndex(
+        name = "attempt_level_jitter_fingerprint_metadata",
+        def = "{'level': 1, 'fingerprint.jitterInputHash': 1, 'fingerprint.jitterInputChangeCount': 1}")
 public class Attempt {
 
     /// Database identifier of the attempt.

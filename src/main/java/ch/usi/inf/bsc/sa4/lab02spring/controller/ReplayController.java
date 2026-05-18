@@ -141,6 +141,7 @@ public class ReplayController {
         if(status == AttemptVerificationStatus.LEGIT){
             final Optional<Attempt> exactDuplicate = attemptService.findExactFingerprintDuplicate(level, attemptId, fingerprint);
             final Optional<Attempt> fuzzyDuplicate = attemptService.findFuzzyFingerprintDuplicate(level, attemptId, fingerprint);
+            final Optional<Attempt> jitterDuplicate = attemptService.findJitterFingerprintDuplicate(level, attemptId, fingerprint);
             final ZonedDateTime recentAttemptWindowStart = ZonedDateTime.now().minusDays(RECENT_ATTEMPT_WINDOW_DAYS);
             final long previousSuspiciousAttempts = attemptService.countAttemptsByLevelUserStatusAfter(
                     level,
@@ -158,6 +159,7 @@ public class ReplayController {
                     fingerprint,
                     exactDuplicate,
                     fuzzyDuplicate,
+                    jitterDuplicate,
                     previousSuspiciousAttempts,
                     previousCheatedAttempts);
         }

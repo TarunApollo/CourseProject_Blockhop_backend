@@ -22,9 +22,7 @@ import java.util.Optional;
 /// Service handling creation and querying of player attempts.
 @Service
 public class AttemptService {
-    private static final double FRAME_COUNT_TOLERANCE_RATIO_EXACT = 0.0;
     private static final double FRAME_COUNT_TOLERANCE_RATIO_FUZZY = 1.0;
-    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_EXACT = 0.0;
     private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY = 0.5;
     private static final int MIN_FRAME_COUNT_TOLERANCE = 5;
     private static final int MIN_INPUT_CHANGE_COUNT_TOLERANCE = 2;
@@ -130,15 +128,12 @@ public class AttemptService {
                                                            final InputLogFingerprint fingerprint) {
         if(fingerprint.exactHash().isEmpty()) return Optional.empty();
 
-        final MetadataRanges ranges = metadataRanges(fingerprint, FRAME_COUNT_TOLERANCE_RATIO_EXACT, INPUT_CHANGE_COUNT_TOLERANCE_RATIO_EXACT);
-        return this.attemptRepository.findExactFingerprintDuplicateInMetadataRange(
+        return this.attemptRepository.findExactFingerprintDuplicate(
                 getValidObjectId(level.getId()),
                 fingerprint.exactHash(),
                 getValidObjectId(currentAttemptId),
-                ranges.minFrameCount(),
-                ranges.maxFrameCount(),
-                ranges.minInputChangeCount(),
-                ranges.maxInputChangeCount()
+                fingerprint.inputFrameCount(),
+                fingerprint.inputChangeCount()
             ).stream().findFirst();
     }
 
@@ -157,6 +152,21 @@ public class AttemptService {
                 ranges.maxFrameCount(),
                 ranges.minInputChangeCount(),
                 ranges.maxInputChangeCount()
+            ).stream().findFirst();
+    }
+
+    public Optional<Attempt> findJitterFingerprintDuplicate(final Level level,
+                                                            final String currentAttemptId,
+                                                            final InputLogFingerprint fingerprint) {
+        if (fingerprint.jitterInputHash().isEmpty()) {
+            return Optional.empty();
+        }
+
+        return this.attemptRepository.findJitterFingerprintDuplicate(
+                getValidObjectId(level.getId()),
+                fingerprint.jitterInputHash(),
+                getValidObjectId(currentAttemptId),
+                fingerprint.jitterInputChangeCount()
             ).stream().findFirst();
     }
 

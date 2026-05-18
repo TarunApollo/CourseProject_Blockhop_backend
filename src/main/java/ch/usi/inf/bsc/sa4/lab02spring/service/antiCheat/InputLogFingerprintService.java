@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 
@@ -16,10 +17,13 @@ public class InputLogFingerprintService {
 
     private static final int DEFAULT_BUCKET_SIZE = 10;
     private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 5);
+    private static final int JUMP_ONLY_HORIZONTAL_DELTA_FRAMES = 90;
+    private static final int MAX_CANCELABLE_HORIZONTAL_RUN_FRAMES = 5;
 
     public InputLogFingerprint fingerprint(final List<InputFrameDTO> inputLog) {
         final List<InputChange> changes = nonNeutralInputChanges(inputLog);
         final String exactCanonical = canonicalExact(inputLog);
+        final JitterCanonical jitterCanonical = jitterCanonical(inputLog);
         final List<String> changeBucketHashes = DEFAULT_BUCKET_OFFSETS.stream()
                 .map(offset -> canonicalBucketedCombinedInputs(inputLog, DEFAULT_BUCKET_SIZE, offset))
                 .map(InputLogFingerprintService::sha256)
@@ -27,6 +31,8 @@ public class InputLogFingerprintService {
 
         return new InputLogFingerprint(
                 sha256(exactCanonical),
+                sha256(jitterCanonical.canonical()),
+                jitterCanonical.changeCount(),
                 changeBucketHashes,
                 inputLog.size(),
                 changes.size()
@@ -50,6 +56,25 @@ public class InputLogFingerprintService {
                     .append(InputState.from(frame).canonical());
         }
         return canonical.toString();
+    }
+
+    public String canonicalJitterInputChanges(final List<InputFrameDTO> inputLog) {
+        return jitterCanonical(inputLog).canonical();
+    }
+
+    private JitterCanonical jitterCanonical(final List<InputFrameDTO> inputLog) {
+        final List<InputRun> runs = jitterInputRuns(inputLog);
+        final List<InputRun> withoutFakeJumps = removeFakeJumpOnlyRuns(runs);
+        final List<InputRun> withoutHorizontalNoise = removeHorizontalCancellationNoise(withoutFakeJumps);
+        final List<InputRun> normalizedRuns = collapseAdjacentEqualRuns(withoutHorizontalNoise);
+        final StringBuilder canonical = new StringBuilder();
+
+        for (final InputRun run : normalizedRuns) {
+            appendSeparatorIfNeeded(canonical);
+            canonical.append(run.state().canonical());
+        }
+
+        return new JitterCanonical(canonical.toString(), normalizedRuns.size());
     }
 
     public String canonicalBucketedCombinedInputs(final List<InputFrameDTO> inputLog,
@@ -81,9 +106,134 @@ public class InputLogFingerprintService {
         return canonical.toString();
     }
 
+    private List<InputRun> jitterInputRuns(final List<InputFrameDTO> inputLog) {
+        final ArrayList<InputRun> runs = new ArrayList<>();
+        InputState currentRunState = null;
+        int currentRunLength = 0;
+        int neutralFramesAfterCurrentRun = 0;
+
+        for (final InputFrameDTO frame : inputLog) {
+            final InputState current = InputState.from(frame);
+            if (current.isNeutral()) {
+                if (currentRunState != null) {
+                    neutralFramesAfterCurrentRun++;
+                }
+                continue;
+            }
+
+            if (currentRunState == null) {
+                currentRunState = current;
+                currentRunLength = 1;
+                neutralFramesAfterCurrentRun = 0;
+                continue;
+            }
+
+            if (neutralFramesAfterCurrentRun > 0) {
+                runs.add(new InputRun(currentRunState, currentRunLength, neutralFramesAfterCurrentRun));
+                currentRunState = current;
+                currentRunLength = 1;
+                neutralFramesAfterCurrentRun = 0;
+                continue;
+            }
+
+            if (current.equals(currentRunState)) {
+                currentRunLength++;
+            } else {
+                runs.add(new InputRun(currentRunState, currentRunLength, 0));
+                currentRunState = current;
+                currentRunLength = 1;
+            }
+        }
+
+        if (currentRunState != null) {
+            runs.add(new InputRun(currentRunState, currentRunLength, neutralFramesAfterCurrentRun));
+        }
+
+        return List.copyOf(runs);
+    }
+
+    private static List<InputRun> removeFakeJumpOnlyRuns(final List<InputRun> runs) {
+        final ArrayList<InputRun> normalized = new ArrayList<>();
+
+        for (final InputRun run : runs) {
+            if (run.state().isJumpOnly()
+                    && run.neutralFramesAfter() >= JUMP_ONLY_HORIZONTAL_DELTA_FRAMES) {
+                continue;
+            }
+            normalized.add(run.withoutNeutralFramesAfter());
+        }
+
+        return List.copyOf(normalized);
+    }
+
+    private static List<InputRun> removeHorizontalCancellationNoise(final List<InputRun> runs) {
+        final ArrayList<InputRun> normalized = new ArrayList<>();
+
+        for (final InputRun run : runs) {
+            final int lastIndex = normalized.size() - 1;
+            if (lastIndex >= 1
+                    && isCancelableHorizontalInterruption(
+                    normalized.get(lastIndex - 1),
+                    normalized.get(lastIndex),
+                    run)) {
+                normalized.remove(lastIndex);
+                normalized.add(run);
+                continue;
+            }
+            normalized.add(run);
+        }
+
+        return List.copyOf(normalized);
+    }
+
+    private static boolean isCancelableHorizontalInterruption(final InputRun before,
+                                                             final InputRun interruption,
+                                                             final InputRun after) {
+        return interruption.length() <= MAX_CANCELABLE_HORIZONTAL_RUN_FRAMES
+                && sameHorizontalDirection(before.state(), after.state())
+                && oppositeHorizontalDirection(before.state(), interruption.state());
+    }
+
+    private static boolean sameHorizontalDirection(final InputState first, final InputState second) {
+        return hasSingleHorizontalDirection(first)
+                && hasSingleHorizontalDirection(second)
+                && first.left() == second.left()
+                && first.right() == second.right();
+    }
+
+    private static boolean oppositeHorizontalDirection(final InputState first, final InputState second) {
+        return hasSingleHorizontalDirection(first)
+                && hasSingleHorizontalDirection(second)
+                && first.left() == second.right()
+                && first.right() == second.left();
+    }
+
+    private static boolean hasSingleHorizontalDirection(final InputState state) {
+        return state.left() != state.right();
+    }
+
+    private static InputRun mergeRuns(final InputRun first, final InputRun second) {
+        return new InputRun(first.state(), first.length() + second.length(), second.neutralFramesAfter());
+    }
+
+    private static List<InputRun> collapseAdjacentEqualRuns(final List<InputRun> runs) {
+        final ArrayList<InputRun> collapsed = new ArrayList<>();
+
+        for (final InputRun run : runs) {
+            final int lastIndex = collapsed.size() - 1;
+            if (lastIndex >= 0 && collapsed.get(lastIndex).state().equals(run.state())) {
+                collapsed.set(lastIndex, mergeRuns(collapsed.get(lastIndex), run));
+            } else {
+                collapsed.add(run);
+            }
+        }
+
+        return List.copyOf(collapsed);
+    }
+
     public List<InputChange> nonNeutralInputChanges(final List<InputFrameDTO> inputLog) {
         InputState previous = null;
-        final java.util.ArrayList<InputChange> changes = new java.util.ArrayList<>();
+        final ArrayList<InputChange> changes = new ArrayList<>();
 
         for (final InputFrameDTO frame : inputLog) {
             final InputState current = InputState.from(frame);
@@ -138,6 +288,15 @@ public class InputLogFingerprintService {
     public record InputChange(int frame, String state) {
     }
 
+    private record InputRun(InputState state, int length, int neutralFramesAfter) {
+        InputRun withoutNeutralFramesAfter() {
+            return new InputRun(state, length, 0);
+        }
+    }
+
+    private record JitterCanonical(String canonical, int changeCount) {
+    }
+
     private static final class BucketInputState {
         private boolean left;
         private boolean right;
@@ -177,6 +336,10 @@ public class InputLogFingerprintService {
 
         boolean isNeutral() {
             return !left && !right && !jump && !run;
+        }
+
+        boolean isJumpOnly() {
+            return !left && !right && jump && !run;
         }
 
     }

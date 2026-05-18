@@ -77,18 +77,31 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
               'level.$id': ?0,
               'fingerprint.exactHash': ?1,
               '_id': { $ne: ?2 },
-              'fingerprint.inputFrameCount': { $gte: ?3, $lte: ?4 },
-              'fingerprint.inputChangeCount': { $gte: ?5, $lte: ?6 }
+              'fingerprint.inputFrameCount': ?3,
+              'fingerprint.inputChangeCount': ?4
             }
             """)
-    List<Attempt> findExactFingerprintDuplicateInMetadataRange(
+    List<Attempt> findExactFingerprintDuplicate(
             ObjectId levelId,
             String exactHash,
             ObjectId id,
-            int minFrameCount,
-            int maxFrameCount,
-            int minInputChangeCount,
-            int maxInputChangeCount);
+            int inputFrameCount,
+            int inputChangeCount);
+
+    /// Returns another attempt on the same level with the same jitter-normalized input fingerprint.
+    @Query("""
+            {
+              'level.$id': ?0,
+              'fingerprint.jitterInputHash': ?1,
+              '_id': { $ne: ?2 },
+              'fingerprint.jitterInputChangeCount': ?3
+            }
+            """)
+    List<Attempt> findJitterFingerprintDuplicate(
+            ObjectId levelId,
+            String jitterInputHash,
+            ObjectId id,
+            int jitterInputChangeCount);
 
     /// Returns another attempt on the same level that shares any fuzzy input-change fingerprint and similar metadata.
     @Query("""
