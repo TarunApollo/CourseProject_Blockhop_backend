@@ -107,17 +107,21 @@ class LevelFavoriteServiceTests {
                     .save(Mockito.any(LevelFavorite.class));
         }
 
-        /// Verifies that unpublished levels cannot be favorited.
+        /// Verifies that unpublished levels can also be favorited.
         @Test
-        @DisplayName("rejects unpublished levels")
-        void rejectsUnpublishedLevel() {
+        @DisplayName("allows favoriting unpublished levels")
+        void allowsFavoritingUnpublishedLevel() {
             final Level unpublishedLevel = createLevel(false);
+            final LevelFavorite expectedUnpublishedFavorite =
+                    new LevelFavorite(testUser, unpublishedLevel, ZonedDateTime.now());
 
-            Assertions.assertThrows(ForbiddenLevelActionException.class,
-                    () -> levelFavoriteService.addFavorite(testUser, unpublishedLevel));
+            Mockito.when(levelFavoriteRepository.existsByUserAndLevel(testUser, unpublishedLevel))
+                    .thenReturn(Boolean.FALSE);
 
-            Mockito.verify(levelFavoriteRepository, Mockito.never())
-                    .save(Mockito.any(LevelFavorite.class));
+            levelFavoriteService.addFavorite(testUser, unpublishedLevel);
+
+            Mockito.verify(levelFavoriteRepository)
+                    .save(Mockito.refEq(expectedUnpublishedFavorite, "timestamp"));
         }
     }
 
