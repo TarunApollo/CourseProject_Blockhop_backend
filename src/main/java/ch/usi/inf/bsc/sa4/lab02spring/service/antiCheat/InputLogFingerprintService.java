@@ -14,14 +14,14 @@ import java.util.List;
 @Service
 public class InputLogFingerprintService {
 
-    private static final int DEFAULT_BUCKET_SIZE = 300;
-    private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 150);
+    private static final int DEFAULT_BUCKET_SIZE = 10;
+    private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 5);
 
     public InputLogFingerprint fingerprint(final List<InputFrameDTO> inputLog) {
         final List<InputChange> changes = nonNeutralInputChanges(inputLog);
         final String exactCanonical = canonicalExact(inputLog);
         final List<String> changeBucketHashes = DEFAULT_BUCKET_OFFSETS.stream()
-                .map(offset -> canonicalBucketedChanges(changes, DEFAULT_BUCKET_SIZE, offset))
+                .map(offset -> canonicalBucketedCombinedInputs(inputLog, DEFAULT_BUCKET_SIZE, offset))
                 .map(InputLogFingerprintService::sha256)
                 .toList();
 
@@ -52,19 +52,31 @@ public class InputLogFingerprintService {
         return canonical.toString();
     }
 
-    public String canonicalBucketedChanges(final List<InputChange> changes,
-                                           final int bucketSize,
-                                           final int offset) {
+    public String canonicalBucketedCombinedInputs(final List<InputFrameDTO> inputLog,
+                                                  final int bucketSize,
+                                                  final int offset) {
         if (bucketSize <= 0) {
             throw new IllegalArgumentException("bucketSize must be positive");
         }
 
         final StringBuilder canonical = new StringBuilder();
-        for (final InputChange change : changes) {
-            appendSeparatorIfNeeded(canonical);
-            canonical.append(bucket(change.frame(), bucketSize, offset))
-                    .append(':')
-                    .append(change.state());
+        Integer currentBucket = null;
+        BucketInputState currentBucketInput = new BucketInputState();
+
+        for (final InputFrameDTO frame : inputLog) {
+            final int bucket = bucket(frame.frame(), bucketSize, offset);
+            if (currentBucket == null) {
+                currentBucket = bucket;
+            } else if (bucket != currentBucket) {
+                appendBucketInputIfNeeded(canonical, currentBucket, currentBucketInput);
+                currentBucket = bucket;
+                currentBucketInput = new BucketInputState();
+            }
+            currentBucketInput.include(InputState.from(frame));
+        }
+
+        if (currentBucket != null) {
+            appendBucketInputIfNeeded(canonical, currentBucket, currentBucketInput);
         }
         return canonical.toString();
     }
@@ -97,6 +109,22 @@ public class InputLogFingerprintService {
         }
     }
 
+    private static void appendBucketInputIfNeeded(final StringBuilder canonical,
+                                                  final int bucket,
+                                                  final BucketInputState input) {
+        if (input.isNeutral()) {
+            return;
+        }
+        appendSeparatorIfNeeded(canonical);
+        canonical.append(bucket)
+                .append(':')
+                .append(input.canonical());
+    }
+
+    private static int bit(final boolean value) {
+        return value ? 1 : 0;
+    }
+
     private static String sha256(final String value) {
         try {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -108,6 +136,31 @@ public class InputLogFingerprintService {
     }
 
     public record InputChange(int frame, String state) {
+    }
+
+    private static final class BucketInputState {
+        private boolean left;
+        private boolean right;
+        private boolean jump;
+        private boolean run;
+
+        void include(final InputState input) {
+            this.left |= input.left();
+            this.right |= input.right();
+            this.jump |= input.jump();
+            this.run |= input.run();
+        }
+
+        boolean isNeutral() {
+            return !left && !right && !jump && !run;
+        }
+
+        String canonical() {
+            return "L" + bit(left)
+                    + "R" + bit(right)
+                    + "J" + bit(jump)
+                    + "S" + bit(run);
+        }
     }
 
     private record InputState(boolean left, boolean right, boolean jump, boolean run) {
@@ -126,8 +179,5 @@ public class InputLogFingerprintService {
             return !left && !right && !jump && !run;
         }
 
-        private static int bit(final boolean value) {
-            return value ? 1 : 0;
-        }
     }
 }

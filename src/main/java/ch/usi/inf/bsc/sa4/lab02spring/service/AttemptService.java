@@ -22,10 +22,10 @@ import java.util.Optional;
 /// Service handling creation and querying of player attempts.
 @Service
 public class AttemptService {
-    private static final double FRAME_COUNT_TOLERANCE_RATIO_EXACT = 0.02;
-    private static final double FRAME_COUNT_TOLERANCE_RATIO_FUZZY = 0.1;
+    private static final double FRAME_COUNT_TOLERANCE_RATIO_EXACT = 0.0;
+    private static final double FRAME_COUNT_TOLERANCE_RATIO_FUZZY = 1.0;
     private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_EXACT = 0.0;
-    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY = 0.0;
+    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY = 0.5;
     private static final int MIN_FRAME_COUNT_TOLERANCE = 5;
     private static final int MIN_INPUT_CHANGE_COUNT_TOLERANCE = 2;
 
