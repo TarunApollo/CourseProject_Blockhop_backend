@@ -8,7 +8,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
+
 import java.util.List;
 
 /// Service handling creation, removal, and querying of favorite levels.
@@ -37,7 +38,7 @@ public class LevelFavoriteService {
         if (this.levelFavoriteRepository.existsByUserAndLevel(user, level)) {
             return;
         }
-        final LevelFavorite favorite = new LevelFavorite(user, level, ZonedDateTime.now());
+        final LevelFavorite favorite = new LevelFavorite(user, level, Instant.now());
         this.levelFavoriteRepository.save(favorite);
     }
 

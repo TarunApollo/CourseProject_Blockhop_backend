@@ -8,7 +8,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +66,7 @@ class LevelFavoriteServiceTests {
     void setup() {
         this.testUser = new User(USER_ID, USER_NAME);
         this.testLevel = createLevel(true);
-        this.expectedFavorite = new LevelFavorite(this.testUser, this.testLevel, ZonedDateTime.now());
+        this.expectedFavorite = new LevelFavorite(this.testUser, this.testLevel, Instant.now());
     }
 
     private Level createLevel(final boolean published) {
@@ -113,7 +113,7 @@ class LevelFavoriteServiceTests {
         void allowsFavoritingUnpublishedLevel() {
             final Level unpublishedLevel = createLevel(false);
             final LevelFavorite expectedUnpublishedFavorite =
-                    new LevelFavorite(testUser, unpublishedLevel, ZonedDateTime.now());
+                    new LevelFavorite(testUser, unpublishedLevel, Instant.now());
 
             Mockito.when(levelFavoriteRepository.existsByUserAndLevel(testUser, unpublishedLevel))
                     .thenReturn(Boolean.FALSE);
