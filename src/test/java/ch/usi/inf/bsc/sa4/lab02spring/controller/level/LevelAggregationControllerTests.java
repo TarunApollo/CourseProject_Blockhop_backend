@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.List;
+import java.util.Optional;
 
 /// Black-box tests for [LevelAggregationController] endpoints. Verifies the
 /// retrieval and sorting of published level summaries.
@@ -65,6 +68,7 @@ class LevelAggregationControllerTests {
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
                     ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
                     ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(expected);
 
@@ -85,6 +89,7 @@ class LevelAggregationControllerTests {
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.CLEAR_RATE),
                     ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
                     ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(expected);
 
@@ -105,6 +110,7 @@ class LevelAggregationControllerTests {
             Mockito.when(levelAggregationService.getPublishedLevels(
                     ArgumentMatchers.eq(PublishedLevelSortBy.CLEAR_RATE),
                     ArgumentMatchers.any(),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
                     ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(List.of());
 
@@ -126,6 +132,7 @@ class LevelAggregationControllerTests {
                     ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
                     ArgumentMatchers.eq(
                             DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
                     ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
                     .thenReturn(expected);
 
@@ -147,6 +154,44 @@ class LevelAggregationControllerTests {
                     .expectStatus().isBadRequest();
         }
 
+        /// Verifies that search query parameters are forwarded to the service.
+        @Test
+        @DisplayName("should pass search criteria to the service")
+        void passesSearchCriteria() {
+            Mockito.when(levelAggregationService.getPublishedLevels(
+                    ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
+                    .thenReturn(List.of(testSummary));
+
+            restTestClient.get().uri(
+                    "/levels/published?sortBy=POPULARITY"
+                            + "&minClearRate=0.2&maxClearRate=0.8"
+                            + "&minAttempts=3&maxAttempts=20"
+                            + "&minLikes=4&maxLikes=40"
+                            + "&minDislikes=1&maxDislikes=7")
+                    .exchange()
+                    .expectStatus().isOk();
+
+            final ArgumentCaptor<PublishedLevelSearchCriteria> criteriaCaptor =
+                    ArgumentCaptor.forClass(PublishedLevelSearchCriteria.class);
+            Mockito.verify(levelAggregationService).getPublishedLevels(
+                    ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    criteriaCaptor.capture(),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID));
+            final PublishedLevelSearchCriteria criteria = criteriaCaptor.getValue();
+            org.junit.jupiter.api.Assertions.assertEquals(0.2, criteria.minClearRate());
+            org.junit.jupiter.api.Assertions.assertEquals(0.8, criteria.maxClearRate());
+            org.junit.jupiter.api.Assertions.assertEquals(3L, criteria.minAttempts());
+            org.junit.jupiter.api.Assertions.assertEquals(20L, criteria.maxAttempts());
+            org.junit.jupiter.api.Assertions.assertEquals(4L, criteria.minLikes());
+            org.junit.jupiter.api.Assertions.assertEquals(40L, criteria.maxLikes());
+            org.junit.jupiter.api.Assertions.assertEquals(1L, criteria.minDislikes());
+            org.junit.jupiter.api.Assertions.assertEquals(7L, criteria.maxDislikes());
+        }
+
         /// Verifies that an invalid sortBy value returns 400 Bad Request because the
         /// service throws IllegalStateException.
         @Test
@@ -161,6 +206,46 @@ class LevelAggregationControllerTests {
                     "/levels/published?sortBy=INVALID")
                     .exchange()
                     .expectStatus().isBadRequest();
+        }
+    }
+
+    /// Tests for GET /levels/published/random.
+    @Nested
+    @DisplayName("GET /levels/published/random")
+    class GetRandomPublishedLevel {
+
+        /// Verifies that a random matching level is returned when one exists.
+        @Test
+        @DisplayName("should return 200 OK and a random matching level")
+        void returnsRandomLevel() {
+            Mockito.when(levelAggregationService.getRandomPublishedLevel(
+                    ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
+                    .thenReturn(Optional.of(testSummary));
+
+            restTestClient.get().uri("/levels/published/random?sortBy=POPULARITY&minAttempts=5")
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(LevelSummaryDto.class)
+                    .isEqualTo(testSummary);
+        }
+
+        /// Verifies that no matching levels produces a 404 response.
+        @Test
+        @DisplayName("should return 404 Not Found when no levels match")
+        void returnsNotFoundWhenNoLevelsMatch() {
+            Mockito.when(levelAggregationService.getRandomPublishedLevel(
+                    ArgumentMatchers.eq(PublishedLevelSortBy.CLEAR_RATE),
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    ArgumentMatchers.any(PublishedLevelSearchCriteria.class),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID)))
+                    .thenReturn(Optional.empty());
+
+            restTestClient.get().uri("/levels/published/random?sortBy=CLEAR_RATE&minLikes=99")
+                    .exchange()
+                    .expectStatus().isNotFound();
         }
     }
 }

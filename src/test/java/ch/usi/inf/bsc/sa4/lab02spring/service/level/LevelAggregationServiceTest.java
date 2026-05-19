@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
@@ -11,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -352,10 +354,81 @@ class LevelAggregationServiceTest {
         }
     }
 
+    /// Tests the service wiring around published-level search criteria filtering.
+    @Nested
+    @DisplayName("when filtering published levels")
+    class SearchCriteriaFiltering {
+        /// Filtering should happen before sorting.
+        @Test
+        @DisplayName("sorts the filtered result set")
+        void sortsAfterFiltering() {
+            final Level low = publishedLevel("low");
+            final Level mid = publishedLevel("mid");
+            final Level high = publishedLevel("high");
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(low, mid, high));
+            stubAttempts(low, 10, 2);
+            stubAttempts(mid, 10, 5);
+            stubAttempts(high, 10, 9);
+
+            final PublishedLevelSearchCriteria criteria = new PublishedLevelSearchCriteria(
+                    0.3, null, null, null, null, null, null, null);
+
+            final List<LevelSummaryDto> result = service.getPublishedLevels(
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
+                    criteria,
+                    null);
+
+            Assertions.assertEquals(List.of("high", "mid"), result.stream().map(LevelSummaryDto::title).toList());
+        }
+
+    }
+
+    /// Tests for selecting a random published level.
+    @Nested
+    @DisplayName("when selecting a random published level")
+    class RandomPublishedLevel {
+
+        /// No matching levels should produce an empty Optional.
+        @Test
+        @DisplayName("returns empty when no levels match")
+        void returnsEmptyWhenNoLevelsMatch() {
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of());
+
+            final Optional<LevelSummaryDto> result = service.getRandomPublishedLevel(
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
+                    new PublishedLevelSearchCriteria(null, null, null, null, null, null, null, null),
+                    null);
+
+            Assertions.assertTrue(result.isEmpty());
+        }
+
+        /// With one matching level, random selection should return that level.
+        @Test
+        @DisplayName("returns the only matching level")
+        void returnsOnlyMatchingLevel() {
+            final Level excluded = publishedLevel("excluded");
+            final Level included = publishedLevel("included");
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(excluded, included));
+            stubAttempts(excluded, 1, 0);
+            stubAttempts(included, 10, 5);
+
+            final Optional<LevelSummaryDto> result = service.getRandomPublishedLevel(
+                    PublishedLevelSortBy.POPULARITY,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
+                    new PublishedLevelSearchCriteria(null, null, 5L, null, null, null, null, null),
+                    null);
+
+            Assertions.assertTrue(result.isPresent());
+            Assertions.assertEquals("included", result.orElseThrow().title());
+        }
+    }
+
     /// Stubs the attempt repository to return the given play and clear counts.
     private void stubAttempts(final Level level, final long plays, final long clears) {
         Mockito.when(attemptRepository.countByLevel(level)).thenReturn(plays);
         Mockito.when(attemptRepository.countByLevelAndCompletedTrue(level)).thenReturn(clears);
     }
-    
+
 }

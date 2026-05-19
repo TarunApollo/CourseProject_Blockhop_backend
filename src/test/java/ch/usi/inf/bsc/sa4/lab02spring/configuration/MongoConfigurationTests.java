@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 /// Unit tests for [MongoConfiguration] and its internal converters.
 @DisplayName("Mongo Configuration")
@@ -81,6 +82,9 @@ class MongoConfigurationTests {
         /// Converter from [Instant] to [ZonedDateTime].
         private final MongoConfiguration.InstantToZonedDateTimeConverter fromInstant = new MongoConfiguration.InstantToZonedDateTimeConverter();
 
+        /// Converter from [Date] to [ZonedDateTime].
+        private final MongoConfiguration.DateToZonedDateTimeConverter fromDate = new MongoConfiguration.DateToZonedDateTimeConverter();
+
         /// Verifies [ZonedDateTime] to [Instant] conversion.
         @Test
         @DisplayName("should convert ZonedDateTime to Instant")
@@ -95,6 +99,16 @@ class MongoConfigurationTests {
         void testInstantToZdt() {
             final Instant instant = Instant.now();
             final ZonedDateTime zdt = fromInstant.convert(instant);
+            Assertions.assertEquals(ZoneOffset.UTC, zdt.getZone());
+            Assertions.assertEquals(instant.getEpochSecond(), zdt.toInstant().getEpochSecond());
+        }
+
+        /// Verifies [Date] to [ZonedDateTime] conversion.
+        @Test
+        @DisplayName("should convert Date to ZonedDateTime in UTC")
+        void testDateToZdt() {
+            final Instant instant = Instant.now();
+            final ZonedDateTime zdt = fromDate.convert(Date.from(instant));
             Assertions.assertEquals(ZoneOffset.UTC, zdt.getZone());
             Assertions.assertEquals(instant.getEpochSecond(), zdt.toInstant().getEpochSecond());
         }
