@@ -30,7 +30,8 @@ public class ReplayService {
     @Nullable
     private String replayScriptPath;
 
-    /// Cached frontend project directory used as the replay process working directory.
+    /// Cached frontend project directory used as the replay process
+    /// working directory.
     @Nullable
     private Path frontendDirectory;
 
@@ -41,27 +42,25 @@ public class ReplayService {
         this.objectMapper = objectMapper;
     }
 
-    /// Runs the replay script for a level and input log and returns the verification result.
+    /// Runs the replay script for a level and input log and returns the
+    /// verification result.
     ///
-    /// @param userId id of the player whose attempt is being replayed
-    /// @param levelId id of the level being replayed
-    /// @param levelJson serialized Tiled level map consumed by the replay script
+    /// @param replayRequest.getUserId()       id of the player whose attempt is being replayed
+    /// @param replayRequest.levelId()      id of the level being replayed
+    /// @param levelJson    serialized Tiled level map consumed by the replay script
     /// @param inputLogJson serialized input log consumed by the replay script
     /// @return replay validity, reason, and final frame reported by the script
-    public ReplayResultDTO replay(final String userId,
-                                   final String levelId,
-                                   final String levelJson,
-                                   final String inputLogJson) {
+    public ReplayResultDTO replay(ReplayRequest replayRequest) {
         final String npx = resolveNpx();
         final String script = resolveReplayScript();
 
         if (npx == null) {
-            AntiCheatLog.replayError(userId, levelId, "npx not found on PATH");
+            AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), "npx not found on PATH");
             return new ReplayResultDTO(false, "error:npx_not_found", 0);
         }
 
         if (script == null) {
-            AntiCheatLog.replayError(userId, levelId, "Replay script not found");
+            AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), "Replay script not found");
             return new ReplayResultDTO(false, "error:script_not_found", 0);
         }
 
@@ -70,17 +69,17 @@ public class ReplayService {
 
         try {
             levelFile = Files.createTempFile("replay-level-", ".json");
-            Files.writeString(levelFile, levelJson, StandardCharsets.UTF_8);
+            Files.writeString(levelFile, replayRequest.levelJson(), StandardCharsets.UTF_8);
 
             inputFile = Files.createTempFile("replay-input-", ".json");
-            Files.writeString(inputFile, inputLogJson, StandardCharsets.UTF_8);
+            Files.writeString(inputFile, replayRequest.inputLogJson(), StandardCharsets.UTF_8);
 
-            final String commandString = String.join(" ", npx, "tsx", script, levelFile.toString(), inputFile.toString());
-            AntiCheatLog.replaySpinningUp(userId, levelId, commandString);
+            final String commandString = String.join(" ", npx, "tsx", script, levelFile.toString(),
+                    inputFile.toString());
+            AntiCheatLog.replaySpinningUp(replayRequest.userId(), replayRequest.levelId(), commandString);
 
             final ProcessBuilder pb = new ProcessBuilder(
-                    npx, "tsx", script, levelFile.toString(), inputFile.toString()
-            );
+                    npx, "tsx", script, levelFile.toString(), inputFile.toString());
             pb.directory(resolveFrontendDirectory().toFile());
             pb.redirectErrorStream(true);
 
@@ -96,7 +95,7 @@ public class ReplayService {
 
             if (!process.waitFor(REPLAY_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 process.destroyForcibly();
-                AntiCheatLog.replayTimeout(userId, levelId);
+                AntiCheatLog.replayTimeout(replayRequest.userId(), replayRequest.levelId());
                 return new ReplayResultDTO(false, "error:process_timeout", 0);
             }
 
@@ -111,7 +110,7 @@ public class ReplayService {
             return new ReplayResultDTO(parsed.valid(), parsed.reason(), parsed.frame());
 
         } catch (final Exception e) {
-            AntiCheatLog.replayError(userId, levelId, String.valueOf(e.getMessage()));
+            AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
             return new ReplayResultDTO(false, "error:execution_error", 0);
         } finally {
             try {
@@ -188,9 +187,9 @@ public class ReplayService {
 
     /// Raw JSON payload emitted by the replay script.
     ///
-    /// @param valid whether the replay completed as expected
+    /// @param valid  whether the replay completed as expected
     /// @param reason replay completion or error reason
-    /// @param frame frame count reported by the replay script
+    /// @param frame  frame count reported by the replay script
     private record ReplayProcessResult(boolean valid, String reason, int frame) {
     }
 }
