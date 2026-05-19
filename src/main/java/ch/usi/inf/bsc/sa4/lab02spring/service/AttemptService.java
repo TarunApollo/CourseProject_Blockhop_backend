@@ -219,8 +219,8 @@ public class AttemptService {
     /// @param changeTolRatio relative tolerance for input change counts
     /// @return inclusive metadata ranges for fuzzy matching
     private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint,
-                                                 double frameTolRatio,
-                                                 double changeTolRatio) {
+                                                 final double frameTolRatio,
+                                                 final double changeTolRatio) {
         final int frameTolerance = tolerance(
                 fingerprint.inputFrameCount(),
                 MIN_FRAME,

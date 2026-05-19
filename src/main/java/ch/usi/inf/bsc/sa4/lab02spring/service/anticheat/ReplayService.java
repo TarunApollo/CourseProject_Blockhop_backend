@@ -48,7 +48,7 @@ public class ReplayService {
     /// @param replayRequest wrapper object for the request
     /// 
     /// @return replay validity, reason, and final frame reported by the script
-    public ReplayResultDTO replay(ReplayRequest replayRequest) {
+    public ReplayResultDTO replay(final ReplayRequest replayRequest) {
         final String npx = resolveNpx();
         final String script = resolveReplayScript();
 

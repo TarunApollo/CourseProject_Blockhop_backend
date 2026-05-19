@@ -50,12 +50,12 @@ public final class AntiCheatSuspicionUtils {
     /// @param prevCheatLevels cheated recent attempts to count
     /// @return the anti-cheat verification status for the attempt
     public static AttemptVerificationStatus classifyFingerprintSuspicion(
-            InputLogFingerprint fingerprint,
-            Optional<Attempt> exactDuplicate,
-            Optional<Attempt> fuzzyDuplicate,
-            Optional<Attempt> jitterDuplicate,
-            long prevSuspLevels,
-            long prevCheatLevels) {
+            final InputLogFingerprint fingerprint,
+            final Optional<Attempt> exactDuplicate,
+            final Optional<Attempt> fuzzyDuplicate,
+            final Optional<Attempt> jitterDuplicate,
+            final long prevSuspLevels,
+            final long prevCheatLevels) {
         final double currentSuspicion = currentFingerprintSuspicion(
                 fingerprint,
                 exactDuplicate,
