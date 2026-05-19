@@ -53,6 +53,13 @@ public class AttemptService {
         return this.attemptRepository.countDistinctCompletedLevelsByUser(user);
     }
 
+    /// Counts recent attempts for a level, user, and anti-cheat status.
+    /// @param level the level whose attempts are counted
+    /// @param user the user whose attempts are counted
+    /// @param status the anti-cheat status to match
+    /// @param after the lower timestamp bound
+    /// @param excludedAttemptId the attempt id excluded from the count
+    /// @return the number of matching attempts after the timestamp
     public long countAttemptsByLevelUserStatusAfter(final Level level,
                                                     final User user,
                                                     final AttemptVerificationStatus status,
@@ -88,11 +95,20 @@ public class AttemptService {
         return this.attemptRepository.save(attempt);
     }
 
+    /// Retrieves an attempt by id.
+    /// @param attemptId the id of the attempt to retrieve
+    /// @return the matching attempt
+    /// @throws AttemptNotFoundException if no attempt has the given id
     public Attempt getAttemptById(final String attemptId) {
         return this.attemptRepository.findById(attemptId)
                 .orElseThrow(AttemptNotFoundException::new);
     }
 
+    /// Updates the anti-cheat status of an attempt owned by the given user.
+    /// @param attemptId the id of the attempt to update
+    /// @param user the owner expected for the attempt
+    /// @param levelId the level expected for the attempt
+    /// @param antiCheatStatus the anti-cheat status to store
     public void updateAntiCheatStatus(final String attemptId,
                                       final User user,
                                       final String levelId,
@@ -108,6 +124,11 @@ public class AttemptService {
         this.attemptRepository.save(attempt);
     }
 
+    /// Stores the computed input fingerprint for an attempt.
+    /// @param attemptId the id of the attempt to update
+    /// @param user the owner expected for the attempt
+    /// @param levelId the level expected for the attempt
+    /// @param fingerprint the fingerprint to store on the attempt
     public void updateFingerprint(final String attemptId,
                                       final User user,
                                       final String levelId,
@@ -123,6 +144,11 @@ public class AttemptService {
         this.attemptRepository.save(attempt);
     }
 
+    /// Finds another attempt on the same level with the same exact fingerprint.
+    /// @param level the level that contains the current attempt
+    /// @param currentAttemptId the id of the attempt excluded from matching
+    /// @param fingerprint the fingerprint of the current attempt
+    /// @return a duplicate attempt when one exists
     public Optional<Attempt> findExactFingerprintDuplicate(final Level level,
                                                            final String currentAttemptId,
                                                            final InputLogFingerprint fingerprint) {
@@ -137,6 +163,11 @@ public class AttemptService {
             ).stream().findFirst();
     }
 
+    /// Finds another attempt with an overlapping fuzzy fingerprint.
+    /// @param level the level that contains the current attempt
+    /// @param currentAttemptId the id of the attempt excluded from matching
+    /// @param fingerprint the fingerprint of the current attempt
+    /// @return a fuzzy duplicate attempt when one exists
     public Optional<Attempt> findFuzzyFingerprintDuplicate(final Level level,
                                                            final String currentAttemptId,
                                                            final InputLogFingerprint fingerprint) {
@@ -155,6 +186,11 @@ public class AttemptService {
             ).stream().findFirst();
     }
 
+    /// Finds another attempt with the same jitter-normalized fingerprint.
+    /// @param level the level that contains the current attempt
+    /// @param currentAttemptId the id of the attempt excluded from matching
+    /// @param fingerprint the fingerprint of the current attempt
+    /// @return a jitter duplicate attempt when one exists
     public Optional<Attempt> findJitterFingerprintDuplicate(final Level level,
                                                             final String currentAttemptId,
                                                             final InputLogFingerprint fingerprint) {

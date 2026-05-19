@@ -12,14 +12,22 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 
+/// Creates stable hashes and canonical input sequences for anti-cheat checks.
 @Service
 public class InputLogFingerprintService {
 
+    /// Default number of frames grouped into one fuzzy input bucket.
     private static final int DEFAULT_BUCKET_SIZE = 10;
+    /// Bucket offsets used to produce fuzzy hashes with shifted boundaries.
     private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 5);
+    /// Neutral-frame gap that identifies jump-only runs likely caused by jitter.
     private static final int JUMP_ONLY_HORIZONTAL_DELTA_FRAMES = 90;
+    /// Maximum opposite-direction run length treated as horizontal input noise.
     private static final int MAX_CANCELABLE_HORIZONTAL_RUN_FRAMES = 5;
 
+    /// Builds all anti-cheat fingerprints for the provided input log.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @return exact, jitter-normalized, and bucketed fingerprints
     public InputLogFingerprint fingerprint(final List<InputFrameDTO> inputLog) {
         final List<InputChange> changes = nonNeutralInputChanges(inputLog);
         final String exactCanonical = canonicalExact(inputLog);
@@ -39,14 +47,23 @@ public class InputLogFingerprintService {
         );
     }
 
+    /// Computes the exact fingerprint hash for the provided input log.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @return the SHA-256 hash of the exact canonical input sequence
     public String exactHash(final List<InputFrameDTO> inputLog) {
         return fingerprint(inputLog).exactHash();
     }
 
+    /// Computes the fuzzy bucket hashes for the provided input log.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @return the shifted bucket hashes used for fuzzy duplicate detection
     public List<String> changeBucketHashes(final List<InputFrameDTO> inputLog) {
         return fingerprint(inputLog).changeBucketHashes();
     }
 
+    /// Converts each frame into the exact canonical input representation.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @return a frame-by-frame canonical string
     public String canonicalExact(final List<InputFrameDTO> inputLog) {
         final StringBuilder canonical = new StringBuilder();
         for (final InputFrameDTO frame : inputLog) {
@@ -58,6 +75,9 @@ public class InputLogFingerprintService {
         return canonical.toString();
     }
 
+    /// Converts the input log into the jitter-normalized canonical form.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @return a canonical string with common jitter patterns removed
     public String canonicalJitterInputChanges(final List<InputFrameDTO> inputLog) {
         return jitterCanonical(inputLog).canonical();
     }
@@ -79,6 +99,11 @@ public class InputLogFingerprintService {
         return new JitterCanonical(canonical.toString(), normalizedRuns.size());
     }
 
+    /// Groups input frames into buckets and records combined inputs per bucket.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @param bucketSize the number of frames included in each bucket
+    /// @param offset the frame offset applied before bucket assignment
+    /// @return the canonical fuzzy bucket representation
     public String canonicalBucketedCombinedInputs(final List<InputFrameDTO> inputLog,
                                                   final int bucketSize,
                                                   final int offset) {
@@ -293,6 +318,9 @@ public class InputLogFingerprintService {
         return List.copyOf(collapsed);
     }
 
+    /// Extracts non-neutral input changes from the provided input log.
+    /// @param inputLog the ordered input frames recorded during an attempt
+    /// @return the ordered list of non-neutral state transitions
     public List<InputChange> nonNeutralInputChanges(final List<InputFrameDTO> inputLog) {
         InputState previous = null;
         final ArrayList<InputChange> changes = new ArrayList<>();
@@ -347,25 +375,36 @@ public class InputLogFingerprintService {
         }
     }
 
-    public record InputChange(int frame, String state) {
+    /// Non-neutral input transition used by fuzzy duplicate matching.
+    public record InputChange(
+            /// Frame number where the non-neutral state was observed.
+            int frame,
+            /// Canonical representation of the observed input state.
+            String state) {
     }
 
+    /// Consecutive run of equal non-neutral input states.
     private record InputRun(
+            /// Input state repeated by this run.
             InputState state,
+            /// First frame belonging to this run.
             int startFrame,
+            /// Number of non-neutral frames in this run.
             int length,
+            /// Neutral frames seen immediately after this run.
             int neutralFramesAfter,
+            /// Frames stripped before this run during jitter normalization.
             int strippedFramesBefore) {
 
-        int normalizedCount() {
+        private int normalizedCount() {
             return startFrame - strippedFramesBefore;
         }
 
-        InputRun withoutNeutralFramesAfter() {
+        private InputRun withoutNeutralFramesAfter() {
             return new InputRun(state, startFrame, length, 0, strippedFramesBefore);
         }
 
-        InputRun withAdditionalStrippedFrames(final int additionalStrippedFrames) {
+        private InputRun withAdditionalStrippedFrames(final int additionalStrippedFrames) {
             return new InputRun(
                     state,
                     startFrame,
@@ -374,7 +413,7 @@ public class InputLogFingerprintService {
                     strippedFramesBefore + additionalStrippedFrames);
         }
 
-        InputRun withoutLeadingFrames(final int leadingFrames) {
+        private InputRun withoutLeadingFrames(final int leadingFrames) {
             return new InputRun(
                     state,
                     startFrame + leadingFrames,
@@ -384,27 +423,33 @@ public class InputLogFingerprintService {
         }
     }
 
+    /// Canonical jitter-normalized sequence and its change count.
     private record JitterCanonical(String canonical, int changeCount) {
     }
 
+    /// Aggregates all inputs observed inside one frame bucket.
     private static final class BucketInputState {
+        /// Whether a left input occurred in the bucket.
         private boolean left;
+        /// Whether a right input occurred in the bucket.
         private boolean right;
+        /// Whether a jump input occurred in the bucket.
         private boolean jump;
+        /// Whether a run input occurred in the bucket.
         private boolean run;
 
-        void include(final InputState input) {
+        private void include(final InputState input) {
             this.left |= input.left();
             this.right |= input.right();
             this.jump |= input.jump();
             this.run |= input.run();
         }
 
-        boolean isNeutral() {
+        private boolean isNeutral() {
             return !left && !right && !jump && !run;
         }
 
-        String canonical() {
+        private String canonical() {
             return "L" + bit(left)
                     + "R" + bit(right)
                     + "J" + bit(jump)
@@ -412,23 +457,24 @@ public class InputLogFingerprintService {
         }
     }
 
+    /// Canonical state of the player controls on a single frame.
     private record InputState(boolean left, boolean right, boolean jump, boolean run) {
-        static InputState from(final InputFrameDTO frame) {
+        private static InputState from(final InputFrameDTO frame) {
             return new InputState(frame.left(), frame.right(), frame.jump(), frame.run());
         }
 
-        String canonical() {
+        private String canonical() {
             return "L" + bit(left)
                     + "R" + bit(right)
                     + "J" + bit(jump)
                     + "S" + bit(run);
         }
 
-        boolean isNeutral() {
+        private boolean isNeutral() {
             return !left && !right && !jump && !run;
         }
 
-        boolean isJumpOnly() {
+        private boolean isJumpOnly() {
             return !left && !right && jump && !run;
         }
 

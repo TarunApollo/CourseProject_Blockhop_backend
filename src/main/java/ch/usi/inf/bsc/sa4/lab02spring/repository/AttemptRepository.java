@@ -54,7 +54,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     /// @return the number of attempts after the given timestamp
     long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
 
-    /// Counts attempts for the given level, user, status, and lower timestamp bound, excluding one attempt.
+    /// Counts attempts for the given level, user, status, and lower timestamp
+    /// bound, excluding one attempt.
     @Query(value = """
             {
               'level.$id': ?0,
@@ -71,7 +72,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
             ZonedDateTime after,
             ObjectId id);
 
-    /// Returns another attempt on the same level with the same exact input fingerprint and similar metadata.
+    /// Returns another attempt on the same level with the same exact input
+    /// fingerprint and similar metadata.
     @Query("""
             {
               'level.$id': ?0,
@@ -88,7 +90,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
             int inputFrameCount,
             int inputChangeCount);
 
-    /// Returns another attempt on the same level with the same jitter-normalized input fingerprint.
+    /// Returns another attempt on the same level with the same
+    /// jitter-normalized input fingerprint.
     @Query("""
             {
               'level.$id': ?0,
@@ -103,7 +106,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
             ObjectId id,
             int jitterInputChangeCount);
 
-    /// Returns another attempt on the same level that shares any fuzzy input-change fingerprint and similar metadata.
+    /// Returns another attempt on the same level that shares any fuzzy
+    /// input-change fingerprint and similar metadata.
     @Query("""
             {
               'level.$id': ?0,
