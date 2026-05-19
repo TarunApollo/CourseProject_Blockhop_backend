@@ -15,6 +15,11 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /// Runs the replay script to check submitted attempts.
+///
+/// Suppressions:
+/// - `pmd:DoNotUseThreads`: Project uses virtual threads for replay execution.
+/// - `pmd:AvoidSynchronizedAtMethodLevel`: Safe lazy initialization for cached paths.
+@SuppressWarnings({ "pmd:DoNotUseThreads", "pmd:AvoidSynchronizedAtMethodLevel" })
 @Service
 public class ReplayService {
 
@@ -75,6 +80,8 @@ public class ReplayService {
                 result = executeReplayProcess(replayRequest, Objects.requireNonNull(npx),
                         Objects.requireNonNull(script), levelFile, inputFile);
             } catch (final InterruptedException e) {
+                // Reset the interrupted flag so the system knows this operation was cancelled.
+                // Without this, the interruption is swallowed and the app might hang during shutdown.
                 Thread.currentThread().interrupt();
                 AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
                 result = new ReplayResultDTO(false, "error:execution_error", 0);
@@ -119,6 +126,8 @@ public class ReplayService {
         final Process process = processBuilder.start();
         ReplayResultDTO result;
 
+        // Block the virtual thread until the external replay script finishes or times out.
+        // Virtual threads are cheap to park, so blocking here is safe and efficient.
         if (!process.waitFor(REPLAY_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
             process.destroyForcibly();
             AntiCheatLog.replayTimeout(replayRequest.userId(), replayRequest.levelId());
@@ -206,6 +215,7 @@ public class ReplayService {
                 }
             }
         } catch (final InterruptedException e) {
+            // Reset the interrupted flag so the system knows this operation was cancelled.
             Thread.currentThread().interrupt();
         } catch (final java.io.IOException ignored) {
             resolvedPath = "";

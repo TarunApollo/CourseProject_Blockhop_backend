@@ -16,7 +16,7 @@ final class BucketInputLogFingerprintUtils {
     private BucketInputLogFingerprintUtils() {
     }
 
-    static List<String> hashes(final List<InputFrameDTO> inputLog) {
+    /* package */ static List<String> hashes(final List<InputFrameDTO> inputLog) {
         return DEF_BUCKET_OFFS.stream()
                 .map(offset -> canonicalBucketedCombinedInputs(inputLog, DEF_BUCKET_SIZE, offset))
                 .map(InputLogFingerprintUtils::sha256)
@@ -39,7 +39,7 @@ final class BucketInputLogFingerprintUtils {
         final StringBuilder canonical = new StringBuilder();
         boolean hasCurrentBucket = false;
         int currentBucket = 0;
-        BucketInputState bucketInput = new BucketInputState();
+        final BucketInputState bucketInput = new BucketInputState();
 
         for (final InputFrameDTO frame : inputLog) {
             final int bucket = bucket(frame.frame(), bucketSize, offset);
@@ -84,14 +84,14 @@ final class BucketInputLogFingerprintUtils {
     }
 
     /// Buttons seen inside one bucket.
-    /// left: true if left was pressed.
-    /// right: true if right was pressed.
-    /// jump: true if jump was pressed.
-    /// run: true if run was pressed.
     private static final class BucketInputState {
+        /// True if left was pressed.
         private boolean left;
+        /// True if right was pressed.
         private boolean right;
+        /// True if jump was pressed.
         private boolean jump;
+        /// True if run was pressed.
         private boolean run;
 
         private void include(final InputState state) {
