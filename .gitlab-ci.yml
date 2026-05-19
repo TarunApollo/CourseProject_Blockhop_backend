@@ -1,4 +1,4 @@
-image: gradle:jdk25
+image: gradle:jdk25@sha256:52b7f47813c7f08274c1811105590dcb33314f4f90f2f2b17e0247d80391e154
 
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
