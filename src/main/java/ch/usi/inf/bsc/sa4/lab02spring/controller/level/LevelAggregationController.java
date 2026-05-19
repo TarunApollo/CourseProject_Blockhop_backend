@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
@@ -51,8 +52,25 @@ public class LevelAggregationController {
     public List<LevelSummaryDto> getPublishedLevels(
             @RequestParam final PublishedLevelSortBy sortBy,
             @RequestParam(defaultValue = "ALL_TIME") final DateRangePreset period,
+            @RequestParam(required = false) final @Nullable Double minClearRate,
+            @RequestParam(required = false) final @Nullable Double maxClearRate,
+            @RequestParam(required = false) final @Nullable Long minAttempts,
+            @RequestParam(required = false) final @Nullable Long maxAttempts,
+            @RequestParam(required = false) final @Nullable Long minLikes,
+            @RequestParam(required = false) final @Nullable Long maxLikes,
+            @RequestParam(required = false) final @Nullable Long minDislikes,
+            @RequestParam(required = false) final @Nullable Long maxDislikes,
             @AuthenticationPrincipal final OAuth2User oauth2User) {
         final String currentUserId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
-        return this.levelAggregationService.getPublishedLevels(sortBy, period, currentUserId);
+        final PublishedLevelSearchCriteria criteria = new PublishedLevelSearchCriteria(
+                minClearRate,
+                maxClearRate,
+                minAttempts,
+                maxAttempts,
+                minLikes,
+                maxLikes,
+                minDislikes,
+                maxDislikes);
+        return this.levelAggregationService.getPublishedLevels(sortBy, period, criteria, currentUserId);
     }
 }
