@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
@@ -101,6 +102,23 @@ public class LevelAggregationService {
     public List<LevelSummaryDto> getPublishedLevels(
             final PublishedLevelSortBy sortBy,
             final DateRangePreset period,
+            final @Nullable String currentUserId) {
+        return getPublishedLevels(sortBy, period, null, currentUserId);
+    }
+
+    /// Returns all published levels as summaries, applying the provided search
+    /// criteria before sorting.
+    ///
+    /// @param sortBy        the sorting strategy for published level summaries
+    /// @param period        the time range used for popularity; use ALL_TIME to fall
+    ///                      back to total play count
+    /// @param criteria      optional numeric filters for the result set
+    /// @param currentUserId the authenticated user id, or null when unauthenticated
+    /// @return a sorted list of LevelSummaryDto for matching published levels
+    public List<LevelSummaryDto> getPublishedLevels(
+            final PublishedLevelSortBy sortBy,
+            final DateRangePreset period,
+            final @Nullable PublishedLevelSearchCriteria criteria,
             final @Nullable String currentUserId) {
         final List<Level> levels = this.levelRepository.findByPublishedTrue();
 
