@@ -11,6 +11,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.jspecify.annotations.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +63,7 @@ public class LevelAggregationController {
             @RequestParam(required = false) final @Nullable Long maxDislikes,
             @AuthenticationPrincipal final OAuth2User oauth2User) {
         final String currentUserId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
-        final PublishedLevelSearchCriteria criteria = new PublishedLevelSearchCriteria(
+        final PublishedLevelSearchCriteria criteria = toSearchCriteria(
                 minClearRate,
                 maxClearRate,
                 minAttempts,
@@ -72,5 +73,61 @@ public class LevelAggregationController {
                 minDislikes,
                 maxDislikes);
         return this.levelAggregationService.getPublishedLevels(sortBy, period, criteria, currentUserId);
+    }
+
+    /// Returns a random published level from the same result set produced by the
+    /// published-level search query.
+    ///
+    /// @param sortBy sorting strategy (required): CLEAR_RATE or POPULARITY
+    /// @param period time range for popularity calculation (optional, default
+    ///               ALL_TIME)
+    /// @param oauth2User the authenticated OAuth2 user
+    /// @return 200 OK with a random matching level, or 404 when no levels match
+    @GetMapping("/published/random")
+    public ResponseEntity<LevelSummaryDto> getRandomPublishedLevel(
+            @RequestParam final PublishedLevelSortBy sortBy,
+            @RequestParam(defaultValue = "ALL_TIME") final DateRangePreset period,
+            @RequestParam(required = false) final @Nullable Double minClearRate,
+            @RequestParam(required = false) final @Nullable Double maxClearRate,
+            @RequestParam(required = false) final @Nullable Long minAttempts,
+            @RequestParam(required = false) final @Nullable Long maxAttempts,
+            @RequestParam(required = false) final @Nullable Long minLikes,
+            @RequestParam(required = false) final @Nullable Long maxLikes,
+            @RequestParam(required = false) final @Nullable Long minDislikes,
+            @RequestParam(required = false) final @Nullable Long maxDislikes,
+            @AuthenticationPrincipal final OAuth2User oauth2User) {
+        final String currentUserId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
+        final PublishedLevelSearchCriteria criteria = toSearchCriteria(
+                minClearRate,
+                maxClearRate,
+                minAttempts,
+                maxAttempts,
+                minLikes,
+                maxLikes,
+                minDislikes,
+                maxDislikes);
+        return this.levelAggregationService.getRandomPublishedLevel(sortBy, period, criteria, currentUserId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    private static PublishedLevelSearchCriteria toSearchCriteria(
+            final @Nullable Double minClearRate,
+            final @Nullable Double maxClearRate,
+            final @Nullable Long minAttempts,
+            final @Nullable Long maxAttempts,
+            final @Nullable Long minLikes,
+            final @Nullable Long maxLikes,
+            final @Nullable Long minDislikes,
+            final @Nullable Long maxDislikes) {
+        return new PublishedLevelSearchCriteria(
+                minClearRate,
+                maxClearRate,
+                minAttempts,
+                maxAttempts,
+                minLikes,
+                maxLikes,
+                minDislikes,
+                maxDislikes);
     }
 }

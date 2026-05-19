@@ -10,6 +10,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset.RelativeDateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSearchCriteriaMatcher;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import org.jspecify.annotations.Nullable;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 /// Builds aggregated views of published levels.
 @Service
@@ -120,24 +123,64 @@ public class LevelAggregationService {
             final DateRangePreset period,
             final @Nullable PublishedLevelSearchCriteria criteria,
             final @Nullable String currentUserId) {
+        final List<LevelSummaryDto> summaries = getPublishedLevelSummaries(sortBy, period, currentUserId);
+        final List<LevelSummaryDto> filtered = applySearchCriteria(summaries, criteria);
+        return sortPublishedLevels(filtered, sortBy);
+    }
+
+    /// Returns a randomly selected summary from the same result set returned by
+    /// getPublishedLevels.
+    ///
+    /// @param sortBy        the sorting strategy for published level summaries
+    /// @param period        the time range used for popularity; use ALL_TIME to fall
+    ///                      back to total play count
+    /// @param criteria      optional numeric filters for the result set
+    /// @param currentUserId the authenticated user id, or null when unauthenticated
+    /// @return a random matching summary, or empty when no levels match
+    public Optional<LevelSummaryDto> getRandomPublishedLevel(
+            final PublishedLevelSortBy sortBy,
+            final DateRangePreset period,
+            final @Nullable PublishedLevelSearchCriteria criteria,
+            final @Nullable String currentUserId) {
+        final List<LevelSummaryDto> results = getPublishedLevels(sortBy, period, criteria, currentUserId);
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(results.get(ThreadLocalRandom.current().nextInt(results.size())));
+    }
+
+    private List<LevelSummaryDto> getPublishedLevelSummaries(
+            final PublishedLevelSortBy sortBy,
+            final DateRangePreset period,
+            final @Nullable String currentUserId) {
         final List<Level> levels = this.levelRepository.findByPublishedTrue();
 
-        final List<LevelSummaryDto> dtos = levels.stream()
+        return levels.stream()
                 .map(level -> toLevelSummary(level, sortBy, period, currentUserId))
                 .toList();
+    }
 
-        final List<LevelSummaryDto> result;
+    private List<LevelSummaryDto> applySearchCriteria(
+            final List<LevelSummaryDto> summaries,
+            final @Nullable PublishedLevelSearchCriteria criteria) {
+        return summaries.stream()
+                .filter(summary -> PublishedLevelSearchCriteriaMatcher.matches(summary, criteria))
+                .toList();
+    }
+
+    private static List<LevelSummaryDto> sortPublishedLevels(
+            final List<LevelSummaryDto> summaries,
+            final PublishedLevelSortBy sortBy) {
         if (sortBy == PublishedLevelSortBy.CLEAR_RATE) {
-            result = dtos.stream()
+            return summaries.stream()
                     .sorted(Comparator.comparingDouble(LevelSummaryDto::clearRate).reversed())
                     .toList();
         } else if (sortBy == PublishedLevelSortBy.POPULARITY) {
-            result = dtos.stream()
+            return summaries.stream()
                     .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
                     .toList();
         } else {
             throw new IllegalStateException("Unsupported published level sort: " + sortBy);
         }
-        return result;
     }
 }
