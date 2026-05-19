@@ -71,7 +71,9 @@ public class InputLogFingerprintService {
 
         for (final InputRun run : normalizedRuns) {
             appendSeparatorIfNeeded(canonical);
-            canonical.append(run.state().canonical());
+            canonical.append(run.normalizedCount())
+                    .append(':')
+                    .append(run.state().canonical());
         }
 
         return new JitterCanonical(canonical.toString(), normalizedRuns.size());
@@ -109,12 +111,16 @@ public class InputLogFingerprintService {
     private List<InputRun> jitterInputRuns(final List<InputFrameDTO> inputLog) {
         final ArrayList<InputRun> runs = new ArrayList<>();
         InputState currentRunState = null;
+        int currentRunStartFrame = 0;
         int currentRunLength = 0;
         int neutralFramesAfterCurrentRun = 0;
+        int strippedNeutralFrames = 0;
+        int currentRunStrippedFramesBefore = 0;
 
         for (final InputFrameDTO frame : inputLog) {
             final InputState current = InputState.from(frame);
             if (current.isNeutral()) {
+                strippedNeutralFrames++;
                 if (currentRunState != null) {
                     neutralFramesAfterCurrentRun++;
                 }
@@ -123,30 +129,51 @@ public class InputLogFingerprintService {
 
             if (currentRunState == null) {
                 currentRunState = current;
+                currentRunStartFrame = frame.frame();
                 currentRunLength = 1;
                 neutralFramesAfterCurrentRun = 0;
+                currentRunStrippedFramesBefore = strippedNeutralFrames;
                 continue;
             }
 
             if (neutralFramesAfterCurrentRun > 0) {
-                runs.add(new InputRun(currentRunState, currentRunLength, neutralFramesAfterCurrentRun));
+                runs.add(new InputRun(
+                        currentRunState,
+                        currentRunStartFrame,
+                        currentRunLength,
+                        neutralFramesAfterCurrentRun,
+                        currentRunStrippedFramesBefore));
                 currentRunState = current;
+                currentRunStartFrame = frame.frame();
                 currentRunLength = 1;
                 neutralFramesAfterCurrentRun = 0;
+                currentRunStrippedFramesBefore = strippedNeutralFrames;
                 continue;
             }
 
             if (current.equals(currentRunState)) {
                 currentRunLength++;
             } else {
-                runs.add(new InputRun(currentRunState, currentRunLength, 0));
+                runs.add(new InputRun(
+                        currentRunState,
+                        currentRunStartFrame,
+                        currentRunLength,
+                        0,
+                        currentRunStrippedFramesBefore));
                 currentRunState = current;
+                currentRunStartFrame = frame.frame();
                 currentRunLength = 1;
+                currentRunStrippedFramesBefore = strippedNeutralFrames;
             }
         }
 
         if (currentRunState != null) {
-            runs.add(new InputRun(currentRunState, currentRunLength, neutralFramesAfterCurrentRun));
+            runs.add(new InputRun(
+                    currentRunState,
+                    currentRunStartFrame,
+                    currentRunLength,
+                    neutralFramesAfterCurrentRun,
+                    currentRunStrippedFramesBefore));
         }
 
         return List.copyOf(runs);
@@ -154,13 +181,17 @@ public class InputLogFingerprintService {
 
     private static List<InputRun> removeFakeJumpOnlyRuns(final List<InputRun> runs) {
         final ArrayList<InputRun> normalized = new ArrayList<>();
+        int strippedFakeJumpFrames = 0;
 
         for (final InputRun run : runs) {
             if (run.state().isJumpOnly()
                     && run.neutralFramesAfter() >= JUMP_ONLY_HORIZONTAL_DELTA_FRAMES) {
+                strippedFakeJumpFrames += run.length();
                 continue;
             }
-            normalized.add(run.withoutNeutralFramesAfter());
+            normalized.add(run
+                    .withAdditionalStrippedFrames(strippedFakeJumpFrames)
+                    .withoutNeutralFramesAfter());
         }
 
         return List.copyOf(normalized);
@@ -168,22 +199,48 @@ public class InputLogFingerprintService {
 
     private static List<InputRun> removeHorizontalCancellationNoise(final List<InputRun> runs) {
         final ArrayList<InputRun> normalized = new ArrayList<>();
+        int strippedHorizontalNoiseFrames = 0;
 
         for (final InputRun run : runs) {
+            final InputRun current = run.withAdditionalStrippedFrames(strippedHorizontalNoiseFrames);
             final int lastIndex = normalized.size() - 1;
             if (lastIndex >= 1
                     && isCancelableHorizontalInterruption(
                     normalized.get(lastIndex - 1),
                     normalized.get(lastIndex),
-                    run)) {
-                normalized.remove(lastIndex);
-                normalized.add(run);
+                    current)) {
+                final InputRun before = normalized.get(lastIndex - 1);
+                final InputRun interruption = normalized.remove(lastIndex);
+                if (before.state().equals(current.state())) {
+                    final int returnFramesToStrip = Math.min(run.length(), interruption.length());
+                    strippedHorizontalNoiseFrames += interruption.length() + returnFramesToStrip;
+                    if (run.length() > returnFramesToStrip) {
+                        addOrMergeAdjacentEqualRun(
+                                normalized,
+                                run.withoutLeadingFrames(returnFramesToStrip)
+                                        .withAdditionalStrippedFrames(strippedHorizontalNoiseFrames));
+                    }
+                } else {
+                    strippedHorizontalNoiseFrames += interruption.length();
+                    addOrMergeAdjacentEqualRun(
+                            normalized,
+                            run.withAdditionalStrippedFrames(strippedHorizontalNoiseFrames));
+                }
                 continue;
             }
-            normalized.add(run);
+            addOrMergeAdjacentEqualRun(normalized, current);
         }
 
         return List.copyOf(normalized);
+    }
+
+    private static void addOrMergeAdjacentEqualRun(final ArrayList<InputRun> runs, final InputRun run) {
+        final int lastIndex = runs.size() - 1;
+        if (lastIndex >= 0 && runs.get(lastIndex).state().equals(run.state())) {
+            runs.set(lastIndex, mergeRuns(runs.get(lastIndex), run));
+        } else {
+            runs.add(run);
+        }
     }
 
     private static boolean isCancelableHorizontalInterruption(final InputRun before,
@@ -213,7 +270,12 @@ public class InputLogFingerprintService {
     }
 
     private static InputRun mergeRuns(final InputRun first, final InputRun second) {
-        return new InputRun(first.state(), first.length() + second.length(), second.neutralFramesAfter());
+        return new InputRun(
+                first.state(),
+                first.startFrame(),
+                first.length() + second.length(),
+                second.neutralFramesAfter(),
+                first.strippedFramesBefore());
     }
 
     private static List<InputRun> collapseAdjacentEqualRuns(final List<InputRun> runs) {
@@ -288,9 +350,37 @@ public class InputLogFingerprintService {
     public record InputChange(int frame, String state) {
     }
 
-    private record InputRun(InputState state, int length, int neutralFramesAfter) {
+    private record InputRun(
+            InputState state,
+            int startFrame,
+            int length,
+            int neutralFramesAfter,
+            int strippedFramesBefore) {
+
+        int normalizedCount() {
+            return startFrame - strippedFramesBefore;
+        }
+
         InputRun withoutNeutralFramesAfter() {
-            return new InputRun(state, length, 0);
+            return new InputRun(state, startFrame, length, 0, strippedFramesBefore);
+        }
+
+        InputRun withAdditionalStrippedFrames(final int additionalStrippedFrames) {
+            return new InputRun(
+                    state,
+                    startFrame,
+                    length,
+                    neutralFramesAfter,
+                    strippedFramesBefore + additionalStrippedFrames);
+        }
+
+        InputRun withoutLeadingFrames(final int leadingFrames) {
+            return new InputRun(
+                    state,
+                    startFrame + leadingFrames,
+                    length - leadingFrames,
+                    neutralFramesAfter,
+                    strippedFramesBefore);
         }
     }
 
