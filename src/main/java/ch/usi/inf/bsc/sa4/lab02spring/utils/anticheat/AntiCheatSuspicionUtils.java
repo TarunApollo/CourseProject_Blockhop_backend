@@ -57,28 +57,28 @@ public final class AntiCheatSuspicionUtils {
                 exactDuplicate,
                 fuzzyDuplicate,
                 jitterDuplicate);
-
+        AttemptVerificationStatus status = AttemptVerificationStatus.LEGIT;
         if (isCheatingSuspicion(currentSuspicion)) {
-            return AttemptVerificationStatus.CHEATED;
+            status = AttemptVerificationStatus.CHEATED;
         }
-
-        if (isSuspicious(currentSuspicion)) {
-            return classifySuspiciousWithHistory(
+        else if (isSuspicious(currentSuspicion)) {
+            status = classifySuspiciousWithHistory(
                     prevSuspLevels,
                     prevCheatLevels);
         }
-        return AttemptVerificationStatus.LEGIT;
+        return status;
     }
 
     private static AttemptVerificationStatus classifySuspiciousWithHistory(
             final long prevSuspAttempts,
             final long prevCheatAttempts) {
+                AttemptVerificationStatus status = AttemptVerificationStatus.SUSPICIOUS;
         if (isCheatingSuspicion(suspicionWithHistory(
                 prevSuspAttempts,
                 prevCheatAttempts))) {
-            return AttemptVerificationStatus.CHEATED;
+            status = AttemptVerificationStatus.CHEATED;
         }
-        return AttemptVerificationStatus.SUSPICIOUS;
+        return status;
     }
 
     private static double currentFingerprintSuspicion(final InputLogFingerprint fingerprint,
@@ -121,11 +121,7 @@ public final class AntiCheatSuspicionUtils {
     private static double duplicateSuspicion(final Optional<Attempt> duplicate,
             final double duplicateScore,
             final double complexityFactor) {
-        if (duplicate.isEmpty()) {
-            return NO_SUSPICION;
-        }
-
-        return duplicateScore * complexityFactor;
+        return duplicate.isEmpty() ? NO_SUSPICION : duplicateScore * complexityFactor;
     }
 
     private static double recentHistorySuspicion(final long prevSuspAttempts,
