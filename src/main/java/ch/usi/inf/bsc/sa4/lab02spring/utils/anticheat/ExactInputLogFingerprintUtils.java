@@ -15,7 +15,7 @@ final class ExactInputLogFingerprintUtils {
     ///
     /// @param inputLog input frames from the attempt, in order
     /// @return exact text and number of real input changes
-    static ExactCanonical canonical(final List<InputFrameDTO> inputLog) {
+    /* package */ static ExactCanonical canonical(final Iterable<InputFrameDTO> inputLog) {
         final StringBuilder canonical = new StringBuilder();
         InputState previous = null;
         int inputChangeCount = 0;
@@ -43,6 +43,6 @@ final class ExactInputLogFingerprintUtils {
     }
 
     /// Exact text and number of real input changes.
-    record ExactCanonical(String canonical, int inputChangeCount) {
+    /* package */ record ExactCanonical(String canonical, int inputChangeCount) {
     }
 }
