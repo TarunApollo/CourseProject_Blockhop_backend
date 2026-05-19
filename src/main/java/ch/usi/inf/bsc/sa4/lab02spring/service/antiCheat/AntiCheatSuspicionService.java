@@ -34,14 +34,18 @@ public class AntiCheatSuspicionService {
     /// Suspicion added for each previous cheated attempt.
     private static final double PREVIOUS_CHEATED_ATTEMPT_SCORE = 0.20;
 
-
     /// Classifies an attempt from duplicate evidence and recent player history.
-    /// @param fingerprint the fingerprint generated for the current attempt
-    /// @param exactDuplicate an existing attempt with the same exact fingerprint
-    /// @param fuzzyDuplicate an existing attempt with a similar fuzzy fingerprint
-    /// @param jitterDuplicate an existing jitter-normalized duplicate attempt
+    /// 
+    /// @param fingerprint                   the fingerprint generated for the
+    ///                                      current attempt
+    /// @param exactDuplicate                an existing attempt with the same exact
+    ///                                      fingerprint
+    /// @param fuzzyDuplicate                an existing attempt with a similar fuzzy
+    ///                                      fingerprint
+    /// @param jitterDuplicate               an existing jitter-normalized duplicate
+    ///                                      attempt
     /// @param previousSuspiciousLevelsCount suspicious recent attempts to count
-    /// @param previousCheatedLevelsCount cheated recent attempts to count
+    /// @param previousCheatedLevelsCount    cheated recent attempts to count
     /// @return the anti-cheat verification status for the attempt
     public AttemptVerificationStatus classifyFingerprintSuspicion(
             InputLogFingerprint fingerprint,
@@ -62,7 +66,6 @@ public class AntiCheatSuspicionService {
 
         if (isSuspicious(currentSuspicion)) {
             return classifySuspiciousWithHistory(
-                    currentSuspicion,
                     previousSuspiciousLevelsCount,
                     previousCheatedLevelsCount);
         }
@@ -70,12 +73,9 @@ public class AntiCheatSuspicionService {
     }
 
     private AttemptVerificationStatus classifySuspiciousWithHistory(
-            double currentSuspicion,
             final long previousSuspiciousAttempts,
             final long previousCheatedAttempts) {
-        currentSuspicion = PREVIOUS_SUSPICIOUS_ATTEMPT_SCORE;
         if (isCheatingSuspicion(suspicionWithHistory(
-                currentSuspicion,
                 previousSuspiciousAttempts,
                 previousCheatedAttempts))) {
             return AttemptVerificationStatus.CHEATED;
@@ -84,9 +84,9 @@ public class AntiCheatSuspicionService {
     }
 
     private double currentFingerprintSuspicion(final InputLogFingerprint fingerprint,
-                                               final Optional<Attempt> exactDuplicate,
-                                               final Optional<Attempt> fuzzyDuplicate,
-                                               final Optional<Attempt> jitterDuplicate) {
+            final Optional<Attempt> exactDuplicate,
+            final Optional<Attempt> fuzzyDuplicate,
+            final Optional<Attempt> jitterDuplicate) {
         return Math.max(
                 Math.max(
                         calculateExactSuspicion(fingerprint, exactDuplicate),
@@ -103,19 +103,19 @@ public class AntiCheatSuspicionService {
     }
 
     private double calculateExactSuspicion(final InputLogFingerprint fingerprint,
-                                           final Optional<Attempt> exactDuplicate) {
+            final Optional<Attempt> exactDuplicate) {
         final double complexityFactor = complexityFactor(fingerprint);
         return duplicateSuspicion(exactDuplicate, EXACT_DUPLICATE_SCORE, complexityFactor);
     }
 
     private double calculateFuzzySuspicion(final InputLogFingerprint fingerprint,
-                                           final Optional<Attempt> fuzzyDuplicate) {
+            final Optional<Attempt> fuzzyDuplicate) {
         final double complexityFactor = complexityFactor(fingerprint);
         return duplicateSuspicion(fuzzyDuplicate, FUZZY_DUPLICATE_SCORE, complexityFactor);
     }
 
     private double calculateJitterSuspicion(final InputLogFingerprint fingerprint,
-                                            final Optional<Attempt> jitterDuplicate) {
+            final Optional<Attempt> jitterDuplicate) {
         final double complexityFactor = jitterComplexityFactor(fingerprint);
         return duplicateSuspicion(jitterDuplicate, JITTER_DUPLICATE_SCORE, complexityFactor);
     }
@@ -131,17 +131,18 @@ public class AntiCheatSuspicionService {
     }
 
     private double recentHistorySuspicion(final long previousSuspiciousAttempts,
-                                          final long previousCheatedAttempts) {
+            final long previousCheatedAttempts) {
         return previousSuspiciousAttempts * PREVIOUS_SUSPICIOUS_ATTEMPT_SCORE
                 + previousCheatedAttempts * PREVIOUS_CHEATED_ATTEMPT_SCORE;
     }
 
-    private double suspicionWithHistory(final double currentSuspicion,
-                                        final long previousSuspiciousAttempts,
-                                        final long previousCheatedAttempts) {
+    private double suspicionWithHistory(
+            final long previousSuspiciousAttempts,
+            final long previousCheatedAttempts) {
         return Math.min(
                 MAX_SUSPICION,
-                currentSuspicion + recentHistorySuspicion(previousSuspiciousAttempts, previousCheatedAttempts));
+                PREVIOUS_SUSPICIOUS_ATTEMPT_SCORE
+                        + recentHistorySuspicion(previousSuspiciousAttempts, previousCheatedAttempts));
     }
 
     private double complexityFactor(final InputLogFingerprint fingerprint) {

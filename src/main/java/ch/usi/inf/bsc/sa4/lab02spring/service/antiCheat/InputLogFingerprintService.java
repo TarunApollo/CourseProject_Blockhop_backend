@@ -14,6 +14,7 @@ import java.util.List;
 
 /// Creates stable hashes and canonical input sequences for anti-cheat checks.
 @Service
+@SuppressWarnings("PMD.TooManyMethods")
 public class InputLogFingerprintService {
 
     /// Default number of frames grouped into one fuzzy input bucket.
@@ -47,20 +48,6 @@ public class InputLogFingerprintService {
         );
     }
 
-    /// Computes the exact fingerprint hash for the provided input log.
-    /// @param inputLog the ordered input frames recorded during an attempt
-    /// @return the SHA-256 hash of the exact canonical input sequence
-    public String exactHash(final List<InputFrameDTO> inputLog) {
-        return fingerprint(inputLog).exactHash();
-    }
-
-    /// Computes the fuzzy bucket hashes for the provided input log.
-    /// @param inputLog the ordered input frames recorded during an attempt
-    /// @return the shifted bucket hashes used for fuzzy duplicate detection
-    public List<String> changeBucketHashes(final List<InputFrameDTO> inputLog) {
-        return fingerprint(inputLog).changeBucketHashes();
-    }
-
     /// Converts each frame into the exact canonical input representation.
     /// @param inputLog the ordered input frames recorded during an attempt
     /// @return a frame-by-frame canonical string
@@ -73,13 +60,6 @@ public class InputLogFingerprintService {
                     .append(InputState.from(frame).canonical());
         }
         return canonical.toString();
-    }
-
-    /// Converts the input log into the jitter-normalized canonical form.
-    /// @param inputLog the ordered input frames recorded during an attempt
-    /// @return a canonical string with common jitter patterns removed
-    public String canonicalJitterInputChanges(final List<InputFrameDTO> inputLog) {
-        return jitterCanonical(inputLog).canonical();
     }
 
     private JitterCanonical jitterCanonical(final List<InputFrameDTO> inputLog) {
