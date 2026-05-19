@@ -17,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -143,10 +144,9 @@ public class LevelAggregationService {
             final @Nullable PublishedLevelSearchCriteria criteria,
             final @Nullable String currentUserId) {
         final List<LevelSummaryDto> results = getPublishedLevels(sortBy, period, criteria, currentUserId);
-        if (results.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(results.get(ThreadLocalRandom.current().nextInt(results.size())));
+        return results.isEmpty()
+                ? Optional.empty()
+                : Optional.of(results.get(ThreadLocalRandom.current().nextInt(results.size())));
     }
 
     private List<LevelSummaryDto> getPublishedLevelSummaries(
@@ -161,7 +161,7 @@ public class LevelAggregationService {
     }
 
     private List<LevelSummaryDto> applySearchCriteria(
-            final List<LevelSummaryDto> summaries,
+            final Collection<LevelSummaryDto> summaries,
             final @Nullable PublishedLevelSearchCriteria criteria) {
         return summaries.stream()
                 .filter(summary -> PublishedLevelSearchCriteriaMatcher.matches(summary, criteria))
@@ -171,16 +171,12 @@ public class LevelAggregationService {
     private static List<LevelSummaryDto> sortPublishedLevels(
             final List<LevelSummaryDto> summaries,
             final PublishedLevelSortBy sortBy) {
-        if (sortBy == PublishedLevelSortBy.CLEAR_RATE) {
-            return summaries.stream()
-                    .sorted(Comparator.comparingDouble(LevelSummaryDto::clearRate).reversed())
-                    .toList();
-        } else if (sortBy == PublishedLevelSortBy.POPULARITY) {
-            return summaries.stream()
-                    .sorted(Comparator.comparingLong(LevelSummaryDto::popularity).reversed())
-                    .toList();
-        } else {
-            throw new IllegalStateException("Unsupported published level sort: " + sortBy);
-        }
+        final Comparator<LevelSummaryDto> comparator = switch (sortBy) {
+            case CLEAR_RATE -> Comparator.comparingDouble(LevelSummaryDto::clearRate);
+            case POPULARITY -> Comparator.comparingLong(LevelSummaryDto::popularity);
+        };
+        return summaries.stream()
+                .sorted(comparator.reversed())
+                .toList();
     }
 }

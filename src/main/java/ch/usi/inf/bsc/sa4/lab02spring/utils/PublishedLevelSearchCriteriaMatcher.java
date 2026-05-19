@@ -31,15 +31,9 @@ public final class PublishedLevelSearchCriteriaMatcher {
 
     private static boolean matchesMinMax(
             final double value,
-            final @Nullable Double min,
-            final @Nullable Double max) {
-        return (min == null || value >= min) && (max == null || value <= max);
-    }
-
-    private static boolean matchesMinMax(
-            final long value,
-            final @Nullable Long min,
-            final @Nullable Long max) {
-        return (min == null || value >= min) && (max == null || value <= max);
+            final @Nullable Number min,
+            final @Nullable Number max) {
+        return (min == null || value >= min.doubleValue())
+                && (max == null || value <= max.doubleValue());
     }
 }
