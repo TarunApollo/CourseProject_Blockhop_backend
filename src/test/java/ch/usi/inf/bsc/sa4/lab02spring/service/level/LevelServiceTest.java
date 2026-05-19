@@ -350,11 +350,11 @@ class LevelServiceTests {
 
             Mockito.when(levelRepository.findByCreator(owner)).thenReturn(List.of(a, b));
 
-            Mockito.when(attemptRepository.countByLevel(a)).thenReturn(10L);
-            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(a)).thenReturn(7L);
+            Mockito.when(attemptRepository.countByLevelAndUserNot(a, a.getCreator())).thenReturn(10L);
+            Mockito.when(attemptRepository.countByLevelAndUserNotAndCompletedTrue(a, a.getCreator())).thenReturn(7L);
 
-            Mockito.when(attemptRepository.countByLevel(b)).thenReturn(5L);
-            Mockito.when(attemptRepository.countByLevelAndCompletedTrue(b)).thenReturn(2L);
+            Mockito.when(attemptRepository.countByLevelAndUserNot(b, b.getCreator())).thenReturn(5L);
+            Mockito.when(attemptRepository.countByLevelAndUserNotAndCompletedTrue(b, b.getCreator())).thenReturn(2L);
 
             final List<CreatedLevelProfileDTO> result = service.getCreatedLevelsByUser(owner);
 

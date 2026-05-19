@@ -36,8 +36,8 @@ public record CreatedLevelProfileDTO(
 ) {
     /// Convenience constructor that derives layer/condition fields from a Level.
     /// @param level         the level whose fields populate the DTO
-    /// @param playCount     total play attempts on the level
-    /// @param completeCount total successful completions
+    /// @param playCount     non-creator play attempts on the level
+    /// @param completeCount non-creator successful completions
     public CreatedLevelProfileDTO(final Level level, final long playCount, final long completeCount) {
         this(
                 level.getId(),

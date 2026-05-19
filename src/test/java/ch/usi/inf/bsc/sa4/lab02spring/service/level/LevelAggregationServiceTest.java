@@ -156,7 +156,8 @@ class LevelAggregationServiceTest {
                     DateRangePreset.RelativeDateRangePreset.LAST_7_DAYS);
 
             Mockito.verify(attemptRepository, Mockito.never())
-                .countByLevelAndTimestampAfter(ArgumentMatchers.any(), ArgumentMatchers.any());
+                    .countByLevelAndUserNotAndTimestampAfter(
+                            ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any());
         }
 
         /// When sorting by clear rate, popularity should fall back to total play count.
@@ -228,7 +229,8 @@ class LevelAggregationServiceTest {
                     DateRangePreset.AllTimeDateRangePreset.ALL_TIME);
 
             Mockito.verify(attemptRepository, Mockito.never())
-                .countByLevelAndTimestampAfter(ArgumentMatchers.any(), ArgumentMatchers.any());
+                    .countByLevelAndUserNotAndTimestampAfter(
+                            ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any());
         }
 
         /// A relative period should pull popularity from the time-window query.
@@ -238,8 +240,8 @@ class LevelAggregationServiceTest {
             final Level a = publishedLevel("a");
             Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
             stubAttempts(a, 100, 50);
-            Mockito.when(attemptRepository.countByLevelAndTimestampAfter(
-                ArgumentMatchers.eq(a), ArgumentMatchers.any())).thenReturn(7L);
+            Mockito.when(attemptRepository.countByLevelAndUserNotAndTimestampAfter(
+                    ArgumentMatchers.eq(a), ArgumentMatchers.eq(creator), ArgumentMatchers.any())).thenReturn(7L);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.POPULARITY,
@@ -257,17 +259,17 @@ class LevelAggregationServiceTest {
             Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a, b));
             stubAttempts(a, 1, 0);
             stubAttempts(b, 1, 0);
-            Mockito.when(attemptRepository.countByLevelAndTimestampAfter(
-                ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(0L);
+            Mockito.when(attemptRepository.countByLevelAndUserNotAndTimestampAfter(
+                    ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(0L);
 
             service.getPublishedLevels(
                     PublishedLevelSortBy.POPULARITY,
                     DateRangePreset.RelativeDateRangePreset.LAST_30_DAYS);
 
-            Mockito.verify(attemptRepository).countByLevelAndTimestampAfter(
-                ArgumentMatchers.eq(a), ArgumentMatchers.any());
-            Mockito.verify(attemptRepository).countByLevelAndTimestampAfter(
-                ArgumentMatchers.eq(b), ArgumentMatchers.any());
+            Mockito.verify(attemptRepository).countByLevelAndUserNotAndTimestampAfter(
+                    ArgumentMatchers.eq(a), ArgumentMatchers.eq(creator), ArgumentMatchers.any());
+            Mockito.verify(attemptRepository).countByLevelAndUserNotAndTimestampAfter(
+                    ArgumentMatchers.eq(b), ArgumentMatchers.eq(creator), ArgumentMatchers.any());
         }
     }
 
@@ -427,8 +429,9 @@ class LevelAggregationServiceTest {
 
     /// Stubs the attempt repository to return the given play and clear counts.
     private void stubAttempts(final Level level, final long plays, final long clears) {
-        Mockito.when(attemptRepository.countByLevel(level)).thenReturn(plays);
-        Mockito.when(attemptRepository.countByLevelAndCompletedTrue(level)).thenReturn(clears);
+        Mockito.when(attemptRepository.countByLevelAndUserNot(level, level.getCreator())).thenReturn(plays);
+        Mockito.when(attemptRepository.countByLevelAndUserNotAndCompletedTrue(level, level.getCreator()))
+                .thenReturn(clears);
     }
 
 }

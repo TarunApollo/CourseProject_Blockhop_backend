@@ -38,19 +38,23 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
     /// @param level the level whose attempts should be removed
     void deleteByLevel(Level level);
 
-    /// Counts all attempts recorded for the given level.
+    /// Counts all attempts recorded for the given level, excluding its creator.
     /// @param level the level to count attempts for
-    /// @return the number of attempts for the level
-    long countByLevel(Level level);
+    /// @param user the creator whose attempts should be excluded
+    /// @return the number of non-creator attempts for the level
+    long countByLevelAndUserNot(Level level, User user);
 
-    /// Counts completed attempts recorded for the given level.
+    /// Counts completed attempts recorded for the given level, excluding its creator.
     /// @param level the level to count completed attempts for
-    /// @return the number of completed attempts for the level
-    long countByLevelAndCompletedTrue(Level level);
+    /// @param user the creator whose attempts should be excluded
+    /// @return the number of completed non-creator attempts for the level
+    long countByLevelAndUserNotAndCompletedTrue(Level level, User user);
 
-    /// Counts attempts recorded for the given level after the provided timestamp.
+    /// Counts attempts recorded for the given level after the provided timestamp,
+    /// excluding its creator.
     /// @param level the level to count attempts for
+    /// @param user the creator whose attempts should be excluded
     /// @param after the lower time bound
-    /// @return the number of attempts after the given timestamp
-    long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
+    /// @return the number of non-creator attempts after the given timestamp
+    long countByLevelAndUserNotAndTimestampAfter(Level level, User user, ZonedDateTime after);
 }

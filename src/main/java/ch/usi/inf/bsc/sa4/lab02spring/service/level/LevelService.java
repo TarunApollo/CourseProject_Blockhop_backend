@@ -118,15 +118,17 @@ public class LevelService {
         this.levelRepository.deleteById(levelId);
     }
 
-    /// Retrieves all levels created by the given user with profile statistics.
+    /// Retrieves all levels created by the given user with public profile
+    /// statistics. Public attempt statistics exclude the creator's own attempts
+    /// so creators cannot inflate the play or completion counts of their levels.
     /// @param creator the user whose levels to retrieve
     /// @return a list of created level profile DTOs with play and completion counts
     public List<CreatedLevelProfileDTO> getCreatedLevelsByUser(final User creator) {
         return this.levelRepository.findByCreator(creator).stream()
                 .map(level -> new CreatedLevelProfileDTO(
                         level,
-                        this.attemptRepository.countByLevel(level),
-                        this.attemptRepository.countByLevelAndCompletedTrue(level)))
+                        this.attemptRepository.countByLevelAndUserNot(level, level.getCreator()),
+                        this.attemptRepository.countByLevelAndUserNotAndCompletedTrue(level, level.getCreator())))
                 .toList();
     }
 
