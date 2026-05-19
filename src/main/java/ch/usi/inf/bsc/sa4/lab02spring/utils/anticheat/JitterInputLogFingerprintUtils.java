@@ -50,19 +50,13 @@ final class JitterInputLogFingerprintUtils {
                 if (currentRunState != null) {
                     neutralAfterRun++;
                 }
-                continue;
-            }
-
-            if (currentRunState == null) {
+            } else if (currentRunState == null) {
                 currentRunState = current;
                 runStartFrame = frame.frame();
                 currentRunLength = 1;
                 neutralAfterRun = 0;
                 strippedBeforeRun = strippedNeutral;
-                continue;
-            }
-
-            if (neutralAfterRun > 0) {
+            } else if (neutralAfterRun > 0) {
                 runs.add(new InputRun(
                         currentRunState,
                         runStartFrame,
@@ -74,10 +68,7 @@ final class JitterInputLogFingerprintUtils {
                 currentRunLength = 1;
                 neutralAfterRun = 0;
                 strippedBeforeRun = strippedNeutral;
-                continue;
-            }
-
-            if (current.equals(currentRunState)) {
+            } else if (current.equals(currentRunState)) {
                 currentRunLength++;
             } else {
                 runs.add(new InputRun(

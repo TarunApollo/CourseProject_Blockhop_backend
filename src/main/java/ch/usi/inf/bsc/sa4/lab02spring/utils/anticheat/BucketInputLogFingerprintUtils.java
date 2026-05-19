@@ -46,10 +46,11 @@ final class BucketInputLogFingerprintUtils {
             if (!hasCurrentBucket) {
                 currentBucket = bucket;
                 hasCurrentBucket = true;
-            } else if (bucket != currentBucket) {
+            }
+            if (bucket != currentBucket) {
                 appendBucketInputIfNeeded(canonical, currentBucket, bucketInput);
                 currentBucket = bucket;
-                bucketInput = new BucketInputState();
+                bucketInput.reset();
             }
             bucketInput.include(InputState.from(frame));
         }
@@ -98,6 +99,13 @@ final class BucketInputLogFingerprintUtils {
             right |= state.right();
             jump |= state.jump();
             run |= state.run();
+        }
+
+        private void reset() {
+            left = false;
+            right = false;
+            jump = false;
+            run = false;
         }
 
         private boolean isNeutral() {

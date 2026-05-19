@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /// Logs anti-cheat events.
-@SuppressWarnings("PMD:TooManyStaticImports")
+@SuppressWarnings("PMD.TooManyStaticImports")
 public final class AntiCheatLog {
 
     /// Anti-cheat logger.
