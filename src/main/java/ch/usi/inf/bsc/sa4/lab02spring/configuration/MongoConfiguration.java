@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -97,6 +98,16 @@ public class MongoConfiguration {
         }
     }
 
+    /// Converts a [Date] read from MongoDB to a [ZonedDateTime] in UTC.
+    ///
+    @ReadingConverter
+    public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
+        @Override
+        public ZonedDateTime convert(final Date date) {
+            return date.toInstant().atZone(ZoneOffset.UTC);
+        }
+    }
+
     /// Configures the custom conversions for MongoDB.
     ///
     /// @return the custom conversions
@@ -107,9 +118,7 @@ public class MongoConfiguration {
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToInstantConverter());
         custom.add(new InstantToZonedDateTimeConverter());
-        return MongoCustomConversions.create(adapter -> {
-            adapter.useNativeDriverJavaTimeCodecs();
-            adapter.registerConverters(custom);
-        });
+        custom.add(new DateToZonedDateTimeConverter());
+        return new MongoCustomConversions(custom);
     }
 }
