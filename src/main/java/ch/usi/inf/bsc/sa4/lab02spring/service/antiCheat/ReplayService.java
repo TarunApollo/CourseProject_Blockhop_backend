@@ -45,10 +45,8 @@ public class ReplayService {
     /// Runs the replay script for a level and input log and returns the
     /// verification result.
     ///
-    /// @param replayRequest.getUserId()       id of the player whose attempt is being replayed
-    /// @param replayRequest.levelId()      id of the level being replayed
-    /// @param levelJson    serialized Tiled level map consumed by the replay script
-    /// @param inputLogJson serialized input log consumed by the replay script
+    /// @param replayRequest wrapper object for the request
+    /// 
     /// @return replay validity, reason, and final frame reported by the script
     public ReplayResultDTO replay(ReplayRequest replayRequest) {
         final String npx = resolveNpx();
