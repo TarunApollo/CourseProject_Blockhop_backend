@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /// Enumeration of supported clear-condition target types.
 /// Each value is serialized to the lower-case string used by the API and can
 /// be reconstructed from that string during deserialization.
+@SuppressWarnings("PMD.AvoidFieldNameMatchingMethodName")
 public enum ClearConditionType {
     BOX("box"),
     COIN("coin"),

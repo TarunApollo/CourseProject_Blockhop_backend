@@ -18,7 +18,11 @@ import java.util.Map;
 ///
 /// Jackson serializers and deserializers for map-based level fields.
 ///
-public class FieldSerializer {
+@SuppressWarnings("PMD.MissingStaticMethodInNonInstantiatableClass")
+public final class FieldSerializer {
+
+    /// Prevents instantiation of this utility class.
+    private FieldSerializer() { }
 
     ///
     /// Serializes the object layer of a level DTO as a JSON object keyed by position.

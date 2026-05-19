@@ -17,15 +17,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /// Unit tests for [LevelFavoriteService].
-@ExtendWith(MockitoExtension.class)
-@DisplayName("The LevelFavorite Service (Unit)")
+@SpringBootTest
+@DisplayName("The LevelFavorite Service")
 @SuppressWarnings("NullAway")
 class LevelFavoriteServiceTests {
 
@@ -44,13 +43,13 @@ class LevelFavoriteServiceTests {
     /// Default level id used in tests.
     private static final String LEVEL_ID = "level-1";
 
-    /// Mocked dependency.
-    @Mock
-    private LevelFavoriteRepository levelFavoriteRepository;
-
-    /// Service under test, with mocks injected by Mockito.
-    @InjectMocks
+    /// Service under test.
+    @Autowired
     private LevelFavoriteService levelFavoriteService;
+
+    /// Mocked dependency.
+    @MockitoBean
+    private LevelFavoriteRepository levelFavoriteRepository;
 
     /// Test user, rebuilt per test.
     private User testUser;
@@ -130,11 +129,11 @@ class LevelFavoriteServiceTests {
         /// Verifies the service delegates removal to the repository's
         /// derived delete query using only the level id.
         @Test
-        @DisplayName("delegates to repository.deleteByUserAndLevelId")
+        @DisplayName("delegates to repository.deleteByUserIdAndLevelId")
         void delegatesDelete() {
             levelFavoriteService.removeFavorite(testUser, LEVEL_ID);
 
-            Mockito.verify(levelFavoriteRepository).deleteByUserAndLevelId(testUser, LEVEL_ID);
+            Mockito.verify(levelFavoriteRepository).deleteByUserIdAndLevelId(USER_ID, LEVEL_ID);
         }
     }
 

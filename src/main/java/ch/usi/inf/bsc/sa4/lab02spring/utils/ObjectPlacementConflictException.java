@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 ///
 @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Cannot put object in this place")
 public class ObjectPlacementConflictException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
     ///
     /// Creates a new exception with the provided message.

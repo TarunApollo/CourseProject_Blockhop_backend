@@ -21,9 +21,6 @@ spring:
         provider:
           switch-edu-id:
             issuer-uri: https://auth.dev.si.usi.ch/auth/realms/simurbs
-      resourceserver:
-        jwt:
-          issuer-uri: https://auth.dev.si.usi.ch/auth/realms/simurbs
 
 logging:
   level:

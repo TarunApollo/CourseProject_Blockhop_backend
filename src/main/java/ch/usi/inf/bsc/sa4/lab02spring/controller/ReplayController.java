@@ -16,7 +16,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSuspicionServic
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.InputLogFingerprintService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.ReplayService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
@@ -26,6 +26,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +42,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/replay")
 public class ReplayController {
+
+    /// OAuth2 subject attribute name.
+    private static final String OAUTH_SUB_ATTRIBUTE = "sub";
 
     private static final int RECENT_ATTEMPT_WINDOW_DAYS = 7;
 
@@ -72,13 +77,10 @@ public class ReplayController {
 
     @PostMapping("/start")
     public ResponseEntity<Void> startRun(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User oauth2User,
             @RequestBody final StartRequest request) {
 
-        final @Nullable String userId = AuthUtils.getUserIdFromAuth(authentication);
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
 
         final Level level = levelRepository.findById(request.levelId())
                 .orElseThrow(LevelNotFoundException::new);
@@ -91,13 +93,10 @@ public class ReplayController {
 
     @PostMapping("/submit")
     public ResponseEntity<ReplayResultDTO> submitRun(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User oauth2User,
             @RequestBody final ReplayRequestDTO request) {
 
-        final @Nullable String userId = AuthUtils.getUserIdFromAuth(authentication);
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        final String userId = OAuth2UserUtils.getRequiredAttribute(oauth2User, OAUTH_SUB_ATTRIBUTE);
 
         final Level level = levelRepository.findById(request.levelId())
                 .orElseThrow(LevelNotFoundException::new);

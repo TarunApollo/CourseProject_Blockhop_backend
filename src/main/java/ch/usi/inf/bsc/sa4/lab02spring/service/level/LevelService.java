@@ -54,6 +54,7 @@ public class LevelService {
     public Level createLevel(final CreateLevelDTO createLevelDTO, final String userId) {
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         final Level level = new Level(createLevelDTO.title(), createLevelDTO.description(), user);
+        level.setClearCondition(createLevelDTO.clearCondition());
         return this.levelRepository.save(level);
     }
 

@@ -672,6 +672,10 @@
       "type": "Enemy_Snail"
     },
     {
+      "id": 92,
+      "type": "Enemy_Bee"
+    },
+    {
       "id": 96,
       "type": "Decoration"
     },

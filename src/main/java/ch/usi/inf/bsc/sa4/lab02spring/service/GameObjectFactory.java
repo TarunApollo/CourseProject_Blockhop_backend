@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
 import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
@@ -25,12 +26,14 @@ public class GameObjectFactory {
     private final TileSetService tileSetService;
 
     /// Constructs a factory backed by the given tileset service.
+    /// 
     /// @param tileSetService the service used to map gids to type strings
     public GameObjectFactory(final TileSetService tileSetService) {
         this.tileSetService = tileSetService;
     }
 
     /// Builds a GameObject without content (defaults to NoContent).
+    /// 
     /// @param gid the tile gid to instantiate
     /// @param pos the position of the new game object
     /// @return the constructed GameObject
@@ -38,10 +41,13 @@ public class GameObjectFactory {
         return createGameObject(gid, pos, new Content.NoContent());
     }
 
-    /// Builds a GameObject for the given gid, dispatching on the resolved tile type.
-    /// @param gid the tile gid to instantiate
-    /// @param pos the position of the new game object
-    /// @param content the optional content carried by the new game object (used by Box)
+    /// Builds a GameObject for the given gid, dispatching on the resolved tile
+    /// type.
+    /// 
+    /// @param gid     the tile gid to instantiate
+    /// @param pos     the position of the new game object
+    /// @param content the optional content carried by the new game object (used by
+    ///                Box)
     /// @return the constructed GameObject
     /// @throws UnknownObjectTypeException if the tile type is not registered
     public GameObject createGameObject(final int gid, final Position pos, final Content content) {
@@ -49,8 +55,9 @@ public class GameObjectFactory {
         return ObjectTypeEnum.fromValue(type).createGameObject(gid, pos, content);
     }
 
-    /// Maps each tile-type string to a constructor for the corresponding GameObject.
-    /// New tile types must be registered here so the factory can dispatch them.
+    /// Maps each tile-type string to a constructor for the corresponding
+    /// GameObject. New tile types must be registered here so the factory can
+    /// dispatch them.
     /* package */ enum ObjectTypeEnum {
 
         DECORATION("Decoration") {
@@ -71,6 +78,13 @@ public class GameObjectFactory {
             @Override
             public GameObject createGameObject(final int gid, final Position pos, final Content content) {
                 return new Snail(gid, pos);
+            }
+        },
+
+        ENEMY_BEE("Enemy_Bee") {
+            @Override
+            public GameObject createGameObject(final int gid, final Position pos, final Content content) {
+                return new Bee(gid, pos);
             }
         },
 
@@ -130,20 +144,23 @@ public class GameObjectFactory {
             this.jsonValue = jsonValue;
         }
 
-        /// JSON value used to serialize this enum (matches the editor's tile type string).
+        /// JSON value used to serialize this enum (matches the editor's tile
+        /// type string).
         @JsonValue
         public String value() {
             return jsonValue;
         }
 
         /// Constructs the GameObject instance corresponding to this tile type.
-        /// @param gid the tile gid
-        /// @param pos the position of the new game object
+        /// 
+        /// @param gid     the tile gid
+        /// @param pos     the position of the new game object
         /// @param content the content carried by the new game object (used by Box)
         /// @return the constructed GameObject
         public abstract GameObject createGameObject(int gid, Position pos, Content content);
 
         /// Resolves the enum constant for the given JSON tile-type string.
+        /// 
         /// @param value the JSON tile-type string
         /// @return the corresponding enum constant
         /// @throws UnknownObjectTypeException if no enum constant matches the value

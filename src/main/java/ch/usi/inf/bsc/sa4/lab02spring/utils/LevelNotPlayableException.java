@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Level is not published and cannot be played")
 public class LevelNotPlayableException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
     /// Creates a new exception for an unpublished and unplayable level.
     public LevelNotPlayableException() {
         super("Level is not published");

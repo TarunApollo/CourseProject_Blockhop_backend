@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 ///
 @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Can't modify an already published level")
 public class LevelPublishedException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
     ///
     /// Creates a new exception with the provided message.

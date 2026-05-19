@@ -2,7 +2,8 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,7 +21,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.WorldLayerResponseDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.service.EditorService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AuthUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -55,7 +56,7 @@ public class EditorController {
     /// - All positions must be within level bounds
     /// - All GIDs must be valid ground tile GIDs
     ///
-    /// @param authentication authentication token for the current user
+    /// @param user           the authenticated OAuth2 user
     /// @param levelId        id of the level to edit
     /// @param dto            contains the list of tiles (position + gid)
     ///                       representing the new world layer state
@@ -66,10 +67,10 @@ public class EditorController {
     ///                                  is invalid
     @PutMapping("/{levelId}/world-layer")
     public ResponseEntity<WorldLayerResponseDTO> replaceWorldLayer(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User user,
             @PathVariable final String levelId,
             @RequestBody final UpdateWorldLayerDTO dto) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
         final Level updated = editorService.replaceWorldLayer(userId, levelId, dto);
         return ResponseEntity.ok(new WorldLayerResponseDTO(updated.getId(), updated.getWorldLayer()));
     }
@@ -79,7 +80,7 @@ public class EditorController {
     /// unpublished levels; positions must be in-bounds, GIDs valid, and unique.
     /// The optional `content` field on each object is only used by boxes.
     ///
-    /// @param authentication authentication token for the current user
+    /// @param user           the authenticated OAuth2 user
     /// @param levelId        id of the level to edit
     /// @param dto            list of objects with position, gid, and content
     /// @return 200 OK with the updated object layer
@@ -90,10 +91,10 @@ public class EditorController {
     ///                                  duplicate positions
     @PutMapping("/{levelId}/object-layer")
     public ResponseEntity<ObjectLayerResponseDTO> replaceObjectLayer(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User user,
             @PathVariable final String levelId,
             @RequestBody final UpdateObjectLayerDTO dto) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
         final Level updated = editorService.replaceObjectLayer(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
@@ -106,7 +107,7 @@ public class EditorController {
     /// - Empty box content: {"type": "box", "position": {"x": 1, "y": 2}, "content":
     ///   {}}
     ///
-    /// @param authentication authentication token for the current user
+    /// @param user           the authenticated OAuth2 user
     /// @param levelId        id of the level containing the object
     /// @param dto            polymorphic DTO with position and type-specific
     ///                       properties
@@ -117,10 +118,10 @@ public class EditorController {
     /// @throws IllegalArgumentException if property doesn't match object type
     @PatchMapping("/{levelId}/object-layer/properties")
     public ResponseEntity<ObjectLayerResponseDTO> updateObjectProperties(
-            final Authentication authentication,
+            @AuthenticationPrincipal final OAuth2User user,
             @PathVariable final String levelId,
             @RequestBody final UpdateObjectPropertiesDTO dto) {
-        final String userId = AuthUtils.getUserIdFromAuth(authentication);
+        final String userId = OAuth2UserUtils.getRequiredAttribute(user, "sub");
         final Level updated = editorService.updateObjectProperties(userId, levelId, dto);
         return ResponseEntity.ok(new ObjectLayerResponseDTO(updated.getId(), updated.getObjectLayer()));
     }
