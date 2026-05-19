@@ -15,12 +15,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayRequest;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.AntiCheatSuspicionUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.InputLogFingerprintUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat.AntiCheatSuspicionUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat.InputLogFingerprintUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.converter.LayerToTiledMapConverter;
 
 import org.springframework.http.HttpStatus;

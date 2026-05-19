@@ -1,4 +1,4 @@
-package ch.usi.inf.bsc.sa4.lab02spring.utils;
+package ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat;
 
 import java.util.Optional;
 
