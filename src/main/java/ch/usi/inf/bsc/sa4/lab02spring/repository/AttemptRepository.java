@@ -1,23 +1,22 @@
 package ch.usi.inf.bsc.sa4.lab02spring.repository;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-
-import java.time.ZonedDateTime;
-
-import java.util.List;
-import java.util.Optional;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
 /// Repository for storing and querying `Attempt` documents.
 ///
 /// In addition to standard MongoDB repository operations, this repository also
 /// exposes custom attempt statistics queries.
 @Repository
-public interface AttemptRepository extends MongoRepository<Attempt, String>,AttemptStatisticsRepository {
+public interface AttemptRepository extends MongoRepository<Attempt, String>, AttemptStatisticsRepository {
 
     /// Returns all attempts created by the given user.
     /// @param user the user whose attempts should be returned
@@ -34,6 +33,10 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
 
     /// Returns the attempt with the given id if it belongs to the given user.
     Optional<Attempt> findByIdAndUser(String id, User user);
+
+    /// Deletes all attempts recorded for the given level.
+    /// @param level the level whose attempts should be removed
+    void deleteByLevel(Level level);
 
     /// Counts all attempts recorded for the given level.
     /// @param level the level to count attempts for

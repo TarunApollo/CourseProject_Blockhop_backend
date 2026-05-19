@@ -34,7 +34,7 @@ public class EditorService {
     private final TileSetService tileSetService;
     /// Builds domain objects for edited object-layer entries.
     private final GameObjectFactory gameObjectFactory;
-    /// Recomputes publish eligibility after edits.
+    /// Resets publication state and public engagement after edits.
     private final LevelPublishService levelPublishService;
 
     /// Creates an editor service with its required collaborators.
@@ -42,7 +42,7 @@ public class EditorService {
     /// @param levelRepository persists edited levels
     /// @param tileSetService validates ground and object gids
     /// @param gameObjectFactory creates game objects from editor payloads
-    /// @param levelPublishService updates publish eligibility after edits
+    /// @param levelPublishService resets public publication state after edits
     @Autowired
     public EditorService(
             final LevelRepository levelRepository,
@@ -88,7 +88,7 @@ public class EditorService {
 
         level.setWorldLayer(newWorldLayer);
 
-        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.resetLevelAfterEdit(level, userId);
         return levelRepository.save(level);
     }
 
@@ -135,7 +135,7 @@ public class EditorService {
         level.ensureValidObjectLayer(newObjectLayer);
         level.setObjectLayer(newObjectLayer);
 
-        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.resetLevelAfterEdit(level, userId);
         return levelRepository.save(level);
     }
 
@@ -163,7 +163,7 @@ public class EditorService {
                 "Unsupported object type for property update: " + dto.getClass().getSimpleName());
         }
 
-        this.levelPublishService.invalidateLevelPublishEligible(level, userId);
+        this.levelPublishService.resetLevelAfterEdit(level, userId);
         return levelRepository.save(level);
     }
 }

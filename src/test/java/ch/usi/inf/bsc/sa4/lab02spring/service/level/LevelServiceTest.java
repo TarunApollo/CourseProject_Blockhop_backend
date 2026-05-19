@@ -105,6 +105,9 @@ class LevelServiceTests {
     /// Mocked user service for resolving the level creator.
     @MockitoBean
     private UserService userService;
+    /// Mocked publish service for edit-side public state resets.
+    @MockitoBean
+    private LevelPublishService levelPublishService;
 
     /// Shared owner user fixture.
     private User owner;
@@ -481,12 +484,17 @@ class LevelServiceTests {
             level.validatePublishEligible(OWNER_ID); // start eligible
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
             Mockito.when(levelRepository.save(level)).thenReturn(level);
+            Mockito.doAnswer(invocation -> {
+                level.invalidatePublishEligible(OWNER_ID);
+                return null;
+            }).when(levelPublishService).resetLevelAfterEdit(level, OWNER_ID);
 
             service.updateLevelProperties(owner, LEVEL_ID,
                     new UpdateLevelDTO(Optional.of(INVALIDATING_TITLE), Optional.empty(), Optional.empty()));
 
             Assertions.assertFalse(level.isPublishEligible());
 
+            Mockito.verify(levelPublishService).resetLevelAfterEdit(level, OWNER_ID);
             Mockito.verify(levelRepository).save(level);
         }
 
