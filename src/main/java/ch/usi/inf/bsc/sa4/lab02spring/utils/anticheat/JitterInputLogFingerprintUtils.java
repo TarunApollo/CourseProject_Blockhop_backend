@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /// Builds input hash text after removing small input noise.
@@ -17,7 +18,7 @@ final class JitterInputLogFingerprintUtils {
     private JitterInputLogFingerprintUtils() {
     }
 
-    static JitterCanonical canonical(final List<InputFrameDTO> inputLog) {
+    /* package */ static JitterCanonical canonical(final List<InputFrameDTO> inputLog) {
         final List<InputRun> runs = jitterInputRuns(inputLog);
         final List<InputRun> withoutFakeJumps = removeFakeJumpOnlyRuns(runs);
         final List<InputRun> withoutXNoise = removeHorizontalCancellationNoise(withoutFakeJumps);
@@ -34,7 +35,7 @@ final class JitterInputLogFingerprintUtils {
         return new JitterCanonical(canonical.toString(), normalizedRuns.size());
     }
 
-    private static List<InputRun> jitterInputRuns(final List<InputFrameDTO> inputLog) {
+    private static List<InputRun> jitterInputRuns(final Iterable<InputFrameDTO> inputLog) {
         final List<InputRun> runs = new ArrayList<>();
         InputState currentRunState = null;
         int runStartFrame = 0;
@@ -96,8 +97,8 @@ final class JitterInputLogFingerprintUtils {
         return List.copyOf(runs);
     }
 
-    private static List<InputRun> removeFakeJumpOnlyRuns(final List<InputRun> runs) {
-        final List<InputRun> normalized = new ArrayList<>();
+    private static List<InputRun> removeFakeJumpOnlyRuns(final Collection<InputRun> runs) {
+        final List<InputRun> normalized = new ArrayList<>(runs.size());
         int fakeJumpFrames = 0;
 
         for (final InputRun run : runs) {
@@ -112,7 +113,7 @@ final class JitterInputLogFingerprintUtils {
         return List.copyOf(normalized);
     }
 
-    private static List<InputRun> removeHorizontalCancellationNoise(final List<InputRun> runs) {
+    private static List<InputRun> removeHorizontalCancellationNoise(final Iterable<InputRun> runs) {
         final List<InputRun> normalized = new ArrayList<>();
         int noiseFrames = 0;
 
@@ -166,7 +167,7 @@ final class JitterInputLogFingerprintUtils {
                 && before.state().oppositeHorizontalDirection(interruption.state());
     }
 
-    private static List<InputRun> collapseAdjacentEqualRuns(final List<InputRun> runs) {
+    private static List<InputRun> collapseAdjacentEqualRuns(final Iterable<InputRun> runs) {
         final List<InputRun> collapsed = new ArrayList<>();
 
         for (final InputRun run : runs) {
@@ -237,6 +238,6 @@ final class JitterInputLogFingerprintUtils {
     }
 
     /// Jitter hash text and number of input changes.
-    record JitterCanonical(String canonical, int changeCount) {
+    /* package */ record JitterCanonical(String canonical, int changeCount) {
     }
 }
