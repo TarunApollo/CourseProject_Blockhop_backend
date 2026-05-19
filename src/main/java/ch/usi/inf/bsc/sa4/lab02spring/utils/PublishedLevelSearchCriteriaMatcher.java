@@ -43,11 +43,9 @@ public final class PublishedLevelSearchCriteriaMatcher {
     private static boolean matchesDescription(
             final String description,
             final @Nullable String query) {
-        if (query == null || query.isBlank()) {
-            return true;
-        }
-        final String haystack = description.toLowerCase(Locale.ROOT);
-        return Arrays.stream(query.strip().toLowerCase(Locale.ROOT).split("\\s+"))
-                .allMatch(haystack::contains);
+        return query == null
+                || query.isBlank()
+                || Arrays.stream(query.strip().toLowerCase(Locale.ROOT).split("\\s+"))
+                .allMatch(description.toLowerCase(Locale.ROOT)::contains);
     }
 }
