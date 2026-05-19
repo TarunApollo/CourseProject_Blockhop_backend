@@ -276,7 +276,7 @@ public class ReplayController {
         if ("game_over".equals(result.reason()) && playerCompleted) {
             return AttemptVerificationStatus.CHEATED;
         }
-        /// +- frames should absorb clock jitter
+        // +- frames should absorb clock jitter
         if ("level_complete".equals(result.reason()) && Math.abs(result.frames() - totalFrames) > 5) {
             return AttemptVerificationStatus.CHEATED;
         }

@@ -358,24 +358,24 @@ public class InputLogFingerprintService {
     }
 
     /// Non-neutral input transition used by fuzzy duplicate matching.
+    /// frame: Frame number where the non-neutral state was observed.
+    /// state: Canonical representation of the observed input state.
     public record InputChange(
-            /// Frame number where the non-neutral state was observed.
             int frame,
-            /// Canonical representation of the observed input state.
             String state) {
     }
 
     /// Consecutive run of equal non-neutral input states.
+    /// state: Input state repeated by this run.
+    /// startFrame: First frame belonging to this run.
+    /// length: Number of non-neutral frames in this run.
+    /// neutralAfter: Neutral frames seen immediately after this run.
+    /// strippedBefore: Frames stripped before this run during jitter normalization.
     private record InputRun(
-            /// Input state repeated by this run.
             InputState state,
-            /// First frame belonging to this run.
             int startFrame,
-            /// Number of non-neutral frames in this run.
             int length,
-            /// Neutral frames seen immediately after this run.
             int neutralAfter,
-            /// Frames stripped before this run during jitter normalization.
             int strippedBefore) {
 
         private int normalizedCount() {
@@ -410,14 +410,14 @@ public class InputLogFingerprintService {
     }
 
     /// Aggregates all inputs observed inside one frame bucket.
+    /// left: Whether a left input occurred in the bucket.
+    /// right: Whether a right input occurred in the bucket.
+    /// jump: Whether a jump input occurred in the bucket.
+    /// run: Whether a run input occurred in the bucket.
     private static final class BucketInputState {
-        /// Whether a left input occurred in the bucket.
         private boolean left;
-        /// Whether a right input occurred in the bucket.
         private boolean right;
-        /// Whether a jump input occurred in the bucket.
         private boolean jump;
-        /// Whether a run input occurred in the bucket.
         private boolean run;
 
         private void include(final InputState input) {
