@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /// Unit tests for [PublishedLevelSearchCriteriaMatcher].
 @DisplayName("The PublishedLevelSearchCriteriaMatcher")
-/* package */ final class PublishedLevelSearchCriteriaMatcherTests {
+/* package */ class PublishedLevelSearchCriteriaMatcherTests {
     /// Representative summary used by the matcher tests.
     private static final LevelSummaryDto SUMMARY = new LevelSummaryDto(
             "level-1",
@@ -27,9 +27,6 @@ import org.junit.jupiter.api.Test;
             2,
             Map.of(),
             Map.of());
-
-    private PublishedLevelSearchCriteriaMatcherTests() {
-    }
 
     /// Null criteria should not filter out any summary.
     @Test
