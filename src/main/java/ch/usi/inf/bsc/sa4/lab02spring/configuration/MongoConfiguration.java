@@ -97,6 +97,18 @@ public class MongoConfiguration {
         }
     }
 
+    /// Converts a BSON Date read from MongoDB to a [ZonedDateTime] in UTC.
+    ///
+    @SuppressWarnings("java:S2143")
+    @ReadingConverter
+    public static class DateToZonedDateTimeConverter
+            implements Converter<java.util.Date, ZonedDateTime> {
+        @Override
+        public ZonedDateTime convert(final java.util.Date date) {
+            return date.toInstant().atZone(ZoneOffset.UTC);
+        }
+    }
+
     /// Configures the custom conversions for MongoDB.
     ///
     /// @return the custom conversions
@@ -107,9 +119,7 @@ public class MongoConfiguration {
         custom.add(new StringToPositionConverter());
         custom.add(new ZonedDateTimeToInstantConverter());
         custom.add(new InstantToZonedDateTimeConverter());
-        return MongoCustomConversions.create(adapter -> {
-            adapter.useNativeDriverJavaTimeCodecs();
-            adapter.registerConverters(custom);
-        });
+        custom.add(new DateToZonedDateTimeConverter());
+        return new MongoCustomConversions(custom);
     }
 }
