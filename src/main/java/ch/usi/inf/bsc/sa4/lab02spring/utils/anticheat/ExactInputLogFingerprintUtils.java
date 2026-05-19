@@ -2,8 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 
-import java.util.List;
-
 /// Builds the exact input hash text.
 final class ExactInputLogFingerprintUtils {
 

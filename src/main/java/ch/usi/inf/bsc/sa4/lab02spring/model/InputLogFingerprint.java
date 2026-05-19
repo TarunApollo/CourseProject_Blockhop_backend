@@ -5,8 +5,8 @@ import java.util.List;
 /// Fingerprint data derived from a submitted replay input log.
 ///
 /// @param exactHash hash of the exact input sequence
-/// @param jitterInputHash hash of the jitter-normalized input sequence
-/// @param jitterInputChangeCount number of changes in the jitter-normalized sequence
+/// @param jitterInputHash hash of the jitter input sequence
+/// @param jitterInputChangeCount changes in the jitter sequence
 /// @param changeBucketHashes bucketed hashes used for fuzzy matching
 /// @param inputFrameCount number of frames in the input log
 /// @param inputChangeCount number of non-neutral input changes
