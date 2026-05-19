@@ -6,49 +6,45 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
 
-/// Classifies input fingerprint matches into anti-cheat verification statuses.
+/// Turns input matches into anti-cheat statuses.
 public final class AntiCheatSuspicionUtils {
 
-    /// Highest suspicion score assigned by the classifier.
+    /// Highest suspicion score.
     private static final double MAX_SUSPICION = 1.0;
-    /// Suspicion score used when no duplicate evidence exists.
+    /// Score when there is no duplicate.
     private static final double NO_SUSPICION = 0.0;
-    /// Minimum score that marks an attempt as cheated.
+    /// Minimum score for cheated.
     private static final double CHEAT_THRESHOLD = 0.90;
-    /// Minimum score that marks an attempt as suspicious.
+    /// Minimum score for suspicious.
     private static final double SUSP_THRESHOLD = 0.70;
-    /// Score assigned to an exact duplicate fingerprint match.
+    /// Score for the same exact input.
     private static final double EXACT_DUP_SCORE = 1.0;
-    /// Score assigned to a fuzzy duplicate fingerprint match.
+    /// Score for a close bucket match.
     private static final double FUZZY_DUP_SCORE = 0.80;
-    /// Score assigned to a jitter-normalized duplicate fingerprint match.
+    /// Score for the same jitter-cleaned input.
     private static final double JITTER_DUP_SCORE = 1.0;
-    /// Input-change count that reaches full complexity for exact/fuzzy checks.
+    /// Input changes needed for full exact/bucket score.
     private static final double MAX_CHANGE_CPLX = 50.0;
-    /// Input-change count that reaches full complexity for jitter checks.
+    /// Input changes needed for full jitter score.
     private static final double MAX_JITTER_CPLX = 10.0;
-    /// Suspicion added for each previous suspicious attempt.
+    /// Score added for each past suspicious attempt.
     private static final double PREV_SUSP_SCORE = 0.05;
-    /// Suspicion added for each previous cheated attempt.
+    /// Score added for each past cheated attempt.
     private static final double PREV_CHEAT_SCORE = 0.20;
 
-    /// Prevents construction of this utility class.
+    /// Do not create this helper.
     private AntiCheatSuspicionUtils() {
     }
 
-    /// Classifies an attempt from duplicate evidence and recent player history.
-    /// 
-    /// @param fingerprint                   the fingerprint generated for the
-    ///                                      current attempt
-    /// @param exactDuplicate                an existing attempt with the same exact
-    ///                                      fingerprint
-    /// @param fuzzyDuplicate                an existing attempt with a similar fuzzy
-    ///                                      fingerprint
-    /// @param jitterDuplicate               an existing jitter-normalized duplicate
-    ///                                      attempt
-    /// @param prevSuspLevels suspicious recent attempts to count
-    /// @param prevCheatLevels cheated recent attempts to count
-    /// @return the anti-cheat verification status for the attempt
+    /// Picks a status from duplicate matches and player history.
+    ///
+    /// @param fingerprint input hashes for this attempt
+    /// @param exactDuplicate another attempt with the same exact input
+    /// @param fuzzyDuplicate another attempt with a close bucket match
+    /// @param jitterDuplicate another attempt with the same jitter-cleaned input
+    /// @param prevSuspLevels recent suspicious attempts by this player
+    /// @param prevCheatLevels recent cheated attempts by this player
+    /// @return status for the attempt
     public static AttemptVerificationStatus classifyFingerprintSuspicion(
             final InputLogFingerprint fingerprint,
             final Optional<Attempt> exactDuplicate,

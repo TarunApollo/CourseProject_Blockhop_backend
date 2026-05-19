@@ -14,50 +14,48 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-/// Service that executes a frontend replay script to verify submitted attempts.
+/// Runs the replay script to check submitted attempts.
 @Service
 public class ReplayService {
 
-    /// Maximum time allowed for a replay process before it is treated as failed.
+    /// Max seconds before replay fails.
     private static final long REPLAY_TIMEOUT_SECONDS = 30;
 
-    /// Environment variable name for the frontend directory path.
+    /// Env var for the frontend folder.
     private static final String FRONTEND_DIR_ENV = "FRONTEND_DIR";
 
-    /// Mapper used to parse the replay process result.
+    /// Reads replay JSON output.
     private final ObjectMapper objectMapper;
 
-    /// Spring environment for resolving configuration properties.
+    /// Reads app settings.
     private final Environment environment;
 
-    /// Cached path to the `npx` executable; an empty value means unresolved.
+    /// Cached `npx` path. Empty means not found.
     @Nullable
     private String npxPath;
 
-    /// Cached absolute path to the replay script; an empty value means unresolved.
+    /// Cached replay script path. Empty means not found.
     @Nullable
     private String replayScriptPath;
 
-    /// Cached frontend project directory used as the replay process
-    /// working directory.
+    /// Cached frontend folder for running replay.
     @Nullable
     private Path frontendDirectory;
 
-    /// Constructs the replay service with the JSON mapper used for replay output.
+    /// Creates the replay service.
     ///
-    /// @param objectMapper mapper used to deserialize replay process output
-    /// @param environment Spring environment for configuration resolution
+    /// @param objectMapper reads replay JSON output
+    /// @param environment reads app settings
     public ReplayService(final ObjectMapper objectMapper, final Environment environment) {
         this.objectMapper = objectMapper;
         this.environment = environment;
     }
 
-    /// Runs the replay script for a level and input log and returns the
-    /// verification result.
+    /// Runs replay for one attempt.
     ///
-    /// @param replayRequest wrapper object for the request
+    /// @param replayRequest replay input data
     ///
-    /// @return replay validity, reason, and final frame reported by the script
+    /// @return whether replay passed, why, and the final frame
     public ReplayResultDTO replay(final ReplayRequest replayRequest) {
         final String npx = resolveNpx();
         final String script = resolveReplayScript();
@@ -170,14 +168,14 @@ public class ReplayService {
             try {
                 Files.deleteIfExists(file);
             } catch (final java.io.IOException ignored) {
-                // Temporary replay files are best-effort cleanup only.
+                // Try cleanup, but do not fail replay for it.
             }
         }
     }
 
-    /// Resolves and caches the `npx` executable path from the local environment.
+    /// Finds and remembers `npx`.
     ///
-    /// @return the executable path, or null when `npx` is unavailable
+    /// @return `npx` path, or null if it is missing
     @Nullable
     private synchronized String resolveNpx() {
         String resolved = null;
@@ -216,9 +214,9 @@ public class ReplayService {
         return resolvedPath;
     }
 
-    /// Resolves and caches the TypeScript replay script path.
+    /// Finds and remembers the replay script.
     ///
-    /// @return the replay script path, or null when the script cannot be found
+    /// @return script path, or null if it is missing
     @Nullable
     private synchronized String resolveReplayScript() {
         String resolved = null;
@@ -235,9 +233,9 @@ public class ReplayService {
         return resolved;
     }
 
-    /// Resolves and caches the frontend directory used to run the replay script.
+    /// Finds and remembers the frontend folder.
     ///
-    /// @return the best available frontend directory path
+    /// @return frontend folder path
     private synchronized Path resolveFrontendDirectory() {
         Path resolved = frontendDirectory;
 
@@ -255,11 +253,11 @@ public class ReplayService {
         return resolved;
     }
 
-    /// Raw JSON payload emitted by the replay script.
+    /// JSON line printed by the replay script.
     ///
-    /// @param valid  whether the replay completed as expected
-    /// @param reason replay completion or error reason
-    /// @param frame  frame count reported by the replay script
+    /// @param valid true if replay passed
+    /// @param reason replay result reason
+    /// @param frame frame count from replay
     private record ReplayProcessResult(boolean valid, String reason, int frame) {
     }
 }
