@@ -9,7 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatLog;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;

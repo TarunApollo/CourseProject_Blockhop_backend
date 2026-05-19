@@ -1,4 +1,4 @@
-package ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat;
+package ch.usi.inf.bsc.sa4.lab02spring.service.anticheat;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
