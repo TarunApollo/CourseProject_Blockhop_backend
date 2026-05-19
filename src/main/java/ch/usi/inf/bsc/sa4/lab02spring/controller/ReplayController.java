@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.ZonedDateTime;
@@ -153,7 +155,7 @@ public class ReplayController {
         try {
             levelJson = objectMapper.writeValueAsString(tiledMap);
             inputJson = serializeInputLog(request);
-        } catch (final Exception e) {
+        } catch (final JacksonException e) {
             AntiCheatLog.replayError(userId, request.levelId(), String.valueOf(e.getMessage()));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -276,7 +278,7 @@ public class ReplayController {
     ///
     /// @param request submitted replay request
     /// @return serialized replay frame list
-    private String serializeInputLog(final ReplayRequestDTO request){
+    private String serializeInputLog(final ReplayRequestDTO request) throws JacksonException{
         final List<SerializedReplayFrame> frames = request.inputLog().stream()
                 .map(frame -> new SerializedReplayFrame(
                         frame.frame(),

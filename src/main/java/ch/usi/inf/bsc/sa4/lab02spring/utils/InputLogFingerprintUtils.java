@@ -117,7 +117,7 @@ public final class InputLogFingerprintUtils {
     }
 
     private static List<InputRun> jitterInputRuns(final List<InputFrameDTO> inputLog) {
-        final ArrayList<InputRun> runs = new ArrayList<>();
+        final List<InputRun> runs = new ArrayList<>();
         InputState currentRunState = null;
         int runStartFrame = 0;
         int currentRunLength = 0;
@@ -188,7 +188,7 @@ public final class InputLogFingerprintUtils {
     }
 
     private static List<InputRun> removeFakeJumpOnlyRuns(final List<InputRun> runs) {
-        final ArrayList<InputRun> normalized = new ArrayList<>();
+        final List<InputRun> normalized = new ArrayList<>();
         int fakeJumpFrames = 0;
 
         for (final InputRun run : runs) {
@@ -204,7 +204,7 @@ public final class InputLogFingerprintUtils {
     }
 
     private static List<InputRun> removeHorizontalCancellationNoise(final List<InputRun> runs) {
-        final ArrayList<InputRun> normalized = new ArrayList<>();
+        final List<InputRun> normalized = new ArrayList<>();
         int noiseFrames = 0;
 
         for (final InputRun run : runs) {
@@ -241,7 +241,7 @@ public final class InputLogFingerprintUtils {
         return List.copyOf(normalized);
     }
 
-    private static void addOrMergeAdjacentEqualRun(final ArrayList<InputRun> runs, final InputRun run) {
+    private static void addOrMergeAdjacentEqualRun(final List<InputRun> runs, final InputRun run) {
         final int lastIndex = runs.size() - 1;
         if (lastIndex >= 0 && runs.get(lastIndex).state().equals(run.state())) {
             runs.set(lastIndex, mergeRuns(runs.get(lastIndex), run));
@@ -312,7 +312,7 @@ public final class InputLogFingerprintUtils {
     }
 
     private static List<InputRun> collapseAdjacentEqualRuns(final List<InputRun> runs) {
-        final ArrayList<InputRun> collapsed = new ArrayList<>();
+        final List<InputRun> collapsed = new ArrayList<>();
 
         for (final InputRun run : runs) {
             final int lastIndex = collapsed.size() - 1;
@@ -331,7 +331,7 @@ public final class InputLogFingerprintUtils {
     /// @return the ordered list of non-neutral state transitions
     private static List<InputChange> nonNeutralInputChanges(final List<InputFrameDTO> inputLog) {
         InputState previous = null;
-        final ArrayList<InputChange> changes = new ArrayList<>();
+        final List<InputChange> changes = new ArrayList<>();
 
         for (final InputFrameDTO frame : inputLog) {
             final InputState current = from(frame);

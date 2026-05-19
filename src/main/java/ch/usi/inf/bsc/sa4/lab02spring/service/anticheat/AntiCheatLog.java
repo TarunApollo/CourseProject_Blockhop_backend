@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /// Centralized logger for anti-cheat replay and verification events.
+@SuppressWarnings("PMD:TooManyStaticImports")
 public final class AntiCheatLog {
 
     /// Logger used for all anti-cheat messages.

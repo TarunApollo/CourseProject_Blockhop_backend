@@ -42,7 +42,7 @@ import java.util.Optional;
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("The Level Play Controller")
-@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
+@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports", "PMD.TooManyStaticImports" })
 class LevelPlayControllerTests {
 
         /// A level ID used across tests.

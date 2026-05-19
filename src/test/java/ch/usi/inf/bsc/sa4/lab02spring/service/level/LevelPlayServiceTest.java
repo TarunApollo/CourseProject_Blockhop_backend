@@ -43,7 +43,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /// Unit tests for [LevelPlayService].
 @SpringBootTest
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.TooManyStaticImports" })
 @DisplayName("The Level Play Service")
 class LevelPlayServiceTest {
 
