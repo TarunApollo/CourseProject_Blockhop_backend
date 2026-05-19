@@ -11,11 +11,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatLog;
-import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.AntiCheatSuspicionService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.InputLogFingerprintService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat.ReplayService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatSuspicionService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.InputLogFingerprintService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayRequest;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -72,24 +73,25 @@ public class ReplayController {
     /// Service that classifies suspicious fingerprint reuse patterns.
     private final AntiCheatSuspicionService antiCheatSuspicionService;
 
-    /// Constructs the replay controller with its replay and persistence dependencies.
+    /// Constructs the replay controller with its replay and persistence
+    /// dependencies.
     ///
-    /// @param replayService service that executes replay simulations
-    /// @param attemptService service that reads and updates attempts
-    /// @param levelRepository repository for loading levels
-    /// @param tileSetService service that provides tileset data
-    /// @param userService service that loads users
-    /// @param objectMapper serializer used for replay payloads
+    /// @param replayService              service that executes replay simulations
+    /// @param attemptService             service that reads and updates attempts
+    /// @param levelRepository            repository for loading levels
+    /// @param tileSetService             service that provides tileset data
+    /// @param userService                service that loads users
+    /// @param objectMapper               serializer used for replay payloads
     /// @param inputLogFingerprintService service that fingerprints player input logs
-    /// @param antiCheatSuspicionService service that classifies suspicious attempts
+    /// @param antiCheatSuspicionService  service that classifies suspicious attempts
     public ReplayController(final ReplayService replayService,
-                            final AttemptService attemptService,
-                            final LevelRepository levelRepository,
-                            final TileSetService tileSetService,
-                            final UserService userService,
-                            final ObjectMapper objectMapper,
-                            final InputLogFingerprintService inputLogFingerprintService,
-                            final AntiCheatSuspicionService antiCheatSuspicionService) {
+            final AttemptService attemptService,
+            final LevelRepository levelRepository,
+            final TileSetService tileSetService,
+            final UserService userService,
+            final ObjectMapper objectMapper,
+            final InputLogFingerprintService inputLogFingerprintService,
+            final AntiCheatSuspicionService antiCheatSuspicionService) {
         this.replayService = replayService;
         this.attemptService = attemptService;
         this.levelRepository = levelRepository;
@@ -103,7 +105,7 @@ public class ReplayController {
     /// Validates that a player can start a replay-tracked run on a level.
     ///
     /// @param oauth2User authenticated OAuth2 user principal
-    /// @param request start request containing the level id
+    /// @param request    start request containing the level id
     /// @return an empty success response when the level can be played
     @PostMapping("/start")
     public ResponseEntity<Void> startRun(
@@ -124,7 +126,8 @@ public class ReplayController {
     /// Submits a completed run for replay execution and anti-cheat classification.
     ///
     /// @param oauth2User authenticated OAuth2 user principal
-    /// @param request replay request containing attempt, level, frame, and input data
+    /// @param request    replay request containing attempt, level, frame, and input
+    ///                   data
     /// @return the replay result produced by the anti-cheat simulation
     @PostMapping("/submit")
     public ResponseEntity<ReplayResultDTO> submitRun(
@@ -167,15 +170,22 @@ public class ReplayController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
-        final ReplayResultDTO result = replayService.replay(
-                userId, request.levelId(), levelJson, inputJson);
+        final ReplayRequest replayRequest = new ReplayRequest(
+                userId,
+                request.levelId(),
+                levelJson,
+                inputJson);
+        final ReplayResultDTO result = replayService.replay(replayRequest);
 
         AttemptVerificationStatus status = toAttemptVerificationStatus(result, playerCompleted, request.totalFrames());
 
-        if(status == AttemptVerificationStatus.LEGIT){
-            final Optional<Attempt> exactDuplicate = attemptService.findExactFingerprintDuplicate(level, attemptId, fingerprint);
-            final Optional<Attempt> fuzzyDuplicate = attemptService.findFuzzyFingerprintDuplicate(level, attemptId, fingerprint);
-            final Optional<Attempt> jitterDuplicate = attemptService.findJitterFingerprintDuplicate(level, attemptId, fingerprint);
+        if (status == AttemptVerificationStatus.LEGIT) {
+            final Optional<Attempt> exactDuplicate = attemptService.findExactFingerprintDuplicate(level, attemptId,
+                    fingerprint);
+            final Optional<Attempt> fuzzyDuplicate = attemptService.findFuzzyFingerprintDuplicate(level, attemptId,
+                    fingerprint);
+            final Optional<Attempt> jitterDuplicate = attemptService.findJitterFingerprintDuplicate(level, attemptId,
+                    fingerprint);
             final ZonedDateTime recentAttemptWindowStart = ZonedDateTime.now().minusDays(RECENT_ATTEMPT_WINDOW_DAYS);
             final long previousSuspiciousAttempts = attemptService.countAttemptsByLevelUserStatusAfter(
                     level,
@@ -200,14 +210,17 @@ public class ReplayController {
 
         switch (status) {
             case LEGIT ->
-                AntiCheatLog.replayValid(userId, request.levelId(), result.reason() + " @ " + result.frames() + " frames");
+                AntiCheatLog.replayValid(userId, request.levelId(),
+                        result.reason() + " @ " + result.frames() + " frames");
             case SUSPICIOUS ->
                 AntiCheatLog.replaySuspicious(userId, request.levelId(), "InputLogFingerprint was found suspicious.");
             case CHEATED ->
-                AntiCheatLog.replayMismatch(userId, request.levelId(), mismatchedReason(result, playerCompleted, request.totalFrames()));
+                AntiCheatLog.replayMismatch(userId, request.levelId(),
+                        mismatchedReason(result, playerCompleted, request.totalFrames()));
             case REPLAY_ERROR ->
                 AntiCheatLog.replayInvalid(userId, request.levelId(), result.reason());
-            default -> {}
+            default -> {
+            }
         }
 
         attemptService.updateAntiCheatStatus(
@@ -219,15 +232,16 @@ public class ReplayController {
         return ResponseEntity.ok(result);
     }
 
-    /// Builds the reason stored when the browser-reported attempt and replay result disagree.
+    /// Builds the reason stored when the browser-reported attempt and replay result
+    /// disagree.
     ///
-    /// @param result replay simulation result
+    /// @param result          replay simulation result
     /// @param playerCompleted whether the original attempt completed the level
-    /// @param totalFrames browser-reported input frame count
+    /// @param totalFrames     browser-reported input frame count
     /// @return a human-readable mismatch reason
     private static String mismatchedReason(final ReplayResultDTO result,
-                                            final boolean playerCompleted,
-                                            final int totalFrames) {
+            final boolean playerCompleted,
+            final int totalFrames) {
         if (!playerCompleted) {
             return "player did not complete level";
         }
@@ -238,23 +252,22 @@ public class ReplayController {
         return "player completed but replay ended in " + result.reason();
     }
 
-
     /// Maps a replay result to an attempt verification status.
     ///
-    /// The framecount comparison between a valid `level_complete` replay and
-    /// the reported total frame count catches framerate hack cheats such as
-    /// `setFps` or `timeScale` changes. With a reduced browser time scale, each
-    /// physics step moves the player less, requiring more input log entries to
-    /// reach the door; the headless replay processes entries at time scale 1.0
-    /// and therefore finishes earlier.
+    /// The framecount comparison between a valid `level_complete` replay and the
+    /// reported total frame count catches framerate hack cheats such as `setFps` or
+    /// `timeScale` changes. With a reduced browser time scale, each physics step
+    /// moves the player less, requiring more input log entries to reach the door;
+    /// the headless replay processes entries at time scale 1.0 and therefore
+    /// finishes earlier.
     ///
-    /// @param result replay simulation result
+    /// @param result          replay simulation result
     /// @param playerCompleted whether the original attempt completed the level
-    /// @param totalFrames browser-reported input frame count
+    /// @param totalFrames     browser-reported input frame count
     /// @return the anti-cheat verification status for the attempt
     private static AttemptVerificationStatus toAttemptVerificationStatus(final ReplayResultDTO result,
-                                                                          final boolean playerCompleted,
-                                                                          final int totalFrames) {
+            final boolean playerCompleted,
+            final int totalFrames) {
         if (!result.valid()) {
             return result.reason().startsWith("error:")
                     ? AttemptVerificationStatus.REPLAY_ERROR
@@ -270,7 +283,8 @@ public class ReplayController {
         return AttemptVerificationStatus.LEGIT;
     }
 
-    /// Converts submitted input frames into the JSON shape consumed by the replay script.
+    /// Converts submitted input frames into the JSON shape consumed by the replay
+    /// script.
     ///
     /// @param request submitted replay request
     /// @return serialized replay frame list
@@ -299,10 +313,10 @@ public class ReplayController {
 
     /// Serialized player input state passed to the frontend replay script.
     ///
-    /// @param left whether the left input is active
+    /// @param left  whether the left input is active
     /// @param right whether the right input is active
-    /// @param jump whether the jump input is active
-    /// @param run whether the run input is active
+    /// @param jump  whether the jump input is active
+    /// @param run   whether the run input is active
     private record SerializedPlayerInput(boolean left, boolean right, boolean jump, boolean run) {
     }
 }
