@@ -9,6 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -182,26 +183,20 @@ class LevelAggregationControllerTests {
                     criteriaCaptor.capture(),
                     ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID));
             final PublishedLevelSearchCriteria criteria = criteriaCaptor.getValue();
-            org.junit.jupiter.api.Assertions.assertEquals(0.2, criteria.minClearRate());
-            org.junit.jupiter.api.Assertions.assertEquals(0.8, criteria.maxClearRate());
-            org.junit.jupiter.api.Assertions.assertEquals(3L, criteria.minAttempts());
-            org.junit.jupiter.api.Assertions.assertEquals(20L, criteria.maxAttempts());
-            org.junit.jupiter.api.Assertions.assertEquals(4L, criteria.minLikes());
-            org.junit.jupiter.api.Assertions.assertEquals(40L, criteria.maxLikes());
-            org.junit.jupiter.api.Assertions.assertEquals(1L, criteria.minDislikes());
-            org.junit.jupiter.api.Assertions.assertEquals(7L, criteria.maxDislikes());
+            Assertions.assertEquals(0.2, criteria.minClearRate());
+            Assertions.assertEquals(0.8, criteria.maxClearRate());
+            Assertions.assertEquals(3L, criteria.minAttempts());
+            Assertions.assertEquals(20L, criteria.maxAttempts());
+            Assertions.assertEquals(4L, criteria.minLikes());
+            Assertions.assertEquals(40L, criteria.maxLikes());
+            Assertions.assertEquals(1L, criteria.minDislikes());
+            Assertions.assertEquals(7L, criteria.maxDislikes());
         }
 
-        /// Verifies that an invalid sortBy value returns 400 Bad Request because the
-        /// service throws IllegalStateException.
+        /// Verifies that an invalid sortBy value returns 400 Bad Request.
         @Test
         @DisplayName("should return 400 Bad Request when sortBy has an invalid value")
         void invalidSortByReturnsBadRequest() {
-            Mockito.when(levelAggregationService.getPublishedLevels(
-                    ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any()))
-                    .thenThrow(new IllegalStateException(
-                            "Unsupported published level sort: INVALID"));
-
             restTestClient.get().uri(
                     "/levels/published?sortBy=INVALID")
                     .exchange()
@@ -230,6 +225,16 @@ class LevelAggregationControllerTests {
                     .expectStatus().isOk()
                     .expectBody(LevelSummaryDto.class)
                     .isEqualTo(testSummary);
+
+            final ArgumentCaptor<PublishedLevelSearchCriteria> criteriaCaptor =
+                    ArgumentCaptor.forClass(PublishedLevelSearchCriteria.class);
+            Mockito.verify(levelAggregationService).getRandomPublishedLevel(
+                    ArgumentMatchers.eq(PublishedLevelSortBy.POPULARITY),
+                    ArgumentMatchers.eq(DateRangePreset.AllTimeDateRangePreset.ALL_TIME),
+                    criteriaCaptor.capture(),
+                    ArgumentMatchers.eq(ControllerSecurityTestConfig.DEFAULT_USER_ID));
+            final PublishedLevelSearchCriteria criteria = criteriaCaptor.getValue();
+            Assertions.assertEquals(5L, criteria.minAttempts());
         }
 
         /// Verifies that no matching levels produces a 404 response.

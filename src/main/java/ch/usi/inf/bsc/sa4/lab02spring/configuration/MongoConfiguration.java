@@ -26,7 +26,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -98,12 +97,14 @@ public class MongoConfiguration {
         }
     }
 
-    /// Converts a [Date] read from MongoDB to a [ZonedDateTime] in UTC.
+    /// Converts a BSON Date read from MongoDB to a [ZonedDateTime] in UTC.
     ///
+    @SuppressWarnings("java:S2143")
     @ReadingConverter
-    public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
+    public static class DateToZonedDateTimeConverter
+            implements Converter<java.util.Date, ZonedDateTime> {
         @Override
-        public ZonedDateTime convert(final Date date) {
+        public ZonedDateTime convert(final java.util.Date date) {
             return date.toInstant().atZone(ZoneOffset.UTC);
         }
     }
