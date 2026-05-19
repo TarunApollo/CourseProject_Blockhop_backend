@@ -171,10 +171,12 @@ public class LevelAggregationService {
     private static List<LevelSummaryDto> sortPublishedLevels(
             final List<LevelSummaryDto> summaries,
             final PublishedLevelSortBy sortBy) {
-        final Comparator<LevelSummaryDto> comparator = switch (sortBy) {
-            case CLEAR_RATE -> Comparator.comparingDouble(LevelSummaryDto::clearRate);
-            case POPULARITY -> Comparator.comparingLong(LevelSummaryDto::popularity);
-        };
+        final Comparator<LevelSummaryDto> comparator;
+        if (sortBy == PublishedLevelSortBy.CLEAR_RATE) {
+            comparator = Comparator.comparingDouble(LevelSummaryDto::clearRate);
+        } else {
+            comparator = Comparator.comparingLong(LevelSummaryDto::popularity);
+        }
         return summaries.stream()
                 .sorted(comparator.reversed())
                 .toList();
