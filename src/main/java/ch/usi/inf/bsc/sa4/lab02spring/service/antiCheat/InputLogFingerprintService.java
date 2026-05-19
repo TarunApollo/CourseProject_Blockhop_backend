@@ -1,4 +1,4 @@
-package ch.usi.inf.bsc.sa4.lab02spring.service.antiCheat;
+package ch.usi.inf.bsc.sa4.lab02spring.service.anticheat;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
@@ -14,17 +14,19 @@ import java.util.List;
 
 /// Creates stable hashes and canonical input sequences for anti-cheat checks.
 @Service
+// Methods are used only for calculating fingerprint.
+// They are mostly helpers to split tasks into multiple function.
 @SuppressWarnings("PMD.TooManyMethods")
 public class InputLogFingerprintService {
 
     /// Default number of frames grouped into one fuzzy input bucket.
-    private static final int DEFAULT_BUCKET_SIZE = 10;
+    private static final int DEF_BUCKET_SIZE = 10;
     /// Bucket offsets used to produce fuzzy hashes with shifted boundaries.
-    private static final List<Integer> DEFAULT_BUCKET_OFFSETS = List.of(0, 5);
+    private static final List<Integer> DEF_BUCKET_OFFS = List.of(0, 5);
     /// Neutral-frame gap that identifies jump-only runs likely caused by jitter.
-    private static final int JUMP_ONLY_HORIZONTAL_DELTA_FRAMES = 90;
+    private static final int JUMP_X_GAP_FRAMES = 90;
     /// Maximum opposite-direction run length treated as horizontal input noise.
-    private static final int MAX_CANCELABLE_HORIZONTAL_RUN_FRAMES = 5;
+    private static final int MAX_CANCEL_X_RUN = 5;
 
     /// Builds all anti-cheat fingerprints for the provided input log.
     /// @param inputLog the ordered input frames recorded during an attempt
@@ -33,8 +35,8 @@ public class InputLogFingerprintService {
         final List<InputChange> changes = nonNeutralInputChanges(inputLog);
         final String exactCanonical = canonicalExact(inputLog);
         final JitterCanonical jitterCanonical = jitterCanonical(inputLog);
-        final List<String> changeBucketHashes = DEFAULT_BUCKET_OFFSETS.stream()
-                .map(offset -> canonicalBucketedCombinedInputs(inputLog, DEFAULT_BUCKET_SIZE, offset))
+        final List<String> bucketHashes = DEF_BUCKET_OFFS.stream()
+                .map(offset -> canonicalBucketedCombinedInputs(inputLog, DEF_BUCKET_SIZE, offset))
                 .map(InputLogFingerprintService::sha256)
                 .toList();
 
@@ -42,7 +44,7 @@ public class InputLogFingerprintService {
                 sha256(exactCanonical),
                 sha256(jitterCanonical.canonical()),
                 jitterCanonical.changeCount(),
-                changeBucketHashes,
+                bucketHashes,
                 inputLog.size(),
                 changes.size()
         );
@@ -65,8 +67,8 @@ public class InputLogFingerprintService {
     private JitterCanonical jitterCanonical(final List<InputFrameDTO> inputLog) {
         final List<InputRun> runs = jitterInputRuns(inputLog);
         final List<InputRun> withoutFakeJumps = removeFakeJumpOnlyRuns(runs);
-        final List<InputRun> withoutHorizontalNoise = removeHorizontalCancellationNoise(withoutFakeJumps);
-        final List<InputRun> normalizedRuns = collapseAdjacentEqualRuns(withoutHorizontalNoise);
+        final List<InputRun> withoutXNoise = removeHorizontalCancellationNoise(withoutFakeJumps);
+        final List<InputRun> normalizedRuns = collapseAdjacentEqualRuns(withoutXNoise);
         final StringBuilder canonical = new StringBuilder();
 
         for (final InputRun run : normalizedRuns) {
@@ -93,22 +95,22 @@ public class InputLogFingerprintService {
 
         final StringBuilder canonical = new StringBuilder();
         Integer currentBucket = null;
-        BucketInputState currentBucketInput = new BucketInputState();
+        BucketInputState bucketInput = new BucketInputState();
 
         for (final InputFrameDTO frame : inputLog) {
             final int bucket = bucket(frame.frame(), bucketSize, offset);
             if (currentBucket == null) {
                 currentBucket = bucket;
             } else if (bucket != currentBucket) {
-                appendBucketInputIfNeeded(canonical, currentBucket, currentBucketInput);
+                appendBucketInputIfNeeded(canonical, currentBucket, bucketInput);
                 currentBucket = bucket;
-                currentBucketInput = new BucketInputState();
+                bucketInput = new BucketInputState();
             }
-            currentBucketInput.include(InputState.from(frame));
+            bucketInput.include(InputState.from(frame));
         }
 
         if (currentBucket != null) {
-            appendBucketInputIfNeeded(canonical, currentBucket, currentBucketInput);
+            appendBucketInputIfNeeded(canonical, currentBucket, bucketInput);
         }
         return canonical.toString();
     }
@@ -116,43 +118,43 @@ public class InputLogFingerprintService {
     private List<InputRun> jitterInputRuns(final List<InputFrameDTO> inputLog) {
         final ArrayList<InputRun> runs = new ArrayList<>();
         InputState currentRunState = null;
-        int currentRunStartFrame = 0;
+        int runStartFrame = 0;
         int currentRunLength = 0;
-        int neutralFramesAfterCurrentRun = 0;
-        int strippedNeutralFrames = 0;
-        int currentRunStrippedFramesBefore = 0;
+        int neutralAfterRun = 0;
+        int strippedNeutral = 0;
+        int strippedBeforeRun = 0;
 
         for (final InputFrameDTO frame : inputLog) {
             final InputState current = InputState.from(frame);
             if (current.isNeutral()) {
-                strippedNeutralFrames++;
+                strippedNeutral++;
                 if (currentRunState != null) {
-                    neutralFramesAfterCurrentRun++;
+                    neutralAfterRun++;
                 }
                 continue;
             }
 
             if (currentRunState == null) {
                 currentRunState = current;
-                currentRunStartFrame = frame.frame();
+                runStartFrame = frame.frame();
                 currentRunLength = 1;
-                neutralFramesAfterCurrentRun = 0;
-                currentRunStrippedFramesBefore = strippedNeutralFrames;
+                neutralAfterRun = 0;
+                strippedBeforeRun = strippedNeutral;
                 continue;
             }
 
-            if (neutralFramesAfterCurrentRun > 0) {
+            if (neutralAfterRun > 0) {
                 runs.add(new InputRun(
                         currentRunState,
-                        currentRunStartFrame,
+                        runStartFrame,
                         currentRunLength,
-                        neutralFramesAfterCurrentRun,
-                        currentRunStrippedFramesBefore));
+                        neutralAfterRun,
+                        strippedBeforeRun));
                 currentRunState = current;
-                currentRunStartFrame = frame.frame();
+                runStartFrame = frame.frame();
                 currentRunLength = 1;
-                neutralFramesAfterCurrentRun = 0;
-                currentRunStrippedFramesBefore = strippedNeutralFrames;
+                neutralAfterRun = 0;
+                strippedBeforeRun = strippedNeutral;
                 continue;
             }
 
@@ -161,24 +163,24 @@ public class InputLogFingerprintService {
             } else {
                 runs.add(new InputRun(
                         currentRunState,
-                        currentRunStartFrame,
+                        runStartFrame,
                         currentRunLength,
                         0,
-                        currentRunStrippedFramesBefore));
+                        strippedBeforeRun));
                 currentRunState = current;
-                currentRunStartFrame = frame.frame();
+                runStartFrame = frame.frame();
                 currentRunLength = 1;
-                currentRunStrippedFramesBefore = strippedNeutralFrames;
+                strippedBeforeRun = strippedNeutral;
             }
         }
 
         if (currentRunState != null) {
             runs.add(new InputRun(
                     currentRunState,
-                    currentRunStartFrame,
+                    runStartFrame,
                     currentRunLength,
-                    neutralFramesAfterCurrentRun,
-                    currentRunStrippedFramesBefore));
+                    neutralAfterRun,
+                    strippedBeforeRun));
         }
 
         return List.copyOf(runs);
@@ -186,16 +188,16 @@ public class InputLogFingerprintService {
 
     private static List<InputRun> removeFakeJumpOnlyRuns(final List<InputRun> runs) {
         final ArrayList<InputRun> normalized = new ArrayList<>();
-        int strippedFakeJumpFrames = 0;
+        int fakeJumpFrames = 0;
 
         for (final InputRun run : runs) {
             if (run.state().isJumpOnly()
-                    && run.neutralFramesAfter() >= JUMP_ONLY_HORIZONTAL_DELTA_FRAMES) {
-                strippedFakeJumpFrames += run.length();
+                    && run.neutralAfter() >= JUMP_X_GAP_FRAMES) {
+                fakeJumpFrames += run.length();
                 continue;
             }
             normalized.add(run
-                    .withAdditionalStrippedFrames(strippedFakeJumpFrames)
+                    .withAdditionalStrippedFrames(fakeJumpFrames)
                     .withoutNeutralFramesAfter());
         }
 
@@ -204,10 +206,10 @@ public class InputLogFingerprintService {
 
     private static List<InputRun> removeHorizontalCancellationNoise(final List<InputRun> runs) {
         final ArrayList<InputRun> normalized = new ArrayList<>();
-        int strippedHorizontalNoiseFrames = 0;
+        int noiseFrames = 0;
 
         for (final InputRun run : runs) {
-            final InputRun current = run.withAdditionalStrippedFrames(strippedHorizontalNoiseFrames);
+            final InputRun current = run.withAdditionalStrippedFrames(noiseFrames);
             final int lastIndex = normalized.size() - 1;
             if (lastIndex >= 1
                     && isCancelableHorizontalInterruption(
@@ -217,19 +219,19 @@ public class InputLogFingerprintService {
                 final InputRun before = normalized.get(lastIndex - 1);
                 final InputRun interruption = normalized.remove(lastIndex);
                 if (before.state().equals(current.state())) {
-                    final int returnFramesToStrip = Math.min(run.length(), interruption.length());
-                    strippedHorizontalNoiseFrames += interruption.length() + returnFramesToStrip;
-                    if (run.length() > returnFramesToStrip) {
+                    final int returnStripFrames = Math.min(run.length(), interruption.length());
+                    noiseFrames += interruption.length() + returnStripFrames;
+                    if (run.length() > returnStripFrames) {
                         addOrMergeAdjacentEqualRun(
                                 normalized,
-                                run.withoutLeadingFrames(returnFramesToStrip)
-                                        .withAdditionalStrippedFrames(strippedHorizontalNoiseFrames));
+                                run.withoutLeadingFrames(returnStripFrames)
+                                        .withAdditionalStrippedFrames(noiseFrames));
                     }
                 } else {
-                    strippedHorizontalNoiseFrames += interruption.length();
+                    noiseFrames += interruption.length();
                     addOrMergeAdjacentEqualRun(
                             normalized,
-                            run.withAdditionalStrippedFrames(strippedHorizontalNoiseFrames));
+                            run.withAdditionalStrippedFrames(noiseFrames));
                 }
                 continue;
             }
@@ -251,7 +253,7 @@ public class InputLogFingerprintService {
     private static boolean isCancelableHorizontalInterruption(final InputRun before,
                                                              final InputRun interruption,
                                                              final InputRun after) {
-        return interruption.length() <= MAX_CANCELABLE_HORIZONTAL_RUN_FRAMES
+        return interruption.length() <= MAX_CANCEL_X_RUN
                 && sameHorizontalDirection(before.state(), after.state())
                 && oppositeHorizontalDirection(before.state(), interruption.state());
     }
@@ -279,8 +281,8 @@ public class InputLogFingerprintService {
                 first.state(),
                 first.startFrame(),
                 first.length() + second.length(),
-                second.neutralFramesAfter(),
-                first.strippedFramesBefore());
+                second.neutralAfter(),
+                first.strippedBefore());
     }
 
     private static List<InputRun> collapseAdjacentEqualRuns(final List<InputRun> runs) {
@@ -372,25 +374,25 @@ public class InputLogFingerprintService {
             /// Number of non-neutral frames in this run.
             int length,
             /// Neutral frames seen immediately after this run.
-            int neutralFramesAfter,
+            int neutralAfter,
             /// Frames stripped before this run during jitter normalization.
-            int strippedFramesBefore) {
+            int strippedBefore) {
 
         private int normalizedCount() {
-            return startFrame - strippedFramesBefore;
+            return startFrame - strippedBefore;
         }
 
         private InputRun withoutNeutralFramesAfter() {
-            return new InputRun(state, startFrame, length, 0, strippedFramesBefore);
+            return new InputRun(state, startFrame, length, 0, strippedBefore);
         }
 
-        private InputRun withAdditionalStrippedFrames(final int additionalStrippedFrames) {
+        private InputRun withAdditionalStrippedFrames(final int extraStripped) {
             return new InputRun(
                     state,
                     startFrame,
                     length,
-                    neutralFramesAfter,
-                    strippedFramesBefore + additionalStrippedFrames);
+                    neutralAfter,
+                    strippedBefore + extraStripped);
         }
 
         private InputRun withoutLeadingFrames(final int leadingFrames) {
@@ -398,8 +400,8 @@ public class InputLogFingerprintService {
                     state,
                     startFrame + leadingFrames,
                     length - leadingFrames,
-                    neutralFramesAfter,
-                    strippedFramesBefore);
+                    neutralAfter,
+                    strippedBefore);
         }
     }
 

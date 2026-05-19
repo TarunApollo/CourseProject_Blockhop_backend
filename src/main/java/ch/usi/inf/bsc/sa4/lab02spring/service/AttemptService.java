@@ -21,16 +21,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AttemptService {
     /// Relative frame-count tolerance used for fuzzy fingerprint matching.
-    private static final double FRAME_COUNT_TOLERANCE_RATIO_FUZZY = 1.0;
+    private static final double FRAME_TOLERANCE = 1.0;
 
     /// Relative input-change tolerance used for fuzzy fingerprint matching.
-    private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY = 0.5;
+    private static final double CHANGE_TOLERANCE = 0.5;
 
     /// Minimum frame-count tolerance applied to fuzzy fingerprint matching.
-    private static final int MIN_FRAME_COUNT_TOLERANCE = 5;
+    private static final int MIN_FRAME = 5;
 
     /// Minimum input-change tolerance applied to fuzzy fingerprint matching.
-    private static final int MIN_INPUT_CHANGE_COUNT_TOLERANCE = 2;
+    private static final int MIN_COUNT = 2;
 
     /// Repository handling attempt persistence.
     private final AttemptRepository attemptRepository;
@@ -180,15 +180,15 @@ public class AttemptService {
         if (fingerprint.changeBucketHashes().isEmpty()) {
             return Optional.empty();
         }
-        final MetadataRanges ranges = metadataRanges(fingerprint, FRAME_COUNT_TOLERANCE_RATIO_FUZZY, INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY);
+        final MetadataRanges ranges = metadataRanges(fingerprint, FRAME_TOLERANCE, CHANGE_TOLERANCE);
         return this.attemptRepository.findFuzzyFingerprintDuplicateInMetadataRange(
                 getValidObjectId(level.getId()),
                 fingerprint.changeBucketHashes(),
                 getValidObjectId(currentAttemptId),
                 ranges.minFrameCount(),
                 ranges.maxFrameCount(),
-                ranges.minInputChangeCount(),
-                ranges.maxInputChangeCount()
+                ranges.minInputChanges(),
+                ranges.maxInputChanges()
             ).stream().findFirst();
     }
 
@@ -215,24 +215,26 @@ public class AttemptService {
     /// Computes metadata bounds used to limit fuzzy fingerprint duplicate queries.
     ///
     /// @param fingerprint fingerprint whose metadata defines the range center
-    /// @param frameCountToleranceRatio relative tolerance for frame counts
-    /// @param inputChangeToleranceRatio relative tolerance for input change counts
+    /// @param frameTolRatio relative tolerance for frame counts
+    /// @param changeTolRatio relative tolerance for input change counts
     /// @return inclusive metadata ranges for fuzzy matching
-    private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint, double frameCountToleranceRatio, double inputChangeToleranceRatio) {
+    private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint,
+                                                 double frameTolRatio,
+                                                 double changeTolRatio) {
         final int frameTolerance = tolerance(
                 fingerprint.inputFrameCount(),
-                MIN_FRAME_COUNT_TOLERANCE,
-                frameCountToleranceRatio);
-        final int inputChangeTolerance = tolerance(
+                MIN_FRAME,
+                frameTolRatio);
+        final int changeTolerance = tolerance(
                 fingerprint.inputChangeCount(),
-                MIN_INPUT_CHANGE_COUNT_TOLERANCE,
-                inputChangeToleranceRatio);
+                MIN_COUNT,
+                changeTolRatio);
 
         return new MetadataRanges(
                 Math.max(0, fingerprint.inputFrameCount() - frameTolerance),
                 fingerprint.inputFrameCount() + frameTolerance,
-                Math.max(0, fingerprint.inputChangeCount() - inputChangeTolerance),
-                fingerprint.inputChangeCount() + inputChangeTolerance);
+                Math.max(0, fingerprint.inputChangeCount() - changeTolerance),
+                fingerprint.inputChangeCount() + changeTolerance);
     }
 
     /// Computes the larger of the minimum tolerance and the ratio-based tolerance.
@@ -263,13 +265,13 @@ public class AttemptService {
     ///
     /// @param minFrameCount minimum accepted frame count
     /// @param maxFrameCount maximum accepted frame count
-    /// @param minInputChangeCount minimum accepted input-change count
-    /// @param maxInputChangeCount maximum accepted input-change count
+    /// @param minInputChanges minimum accepted input-change count
+    /// @param maxInputChanges maximum accepted input-change count
     private record MetadataRanges(
             int minFrameCount,
             int maxFrameCount,
-            int minInputChangeCount,
-            int maxInputChangeCount
+            int minInputChanges,
+            int maxInputChanges
     ) {
     }
 }
