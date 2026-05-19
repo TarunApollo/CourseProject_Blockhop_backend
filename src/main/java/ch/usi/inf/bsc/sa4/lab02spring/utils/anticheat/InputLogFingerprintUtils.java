@@ -36,7 +36,7 @@ public final class InputLogFingerprintUtils {
         );
     }
 
-    static String sha256(final String value) {
+    /* package */ static String sha256(final String value) {
         try {
             final MessageDigest digest = MessageDigest.getInstance("SHA-256");
             final byte[] hashed = digest.digest(value.getBytes(StandardCharsets.UTF_8));
