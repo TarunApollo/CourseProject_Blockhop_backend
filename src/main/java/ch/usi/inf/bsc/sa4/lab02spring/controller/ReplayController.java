@@ -13,13 +13,13 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
-import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatSuspicionService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.InputLogFingerprintService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayRequest;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.AntiCheatSuspicionUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.InputLogFingerprintUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.converter.LayerToTiledMapConverter;
 
@@ -67,12 +67,6 @@ public class ReplayController {
     /// Mapper used to serialize replay inputs and level maps.
     private final ObjectMapper objectMapper;
 
-    /// Service that computes fingerprints from submitted input logs.
-    private final InputLogFingerprintService inputLogFingerprintService;
-
-    /// Service that classifies suspicious fingerprint reuse patterns.
-    private final AntiCheatSuspicionService antiCheatSuspicionService;
-
     /// Constructs the replay controller with its replay and persistence
     /// dependencies.
     ///
@@ -82,24 +76,18 @@ public class ReplayController {
     /// @param tileSetService             service that provides tileset data
     /// @param userService                service that loads users
     /// @param objectMapper               serializer used for replay payloads
-    /// @param inputLogFingerprintService service that fingerprints player input logs
-    /// @param antiCheatSuspicionService  service that classifies suspicious attempts
     public ReplayController(final ReplayService replayService,
             final AttemptService attemptService,
             final LevelRepository levelRepository,
             final TileSetService tileSetService,
             final UserService userService,
-            final ObjectMapper objectMapper,
-            final InputLogFingerprintService inputLogFingerprintService,
-            final AntiCheatSuspicionService antiCheatSuspicionService) {
+            final ObjectMapper objectMapper) {
         this.replayService = replayService;
         this.attemptService = attemptService;
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.userService = userService;
         this.objectMapper = objectMapper;
-        this.inputLogFingerprintService = inputLogFingerprintService;
-        this.antiCheatSuspicionService = antiCheatSuspicionService;
     }
 
     /// Validates that a player can start a replay-tracked run on a level.
@@ -153,7 +141,7 @@ public class ReplayController {
         final boolean playerCompleted = attempt.isCompleted();
         AntiCheatLog.levelCompleted(userId, request.levelId(), request.totalFrames());
 
-        final InputLogFingerprint fingerprint = inputLogFingerprintService.fingerprint(request.inputLog());
+        final InputLogFingerprint fingerprint = InputLogFingerprintUtils.fingerprint(request.inputLog());
         attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
 
         final TileSet tileSet = tileSetService.getTileSet();
@@ -199,7 +187,7 @@ public class ReplayController {
                     AttemptVerificationStatus.CHEATED,
                     recentAttemptWindowStart,
                     attemptId);
-            status = antiCheatSuspicionService.classifyFingerprintSuspicion(
+            status = AntiCheatSuspicionUtils.classifyFingerprintSuspicion(
                     fingerprint,
                     exactDuplicate,
                     fuzzyDuplicate,
@@ -288,8 +276,7 @@ public class ReplayController {
     ///
     /// @param request submitted replay request
     /// @return serialized replay frame list
-    /// @throws Exception when serialization fails
-    private String serializeInputLog(final ReplayRequestDTO request) throws Exception {
+    private String serializeInputLog(final ReplayRequestDTO request){
         final List<SerializedReplayFrame> frames = request.inputLog().stream()
                 .map(frame -> new SerializedReplayFrame(
                         frame.frame(),

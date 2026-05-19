@@ -54,9 +54,6 @@ class LevelPlayControllerTests {
         /// Shared test user instance.
         private static User testUser;
 
-        /// Shared test level instance.
-        private static Level testLevel;
-
         /// A fixed attempt payload used across submit tests.
         private static final AttemptDTO ATTEMPT_DTO = new AttemptDTO(
                         Map.of(), new Position(0, 0),
@@ -74,7 +71,7 @@ class LevelPlayControllerTests {
         static void setupData() {
                 testUser = new User(ControllerSecurityTestConfig.DEFAULT_USER_ID,
                                 ControllerSecurityTestConfig.DEFAULT_USER_NAME);
-                testLevel = new Level("Title", "Desc", testUser);
+                final Level testLevel = new Level("Title", "Desc", testUser);
                 attempt = new Attempt(
                         testUser,
                         ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
