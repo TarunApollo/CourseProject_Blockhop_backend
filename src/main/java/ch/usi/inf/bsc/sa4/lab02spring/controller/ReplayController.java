@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/// Controller exposing replay-based anti-cheat endpoints for level attempts.
 @RestController
 @RequestMapping("/replay")
 public class ReplayController {
@@ -46,17 +47,43 @@ public class ReplayController {
     /// OAuth2 subject attribute name.
     private static final String OAUTH_SUB_ATTRIBUTE = "sub";
 
+    /// Number of days considered when checking recent suspicious attempts.
     private static final int RECENT_ATTEMPT_WINDOW_DAYS = 7;
 
+    /// Service that runs the frontend replay simulation.
     private final ReplayService replayService;
+
+    /// Service that owns attempt lookup and anti-cheat persistence.
     private final AttemptService attemptService;
+
+    /// Repository used to load levels submitted for replay verification.
     private final LevelRepository levelRepository;
+
+    /// Service providing the tileset needed to serialize levels for replay.
     private final TileSetService tileSetService;
+
+    /// Service used to load the authenticated player account.
     private final UserService userService;
+
+    /// Mapper used to serialize replay inputs and level maps.
     private final ObjectMapper objectMapper;
+
+    /// Service that computes fingerprints from submitted input logs.
     private final InputLogFingerprintService inputLogFingerprintService;
+
+    /// Service that classifies suspicious fingerprint reuse patterns.
     private final AntiCheatSuspicionService antiCheatSuspicionService;
 
+    /// Constructs the replay controller with its replay and persistence dependencies.
+    ///
+    /// @param replayService service that executes replay simulations
+    /// @param attemptService service that reads and updates attempts
+    /// @param levelRepository repository for loading levels
+    /// @param tileSetService service that provides tileset data
+    /// @param userService service that loads users
+    /// @param objectMapper serializer used for replay payloads
+    /// @param inputLogFingerprintService service that fingerprints player input logs
+    /// @param antiCheatSuspicionService service that classifies suspicious attempts
     public ReplayController(final ReplayService replayService,
                             final AttemptService attemptService,
                             final LevelRepository levelRepository,
@@ -75,6 +102,11 @@ public class ReplayController {
         this.antiCheatSuspicionService = antiCheatSuspicionService;
     }
 
+    /// Validates that a player can start a replay-tracked run on a level.
+    ///
+    /// @param oauth2User authenticated OAuth2 user principal
+    /// @param request start request containing the level id
+    /// @return an empty success response when the level can be played
     @PostMapping("/start")
     public ResponseEntity<Void> startRun(
             @AuthenticationPrincipal final OAuth2User oauth2User,
@@ -91,6 +123,11 @@ public class ReplayController {
         return ResponseEntity.ok().build();
     }
 
+    /// Submits a completed run for replay execution and anti-cheat classification.
+    ///
+    /// @param oauth2User authenticated OAuth2 user principal
+    /// @param request replay request containing attempt, level, frame, and input data
+    /// @return the replay result produced by the anti-cheat simulation
     @PostMapping("/submit")
     public ResponseEntity<ReplayResultDTO> submitRun(
             @AuthenticationPrincipal final OAuth2User oauth2User,
@@ -184,6 +221,12 @@ public class ReplayController {
         return ResponseEntity.ok(result);
     }
 
+    /// Builds the reason stored when the browser-reported attempt and replay result disagree.
+    ///
+    /// @param result replay simulation result
+    /// @param playerCompleted whether the original attempt completed the level
+    /// @param totalFrames browser-reported input frame count
+    /// @return a human-readable mismatch reason
     private static String mismatchedReason(final ReplayResultDTO result,
                                             final boolean playerCompleted,
                                             final int totalFrames) {
@@ -198,17 +241,19 @@ public class ReplayController {
     }
 
 
-    // Maps a replay result to an attempt verification status.
-    //
-    // The framecount comparison (valid + level_complete vs.
-    // reported totalFrames) catches framerate hack cheats
-    // (setFps / timeScale changes). When the browser runs at a
-    // reduced timeScale each physics step moves the player less, so
-    // the browser needs more steps and therefore more input log
-    // entries to reach the door. The headless replay processes all
-    // entries at timeScale 1.0, reaches the door earlier, and
-    // reports a lower frame count. A mismatch flags the tampering.
-
+    /// Maps a replay result to an attempt verification status.
+    ///
+    /// The framecount comparison between a valid `level_complete` replay and
+    /// the reported total frame count catches framerate hack cheats such as
+    /// `setFps` or `timeScale` changes. With a reduced browser time scale, each
+    /// physics step moves the player less, requiring more input log entries to
+    /// reach the door; the headless replay processes entries at time scale 1.0
+    /// and therefore finishes earlier.
+    ///
+    /// @param result replay simulation result
+    /// @param playerCompleted whether the original attempt completed the level
+    /// @param totalFrames browser-reported input frame count
+    /// @return the anti-cheat verification status for the attempt
     private static AttemptVerificationStatus toAttemptVerificationStatus(final ReplayResultDTO result,
                                                                           final boolean playerCompleted,
                                                                           final int totalFrames) {
@@ -227,6 +272,11 @@ public class ReplayController {
         return AttemptVerificationStatus.LEGIT;
     }
 
+    /// Converts submitted input frames into the JSON shape consumed by the replay script.
+    ///
+    /// @param request submitted replay request
+    /// @return serialized replay frame list
+    /// @throws Exception when serialization fails
     private String serializeInputLog(final ReplayRequestDTO request) throws Exception {
         final List<SerializedReplayFrame> frames = request.inputLog().stream()
                 .map(frame -> new SerializedReplayFrame(
@@ -236,12 +286,25 @@ public class ReplayController {
         return objectMapper.writeValueAsString(frames);
     }
 
+    /// Request body used when a player starts a replay-tracked level run.
+    ///
+    /// @param levelId id of the level being started
     public record StartRequest(String levelId) {
     }
 
+    /// Serialized frame entry passed to the frontend replay script.
+    ///
+    /// @param frame frame number in the input log
+    /// @param input player input state for the frame
     private record SerializedReplayFrame(int frame, SerializedPlayerInput input) {
     }
 
+    /// Serialized player input state passed to the frontend replay script.
+    ///
+    /// @param left whether the left input is active
+    /// @param right whether the right input is active
+    /// @param jump whether the jump input is active
+    /// @param run whether the run input is active
     private record SerializedPlayerInput(boolean left, boolean right, boolean jump, boolean run) {
     }
 }

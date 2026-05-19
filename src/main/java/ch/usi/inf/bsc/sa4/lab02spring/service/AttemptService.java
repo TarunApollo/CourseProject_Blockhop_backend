@@ -20,9 +20,16 @@ import org.springframework.stereotype.Service;
 /// Service handling creation and querying of player attempts.
 @Service
 public class AttemptService {
+    /// Relative frame-count tolerance used for fuzzy fingerprint matching.
     private static final double FRAME_COUNT_TOLERANCE_RATIO_FUZZY = 1.0;
+
+    /// Relative input-change tolerance used for fuzzy fingerprint matching.
     private static final double INPUT_CHANGE_COUNT_TOLERANCE_RATIO_FUZZY = 0.5;
+
+    /// Minimum frame-count tolerance applied to fuzzy fingerprint matching.
     private static final int MIN_FRAME_COUNT_TOLERANCE = 5;
+
+    /// Minimum input-change tolerance applied to fuzzy fingerprint matching.
     private static final int MIN_INPUT_CHANGE_COUNT_TOLERANCE = 2;
 
     /// Repository handling attempt persistence.
@@ -82,6 +89,7 @@ public class AttemptService {
     /// @param level     the level the attempt was made on
     /// @param dto       the DTO containing the attempt timestamp and time taken
     ///                  condition
+    /// @return the saved attempt
     public Attempt submitAttempt(final User user, final Level level, final AttemptDTO dto) {
         final Attempt attempt = new Attempt(
                 user,
@@ -204,6 +212,12 @@ public class AttemptService {
             ).stream().findFirst();
     }
 
+    /// Computes metadata bounds used to limit fuzzy fingerprint duplicate queries.
+    ///
+    /// @param fingerprint fingerprint whose metadata defines the range center
+    /// @param frameCountToleranceRatio relative tolerance for frame counts
+    /// @param inputChangeToleranceRatio relative tolerance for input change counts
+    /// @return inclusive metadata ranges for fuzzy matching
     private static MetadataRanges metadataRanges(final InputLogFingerprint fingerprint, double frameCountToleranceRatio, double inputChangeToleranceRatio) {
         final int frameTolerance = tolerance(
                 fingerprint.inputFrameCount(),
@@ -221,12 +235,23 @@ public class AttemptService {
                 fingerprint.inputChangeCount() + inputChangeTolerance);
     }
 
+    /// Computes the larger of the minimum tolerance and the ratio-based tolerance.
+    ///
+    /// @param value metadata value used to compute the ratio-based tolerance
+    /// @param minTolerance lower bound for the tolerance
+    /// @param toleranceRatio ratio applied to the metadata value
+    /// @return the effective tolerance
     private static int tolerance(final int value,
                                  final int minTolerance,
                                  final double toleranceRatio) {
         return Math.max(minTolerance, (int) Math.ceil(value * toleranceRatio));
     }
 
+    /// Parses and validates a MongoDB object id string.
+    ///
+    /// @param id string representation of the object id
+    /// @return parsed ObjectId
+    /// @throws IllegalArgumentException if the id is not a valid ObjectId
     private static ObjectId getValidObjectId(final String id) {
         if (!ObjectId.isValid(id)) {
             throw new IllegalArgumentException(id+" is not a valid ObjectId");
@@ -234,6 +259,12 @@ public class AttemptService {
         return new ObjectId(id);
     }
 
+    /// Inclusive metadata bounds used by fuzzy fingerprint duplicate queries.
+    ///
+    /// @param minFrameCount minimum accepted frame count
+    /// @param maxFrameCount maximum accepted frame count
+    /// @param minInputChangeCount minimum accepted input-change count
+    /// @param maxInputChangeCount maximum accepted input-change count
     private record MetadataRanges(
             int minFrameCount,
             int maxFrameCount,

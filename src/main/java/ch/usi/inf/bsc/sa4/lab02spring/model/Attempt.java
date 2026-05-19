@@ -51,7 +51,8 @@ public class Attempt {
     /// Result of replay based anti cheat verification for this attempt.
     /* package */ AttemptVerificationStatus antiCheatStatus;
 
-    InputLogFingerprint fingerprint;
+    /// Fingerprint of the input log used for anti-cheat duplicate detection.
+    /* package */ InputLogFingerprint fingerprint;
 
     /// Creates a new attempt. An id is auto-generated.
     ///
@@ -79,6 +80,7 @@ public class Attempt {
     /// @param level     the level that was played
     /// @param completed whether the level was completed
     /// @param timeTaken the duration of the attempt
+    /// @param antiCheatStatus stored anti-cheat verification status
     @PersistenceCreator
     public Attempt(final String id, final User user, final ZonedDateTime timestamp, final Level level,
             final boolean completed, final Duration timeTaken,
@@ -92,46 +94,79 @@ public class Attempt {
         this.antiCheatStatus = antiCheatStatus;
     }
 
+    /// Returns the database id of this attempt.
+    ///
+    /// @return attempt id
     public String getId() {
         return id;
     }
 
+    /// Returns the user who made this attempt.
+    ///
+    /// @return attempt owner
     public User getUser() {
         return user;
     }
 
+    /// Returns when this attempt was created.
+    ///
+    /// @return attempt timestamp
     public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
+    /// Returns the level played by this attempt.
+    ///
+    /// @return attempted level
     public Level getLevel() {
         return level;
     }
 
+    /// Returns the duration recorded for this attempt.
+    ///
+    /// @return attempt duration
     public Duration getTimeTaken() {
         return timeTaken;
     }
 
+    /// Reports whether this attempt completed the level.
+    ///
+    /// @return true when the level was completed
     public boolean isCompleted() {
         return completed;
     }
 
+    /// Updates whether this attempt completed the level.
+    ///
+    /// @param completed true when the level was completed
     public void setCompleted(final boolean completed) {
         this.completed = completed;
     }
 
+    /// Returns the anti-cheat verification status for this attempt.
+    ///
+    /// @return anti-cheat status
     public AttemptVerificationStatus getAntiCheatStatus() {
         return antiCheatStatus;
     }
 
+    /// Updates the anti-cheat verification status for this attempt.
+    ///
+    /// @param antiCheatStatus status to store
     public void setAntiCheatStatus(final AttemptVerificationStatus antiCheatStatus) {
         this.antiCheatStatus = antiCheatStatus;
     }
 
+    /// Stores the input-log fingerprint used for duplicate detection.
+    ///
+    /// @param fingerprint fingerprint to store
     public void setFingerprint(final InputLogFingerprint fingerprint){
         this.fingerprint = fingerprint;
     }
 
+    /// Returns the stored input-log fingerprint.
+    ///
+    /// @return input-log fingerprint
     public InputLogFingerprint getFingerprint() {
         return fingerprint;
     }

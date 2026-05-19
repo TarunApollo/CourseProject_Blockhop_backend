@@ -12,26 +12,42 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
+/// Service that executes a frontend replay script to verify submitted attempts.
 @Service
 public class ReplayService {
 
+    /// Maximum time allowed for a replay process before it is treated as failed.
     private static final long REPLAY_TIMEOUT_SECONDS = 30;
 
+    /// Mapper used to parse the replay process result.
     private final ObjectMapper objectMapper;
 
+    /// Cached path to the `npx` executable; an empty value means unresolved.
     @Nullable
     private String npxPath;
 
+    /// Cached absolute path to the replay script; an empty value means unresolved.
     @Nullable
     private String replayScriptPath;
 
+    /// Cached frontend project directory used as the replay process working directory.
     @Nullable
     private Path frontendDirectory;
 
+    /// Constructs the replay service with the JSON mapper used for replay output.
+    ///
+    /// @param objectMapper mapper used to deserialize replay process output
     public ReplayService(final ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
+    /// Runs the replay script for a level and input log and returns the verification result.
+    ///
+    /// @param userId id of the player whose attempt is being replayed
+    /// @param levelId id of the level being replayed
+    /// @param levelJson serialized Tiled level map consumed by the replay script
+    /// @param inputLogJson serialized input log consumed by the replay script
+    /// @return replay validity, reason, and final frame reported by the script
     public ReplayResultDTO replay(final String userId,
                                    final String levelId,
                                    final String levelJson,
@@ -110,6 +126,9 @@ public class ReplayService {
         }
     }
 
+    /// Resolves and caches the `npx` executable path from the local environment.
+    ///
+    /// @return the executable path, or null when `npx` is unavailable
     @Nullable
     private String resolveNpx() {
         if (npxPath != null) {
@@ -128,6 +147,9 @@ public class ReplayService {
         return npxPath.isEmpty() ? null : npxPath;
     }
 
+    /// Resolves and caches the TypeScript replay script path.
+    ///
+    /// @return the replay script path, or null when the script cannot be found
     @Nullable
     private String resolveReplayScript() {
         if (replayScriptPath != null) {
@@ -142,6 +164,9 @@ public class ReplayService {
         return null;
     }
 
+    /// Resolves and caches the frontend directory used to run the replay script.
+    ///
+    /// @return the best available frontend directory path
     private Path resolveFrontendDirectory() {
         if (frontendDirectory != null) {
             return frontendDirectory;
@@ -161,6 +186,11 @@ public class ReplayService {
         return frontendDirectory;
     }
 
+    /// Raw JSON payload emitted by the replay script.
+    ///
+    /// @param valid whether the replay completed as expected
+    /// @param reason replay completion or error reason
+    /// @param frame frame count reported by the replay script
     private record ReplayProcessResult(boolean valid, String reason, int frame) {
     }
 }
