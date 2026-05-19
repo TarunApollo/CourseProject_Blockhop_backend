@@ -373,7 +373,7 @@ class LevelAggregationServiceTest {
             stubAttempts(high, 10, 9);
 
             final PublishedLevelSearchCriteria criteria = new PublishedLevelSearchCriteria(
-                    0.3, null, null, null, null, null, null, null);
+                    0.3, null, null, null, null, null, null, null, null);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE,
@@ -382,6 +382,30 @@ class LevelAggregationServiceTest {
                     null);
 
             Assertions.assertEquals(List.of("high", "mid"), result.stream().map(LevelSummaryDto::title).toList());
+        }
+
+        /// Only levels whose description contains the query should remain.
+        @Test
+        @DisplayName("keeps only levels whose description contains the query")
+        void filtersByDescription() {
+            final Level castle = new Level("castle-level", "A spooky castle", creator);
+            final Level forest = new Level("forest-level", "A green forest", creator);
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(castle, forest));
+            stubAttempts(castle, 10, 5);
+            stubAttempts(forest, 10, 5);
+
+            final PublishedLevelSearchCriteria criteria = new PublishedLevelSearchCriteria(
+                    null, null, null, null, null, null, null, null, "castle");
+
+            final List<LevelSummaryDto> result = service.getPublishedLevels(
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
+                    criteria,
+                    null);
+
+            Assertions.assertEquals(
+                    List.of("castle-level"),
+                    result.stream().map(LevelSummaryDto::title).toList());
         }
 
     }
@@ -400,7 +424,7 @@ class LevelAggregationServiceTest {
             final Optional<LevelSummaryDto> result = service.getRandomPublishedLevel(
                     PublishedLevelSortBy.POPULARITY,
                     DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
-                    new PublishedLevelSearchCriteria(null, null, null, null, null, null, null, null),
+                    new PublishedLevelSearchCriteria(null, null, null, null, null, null, null, null, null),
                     null);
 
             Assertions.assertTrue(result.isEmpty());
@@ -419,7 +443,7 @@ class LevelAggregationServiceTest {
             final Optional<LevelSummaryDto> result = service.getRandomPublishedLevel(
                     PublishedLevelSortBy.POPULARITY,
                     DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
-                    new PublishedLevelSearchCriteria(null, null, 5L, null, null, null, null, null),
+                    new PublishedLevelSearchCriteria(null, null, 5L, null, null, null, null, null, null),
                     null);
 
             Assertions.assertTrue(result.isPresent());

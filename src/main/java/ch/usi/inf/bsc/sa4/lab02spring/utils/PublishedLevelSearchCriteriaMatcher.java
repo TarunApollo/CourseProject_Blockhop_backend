@@ -3,6 +3,8 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
 import org.jspecify.annotations.Nullable;
+import java.util.Arrays;
+import java.util.Locale;
 
 /// Matches published level summaries against optional search criteria.
 public final class PublishedLevelSearchCriteriaMatcher {
@@ -26,7 +28,8 @@ public final class PublishedLevelSearchCriteriaMatcher {
         return matchesMinMax(summary.clearRate(), criteria.minClearRate(), criteria.maxClearRate())
                 && matchesMinMax(summary.playCount(), criteria.minAttempts(), criteria.maxAttempts())
                 && matchesMinMax(summary.likeCount(), criteria.minLikes(), criteria.maxLikes())
-                && matchesMinMax(summary.dislikeCount(), criteria.minDislikes(), criteria.maxDislikes());
+                && matchesMinMax(summary.dislikeCount(), criteria.minDislikes(), criteria.maxDislikes())
+                && matchesDescription(summary.description(), criteria.description());
     }
 
     private static boolean matchesMinMax(
@@ -35,5 +38,16 @@ public final class PublishedLevelSearchCriteriaMatcher {
             final @Nullable Number max) {
         return (min == null || value >= min.doubleValue())
                 && (max == null || value <= max.doubleValue());
+    }
+
+    private static boolean matchesDescription(
+            final String description,
+            final @Nullable String query) {
+        if (query == null || query.isBlank()) {
+            return true;
+        }
+        final String haystack = description.toLowerCase(Locale.ROOT);
+        return Arrays.stream(query.strip().toLowerCase(Locale.ROOT).split("\\s+"))
+                .allMatch(haystack::contains);
     }
 }
