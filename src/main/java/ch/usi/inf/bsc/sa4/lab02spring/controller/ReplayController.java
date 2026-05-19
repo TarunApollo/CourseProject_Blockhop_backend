@@ -13,17 +13,16 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.FingerprintSuspicionService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayRequest;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplayService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat.AntiCheatSuspicionUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat.InputLogFingerprintUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.converter.LayerToTiledMapConverter;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -35,10 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /// Controller exposing replay-based anti-cheat endpoints for level attempts.
 @RestController
@@ -47,9 +44,6 @@ public class ReplayController {
 
     /// OAuth2 subject attribute name.
     private static final String OAUTH_SUB_ATTRIBUTE = "sub";
-
-    /// Number of days considered when checking recent suspicious attempts.
-    private static final int RECENT_ATTEMPT_WINDOW_DAYS = 7;
 
     /// Service that runs the frontend replay simulation.
     private final ReplayService replayService;
@@ -69,27 +63,33 @@ public class ReplayController {
     /// Mapper used to serialize replay inputs and level maps.
     private final ObjectMapper objectMapper;
 
+    /// Service that classifies fingerprint suspicion based on duplicate detection.
+    private final FingerprintSuspicionService fingerprintSuspicionService;
+
     /// Constructs the replay controller with its replay and persistence
     /// dependencies.
     ///
-    /// @param replayService              service that executes replay simulations
-    /// @param attemptService             service that reads and updates attempts
-    /// @param levelRepository            repository for loading levels
-    /// @param tileSetService             service that provides tileset data
-    /// @param userService                service that loads users
-    /// @param objectMapper               serializer used for replay payloads
+    /// @param replayService                  service that executes replay simulations
+    /// @param attemptService                 service that reads and updates attempts
+    /// @param levelRepository                repository for loading levels
+    /// @param tileSetService                 service that provides tileset data
+    /// @param userService                    service that loads users
+    /// @param objectMapper                   serializer used for replay payloads
+    /// @param fingerprintSuspicionService    service that classifies fingerprint suspicion
     public ReplayController(final ReplayService replayService,
             final AttemptService attemptService,
             final LevelRepository levelRepository,
             final TileSetService tileSetService,
             final UserService userService,
-            final ObjectMapper objectMapper) {
+            final ObjectMapper objectMapper,
+            final FingerprintSuspicionService fingerprintSuspicionService) {
         this.replayService = replayService;
         this.attemptService = attemptService;
         this.levelRepository = levelRepository;
         this.tileSetService = tileSetService;
         this.userService = userService;
         this.objectMapper = objectMapper;
+        this.fingerprintSuspicionService = fingerprintSuspicionService;
     }
 
     /// Validates that a player can start a replay-tracked run on a level.
@@ -157,7 +157,7 @@ public class ReplayController {
             inputJson = serializeInputLog(request);
         } catch (final JacksonException e) {
             AntiCheatLog.replayError(userId, request.levelId(), String.valueOf(e.getMessage()));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            throw new ReplaySerializationException(e);
         }
 
         final ReplayRequest replayRequest = new ReplayRequest(
@@ -170,32 +170,7 @@ public class ReplayController {
         AttemptVerificationStatus status = toAttemptVerificationStatus(result, playerCompleted, request.totalFrames());
 
         if (status == AttemptVerificationStatus.LEGIT) {
-            final Optional<Attempt> exactDuplicate = attemptService.findExactFingerprintDuplicate(level, attemptId,
-                    fingerprint);
-            final Optional<Attempt> fuzzyDuplicate = attemptService.findFuzzyFingerprintDuplicate(level, attemptId,
-                    fingerprint);
-            final Optional<Attempt> jitterDuplicate = attemptService.findJitterFingerprintDuplicate(level, attemptId,
-                    fingerprint);
-            final ZonedDateTime recentAttemptWindowStart = ZonedDateTime.now().minusDays(RECENT_ATTEMPT_WINDOW_DAYS);
-            final long previousSuspiciousAttempts = attemptService.countAttemptsByLevelUserStatusAfter(
-                    level,
-                    user,
-                    AttemptVerificationStatus.SUSPICIOUS,
-                    recentAttemptWindowStart,
-                    attemptId);
-            final long previousCheatedAttempts = attemptService.countAttemptsByLevelUserStatusAfter(
-                    level,
-                    user,
-                    AttemptVerificationStatus.CHEATED,
-                    recentAttemptWindowStart,
-                    attemptId);
-            status = AntiCheatSuspicionUtils.classifyFingerprintSuspicion(
-                    fingerprint,
-                    exactDuplicate,
-                    fuzzyDuplicate,
-                    jitterDuplicate,
-                    previousSuspiciousAttempts,
-                    previousCheatedAttempts);
+            status = fingerprintSuspicionService.classify(level, user, attemptId, fingerprint);
         }
 
         switch (status) {
@@ -209,8 +184,6 @@ public class ReplayController {
                         mismatchedReason(result, playerCompleted, request.totalFrames()));
             case REPLAY_ERROR ->
                 AntiCheatLog.replayInvalid(userId, request.levelId(), result.reason());
-            default -> {
-            }
         }
 
         attemptService.updateAntiCheatStatus(
@@ -232,14 +205,16 @@ public class ReplayController {
     private static String mismatchedReason(final ReplayResultDTO result,
             final boolean playerCompleted,
             final int totalFrames) {
+        final String reason;
         if (!playerCompleted) {
-            return "player did not complete level";
-        }
-        if ("level_complete".equals(result.reason()) && Math.abs(result.frames() - totalFrames) > 5) {
-            return "frame count mismatch (timeScale tampering?): reported " + totalFrames
+            reason = "player did not complete level";
+        } else if ("level_complete".equals(result.reason()) && Math.abs(result.frames() - totalFrames) > 5) {
+            reason = "frame count mismatch (timeScale tampering?): reported " + totalFrames
                     + " but replay took " + result.frames();
+        } else {
+            reason = "player completed but replay ended in " + result.reason();
         }
-        return "player completed but replay ended in " + result.reason();
+        return reason;
     }
 
     /// Maps a replay result to an attempt verification status.
@@ -258,19 +233,20 @@ public class ReplayController {
     private static AttemptVerificationStatus toAttemptVerificationStatus(final ReplayResultDTO result,
             final boolean playerCompleted,
             final int totalFrames) {
+        final AttemptVerificationStatus status;
         if (!result.valid()) {
-            return result.reason().startsWith("error:")
+            status = result.reason().startsWith("error:")
                     ? AttemptVerificationStatus.REPLAY_ERROR
                     : AttemptVerificationStatus.CHEATED;
+        } else if (playerCompleted && "game_over".equals(result.reason())) {
+            status = AttemptVerificationStatus.CHEATED;
+        } else if ("level_complete".equals(result.reason()) && Math.abs(result.frames() - totalFrames) > 5) {
+            // +- frames should absorb clock jitter
+            status = AttemptVerificationStatus.CHEATED;
+        } else {
+            status = AttemptVerificationStatus.LEGIT;
         }
-        if ("game_over".equals(result.reason()) && playerCompleted) {
-            return AttemptVerificationStatus.CHEATED;
-        }
-        // +- frames should absorb clock jitter
-        if ("level_complete".equals(result.reason()) && Math.abs(result.frames() - totalFrames) > 5) {
-            return AttemptVerificationStatus.CHEATED;
-        }
-        return AttemptVerificationStatus.LEGIT;
+        return status;
     }
 
     /// Converts submitted input frames into the JSON shape consumed by the replay
@@ -278,7 +254,7 @@ public class ReplayController {
     ///
     /// @param request submitted replay request
     /// @return serialized replay frame list
-    private String serializeInputLog(final ReplayRequestDTO request) throws JacksonException{
+    private String serializeInputLog(final ReplayRequestDTO request) throws JacksonException {
         final List<SerializedReplayFrame> frames = request.inputLog().stream()
                 .map(frame -> new SerializedReplayFrame(
                         frame.frame(),

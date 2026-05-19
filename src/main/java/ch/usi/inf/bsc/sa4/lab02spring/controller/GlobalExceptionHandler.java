@@ -1,4 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.controller;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +24,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Void> handleIllegalState(IllegalStateException e) {
         return ResponseEntity.badRequest().build();
+    }
+
+    /// Handles internal replay payload serialization failures.
+    /// @param e the thrown exception
+    /// @return an Internal Server Error response
+    @ExceptionHandler(ReplaySerializationException.class)
+    public ResponseEntity<Void> handleReplaySerialization(final ReplaySerializationException e) {
+        return ResponseEntity.internalServerError().build();
     }
     
 }
