@@ -28,19 +28,24 @@ public class LevelService {
     private final AttemptRepository attemptRepository;
     /// Resolves users involved in level operations.
     private final UserService userService;
+    /// Resets publication state and public engagement after edits.
+    private final LevelPublishService levelPublishService;
 
     /// Constructs a new LevelService with the given dependencies.
     /// @param levelRepository the repository for accessing level data
     /// @param attemptRepository the repository for accessing attempt statistics
     /// @param userService the service for accessing user data
+    /// @param levelPublishService resets public publication state after edits
     @Autowired
     public LevelService(
             final LevelRepository levelRepository,
             final AttemptRepository attemptRepository,
-            final UserService userService) {
+            final UserService userService,
+            final LevelPublishService levelPublishService) {
         this.levelRepository = levelRepository;
         this.attemptRepository = attemptRepository;
         this.userService = userService;
+        this.levelPublishService = levelPublishService;
     }
 
     /// Creates a level for the given user id.
@@ -113,15 +118,17 @@ public class LevelService {
         this.levelRepository.deleteById(levelId);
     }
 
-    /// Retrieves all levels created by the given user with profile statistics.
+    /// Retrieves all levels created by the given user with public profile
+    /// statistics. Public attempt statistics exclude the creator's own attempts
+    /// so creators cannot inflate the play or completion counts of their levels.
     /// @param creator the user whose levels to retrieve
     /// @return a list of created level profile DTOs with play and completion counts
     public List<CreatedLevelProfileDTO> getCreatedLevelsByUser(final User creator) {
         return this.levelRepository.findByCreator(creator).stream()
                 .map(level -> new CreatedLevelProfileDTO(
                         level,
-                        this.attemptRepository.countByLevel(level),
-                        this.attemptRepository.countByLevelAndCompletedTrue(level)))
+                        this.attemptRepository.countByLevelAndUserNot(level, level.getCreator()),
+                        this.attemptRepository.countByLevelAndUserNotAndCompletedTrue(level, level.getCreator())))
                 .toList();
     }
 
@@ -144,7 +151,7 @@ public class LevelService {
         dto.title().ifPresent(level::setTitle);
         dto.description().ifPresent(level::setDescription);
         dto.clearCondition().ifPresent(level::setClearCondition);
-        level.invalidatePublishEligible(user.getId());
+        this.levelPublishService.resetLevelAfterEdit(level, user.getId());
         return this.levelRepository.save(level);
     }
 

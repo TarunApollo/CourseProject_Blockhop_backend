@@ -32,9 +32,11 @@ public record LevelSummaryDto(
         /// Constructs a LevelSummaryDto from the given Level entity and statistics.
         /// 
         /// @param level      the level to summarize
-        /// @param playCount  the total number of attempts on this level
-        /// @param clearRate  the ratio of completed attempts to total attempts
-        /// @param popularity the number of attempts within a recent time period
+        /// @param playCount  the number of non-creator attempts on this level
+        /// @param clearRate  the ratio of completed non-creator attempts to
+        ///                   non-creator attempts
+        /// @param popularity the number of non-creator attempts within a recent
+        ///                   time period
         public LevelSummaryDto(final Level level,
                         final long playCount,
                         final double clearRate,
@@ -46,9 +48,11 @@ public record LevelSummaryDto(
         /// enriched with the current user's attitude if available.
         ///
         /// @param level        the level to summarize
-        /// @param playCount    the total number of attempts on this level
-        /// @param clearRate    the ratio of completed attempts to total attempts
-        /// @param popularity   the number of attempts within a recent time period
+        /// @param playCount    the number of non-creator attempts on this level
+        /// @param clearRate    the ratio of completed non-creator attempts to
+        ///                     non-creator attempts
+        /// @param popularity   the number of non-creator attempts within a recent
+        ///                     time period
         /// @param userAttitude the current user's attitude for this level, or null
         public LevelSummaryDto(final Level level,
                         final long playCount,

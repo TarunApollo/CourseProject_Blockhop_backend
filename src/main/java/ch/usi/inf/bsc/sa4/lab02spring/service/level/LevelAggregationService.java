@@ -4,6 +4,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
@@ -52,8 +53,9 @@ public class LevelAggregationService {
         this.userService = userService;
     }
 
-    /// Builds a summary for the given level. Computes play count, clear rate,
-    /// popularity, likes, and dislikes.
+    /// Builds a summary for the given level. Computes public play count, clear
+    /// rate, popularity, likes, and dislikes. Public attempt statistics exclude
+    /// the level creator so creators cannot inflate clear rate or popularity.
     /// 
     /// @param level  the level to summarize
     /// @param period the time range used to compute popularity
@@ -63,12 +65,14 @@ public class LevelAggregationService {
             final PublishedLevelSortBy sortBy,
             final DateRangePreset period,
             final @Nullable String currentUserId) {
-        final long playCount = this.attemptRepository.countByLevel(level);
-        final long clearCount = this.attemptRepository.countByLevelAndCompletedTrue(level);
+        final User creator = level.getCreator();
+        final long playCount = this.attemptRepository.countByLevelAndUserNot(level, creator);
+        final long clearCount = this.attemptRepository.countByLevelAndUserNotAndCompletedTrue(level, creator);
         final double clearRate = playCount == 0 ? 0 : (double) clearCount / playCount;
         long popularity = playCount;
         if (sortBy == PublishedLevelSortBy.POPULARITY && period instanceof RelativeDateRangePreset relative) {
-            popularity = this.attemptRepository.countByLevelAndTimestampAfter(level, relative.rangeStart());
+            popularity = this.attemptRepository.countByLevelAndUserNotAndTimestampAfter(
+                    level, creator, relative.rangeStart());
         }
         final String userAttitude = currentUserId == null
                 ? null

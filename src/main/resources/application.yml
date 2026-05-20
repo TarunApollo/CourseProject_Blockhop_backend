@@ -20,7 +20,7 @@ spring:
             scope: openid
         provider:
           switch-edu-id:
-            issuer-uri: https://auth.dev.si.usi.ch/auth/realms/simurbs
+            issuer-uri: https://auth.dev.si.usi.ch/realms/simurbs
 
 logging:
   level:

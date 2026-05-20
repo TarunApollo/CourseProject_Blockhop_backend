@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelFavoriteRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
@@ -65,10 +66,13 @@ class LevelPublishServiceTest {
     /// Mocked user repository to verify if users exist.
     @MockitoBean
     private UserRepository userRepository;
-    /// Mocked favorite repository used by unpublish cleanup.
+    /// Mocked attempt repository used by edit cleanup.
+    @MockitoBean
+    private AttemptRepository attemptRepository;
+    /// Mocked favorite repository used by edit cleanup.
     @MockitoBean
     private LevelFavoriteRepository levelFavoriteRepository;
-    /// Mocked attitude repository used by unpublish cleanup.
+    /// Mocked attitude repository used by edit cleanup.
     @MockitoBean
     private AttitudeRepository attitudeRepository;
 
@@ -213,7 +217,7 @@ class LevelPublishServiceTest {
 
         /// The owner can unpublish their own published level.
         @Test
-        @DisplayName("marks a published level as unpublished and saves it")
+        @DisplayName("marks a published level as unpublished and keeps public engagement")
         void ownerUnpublishes() {
             publishableLevel.validatePublishEligible(OWNER_ID);
             publishableLevel.publish(OWNER_ID);
@@ -223,13 +227,14 @@ class LevelPublishServiceTest {
 
             Assertions.assertFalse(publishableLevel.isPublished());
             Mockito.verify(levelRepository).save(publishableLevel);
-            Mockito.verify(levelFavoriteRepository).deleteByLevelId(LEVEL_ID);
-            Mockito.verify(attitudeRepository).deleteByLevelId(LEVEL_ID);
+            Mockito.verify(attemptRepository, Mockito.never()).deleteByLevel(Mockito.any());
+            Mockito.verify(levelFavoriteRepository, Mockito.never()).deleteByLevelId(Mockito.anyString());
+            Mockito.verify(attitudeRepository, Mockito.never()).deleteByLevelId(Mockito.anyString());
         }
 
-        /// Unpublishing a level that is already unpublished does nothing.
+        /// Unpublishing a level that is already unpublished leaves engagement intact.
         @Test
-        @DisplayName("does nothing if the level is already unpublished")
+        @DisplayName("keeps public engagement if the level is already unpublished")
         void unpublishingUnpublishedIsIdempotent() {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
@@ -237,8 +242,9 @@ class LevelPublishServiceTest {
 
             Assertions.assertFalse(testLevel.isPublished());
             Mockito.verify(levelRepository).save(testLevel);
-            Mockito.verify(levelFavoriteRepository).deleteByLevelId(LEVEL_ID);
-            Mockito.verify(attitudeRepository).deleteByLevelId(LEVEL_ID);
+            Mockito.verify(attemptRepository, Mockito.never()).deleteByLevel(Mockito.any());
+            Mockito.verify(levelFavoriteRepository, Mockito.never()).deleteByLevelId(Mockito.anyString());
+            Mockito.verify(attitudeRepository, Mockito.never()).deleteByLevelId(Mockito.anyString());
         }
     }
 
@@ -295,6 +301,40 @@ class LevelPublishServiceTest {
                     () -> service.invalidateLevelPublishEligible(testLevel, OTHER_USER_ID));
 
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+    }
+
+    /// Tests for the resetLevelAfterEdit method.
+    @Nested
+    @DisplayName("resetLevelAfterEdit")
+    class ResetLevelAfterEdit {
+
+        /// Editing a level starts a new public version, so old public engagement
+        /// must be removed and the level must be validated again before publishing.
+        @Test
+        @DisplayName("clears publish eligibility, attempts, favorites, and attitudes")
+        void clearsPublicStateAfterEdit() {
+            testLevel.validatePublishEligible(OWNER_ID);
+
+            service.resetLevelAfterEdit(testLevel, OWNER_ID);
+
+            Assertions.assertFalse(testLevel.isPublishEligible());
+            Mockito.verify(attemptRepository).deleteByLevel(testLevel);
+            Mockito.verify(levelFavoriteRepository).deleteByLevelId(testLevel.getId());
+            Mockito.verify(attitudeRepository).deleteByLevelId(testLevel.getId());
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Non-owners cannot reset public state through an edit path.
+        @Test
+        @DisplayName("throws ForbiddenUserException and does not clear engagement for a non-owner")
+        void nonOwnerCannotResetAfterEdit() {
+            Assertions.assertThrows(ForbiddenUserException.class,
+                    () -> service.resetLevelAfterEdit(testLevel, OTHER_USER_ID));
+
+            Mockito.verify(attemptRepository, Mockito.never()).deleteByLevel(Mockito.any());
+            Mockito.verify(levelFavoriteRepository, Mockito.never()).deleteByLevelId(Mockito.anyString());
+            Mockito.verify(attitudeRepository, Mockito.never()).deleteByLevelId(Mockito.anyString());
         }
     }
 }

@@ -2,7 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 
 import org.jspecify.annotations.Nullable;
 
-/// Optional numeric filters for published level search results.
+/// Optional filters for published level search results.
 public record PublishedLevelSearchCriteria(
         @Nullable Double minClearRate,
         @Nullable Double maxClearRate,
@@ -11,6 +11,7 @@ public record PublishedLevelSearchCriteria(
         @Nullable Long minLikes,
         @Nullable Long maxLikes,
         @Nullable Long minDislikes,
-        @Nullable Long maxDislikes
+        @Nullable Long maxDislikes,
+        @Nullable String description
 ) {
 }

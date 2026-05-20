@@ -131,9 +131,9 @@ class EditorServiceTests {
     class ReplaceWorldLayer {
 
         /// Verifies the level is saved
-        /// and publish eligibility is invalidated on a successful empty-list replacement.
+        /// and public publication state is reset on a successful empty-list replacement.
         @Test
-        @DisplayName("saves the level and invalidates publish eligibility with an empty tile list")
+        @DisplayName("saves the level and resets publication state with an empty tile list")
         void savesEmptyLayerAndInvalidatesPublish() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -143,7 +143,7 @@ class EditorServiceTests {
 
             Assertions.assertSame(testLevel, result);
             Mockito.verify(levelRepository).save(testLevel);
-            Mockito.verify(levelPublishService).invalidateLevelPublishEligible(testLevel, OWNER_ID);
+            Mockito.verify(levelPublishService).resetLevelAfterEdit(testLevel, OWNER_ID);
         }
 
         /// Verifies the ground tile is placed into the world layer after replacement.
@@ -236,9 +236,9 @@ class EditorServiceTests {
     class ReplaceObjectLayer {
 
         /// Verifies the level is saved
-        /// and publish eligibility is invalidated on a successful empty-list replacement.
+        /// and public publication state is reset on a successful empty-list replacement.
         @Test
-        @DisplayName("saves the level and invalidates publish eligibility with an empty object list")
+        @DisplayName("saves the level and resets publication state with an empty object list")
         void savesEmptyLayerAndInvalidatesPublish() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -248,7 +248,7 @@ class EditorServiceTests {
 
             Assertions.assertSame(testLevel, result);
             Mockito.verify(levelRepository).save(testLevel);
-            Mockito.verify(levelPublishService).invalidateLevelPublishEligible(testLevel, OWNER_ID);
+            Mockito.verify(levelPublishService).resetLevelAfterEdit(testLevel, OWNER_ID);
         }
 
         /// Verifies that both DTOs are dispatched to the factory
@@ -412,7 +412,7 @@ class EditorServiceTests {
     class UpdateObjectProperties {
 
         /// Verifies that the box content at the target position is updated
-        /// and the level is saved with publish eligibility invalidated.
+        /// and the level is saved with public publication state reset.
         @Test
         @DisplayName("updates the box content at the given position and saves the level")
         void updatesBoxContentAndSaves() {
@@ -427,7 +427,7 @@ class EditorServiceTests {
                     Objects.requireNonNull(testLevel.getObjectLayer().get(BOX_POS)));
             Assertions.assertEquals(newContent, updated.content());
             Mockito.verify(levelRepository).save(testLevel);
-            Mockito.verify(levelPublishService).invalidateLevelPublishEligible(testLevel, OWNER_ID);
+            Mockito.verify(levelPublishService).resetLevelAfterEdit(testLevel, OWNER_ID);
         }
 
         /// Verifies that a missing object at the target position throws before any save.
