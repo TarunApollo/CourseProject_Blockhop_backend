@@ -51,6 +51,18 @@ class LevelPlayControllerTests {
         /// URI template for the submit endpoint.
         private static final String SUBMIT_URI = "/levels/{levelId}/submit";
 
+        /// Mocked play service.
+        @MockitoBean
+        private LevelPlayService levelPlayService;
+
+        /// Mocked user service.
+        @MockitoBean
+        private UserService userService;
+
+        /// Client for performing REST calls.
+        @Autowired
+        private RestTestClient restTestClient;
+
         /// Shared test user instance.
         private static User testUser;
 
@@ -80,18 +92,6 @@ class LevelPlayControllerTests {
                         Duration.ofSeconds(30));
                 attemptResponseDto = new AttemptResponseDTO(attempt);
         }
-
-        /// Mocked play service.
-        @MockitoBean
-        private LevelPlayService levelPlayService;
-
-        /// Mocked user service.
-        @MockitoBean
-        private UserService userService;
-
-        /// Client for performing REST calls.
-        @Autowired
-        private RestTestClient restTestClient;
 
         /// Tests for POST /levels/{levelId}/submit.
         @Nested
