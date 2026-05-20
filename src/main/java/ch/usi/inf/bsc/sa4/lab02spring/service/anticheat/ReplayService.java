@@ -30,6 +30,12 @@ public class ReplayService {
     /// Env var for the frontend folder.
     private static final String FRONTEND_DIR_ENV = "FRONTEND_DIR";
 
+    /// Env var for overriding the `npx` executable path.
+    private static final String NPX_PATH_ENV = "NPX_PATH";
+
+    /// Env var for overriding the replay script path.
+    private static final String REPLAY_SCRIPT_PATH_ENV = "REPLAY_SCRIPT_PATH";
+
     /// Reads replay JSON output.
     private final ObjectMapper objectMapper;
 
@@ -85,6 +91,9 @@ public class ReplayService {
                 // Without this, the interruption is swallowed and
                 // the app might hang during shutdown.
                 Thread.currentThread().interrupt();
+                AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
+                result = new ReplayResultDTO(false, "error:execution_error", 0);
+            } catch (final tools.jackson.core.JacksonException e) {
                 AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
                 result = new ReplayResultDTO(false, "error:execution_error", 0);
             } catch (final java.io.IOException e) {
@@ -203,6 +212,20 @@ public class ReplayService {
     }
 
     private String resolveNpxPathValue() {
+        final String configuredNpxPath = configuredPath(NPX_PATH_ENV);
+        final String resolvedPath;
+
+        if (configuredNpxPath == null) {
+            resolvedPath = resolveNpxFromPath();
+        } else {
+            final Path candidate = Path.of(configuredNpxPath).toAbsolutePath().normalize();
+            resolvedPath = Files.isExecutable(candidate) ? candidate.toString() : "";
+        }
+
+        return resolvedPath;
+    }
+
+    private String resolveNpxFromPath() {
         String resolvedPath = "";
 
         try {
@@ -234,7 +257,10 @@ public class ReplayService {
         String resolved = null;
 
         if (replayScriptPath == null) {
-            final Path candidate = resolveFrontendDirectory().resolve("replay/replay.ts");
+            final String configuredReplayScriptPath = configuredPath(REPLAY_SCRIPT_PATH_ENV);
+            final Path candidate = configuredReplayScriptPath == null
+                    ? resolveFrontendDirectory().resolve("replay/replay.ts")
+                    : Path.of(configuredReplayScriptPath);
             replayScriptPath = Files.exists(candidate) ? candidate.toAbsolutePath().normalize().toString() : "";
         }
 
@@ -243,6 +269,12 @@ public class ReplayService {
         }
 
         return resolved;
+    }
+
+    @Nullable
+    private String configuredPath(final String propertyName) {
+        final String configured = environment.getProperty(propertyName);
+        return configured == null || configured.isBlank() ? null : configured;
     }
 
     /// Finds and remembers the frontend folder.

@@ -2,11 +2,16 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.anticheat;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayResultDTO;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -14,6 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /// Tests for [ReplayService].
 @SpringBootTest
 @DisplayName("The Replay Service")
+@SuppressWarnings("NullAway")
 class ReplayServiceTests {
 
     /// Replay request used by these tests.
@@ -32,6 +38,10 @@ class ReplayServiceTests {
     /// Service being tested.
     @Autowired
     private ReplayService replayService;
+
+    /// Temporary folder used to host fake replay executables.
+    @TempDir
+    private Path tempDir;
 
     /// Clears cached paths before each test.
     @BeforeEach
@@ -73,5 +83,57 @@ class ReplayServiceTests {
             Assertions.assertEquals("error:script_not_found", result.reason());
             Assertions.assertEquals(0, result.frames());
         }
+    }
+
+    /// Tests for replay process execution.
+    @Nested
+    @DisplayName("when executing the replay process")
+    class ProcessExecution {
+
+        /// Checks that the final output line is parsed as the replay result.
+        @Test
+        @DisplayName("returns the replay JSON from the final process output line")
+        void returnsReplayJsonFromFinalProcessOutputLine() throws IOException {
+            final Path fakeNpx = writeExecutableNpx("""
+                    #!/bin/sh
+                    printf '%s\\n' 'booting replay'
+                    printf '%s\\n' '{"valid":true,"reason":"level_complete","frame":123}'
+                    """);
+            ReflectionTestUtils.setField(replayService, "npxPath", fakeNpx.toString());
+            ReflectionTestUtils.setField(replayService, "replayScriptPath",
+                    tempDir.resolve("replay.ts").toString());
+            ReflectionTestUtils.setField(replayService, "frontendDirectory", tempDir);
+
+            final ReplayResultDTO result = replayService.replay(REPLAY_REQUEST);
+
+            Assertions.assertTrue(result.valid());
+            Assertions.assertEquals("level_complete", result.reason());
+            Assertions.assertEquals(123, result.frames());
+        }
+
+        /// Checks that process startup errors become replay execution errors.
+        @Test
+        @DisplayName("returns execution_error when the process cannot start")
+        void returnsExecutionErrorWhenProcessCannotStart() {
+            ReflectionTestUtils.setField(replayService, "npxPath",
+                    tempDir.resolve("missing-npx").toString());
+            ReflectionTestUtils.setField(replayService, "replayScriptPath",
+                    tempDir.resolve("replay.ts").toString());
+            ReflectionTestUtils.setField(replayService, "frontendDirectory", tempDir);
+
+            final ReplayResultDTO result = replayService.replay(REPLAY_REQUEST);
+
+            Assertions.assertFalse(result.valid());
+            Assertions.assertEquals("error:execution_error", result.reason());
+            Assertions.assertEquals(0, result.frames());
+        }
+    }
+
+    /// Writes a fake executable `npx` script for process execution tests.
+    private Path writeExecutableNpx(final String script) throws IOException {
+        final Path fakeNpx = tempDir.resolve("npx");
+        Files.writeString(fakeNpx, script);
+        Assertions.assertTrue(fakeNpx.toFile().setExecutable(true));
+        return fakeNpx;
     }
 }
