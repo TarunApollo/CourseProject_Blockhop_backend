@@ -8,4 +8,12 @@ public record ReplayRequestDTO(
         int totalFrames,
         List<InputFrameDTO> inputLog
 ) {
+    public ReplayRequestDTO {
+        inputLog = List.copyOf(inputLog);
+    }
+
+    @Override
+    public List<InputFrameDTO> inputLog() {
+        return List.copyOf(inputLog);
+    }
 }
