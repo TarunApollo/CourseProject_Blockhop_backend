@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit;
 ///
 /// Suppressions:
 /// - `pmd:DoNotUseThreads`: Project uses virtual threads for replay execution.
-/// - `pmd:AvoidSynchronizedAtMethodLevel`: Safe lazy initialization for cached paths.
+/// - `pmd:AvoidSynchronizedAtMethodLevel`: Safe lazy initialization
+///   for cached paths.
 @SuppressWarnings({ "pmd:DoNotUseThreads", "pmd:AvoidSynchronizedAtMethodLevel" })
 @Service
 public class ReplayService {
@@ -81,7 +82,8 @@ public class ReplayService {
                         Objects.requireNonNull(script), levelFile, inputFile);
             } catch (final InterruptedException e) {
                 // Reset the interrupted flag so the system knows this operation was cancelled.
-                // Without this, the interruption is swallowed and the app might hang during shutdown.
+                // Without this, the interruption is swallowed and
+                // the app might hang during shutdown.
                 Thread.currentThread().interrupt();
                 AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
                 result = new ReplayResultDTO(false, "error:execution_error", 0);
@@ -124,18 +126,18 @@ public class ReplayService {
         processBuilder.redirectErrorStream(true);
 
         final Process process = processBuilder.start();
-        ReplayResultDTO result;
+        final ReplayResultDTO result;
 
         // Block the virtual thread until the external replay script finishes or times out.
         // Virtual threads are cheap to park, so blocking here is safe and efficient.
-        if (!process.waitFor(REPLAY_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-            AntiCheatLog.replayTimeout(replayRequest.userId(), replayRequest.levelId());
-            result = new ReplayResultDTO(false, "error:process_timeout", 0);
-        } else {
+        if (process.waitFor(REPLAY_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
             final String output = readProcessOutput(process);
             final ReplayProcessResult parsed = objectMapper.readValue(lastOutputLine(output), ReplayProcessResult.class);
             result = new ReplayResultDTO(parsed.valid(), parsed.reason(), parsed.frame());
+        } else {
+            process.destroyForcibly();
+            AntiCheatLog.replayTimeout(replayRequest.userId(), replayRequest.levelId());
+            result = new ReplayResultDTO(false, "error:process_timeout", 0);
         }
 
         return result;
