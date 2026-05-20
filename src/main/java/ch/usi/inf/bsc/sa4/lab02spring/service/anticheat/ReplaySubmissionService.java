@@ -32,12 +32,25 @@ public class ReplaySubmissionService {
     /// Replay frame jitter tolerated before flagging a mismatch.
     private static final int FRAME_TOLERANCE = 5;
 
+    /// Service that executes the frontend replay process.
     private final ReplayService replayService;
+
+    /// Service that loads attempts and persists anti-cheat results.
     private final AttemptService attemptService;
+
+    /// Repository used to load the submitted level.
     private final LevelRepository levelRepository;
+
+    /// Service that provides the tileset used for replay serialization.
     private final TileSetService tileSetService;
+
+    /// Service that loads the authenticated player.
     private final UserService userService;
+
+    /// Mapper used to serialize replay payloads.
     private final ObjectMapper objectMapper;
+
+    /// Service that upgrades legitimate replays to suspicious when fingerprints match.
     private final FingerprintSuspicionService suspicionService;
 
     /// Creates the replay submission service.
@@ -59,27 +72,29 @@ public class ReplaySubmissionService {
 
     /// Replays a finished run and updates its anti-cheat status.
     public ReplayResultDTO submitRun(final String userId, final ReplayRequestDTO request) {
-        final var level = levelRepository.findById(request.levelId())
+        final ch.usi.inf.bsc.sa4.lab02spring.model.Level level = levelRepository.findById(request.levelId())
                 .orElseThrow(LevelNotFoundException::new);
-        final var user = userService.getById(userId).orElseThrow(UserNotFoundException::new);
+        final ch.usi.inf.bsc.sa4.lab02spring.model.User user = userService.getById(userId)
+                .orElseThrow(UserNotFoundException::new);
 
         level.ensurePlayable(userId);
 
-        final var attemptId = request.attemptId();
-        final var attempt = attemptService.getAttemptById(attemptId);
+        final String attemptId = request.attemptId();
+        final ch.usi.inf.bsc.sa4.lab02spring.model.Attempt attempt = attemptService.getAttemptById(attemptId);
         if (!attempt.getUser().getId().equals(userId)) {
             throw new ForbiddenUserException("Attempt does not belong to this user");
         }
 
-        final var playerCompleted = attempt.isCompleted();
+        final boolean playerCompleted = attempt.isCompleted();
         AntiCheatLog.levelCompleted(userId, request.levelId(), request.totalFrames());
 
-        final var fingerprint = InputLogFingerprintUtils.fingerprint(request.inputLog());
+        final ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint fingerprint = InputLogFingerprintUtils
+                .fingerprint(request.inputLog());
         attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
 
-        final var replayResult = replayService.replay(buildReplayRequest(userId, level, request));
-        final var status = resolveStatus(level, user, attemptId, fingerprint, replayResult, playerCompleted,
-                request.totalFrames());
+        final ReplayResultDTO replayResult = replayService.replay(buildReplayRequest(userId, level, request));
+        final AttemptVerificationStatus status = resolveStatus(level, user, attemptId, fingerprint, replayResult,
+                playerCompleted, request.totalFrames());
 
         logVerificationStatus(userId, request, replayResult, playerCompleted, status);
         attemptService.updateAntiCheatStatus(attemptId, user, request.levelId(), status);
@@ -90,10 +105,13 @@ public class ReplaySubmissionService {
             final ch.usi.inf.bsc.sa4.lab02spring.model.Level level,
             final ReplayRequestDTO request) {
         try {
-            final var tileSet = tileSetService.getTileSet();
-            final var tiledMap = LayerToTiledMapConverter.convertPipeline(level, tileSet, tileSetService);
-            final var levelJson = objectMapper.writeValueAsString(tiledMap);
-            final var inputJson = serializeInputLog(request);
+            final ch.usi.inf.bsc.sa4.lab02spring.model.TileSet tileSet = tileSetService.getTileSet();
+            final java.util.Map<String, Object> tiledMap = LayerToTiledMapConverter.convertPipeline(
+                    level,
+                    tileSet,
+                    tileSetService);
+            final String levelJson = objectMapper.writeValueAsString(tiledMap);
+            final String inputJson = serializeInputLog(request);
             return new ReplayRequest(userId, request.levelId(), levelJson, inputJson);
         } catch (final JacksonException e) {
             AntiCheatLog.replayError(userId, request.levelId(), String.valueOf(e.getMessage()));
@@ -109,7 +127,7 @@ public class ReplaySubmissionService {
             final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
-        var status = toAttemptVerificationStatus(replayResult, playerCompleted, totalFrames);
+        AttemptVerificationStatus status = toAttemptVerificationStatus(replayResult, playerCompleted, totalFrames);
         if (status == AttemptVerificationStatus.LEGIT) {
             status = suspicionService.classify(level, user, attemptId, fingerprint);
         }
@@ -136,37 +154,36 @@ public class ReplaySubmissionService {
     private static String mismatchedReason(final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
+        final String reason;
         if (!playerCompleted) {
-            return "player did not complete level";
-        }
-
-        if (isFrameCountMismatch(replayResult, totalFrames)) {
-            return "frame count mismatch (timeScale tampering?): reported " + totalFrames
+            reason = "player did not complete level";
+        } else if (isFrameCountMismatch(replayResult, totalFrames)) {
+            reason = "frame count mismatch (timeScale tampering?): reported " + totalFrames
                     + " but replay took " + replayResult.frames();
+        } else {
+            reason = "player completed but replay ended in " + replayResult.reason();
         }
-
-        return "player completed but replay ended in " + replayResult.reason();
+        return reason;
     }
 
     private static AttemptVerificationStatus toAttemptVerificationStatus(final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
+        final AttemptVerificationStatus status;
         if (!replayResult.valid()) {
             if (replayResult.reason().startsWith("error:")) {
-                return AttemptVerificationStatus.REPLAY_ERROR;
+                status = AttemptVerificationStatus.REPLAY_ERROR;
+            } else {
+                status = AttemptVerificationStatus.CHEATED;
             }
-            return AttemptVerificationStatus.CHEATED;
+        } else if (playerCompleted && "game_over".equals(replayResult.reason())) {
+            status = AttemptVerificationStatus.CHEATED;
+        } else if (isFrameCountMismatch(replayResult, totalFrames)) {
+            status = AttemptVerificationStatus.CHEATED;
+        } else {
+            status = AttemptVerificationStatus.LEGIT;
         }
-
-        if (playerCompleted && "game_over".equals(replayResult.reason())) {
-            return AttemptVerificationStatus.CHEATED;
-        }
-
-        if (isFrameCountMismatch(replayResult, totalFrames)) {
-            return AttemptVerificationStatus.CHEATED;
-        }
-
-        return AttemptVerificationStatus.LEGIT;
+        return status;
     }
 
     private static boolean isFrameCountMismatch(final ReplayResultDTO replayResult, final int totalFrames) {

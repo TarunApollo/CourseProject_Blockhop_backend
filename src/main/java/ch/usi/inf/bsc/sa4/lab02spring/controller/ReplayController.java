@@ -9,7 +9,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.ReplaySubmissionService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -19,10 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /// Controller exposing replay-based anti-cheat endpoints for level attempts.
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Spring injects shared collaborators that stay private to this controller."
-)
 @RestController
 @RequestMapping("/replay")
 public class ReplayController {
