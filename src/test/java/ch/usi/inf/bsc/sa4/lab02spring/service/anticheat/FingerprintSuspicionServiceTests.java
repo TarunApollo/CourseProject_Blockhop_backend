@@ -51,7 +51,7 @@ class FingerprintSuspicionServiceTests {
 
     /// Service being tested.
     @Autowired
-    private FingerprintSuspicionService fingerprintSuspicionService;
+    private FingerprintSuspicionService fintSusService;
 
     /// Mocked attempt service.
     @MockitoBean
@@ -122,7 +122,7 @@ class FingerprintSuspicionServiceTests {
                         2L,
                         1L)).thenReturn(AttemptVerificationStatus.CHEATED);
 
-                final AttemptVerificationStatus result = fingerprintSuspicionService.classify(
+                final AttemptVerificationStatus result = fintSusService.classify(
                         testLevel,
                         testUser,
                         ATTEMPT_ID,
@@ -173,7 +173,7 @@ class FingerprintSuspicionServiceTests {
                         0L,
                         0L)).thenReturn(AttemptVerificationStatus.LEGIT);
 
-                fingerprintSuspicionService.classify(testLevel, testUser, ATTEMPT_ID, FINGERPRINT);
+                fintSusService.classify(testLevel, testUser, ATTEMPT_ID, FINGERPRINT);
             }
 
             final ArgumentCaptor<ZonedDateTime> windowCaptor = ArgumentCaptor.forClass(ZonedDateTime.class);
