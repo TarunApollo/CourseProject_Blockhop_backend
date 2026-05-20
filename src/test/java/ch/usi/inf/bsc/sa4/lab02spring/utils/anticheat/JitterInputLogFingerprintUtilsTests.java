@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [JitterInputLogFingerprintUtils].
 @DisplayName("The Jitter Input Log Fingerprint Utils")
+@SuppressWarnings("java:S2187")
 class JitterInputLogFingerprintUtilsTests {
 
     /// Tests for jitter canonical text.
