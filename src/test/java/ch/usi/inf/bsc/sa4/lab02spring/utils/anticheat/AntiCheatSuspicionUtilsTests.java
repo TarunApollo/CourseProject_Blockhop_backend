@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [AntiCheatSuspicionUtils].
 @DisplayName("The Anti Cheat Suspicion Utils")
+@SuppressWarnings("java:S2187")
 class AntiCheatSuspicionUtilsTests {
 
     /// High-complexity fingerprint.

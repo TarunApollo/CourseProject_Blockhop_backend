@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [InputLogFingerprintUtils].
 @DisplayName("The Input Log Fingerprint Utils")
+@SuppressWarnings("java:S2187")
 class InputLogFingerprintUtilsTests {
 
     /// Input log used by fingerprint tests.

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [ExactInputLogFingerprintUtils].
 @DisplayName("The Exact Input Log Fingerprint Utils")
+@SuppressWarnings("java:S2187")
 class ExactInputLogFingerprintUtilsTests {
 
     /// Tests for exact canonical text.

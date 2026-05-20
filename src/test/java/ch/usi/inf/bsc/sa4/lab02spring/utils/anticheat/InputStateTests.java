@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [InputState].
 @DisplayName("The Input State")
+@SuppressWarnings("java:S2187")
 class InputStateTests {
 
     /// Tests for creating an input state.

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 /// Tests for [BucketInputLogFingerprintUtils].
 @DisplayName("The Bucket Input Log Fingerprint Utils")
+@SuppressWarnings("java:S2187")
 class BucketInputLogFingerprintUtilsTests {
 
     /// Tests for bucket hashes.
