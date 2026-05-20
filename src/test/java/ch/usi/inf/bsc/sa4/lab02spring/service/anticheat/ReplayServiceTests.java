@@ -35,6 +35,15 @@ class ReplayServiceTests {
     /// Fake replay script path.
     private static final String FAKE_SCRIPT_PATH = "/tmp/replay.ts";
 
+    /// Service field name for npx path.
+    private static final String NPX_PATH_FIELD = "npxPath";
+
+    /// Service field name for replay script path.
+    private static final String REPLAY_SCRIPT_PATH_FIELD = "replayScriptPath";
+
+    /// Service field name for frontend directory.
+    private static final String FRONTEND_DIRECTORY_FIELD = "frontendDirectory";
+
     /// Service being tested.
     @Autowired
     private ReplayService replayService;
@@ -46,9 +55,9 @@ class ReplayServiceTests {
     /// Clears cached paths before each test.
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(replayService, "npxPath", null);
-        ReflectionTestUtils.setField(replayService, "replayScriptPath", null);
-        ReflectionTestUtils.setField(replayService, "frontendDirectory", null);
+        ReflectionTestUtils.setField(replayService, NPX_PATH_FIELD, null);
+        ReflectionTestUtils.setField(replayService, REPLAY_SCRIPT_PATH_FIELD, null);
+        ReflectionTestUtils.setField(replayService, FRONTEND_DIRECTORY_FIELD, null);
     }
 
     /// Tests for missing replay setup.
@@ -60,8 +69,8 @@ class ReplayServiceTests {
         @Test
         @DisplayName("returns npx_not_found when npx cannot be resolved")
         void returnsNpxNotFound() {
-            ReflectionTestUtils.setField(replayService, "npxPath", "");
-            ReflectionTestUtils.setField(replayService, "replayScriptPath", FAKE_SCRIPT_PATH);
+            ReflectionTestUtils.setField(replayService, NPX_PATH_FIELD, "");
+            ReflectionTestUtils.setField(replayService, REPLAY_SCRIPT_PATH_FIELD, FAKE_SCRIPT_PATH);
 
             final ReplayResultDTO result = replayService.replay(REPLAY_REQUEST);
 
@@ -74,8 +83,8 @@ class ReplayServiceTests {
         @Test
         @DisplayName("returns script_not_found when the replay script cannot be resolved")
         void returnsScriptNotFound() {
-            ReflectionTestUtils.setField(replayService, "npxPath", FAKE_NPX_PATH);
-            ReflectionTestUtils.setField(replayService, "replayScriptPath", "");
+            ReflectionTestUtils.setField(replayService, NPX_PATH_FIELD, FAKE_NPX_PATH);
+            ReflectionTestUtils.setField(replayService, REPLAY_SCRIPT_PATH_FIELD, "");
 
             final ReplayResultDTO result = replayService.replay(REPLAY_REQUEST);
 
@@ -99,10 +108,10 @@ class ReplayServiceTests {
                     printf '%s\\n' 'booting replay'
                     printf '%s\\n' '{"valid":true,"reason":"level_complete","frame":123}'
                     """);
-            ReflectionTestUtils.setField(replayService, "npxPath", fakeNpx.toString());
-            ReflectionTestUtils.setField(replayService, "replayScriptPath",
+            ReflectionTestUtils.setField(replayService, NPX_PATH_FIELD, fakeNpx.toString());
+            ReflectionTestUtils.setField(replayService, REPLAY_SCRIPT_PATH_FIELD,
                     tempDir.resolve("replay.ts").toString());
-            ReflectionTestUtils.setField(replayService, "frontendDirectory", tempDir);
+            ReflectionTestUtils.setField(replayService, FRONTEND_DIRECTORY_FIELD, tempDir);
 
             final ReplayResultDTO result = replayService.replay(REPLAY_REQUEST);
 
@@ -115,16 +124,16 @@ class ReplayServiceTests {
         @Test
         @DisplayName("returns execution_error when the process cannot start")
         void returnsExecutionErrorWhenProcessCannotStart() {
-            ReflectionTestUtils.setField(replayService, "npxPath",
+            ReflectionTestUtils.setField(replayService, NPX_PATH_FIELD,
                     tempDir.resolve("missing-npx").toString());
-            ReflectionTestUtils.setField(replayService, "replayScriptPath",
+            ReflectionTestUtils.setField(replayService, REPLAY_SCRIPT_PATH_FIELD,
                     tempDir.resolve("replay.ts").toString());
-            ReflectionTestUtils.setField(replayService, "frontendDirectory", tempDir);
+            ReflectionTestUtils.setField(replayService, FRONTEND_DIRECTORY_FIELD, tempDir);
 
             final ReplayResultDTO result = replayService.replay(REPLAY_REQUEST);
 
             Assertions.assertFalse(result.valid());
-            Assertions.assertEquals("error:execution_error", result.reason());
+            Assertions.assertEquals(ReplayService.EXECUTION_ERROR, result.reason());
             Assertions.assertEquals(0, result.frames());
         }
     }

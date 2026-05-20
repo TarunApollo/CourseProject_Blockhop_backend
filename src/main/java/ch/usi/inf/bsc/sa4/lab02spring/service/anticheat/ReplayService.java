@@ -36,6 +36,9 @@ public class ReplayService {
     /// Env var for overriding the replay script path.
     private static final String REPLAY_SCRIPT_PATH_ENV = "REPLAY_SCRIPT_PATH";
 
+    /// Replay execution error reason.
+    public static final String EXECUTION_ERROR = "error:execution_error";
+
     /// Reads replay JSON output.
     private final ObjectMapper objectMapper;
 
@@ -92,13 +95,13 @@ public class ReplayService {
                 // the app might hang during shutdown.
                 Thread.currentThread().interrupt();
                 AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
-                result = new ReplayResultDTO(false, "error:execution_error", 0);
+                result = new ReplayResultDTO(false, EXECUTION_ERROR, 0);
             } catch (final tools.jackson.core.JacksonException e) {
                 AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
-                result = new ReplayResultDTO(false, "error:execution_error", 0);
+                result = new ReplayResultDTO(false, EXECUTION_ERROR, 0);
             } catch (final java.io.IOException e) {
                 AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), String.valueOf(e.getMessage()));
-                result = new ReplayResultDTO(false, "error:execution_error", 0);
+                result = new ReplayResultDTO(false, EXECUTION_ERROR, 0);
             } finally {
                 deleteTemporaryFile(levelFile);
                 deleteTemporaryFile(inputFile);

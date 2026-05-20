@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @DisplayName("The Replay Controller")
+@SuppressWarnings("pmd:UnitTestShouldIncludeAssert")
 class ReplayControllerTests {
 
     /// Level id used by replay endpoint tests.
