@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 /// Tests for [AntiCheatLog].
 @DisplayName("The Anti Cheat Log")
+@SuppressWarnings("fb-contrib:LO_SUSPECT_LOG_CLASS")
 class AntiCheatLogTests {
 
     /// User id used in log tests.

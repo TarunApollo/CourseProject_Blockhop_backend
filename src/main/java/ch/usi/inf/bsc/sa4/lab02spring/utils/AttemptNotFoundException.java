@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class AttemptNotFoundException extends RuntimeException {
 
     /// serial version uid for sonarqube remove this rule
-    public static final long serialVersionUID = 4328743;
+    private static final long serialVersionUID = 1L;
 
     /// Constructs an exception for a missing attempt.
     public AttemptNotFoundException() {
