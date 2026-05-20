@@ -1,9 +1,12 @@
 package ch.usi.inf.bsc.sa4.lab02spring.repository;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 
@@ -50,4 +53,76 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>,Atte
     /// @param after the lower time bound
     /// @return the number of attempts after the given timestamp
     long countByLevelAndTimestampAfter(Level level, ZonedDateTime after);
+
+    /// Counts attempts for the given level, user, status, and lower timestamp
+    /// bound, excluding one attempt.
+    @Query(value = """
+            {
+              'level.$id': ?0,
+              'user.$id': ?1,
+              'antiCheatStatus': ?2,
+              'timestamp': { $gt: ?3 },
+              '_id': { $ne: ?4 }
+            }
+            """, count = true)
+    long countByLevelUserStatusAndTimestampAfterExcludingAttempt(
+            ObjectId levelId,
+            String userId,
+            AttemptVerificationStatus antiCheatStatus,
+            ZonedDateTime after,
+            ObjectId id);
+
+    /// Returns another attempt on the same level with the same exact input
+    /// fingerprint and similar metadata.
+    @Query("""
+            {
+              'level.$id': ?0,
+              'fingerprint.exactHash': ?1,
+              '_id': { $ne: ?2 },
+              'fingerprint.inputFrameCount': ?3,
+              'fingerprint.inputChangeCount': ?4
+            }
+            """)
+    List<Attempt> findExactFingerprintDuplicate(
+            ObjectId levelId,
+            String exactHash,
+            ObjectId id,
+            int inputFrameCount,
+            int inputChangeCount);
+
+    /// Returns another attempt on the same level with the same
+    /// jitter-normalized input fingerprint.
+    @Query("""
+            {
+              'level.$id': ?0,
+              'fingerprint.jitterInputHash': ?1,
+              '_id': { $ne: ?2 },
+              'fingerprint.jitterInputChangeCount': ?3
+            }
+            """)
+    List<Attempt> findJitterFingerprintDuplicate(
+            ObjectId levelId,
+            String jitterInputHash,
+            ObjectId id,
+            int jitterInputChangeCount);
+
+    /// Returns another attempt on the same level that shares any fuzzy
+    /// input-change fingerprint and similar metadata.
+    @Query("""
+            {
+              'level.$id': ?0,
+              'fingerprint.changeBucketHashes': { $in: ?1 },
+              '_id': { $ne: ?2 },
+              'fingerprint.inputFrameCount': { $gte: ?3, $lte: ?4 },
+              'fingerprint.inputChangeCount': { $gte: ?5, $lte: ?6 }
+            }
+            """)
+    List<Attempt> findFuzzyFingerprintDuplicateInMetadataRange(
+            ObjectId levelId,
+            List<String> changeBucketHashes,
+            ObjectId id,
+            int minFrameCount,
+            int maxFrameCount,
+            int minInputChangeCount,
+            int maxInputChangeCount);
 }

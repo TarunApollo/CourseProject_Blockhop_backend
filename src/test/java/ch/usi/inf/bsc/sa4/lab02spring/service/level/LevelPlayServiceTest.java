@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
@@ -11,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
@@ -54,8 +56,6 @@ class LevelPlayServiceTest {
     private static final String LEVEL_TITLE = "Title";
     /// Default level description used by fixtures.
     private static final String LEVEL_DESC = "desc";
-    /// Canonical success message returned by handleLevelSubmission.
-    private static final String SUBMISSION_OK_MSG = "Successful level submission.";
     /// JSON key for the layers entry of a Tiled map.
     private static final String LAYERS_KEY = "layers";
     /// Immutable completed attempt DTO used by submission tests.
@@ -161,13 +161,15 @@ class LevelPlayServiceTest {
 
             final Map<String, Object> fakeMap = Map.of(LAYERS_KEY, List.of());
             try (MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito
-                    .mockStatic(LayerToTiledMapConverter.class)) {
+                    .mockStatic(LayerToTiledMapConverter.class);
+                    MockedStatic<AntiCheatLog> antiCheatLog = Mockito.mockStatic(AntiCheatLog.class)) {
                 mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
                         level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
 
                 final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
                 Assertions.assertSame(fakeMap, result);
+                antiCheatLog.verify(() -> AntiCheatLog.levelEntered(OWNER_ID, LEVEL_ID));
             }
         }
 
@@ -181,13 +183,15 @@ class LevelPlayServiceTest {
 
             final Map<String, Object> fakeMap = Map.of("data", "test");
             try (MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito
-                    .mockStatic(LayerToTiledMapConverter.class)) {
+                    .mockStatic(LayerToTiledMapConverter.class);
+                    MockedStatic<AntiCheatLog> antiCheatLog = Mockito.mockStatic(AntiCheatLog.class)) {
                 mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
                         level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
 
                 final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
                 Assertions.assertSame(fakeMap, result);
+                antiCheatLog.verify(() -> AntiCheatLog.levelEntered(OWNER_ID, LEVEL_ID));
             }
         }
     }
@@ -335,19 +339,23 @@ class LevelPlayServiceTest {
             Mockito.verify(attemptService).submitAttempt(otherUser, level, COMPLETED_DTO);
         }
 
-        /// Successful submission should return the canonical success message.
+        /// Successful submission should return the created Attempt.
         @Test
-        @DisplayName("returns the success message after a valid submission")
-        void returnsSuccessMessage() {
+        @DisplayName("returns the created attempt after a valid submission")
+        void returnsCreatedAttempt() {
             final Level level = publishableLevel();
             level.validatePublishEligible(OWNER_ID);
             level.publish(OWNER_ID);
             Mockito.when(userService.getById(OTHER_USER_ID)).thenReturn(Optional.of(otherUser));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+            final Attempt savedAttempt = new Attempt(otherUser, ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                    level, true, Duration.ofSeconds(10));
+            Mockito.when(attemptService.submitAttempt(otherUser, level, COMPLETED_DTO)).thenReturn(savedAttempt);
 
-            final String result = service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO);
+            final Attempt result = service.handleLevelSubmission(LEVEL_ID, OTHER_USER_ID, COMPLETED_DTO);
 
-            Assertions.assertEquals(SUBMISSION_OK_MSG, result);
+            Assertions.assertNotNull(result);
+            Assertions.assertEquals(savedAttempt, result);
         }
     }
 }

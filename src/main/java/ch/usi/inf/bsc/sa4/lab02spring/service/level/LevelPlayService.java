@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -8,6 +9,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -71,7 +73,7 @@ public class LevelPlayService {
     ///         user is not its creator
     /// @throws ForbiddenUserException if the user is not the owner of the level
     ///         when marking it as publish eligible
-    public String handleLevelSubmission(final String levelId, final String userId, final AttemptDTO dto) {
+    public Attempt handleLevelSubmission(final String levelId, final String userId, final AttemptDTO dto) {
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         if (!level.isPublished() && level.isOwnedBy(userId) && dto.completed()) {
@@ -80,8 +82,7 @@ public class LevelPlayService {
         if (!level.isPublished() && !level.isOwnedBy(userId)) {
             throw new ForbiddenLevelActionException("Level submission is not valid.");
         }
-        this.attemptService.submitAttempt(user, level, dto);
-        return "Successful level submission.";
+        return this.attemptService.submitAttempt(user, level, dto);
     }
 
     /// Returns a Tiled/Phaser-compatible map representation of a playable level.
@@ -100,6 +101,7 @@ public class LevelPlayService {
     public Map<String, Object> getPlayableMap(final User user, final String levelId) {
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensurePlayable(user.getId());
+        AntiCheatLog.levelEntered(user.getId(), levelId);
         final TileSet tileSet = this.tileSetService.getTileSet();
         return LayerToTiledMapConverter.convertPipeline(level, tileSet, this.tileSetService);
     }

@@ -45,3 +45,5 @@ out/
 .cocoindex_code
 
 quickpush.md
+
+.env
