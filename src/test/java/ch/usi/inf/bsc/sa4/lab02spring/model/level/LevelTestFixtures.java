@@ -35,9 +35,9 @@ final class LevelTestFixtures {
     /* default */ static final int LEVEL_HEIGHT = 14;
 
     /// GID used for start flags in tests.
-    /* default */ static final int START_FLAG_GID = 68;
+    /* default */ static final String START_FLAG_TILE_ID = "flag.green";
     /// GID used for exit doors in tests.
-    /* default */ static final int EXIT_DOOR_GID = 115;
+    /* default */ static final String EXIT_DOOR_TILE_ID = "door.closed.bottom";
 
     /// Utility class.
     private LevelTestFixtures() {
@@ -91,7 +91,7 @@ final class LevelTestFixtures {
     /// @param position the desired position
     /// @return a new [StartFlag]
     /* default */ static StartFlag createStartFlag(final Position position) {
-        return new StartFlag(START_FLAG_GID, position);
+        return new StartFlag(START_FLAG_TILE_ID, position);
     }
 
     /// Creates an exit door for the supplied position.
@@ -99,7 +99,7 @@ final class LevelTestFixtures {
     /// @param position the desired position
     /// @return a new [ExitDoor]
     /* default */ static ExitDoor createExitDoor(final Position position) {
-        return new ExitDoor(EXIT_DOOR_GID, position);
+        return new ExitDoor(EXIT_DOOR_TILE_ID, position);
     }
 
     /// Publishes a test level by adding required objects and validating

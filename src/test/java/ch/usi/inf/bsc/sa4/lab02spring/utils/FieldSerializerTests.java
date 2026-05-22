@@ -30,13 +30,13 @@ import java.util.Map;
     private static final String COMPACT_KEY = "3,7";
 
     /** Ground object used across tests. */
-    private static final GroundObject TEST_GROUND = new GroundObject(42);
+    private static final GroundObject TEST_GROUND = new GroundObject("terrain.grass.block");
 
     /** Game object (StartFlag) used across tests. */
-    private static final StartFlag TEST_OBJECT = new StartFlag(68, TEST_POS);
+    private static final StartFlag TEST_OBJECT = new StartFlag("flag.green", TEST_POS);
 
     /** JSON input for world layer deserialization tests. */
-    private static final String WORLD_JSON = "{\"3,7\":{\"gid\":42}}";
+    private static final String WORLD_JSON = "{\"3,7\":{\"tileId\":\"terrain.grass.block\"}}";
 
     /** ObjectMapper configured with the object layer serializer. */
     private static ObjectMapper objectLayerMapper;

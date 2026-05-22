@@ -36,85 +36,84 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-/// Integration tests for [EditorService] using a mocked Spring context.
+/// Tests for [EditorService].
 @SpringBootTest
-@DisplayName("The Editor Service")
+@DisplayName("Editor Service")
 @SuppressWarnings("PMD.ExcessiveImports")
 class EditorServiceTests {
 
-    /// Owner's user ID used across tests.
+    /// Owner ID.
     private static final String OWNER_ID = "user-1";
 
-    /// ID of a different user who is not the level owner.
+    /// Other user ID.
     private static final String OTHER_USER_ID = "user-2";
 
-    /// Level ID used across tests.
+    /// Level ID.
     private static final String LEVEL_ID = "level-1";
 
-    /// Display name of the test owner.
+    /// Owner name.
     private static final String OWNER_NAME = "Mario";
 
-    /// Title of the test level.
+    /// Level title.
     private static final String LEVEL_TITLE = "Test Level";
 
-    /// Description of the test level.
+    /// Level description.
     private static final String LEVEL_DESC = "Test Description";
 
-    /// GID of a ground tile used in world layer tests.
-    private static final int GROUND_GID = 1;
+    /// Ground tile ID.
+    private static final String GROUND_TILE_ID = "terrain.grass.block";
 
-    /// GID of the first object tile used in object layer tests.
-    private static final int OBJECT_GID_A = 42;
+    /// Object tile ID A.
+    private static final String OBJECT_TILE_ID_A = "block.plank";
 
-    /// GID of the second object tile used in object layer tests.
-    private static final int OBJECT_GID_B = 43;
+    /// Object tile ID B.
+    private static final String OBJECT_TILE_ID_B = "decoration.mushroom.red";
 
-    /// GID of the box placed in property update tests.
-    private static final int BOX_GID = 10;
+    /// Box tile ID.
+    private static final String BOX_TILE_ID = "block.plank";
 
-    /// A GID value that the tileset service will not recognize as valid.
-    private static final int INVALID_GID = 999;
+    /// Invalid tile ID.
+    private static final String INVALID_TILE_ID = "missing.tile";
 
-    /// First tile position used in layer tests.
+    /// Position A.
     private static final Position POS_A = new Position(0, 0);
 
-    /// Second tile position used in multi-tile layer tests.
+    /// Position B.
     private static final Position POS_B = new Position(1, 0);
 
-    /// Position of the box placed in property update tests.
+    /// Box position.
     private static final Position BOX_POS = new Position(2, 0);
 
-    /// A position that lies outside the level's valid bounds
-    /// (y exceeds max height of 13).
+    /// Out of bounds position.
     private static final Position OUT_OF_BOUNDS_POS = new Position(0, 14);
 
-    /// The service under test.
+    /// Service under test.
     @Autowired
     private EditorService editorService;
 
-    /// Mocked level repository to isolate tests from the database.
+    /// Mock repository.
     @MockitoBean
     private LevelRepository levelRepository;
 
-    /// Mocked tileset service to control GID validation results.
+    /// Mock catalog service.
     @MockitoBean
-    private TileSetService tileSetService;
+    private TileCatalogService tileCatalogService;
 
-    /// Mocked factory to control game object creation.
+    /// Mock factory.
     @MockitoBean
     private GameObjectFactory gameObjectFactory;
 
-    /// Mocked publish service to verify side-effect calls.
+    /// Mock publish service.
     @MockitoBean
     private LevelPublishService levelPublishService;
 
-    /// An unpublished level owned by the test user.
+    /// Test level.
     private Level testLevel;
 
-    /// A published level used for modifiability failure tests.
+    /// Published level.
     private Level publishedLevel;
 
-    /// Initializes shared test data before each test.
+    /// Setup test data.
     @BeforeEach
     void setup() {
         final User testUser = new User(OWNER_ID, OWNER_NAME);
@@ -127,13 +126,12 @@ class EditorServiceTests {
 
     /// Tests for [EditorService.replaceWorldLayer].
     @Nested
-    @DisplayName("when replacing the world layer")
+    @DisplayName("world layer replacement")
     class ReplaceWorldLayer {
 
-        /// Verifies the level is saved
-        /// and public publication state is reset on a successful empty-list replacement.
+        /// Check if level is saved and state reset.
         @Test
-        @DisplayName("saves the level and resets publication state with an empty tile list")
+        @DisplayName("saves level and resets state on empty replacement")
         void savesEmptyLayerAndInvalidatesPublish() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -146,14 +144,14 @@ class EditorServiceTests {
             Mockito.verify(levelPublishService).resetLevelAfterEdit(testLevel, OWNER_ID);
         }
 
-        /// Verifies the ground tile is placed into the world layer after replacement.
+        /// Check if ground tile is placed.
         @Test
-        @DisplayName("places the given ground tile into the level's world layer")
+        @DisplayName("places ground tile in world layer")
         void replacesWorldLayerWithGroundTile() {
-            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, GROUND_GID);
+            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, GROUND_TILE_ID);
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isGroundGID(GROUND_GID)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileCatalogService.isWorldTile(GROUND_TILE_ID)).thenReturn(Boolean.TRUE);
             Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
 
             editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto);
@@ -161,11 +159,11 @@ class EditorServiceTests {
             Assertions.assertNotNull(testLevel.getWorldLayer().get(POS_A));
         }
 
-        /// Verifies that a tile at an out-of-bounds position is rejected before any save.
+        /// Check if out of bounds position is rejected.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when tile position is out of bounds")
+        @DisplayName("fails on out of bounds position")
         void throwsOnOutOfBoundsPosition() {
-            final EditorLevelDTO tile = EditorLevelDTO.create(OUT_OF_BOUNDS_POS, GROUND_GID);
+            final EditorLevelDTO tile = EditorLevelDTO.create(OUT_OF_BOUNDS_POS, GROUND_TILE_ID);
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
@@ -175,14 +173,14 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a tile with an invalid GID is rejected before any save.
+        /// Check if invalid tile ID is rejected.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when ground GID is invalid")
+        @DisplayName("fails on invalid tile ID")
         void throwsOnInvalidGroundGid() {
-            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, INVALID_GID);
+            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, INVALID_TILE_ID);
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isGroundGID(INVALID_GID)).thenReturn(Boolean.FALSE);
+            Mockito.when(tileCatalogService.isWorldTile(INVALID_TILE_ID)).thenReturn(Boolean.FALSE);
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto));
@@ -190,9 +188,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a missing level aborts the operation before any save.
+        /// Check if missing level fails.
         @Test
-        @DisplayName("throws LevelNotFoundException and aborts save when level is missing")
+        @DisplayName("fails if level is missing")
         void throwsLevelNotFoundAndAbortsSave() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
@@ -203,9 +201,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a non-owner cannot replace the world layer.
+        /// Check if non-owner fails.
         @Test
-        @DisplayName("throws ForbiddenUserException and aborts save when caller is not the owner")
+        @DisplayName("fails if user is not the owner")
         void throwsForbiddenAndAbortsSave() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -216,9 +214,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a published level cannot have its world layer replaced.
+        /// Check if published level fails.
         @Test
-        @DisplayName("throws LevelPublishedException and aborts save when level is already published")
+        @DisplayName("fails if level is published")
         void throwsPublishedAndAbortsSave() {
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));
@@ -232,13 +230,12 @@ class EditorServiceTests {
 
     /// Tests for [EditorService.replaceObjectLayer].
     @Nested
-    @DisplayName("when replacing the object layer")
+    @DisplayName("object layer replacement")
     class ReplaceObjectLayer {
 
-        /// Verifies the level is saved
-        /// and public publication state is reset on a successful empty-list replacement.
+        /// Check if level is saved and state reset.
         @Test
-        @DisplayName("saves the level and resets publication state with an empty object list")
+        @DisplayName("saves level and resets state on empty replacement")
         void savesEmptyLayerAndInvalidatesPublish() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -251,21 +248,22 @@ class EditorServiceTests {
             Mockito.verify(levelPublishService).resetLevelAfterEdit(testLevel, OWNER_ID);
         }
 
-        /// Verifies that both DTOs are dispatched to the factory
-        /// and the resulting objects land in the level's object layer.
+        /// Check if objects are placed via factory.
         @Test
-        @DisplayName("maps both DTOs through the factory, populates the object layer, and saves")
+        @DisplayName("places objects via factory and saves")
         void placesTwoObjectsViaFactoryAndSaves() {
-            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_GID_A);
-            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_GID_B);
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_TILE_ID_A);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_TILE_ID_B);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
-            final Box realObjA = new Box(OBJECT_GID_A, POS_A, new Content.NoContent());
-            final Box realObjB = new Box(OBJECT_GID_B, POS_B, new Content.NoContent());
+            final Box realObjA = new Box(OBJECT_TILE_ID_A, POS_A, new Content.NoContent());
+            final Box realObjB = new Box(OBJECT_TILE_ID_B, POS_B, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
-            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_A, POS_A, new Content.NoContent())).thenReturn(realObjA);
-            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_B, POS_B, new Content.NoContent())).thenReturn(realObjB);
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_B)).thenReturn(Boolean.TRUE);
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_TILE_ID_A, POS_A, new Content.NoContent()))
+                    .thenReturn(realObjA);
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_TILE_ID_B, POS_B, new Content.NoContent()))
+                    .thenReturn(realObjB);
             Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
 
             editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto);
@@ -275,16 +273,16 @@ class EditorServiceTests {
             Mockito.verify(levelRepository).save(testLevel);
         }
 
-        /// Verifies that two objects at the same position are rejected before any save.
+        /// Check if duplicate positions fail.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when two objects share a position")
+        @DisplayName("fails on duplicate object position")
         void throwsOnDuplicatePositionAndAbortsSave() {
-            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_GID_A);
-            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_A, OBJECT_GID_B);
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_TILE_ID_A);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_A, OBJECT_TILE_ID_B);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_B)).thenReturn(Boolean.TRUE);
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
@@ -292,12 +290,11 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that an object at an out-of-bounds position
-        /// is rejected before any save.
+        /// Check if out of bounds position fails.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when object position is out of bounds")
+        @DisplayName("fails on out of bounds position")
         void throwsOnOutOfBoundsPosition() {
-            final EditorLevelDTO obj = EditorLevelDTO.create(OUT_OF_BOUNDS_POS, OBJECT_GID_A);
+            final EditorLevelDTO obj = EditorLevelDTO.create(OUT_OF_BOUNDS_POS, OBJECT_TILE_ID_A);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
@@ -307,14 +304,14 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that an object with an invalid GID is rejected before any save.
+        /// Check if invalid tile ID fails.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when object GID is invalid")
+        @DisplayName("fails on invalid tile ID")
         void throwsOnInvalidObjectGid() {
-            final EditorLevelDTO obj = EditorLevelDTO.create(POS_A, INVALID_GID);
+            final EditorLevelDTO obj = EditorLevelDTO.create(POS_A, INVALID_TILE_ID);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(INVALID_GID)).thenReturn(Boolean.FALSE);
+            Mockito.when(tileCatalogService.isObjectTile(INVALID_TILE_ID)).thenReturn(Boolean.FALSE);
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
@@ -322,21 +319,20 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that placing two start flags in the same layer
-        /// is rejected before any save.
+        /// Check if multiple start flags fail.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when two start flags are placed")
+        @DisplayName("fails if two start flags are placed")
         void throwsWhenTwoStartFlagsPlaced() {
-            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_GID_A);
-            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_GID_B);
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_TILE_ID_A);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_TILE_ID_B);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
-            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_A, POS_A, new Content.NoContent()))
-                    .thenReturn(new StartFlag(OBJECT_GID_A, POS_A));
-            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_B, POS_B, new Content.NoContent()))
-                    .thenReturn(new StartFlag(OBJECT_GID_B, POS_B));
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_B)).thenReturn(Boolean.TRUE);
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_TILE_ID_A, POS_A, new Content.NoContent()))
+                    .thenReturn(new StartFlag(OBJECT_TILE_ID_A, POS_A));
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_TILE_ID_B, POS_B, new Content.NoContent()))
+                    .thenReturn(new StartFlag(OBJECT_TILE_ID_B, POS_B));
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
@@ -344,21 +340,20 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that placing two exit doors in the same layer
-        /// is rejected before any save.
+        /// Check if multiple exit doors fail.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when two exit doors are placed")
+        @DisplayName("fails if two exit doors are placed")
         void throwsWhenTwoExitDoorsPlaced() {
-            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_GID_A);
-            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_GID_B);
+            final EditorLevelDTO obj1 = EditorLevelDTO.create(POS_A, OBJECT_TILE_ID_A);
+            final EditorLevelDTO obj2 = EditorLevelDTO.create(POS_B, OBJECT_TILE_ID_B);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj1, obj2));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_A)).thenReturn(Boolean.TRUE);
-            Mockito.when(tileSetService.isObjectGID(OBJECT_GID_B)).thenReturn(Boolean.TRUE);
-            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_A, POS_A, new Content.NoContent()))
-                    .thenReturn(new ExitDoor(OBJECT_GID_A, POS_A));
-            Mockito.when(gameObjectFactory.createGameObject(OBJECT_GID_B, POS_B, new Content.NoContent()))
-                    .thenReturn(new ExitDoor(OBJECT_GID_B, POS_B));
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_A)).thenReturn(Boolean.TRUE);
+            Mockito.when(tileCatalogService.isObjectTile(OBJECT_TILE_ID_B)).thenReturn(Boolean.TRUE);
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_TILE_ID_A, POS_A, new Content.NoContent()))
+                    .thenReturn(new ExitDoor(OBJECT_TILE_ID_A, POS_A));
+            Mockito.when(gameObjectFactory.createGameObject(OBJECT_TILE_ID_B, POS_B, new Content.NoContent()))
+                    .thenReturn(new ExitDoor(OBJECT_TILE_ID_B, POS_B));
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));
@@ -366,9 +361,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a missing level aborts the operation before any save.
+        /// Check if missing level fails.
         @Test
-        @DisplayName("throws LevelNotFoundException and aborts save when level is missing")
+        @DisplayName("fails if level is missing")
         void throwsLevelNotFoundAndAbortsSave() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
@@ -379,9 +374,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a non-owner cannot replace the object layer.
+        /// Check if non-owner fails.
         @Test
-        @DisplayName("throws ForbiddenUserException and aborts save when caller is not the owner")
+        @DisplayName("fails if user is not the owner")
         void throwsForbiddenAndAbortsSave() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -392,9 +387,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a published level cannot have its object layer replaced.
+        /// Check if published level fails.
         @Test
-        @DisplayName("throws LevelPublishedException and aborts save when level is already published")
+        @DisplayName("fails if level is published")
         void throwsPublishedAndAbortsSave() {
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));
@@ -408,16 +403,15 @@ class EditorServiceTests {
 
     /// Tests for [EditorService.updateObjectProperties].
     @Nested
-    @DisplayName("when updating object properties")
+    @DisplayName("object property updates")
     class UpdateObjectProperties {
 
-        /// Verifies that the box content at the target position is updated
-        /// and the level is saved with public publication state reset.
+        /// Check if box content is updated.
         @Test
-        @DisplayName("updates the box content at the given position and saves the level")
+        @DisplayName("updates box content and saves level")
         void updatesBoxContentAndSaves() {
             final Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
-            testLevel.putObjectLayer(BOX_POS, new Box(BOX_GID, BOX_POS, new Content.NoContent()));
+            testLevel.putObjectLayer(BOX_POS, new Box(BOX_TILE_ID, BOX_POS, new Content.NoContent()));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
             Mockito.when(levelRepository.save(testLevel)).thenReturn(testLevel);
 
@@ -430,9 +424,9 @@ class EditorServiceTests {
             Mockito.verify(levelPublishService).resetLevelAfterEdit(testLevel, OWNER_ID);
         }
 
-        /// Verifies that a missing object at the target position throws before any save.
+        /// Check if missing object fails.
         @Test
-        @DisplayName("throws NoSuchElementException and aborts save when no object exists at the position")
+        @DisplayName("fails if no object exists at position")
         void throwsWhenNoObjectAtPosition() {
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -443,11 +437,11 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a non-box object at the target position throws before any save.
+        /// Check if non-box fails.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when the object at the position is not a Box")
+        @DisplayName("fails if object at position is not a Box")
         void throwsWhenNonBoxAtPosition() {
-            testLevel.putObjectLayer(BOX_POS, new StartFlag(BOX_GID, BOX_POS));
+            testLevel.putObjectLayer(BOX_POS, new StartFlag(BOX_TILE_ID, BOX_POS));
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
 
@@ -457,9 +451,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that an out-of-bounds position throws before any save.
+        /// Check if out of bounds fails.
         @Test
-        @DisplayName("throws IllegalArgumentException and aborts save when the target position is out of bounds")
+        @DisplayName("fails on out of bounds position")
         void throwsOnOutOfBoundsPosition() {
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(OUT_OF_BOUNDS_POS, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -470,9 +464,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a missing level aborts the operation before any save.
+        /// Check if missing level fails.
         @Test
-        @DisplayName("throws LevelNotFoundException and aborts save when level is missing")
+        @DisplayName("fails if level is missing")
         void throwsLevelNotFoundAndAbortsSave() {
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
@@ -483,9 +477,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a non-owner cannot update object properties.
+        /// Check if non-owner fails.
         @Test
-        @DisplayName("throws ForbiddenUserException and aborts save when caller is not the owner")
+        @DisplayName("fails if user is not the owner")
         void throwsForbiddenAndAbortsSave() {
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
@@ -496,9 +490,9 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
-        /// Verifies that a published level cannot have its object properties updated.
+        /// Check if published level fails.
         @Test
-        @DisplayName("throws LevelPublishedException and aborts save when level is already published")
+        @DisplayName("fails if level is published")
         void throwsPublishedAndAbortsSave() {
             final BoxPropertyUpdateDTO dto = new BoxPropertyUpdateDTO(BOX_POS, new Content.NoContent());
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));

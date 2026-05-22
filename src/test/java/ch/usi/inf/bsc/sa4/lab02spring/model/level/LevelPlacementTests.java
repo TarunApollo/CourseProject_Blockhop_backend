@@ -53,7 +53,7 @@ class LevelPlacementTests {
             @DisplayName("it throws when the world layer has an object at the position")
             void worldLayerOccupied() {
                 EnsureObjectCanBePlacedAtMethod.this.level.putWorldLayer(EnsureObjectCanBePlacedAtMethod.this.position,
-                        new GroundObject(5));
+                        new GroundObject("terrain.grass.block"));
                 final Executable codeToExecute = () -> EnsureObjectCanBePlacedAtMethod.this.level
                         .ensureObjectCanBePlacedAt(EnsureObjectCanBePlacedAtMethod.this.position);
                 assertThrows(ObjectPlacementConflictException.class, codeToExecute);
@@ -142,7 +142,7 @@ class LevelPlacementTests {
         @DisplayName("updateBoxContent keeps the object as a Box")
         void updatedObjectIsBox() {
             final Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
-            this.level.putObjectLayer(this.validPosition, new Box(42, this.validPosition, new Content.NoContent()));
+            this.level.putObjectLayer(this.validPosition, new Box("block.plank", this.validPosition, new Content.NoContent()));
             this.level.updateBoxContent(this.validPosition, newContent);
             assertInstanceOf(Box.class, this.level.getObjectLayer().get(this.validPosition));
         }
@@ -152,7 +152,7 @@ class LevelPlacementTests {
         @DisplayName("updateBoxContent updates the box content")
         void updatedBoxHasNewContent() {
             final Content newContent = new Content.SomeContent(CoinType.GOLD_COIN);
-            this.level.putObjectLayer(this.validPosition, new Box(42, this.validPosition, new Content.NoContent()));
+            this.level.putObjectLayer(this.validPosition, new Box("block.plank", this.validPosition, new Content.NoContent()));
             this.level.updateBoxContent(this.validPosition, newContent);
             final Box updatedBox = assertInstanceOf(Box.class, this.level.getObjectLayer().get(this.validPosition));
             assertEquals(newContent, updatedBox.content());
