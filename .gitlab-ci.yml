@@ -4,8 +4,28 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   SONARQUBE_PROJECT_KEY: sa4-2026-${CI_PROJECT_ID}
   SONARQUBE_PROJECT_NAME: sa4-2026/team-4-backend
+  SSH_HOST: "gitlab-cd@fahrenheit451.sa4.si.usi.ch"
+  DOCKER_STAGING_HOST: "fahrenheit451.sa4.si.usi.ch"
   CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
+  FRONTEND_BASE_URL: "https://fahrenheit451.sa4.si.usi.ch"
+  BACKEND_BASE_URL: "https://fahrenheit451.sa4.si.usi.ch/backend"
   DOCKER_TLS_CERTDIR: ""
+
+.devops: &devops |
+  function setup_ssh_docker_host() {
+    echo "Setting up ssh agent proxy..."
+    apk add openssh-client
+
+    eval $(ssh-agent -s)
+
+    mkdir -p ~/.ssh
+
+    echo "$DOCKER_CD_KEY" | base64 -d > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+
+    ssh-keyscan -H "$DOCKER_STAGING_HOST" >> ~/.ssh/known_hosts
+    ssh-add ~/.ssh/id_rsa
+  }
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
@@ -80,6 +100,33 @@ release_backend:
     - echo "$CI_DEPENDENCY_PROXY_PASSWORD" | docker login -u "$CI_DEPENDENCY_PROXY_USER" --password-stdin "$CI_DEPENDENCY_PROXY_SERVER"
     - docker build --build-arg CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH="$CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+
+deploy_backend:
+  rules:
+    - if: ($CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
+  stage: deploy
+  tags:
+    - ci-dev-runner
+  services:
+    - name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28-dind
+      alias: docker
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28
+  before_script:
+    - *devops
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    BACKEND_IMAGE: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
+  script:
+    - echo "Logging in to Gitlab Container registry with CI credentials..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - setup_ssh_docker_host
+    - unset DOCKER_HOST
+    - docker context create --docker "host=ssh://$SSH_HOST" remote
+    - docker context use remote
+    - docker info
+    - docker --context remote compose -f deployment/docker-compose.yml down
+    - docker --context remote compose -f deployment/docker-compose.yml pull
+    - docker --context remote compose -f deployment/docker-compose.yml up -d
 
 pages:
   stage: deploy
