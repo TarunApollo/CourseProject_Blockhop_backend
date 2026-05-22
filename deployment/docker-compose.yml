@@ -1,0 +1,21 @@
+services:
+  mongodb:
+    image: mongo:6
+    networks: [ lab-05-network ]
+    restart: always
+
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: lab-05-backend
+    networks: [ lab-05-network ]
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+      - BACKEND_BASE_URL=${BACKEND_BASE_URL}
+
+networks:
+  lab-05-network:
+    external: true
+    name: lab-05-network

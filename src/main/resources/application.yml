@@ -1,3 +1,6 @@
+app:
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+
 spring:
   output:
     ansi:
@@ -8,8 +11,7 @@ spring:
   data:
     mongodb:
       database: users_tutorial_lab02
-      host: localhost
-      port: 27017
+      uri: ${MONGODB_URI:mongodb://localhost:27017}
   security:
     oauth2:
       client:
