@@ -4,11 +4,11 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   SONARQUBE_PROJECT_KEY: sa4-2026-${CI_PROJECT_ID}
   SONARQUBE_PROJECT_NAME: sa4-2026/team-4-backend
-  SSH_HOST: "gitlab-cd@fahrenheit451.sa4.si.usi.ch"
-  DOCKER_STAGING_HOST: "fahrenheit451.sa4.si.usi.ch"
+  SSH_HOST: "gitlab-cd@hajime.sa4.si.usi.ch"
+  DOCKER_STAGING_HOST: "hajime.sa4.si.usi.ch"
   CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
-  FRONTEND_BASE_URL: "https://fahrenheit451.sa4.si.usi.ch"
-  BACKEND_BASE_URL: "https://fahrenheit451.sa4.si.usi.ch/backend"
+  FRONTEND_BASE_URL: "https://hajime.sa4.si.usi.ch"
+  BACKEND_BASE_URL: "https://hajime.sa4.si.usi.ch/backend"
   DOCKER_TLS_CERTDIR: ""
 
 .devops: &devops |
