@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,13 +20,20 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+    /// Check out application.yml for all ENV vars used for the URLs.
+    private final String frontendBaseUrl;
+
+    public SecurityConfiguration(@Value("${app.frontend-base-url}") final String frontendBaseUrl) {
+        this.frontendBaseUrl = frontendBaseUrl;
+    }
+
     /// Creates the CORS configuration used by the application.
     /// @return the configured CorsConfigurationSource
     ///
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of(frontendBaseUrl));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(Boolean.TRUE);  // required for session cookies
@@ -49,7 +57,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/csrf").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(auth ->
-                        auth.defaultSuccessUrl("http://localhost:3000", true))
+                        auth.defaultSuccessUrl(frontendBaseUrl, true))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .build();
     }
