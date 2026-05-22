@@ -4,12 +4,8 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   SONARQUBE_PROJECT_KEY: sa4-2026-${CI_PROJECT_ID}
   SONARQUBE_PROJECT_NAME: sa4-2026/team-4-backend
-
-stages:
-  - build
-  - test
-  - deploy
-  - quality
+  CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
+  DOCKER_TLS_CERTDIR: ""
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
@@ -19,6 +15,13 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "dev"
+
+stages:
+  - build
+  - test
+  - release
+  - deploy
+  - quality
 
 compile_job:
   stage: build
@@ -38,6 +41,15 @@ javadoc_job:
       - build/docs
     expire_in: 1 hour
 
+package_job:
+  stage: build
+  script: gradle assemble
+  artifacts:
+    when: always
+    paths:
+      - build/libs
+    expire_in: 1 hour
+
 test_job:
   stage: test
   script: gradle test
@@ -51,6 +63,22 @@ test_job:
     reports:
       junit: [ build/reports/jacoco/test/jacocoTestReport.xml, build/test-results/test/**/TEST-*.xml ]
     expire_in: 1 hour
+
+release_backend:
+  stage: release
+  services:
+    - name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28-dind
+      alias: docker
+  image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28
+  dependencies:
+    - package_job
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+  script:
+    - echo "Logging in to Gitlab Container registry with CI credentials..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker build --build-arg CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH="$CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH" -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
 
 pages:
   stage: deploy
