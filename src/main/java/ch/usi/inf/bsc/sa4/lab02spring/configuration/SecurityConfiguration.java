@@ -23,7 +23,7 @@ public class SecurityConfiguration {
     /// Check out application.yml for all ENV vars used for the URLs.
     private final String frontendBaseUrl;
 
-    public SecurityConfiguration(@Value("${app.frontend-base-url}") final String frontendBaseUrl) {
+    public SecurityConfiguration(@Value("${app.frontend-base-url:http://localhost:3000}") final String frontendBaseUrl) {
         this.frontendBaseUrl = frontendBaseUrl;
     }
 
