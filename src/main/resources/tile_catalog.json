@@ -1,0 +1,220 @@
+{
+  "tiles": [
+    {
+      "id": "terrain.grass.block.top.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.top",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.top.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.center",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.bottom.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.bottom",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.bottom.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.dirt.block.top",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.dirt.block.center",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.stone.block",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.snow.block",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "platform.bridge.logs",
+      "type": "Semisolid",
+      "category": "special",
+      "layer": "world"
+    },
+    {
+      "id": "hazard.spikes",
+      "type": "Damage",
+      "category": "hazard",
+      "layer": "world"
+    },
+    {
+      "id": "hazard.lava",
+      "type": "Damage",
+      "category": "hazard",
+      "layer": "world"
+    },
+    {
+      "id": "block.planks",
+      "type": "BoxDouble",
+      "category": "item",
+      "layer": "object"
+    },
+    {
+      "id": "block.plank",
+      "type": "Box",
+      "category": "item",
+      "layer": "object"
+    },
+    {
+      "id": "flag.green",
+      "type": "Start_Flag",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "flag.green.alt",
+      "type": "Start_Flag_B",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "door.closed.bottom",
+      "type": "Door_Closed",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "door.closed.top",
+      "type": "Door_Closed_Top",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "door.open.bottom",
+      "type": "Door_Open",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "door.open.top",
+      "type": "Door_Open_Top",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "coin.gold",
+      "type": "Item_Coin_Gold",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.gold.side",
+      "type": "Item_Coin_Gold_Side",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.silver",
+      "type": "Item_Coin_Silver",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.silver.side",
+      "type": "Item_Coin_Silver_Side",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.bronze",
+      "type": "Item_Coin_Bronze",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.bronze.side",
+      "type": "Item_Coin_Bronze_Side",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "enemy.slime.normal",
+      "type": "Enemy_Slime_Normal",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
+      "id": "enemy.snail",
+      "type": "Enemy_Snail",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
+      "id": "enemy.bee",
+      "type": "Enemy_Bee",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.bush",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.cactus",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    }
+  ]
+}
