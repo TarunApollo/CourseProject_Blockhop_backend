@@ -19,9 +19,9 @@ workflow:
 stages:
   - build
   - test
+  - quality
   - release
   - deploy
-  - quality
 
 compile_job:
   stage: build
