@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
@@ -7,8 +8,10 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 /// Represents a user's attempt at playing a level. An attempt stores who
 /// played, when it happened, which level was played, whether the level was
@@ -25,6 +28,9 @@ import java.time.ZonedDateTime;
 @CompoundIndex(
         name = "attempt_level_jitter_fingerprint_metadata",
         def = "{'level': 1, 'fingerprint.jitterInputHash': 1, 'fingerprint.jitterInputChangeCount': 1}")
+@CompoundIndex(
+        name = "attempt_level_completed_timetaken_ghost",
+        def = "{'level': 1, 'completed': 1, 'timeTaken': 1}")
 public class Attempt {
 
     /// Database identifier of the attempt.
@@ -53,6 +59,10 @@ public class Attempt {
 
     /// Fingerprint of the input log used for anti-cheat duplicate detection.
     /* package */ InputLogFingerprint fingerprint;
+
+    /// Input frames recorded during this attempt, used for ghost replay.
+    @JsonIgnore
+    private List<InputFrameDTO> inputLog;
 
     /// Creates a new attempt. An id is auto-generated.
     ///
@@ -169,5 +179,19 @@ public class Attempt {
     /// @return input-log fingerprint
     public InputLogFingerprint getFingerprint() {
         return fingerprint;
+    }
+
+    /// Returns the input frames recorded for ghost replay.
+    ///
+    /// @return input log, or null if not set
+    public List<InputFrameDTO> getInputLog() {
+        return inputLog;
+    }
+
+    /// Stores the input frames for ghost replay.
+    ///
+    /// @param inputLog frames to store
+    public void setInputLog(final List<InputFrameDTO> inputLog) {
+        this.inputLog = inputLog;
     }
 }
