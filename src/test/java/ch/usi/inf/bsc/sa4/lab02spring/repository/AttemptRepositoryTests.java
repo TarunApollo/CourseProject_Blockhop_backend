@@ -192,6 +192,20 @@ import java.util.Optional;
             Assertions.assertTrue(result.isPresent());
             Assertions.assertEquals(fastest.getId(), result.get().getId());
         }
+
+        /// Verifies that single-digit and double-digit second durations sort by
+        /// actual elapsed time, not lexicographic string order.
+        @Test
+        @DisplayName("returns 9s ahead of 10s when durations cross a digit boundary")
+        /* package */ void returnsFastestAcrossDigitBoundary() {
+            completedWithLog(Duration.ofSeconds(10));
+            final Attempt fastest = completedWithLog(Duration.ofSeconds(9));
+
+            final Optional<Attempt> result = attemptRepository.findFastestGhostCandidate(levelId());
+
+            Assertions.assertTrue(result.isPresent());
+            Assertions.assertEquals(fastest.getId(), result.get().getId());
+        }
     }
 
     // -----------------------------------------------------------------------
