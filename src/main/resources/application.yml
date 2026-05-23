@@ -1,3 +1,6 @@
+springdotenv:
+  filenames: .env.local,.env
+
 app:
   frontend-base-url: ${APP_FRONTEND_BASE_URL}
 
