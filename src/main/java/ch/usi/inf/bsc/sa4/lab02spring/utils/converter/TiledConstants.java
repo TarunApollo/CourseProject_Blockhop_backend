@@ -4,10 +4,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 @SuppressWarnings("PMD.AtLeastOneConstructor")
 public final class TiledConstants {
 
-    private TiledConstants() {
-        // Private constructor to hide implicit public one
-    }
-
     /// Tiled field for object or property names.
     public static final String KEY_NAME = "name";
 
@@ -32,4 +28,5 @@ public final class TiledConstants {
     /// Tiled property type for integer values.
     public static final String TYPE_INT = "int";
 
+    private TiledConstants() {}
 }
