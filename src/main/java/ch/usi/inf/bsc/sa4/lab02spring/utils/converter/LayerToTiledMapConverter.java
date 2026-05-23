@@ -44,7 +44,7 @@ public final class LayerToTiledMapConverter {
             final Level level,
             final TileCatalogService tileCatalogService) {
         final Map<String, Object> worldLayer = TiledLayerMapper.buildWorldLayer(level.getWorldLayer(), level.getWidth(),
-                level.getHeight(), tileCatalogService);
+                level.getHeight());
         final Map<String, Object> objectLayer = TiledLayerMapper.buildObjectLayer(level.getObjectLayer(),
                 tileCatalogService);
         return Stream.concat(

@@ -48,8 +48,7 @@ final class TiledLayerMapper {
     /* package */ static Map<String, Object> buildWorldLayer(
             final Map<Position, GroundObject> worldLayer,
             final int width,
-            final int height,
-            final TileCatalogService tileCatalogService) {
+            final int height) {
         final List<String> data = new ArrayList<>(Collections.nCopies(width * height, ""));
 
         for (final Map.Entry<Position, GroundObject> entry : worldLayer.entrySet()) {

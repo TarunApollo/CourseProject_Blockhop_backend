@@ -26,6 +26,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 /// Applies editor updates to world and object layers.
 @Service
+@SuppressWarnings("PMD.UseConcurrentHashMap")
 public class EditorService {
 
     /// Persists edited levels.
@@ -113,7 +114,6 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        @SuppressWarnings("PMD.UseConcurrentHashMap")
         final Map<Position, T> newLayer = new LinkedHashMap<>(dto.entries().size());
         final Set<Position> seenPositions = new HashSet<>(dto.entries().size());
 

@@ -3,6 +3,11 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 /// Common constants used for Tiled JSON export.
 @SuppressWarnings("PMD.AtLeastOneConstructor")
 public final class TiledConstants {
+
+    private TiledConstants() {
+        // Private constructor to hide implicit public one
+    }
+
     /// Tiled field for object or property names.
     public static final String KEY_NAME = "name";
 

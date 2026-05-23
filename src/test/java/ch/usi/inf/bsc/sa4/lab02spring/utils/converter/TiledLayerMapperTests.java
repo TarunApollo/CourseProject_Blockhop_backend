@@ -28,6 +28,9 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 @SuppressWarnings("PMD.TooManyStaticImports")
 class TiledLayerMapperTests {
 
+    /// SuppressWarnings constant.
+    private static final String UNCHECKED = "unchecked";
+
     /// Test tile id for boxes.
     private static final String BOX_TILE_ID = "box.id";
 
@@ -57,14 +60,13 @@ class TiledLayerMapperTests {
     /// World tiles are written into the right grid slot.
     @Test
     @DisplayName("transforms world layer into 1D array")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     void buildsWorldLayer() {
         final Map<Position, GroundObject> worldLayer = Map.of(POS, new GroundObject("ground.tile"));
         final int width = 3;
         final int height = 3;
 
-        final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height,
-                tileCatalogService);
+        final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height);
         final List<String> data = (List<String>) result.get(DATA_KEY);
 
         assertNotNull(data);
@@ -75,18 +77,17 @@ class TiledLayerMapperTests {
     /// World tiles outside the map boundaries are ignored.
     @Test
     @DisplayName("ignores world tiles outside bounds")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     void ignoresOutOfBoundsTiles() {
         final Map<Position, GroundObject> worldLayer = Map.of(
-            new Position(-1, 0), new GroundObject("out.left"),
-            new Position(0, -1), new GroundObject("out.top"),
-            new Position(3, 0), new GroundObject("out.right"),
-            new Position(0, 3), new GroundObject("out.bottom")
-        );
+                new Position(-1, 0), new GroundObject("out.left"),
+                new Position(0, -1), new GroundObject("out.top"),
+                new Position(3, 0), new GroundObject("out.right"),
+                new Position(0, 3), new GroundObject("out.bottom"));
         final int width = 3;
         final int height = 3;
 
-        final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height, tileCatalogService);
+        final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height);
         final List<String> data = (List<String>) result.get(DATA_KEY);
 
         assertNotNull(data);
@@ -99,7 +100,7 @@ class TiledLayerMapperTests {
     /// Objects include their tile id and catalog type.
     @Test
     @DisplayName("maps objects with catalog data")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     void buildsObjectLayer() {
         final GameObject box = new Box(BOX_TILE_ID, POS, new Content.NoContent());
         Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
@@ -119,7 +120,7 @@ class TiledLayerMapperTests {
     /// Boxes keep their content property.
     @Test
     @DisplayName("includes properties for boxes with content")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     void exportsBoxProperties() {
         final Content content = new Content.SomeContent(CoinType.GOLD_COIN);
         final GameObject box = new Box(BOX_TILE_ID, POS, content);
@@ -138,7 +139,7 @@ class TiledLayerMapperTests {
     /// Objects without SomeContent do not have a properties field.
     @Test
     @DisplayName("does not include properties for boxes without content")
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     void excludesBoxPropertiesWithoutContent() {
         final GameObject box = new Box(BOX_TILE_ID, POS, new Content.NoContent());
         Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);

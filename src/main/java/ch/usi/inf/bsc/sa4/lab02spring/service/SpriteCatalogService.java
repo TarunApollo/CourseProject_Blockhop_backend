@@ -36,6 +36,7 @@ public class SpriteCatalogService {
     private final Set<String> validSprites;
 
     /// Initializes the service by loading all spritesheets from the classpath.
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
     public SpriteCatalogService() {
         try {
             final Map<String, Map<String, Object>> tempPayloads = new HashMap<>();

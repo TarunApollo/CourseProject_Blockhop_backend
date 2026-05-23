@@ -17,6 +17,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.TileSetNotLoadedException;
 
 /// Service that loads and checks tile catalog entries.
 @Service
+@SuppressWarnings("PMD.UseConcurrentHashMap")
 public final class TileCatalogService {
     /// Layer name for world tiles.
     private static final String WORLD_LAYER = "world";
@@ -130,7 +131,6 @@ public final class TileCatalogService {
     ///               ids.
     /// @param curatedTiles entries loaded from JSON
     /// @return unique catalog entries
-    @SuppressWarnings("PMD.UseConcurrentHashMap")
     private static List<Entry> buildTiles(final Iterable<Entry> curatedTiles) {
         final Map<String, Entry> entries = new LinkedHashMap<>();
         for (final Entry entry : curatedTiles) {

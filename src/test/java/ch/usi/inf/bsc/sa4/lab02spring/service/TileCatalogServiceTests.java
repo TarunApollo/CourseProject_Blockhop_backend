@@ -23,6 +23,7 @@ class TileCatalogServiceTests {
     /// Tile ID used for missing tile lookups.
     private static final String MISSING_TILE = "missing.tile";
 
+    /// The service under test.
     @Autowired
     private TileCatalogService service;
 
