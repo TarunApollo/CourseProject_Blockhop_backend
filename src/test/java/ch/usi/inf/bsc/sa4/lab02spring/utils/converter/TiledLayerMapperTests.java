@@ -24,6 +24,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 /// Tests for [TiledLayerMapper].
 @SpringBootTest
 @DisplayName("Tiled Layer Mapper")
+@SuppressWarnings("PMD.TooManyStaticImports")
 class TiledLayerMapperTests {
 
     /// Test tile id for boxes.

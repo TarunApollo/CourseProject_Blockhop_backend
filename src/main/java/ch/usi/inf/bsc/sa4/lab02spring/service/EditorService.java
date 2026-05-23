@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -112,6 +113,7 @@ public class EditorService {
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
+        @SuppressWarnings("PMD.UseConcurrentHashMap")
         final Map<Position, T> newLayer = new LinkedHashMap<>(dto.entries().size());
         final Set<Position> seenPositions = new HashSet<>(dto.entries().size());
 
@@ -123,7 +125,7 @@ public class EditorService {
             newLayer.put(entry.position(), factory.apply(level, entry));
         }
 
-        setter.accept(level, newLayer);
+        setter.accept(level, Collections.unmodifiableMap(newLayer));
 
         this.levelPublishService.resetLevelAfterEdit(level, userId);
         return levelRepository.save(level);

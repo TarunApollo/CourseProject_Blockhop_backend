@@ -22,6 +22,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 /// Tests for [LayerToTiledMapConverter].
 @SpringBootTest
 @DisplayName("Layer to Tiled Map Converter")
+@SuppressWarnings("PMD.TooManyStaticImports")
 class LayerToTiledMapConverterTests {
 
     /// Mock tile catalog used by the converter.
