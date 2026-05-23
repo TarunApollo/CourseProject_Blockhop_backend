@@ -44,9 +44,6 @@ class AssetControllerTests {
     
     /// Header value for cache control.
     private static final String CACHE_CONTROL_VALUE = "max-age=3600, public";
-    
-    /// Sample payload for spritesheet metadata.
-    private static final Map<String, Object> PAYLOAD = Map.of("frames", Map.of("sprite1", Map.of()));
 
     /// Tests for fetching spritesheets.
     @Nested
@@ -57,14 +54,15 @@ class AssetControllerTests {
         @Test
         @DisplayName("should return 200 OK and payload with cache headers")
         void typeExists() {
-            Mockito.when(spriteCatalogService.getPayload(TYPE_CHARACTERS)).thenReturn(Optional.of(PAYLOAD));
+            final Map<String, Object> payload = Map.of("frames", Map.of("sprite1", Map.of()));
+            Mockito.when(spriteCatalogService.getPayload(TYPE_CHARACTERS)).thenReturn(Optional.of(payload));
 
             restTestClient.get()
                     .uri("/assets/spritesheets?type={type}", TYPE_CHARACTERS)
                     .exchange()
                     .expectStatus().isOk()
                     .expectHeader().valueEquals(CACHE_CONTROL_HEADER, CACHE_CONTROL_VALUE)
-                    .expectBody(Map.class).isEqualTo(PAYLOAD);
+                    .expectBody(Map.class).isEqualTo(payload);
         }
 
         /// Tests when the spritesheet type does not exist.

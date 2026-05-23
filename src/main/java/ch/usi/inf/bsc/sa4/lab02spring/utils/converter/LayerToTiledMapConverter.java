@@ -67,7 +67,7 @@ public final class LayerToTiledMapConverter {
                         Map.entry("height", level.getHeight()),
                         Map.entry("nextlayerid", 3),
                         Map.entry("nextobjectid", level.getObjectLayer().size() + 1),
-                        Map.entry("infinite", Boolean.FALSE),
+                        Map.entry("infinite", false),
                         Map.entry("doorOpen",
                                 level.getClearCondition().condition() instanceof Condition.NoClearCondition),
                         Map.entry("properties", buildMapProperties(level))))
