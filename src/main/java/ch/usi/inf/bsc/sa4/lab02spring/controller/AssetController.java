@@ -28,12 +28,13 @@ public class AssetController {
         this.spriteCatalogService = spriteCatalogService;
     }
 
-    /// Serves spritesheet metadata as JSON format compatible with Phaser 3's atlas loaders.
+    /// Serves spritesheet metadata as JSON format compatible with Phaser 3's atlas
+    /// loaders.
     ///
     /// @spec.requires type is not null.
     /// @param type the type of spritesheet to load (e.g., characters, enemies)
-    /// @return a 200 OK response containing the spritesheet metadata with cache headers if found,
-    ///         or a 404 Not Found response otherwise
+    /// @return a 200 OK response containing the spritesheet metadata with cache
+    ///         headers if found, or a 404 Not Found response otherwise
     @GetMapping("/spritesheets")
     public ResponseEntity<Map<String, Object>> getSpritesheet(@RequestParam final String type) {
         return spriteCatalogService.getPayload(type)
