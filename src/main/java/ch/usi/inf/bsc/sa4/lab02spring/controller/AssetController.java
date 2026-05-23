@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 /// REST controller for serving game assets.
 @RestController
-@RequestMapping("/api/assets")
+@RequestMapping("/assets")
 public class AssetController {
 
     /// Service used to retrieve sprite catalog data.
@@ -29,16 +29,17 @@ public class AssetController {
     }
 
     /// Serves spritesheet metadata as JSON format compatible with Phaser 3's atlas loaders.
-    @GetMapping("/spritesheets/{type}")
-    public ResponseEntity<Map<String, Object>> getSpritesheet(@PathVariable("type") final String type) {
-        final Map<String, Object> payload = spriteCatalogService.getPayload(type);
-
-        if (payload == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
-                .body(payload);
+    ///
+    /// @spec.requires type is not null.
+    /// @param type the type of spritesheet to load (e.g., characters, enemies)
+    /// @return a 200 OK response containing the spritesheet metadata with cache headers if found,
+    ///         or a 404 Not Found response otherwise
+    @GetMapping("/spritesheets")
+    public ResponseEntity<Map<String, Object>> getSpritesheet(@RequestParam final String type) {
+        return spriteCatalogService.getPayload(type)
+                .map(payload -> ResponseEntity.ok()
+                        .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
+                        .body(payload))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

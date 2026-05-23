@@ -7,12 +7,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.mongodb.lang.Nullable;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /// Service that loads and parses spritesheet XML files into JSON payloads.
@@ -100,9 +103,9 @@ public class SpriteCatalogService {
     /// Gets the pre-computed JSON payload for a given spritesheet type.
     ///
     /// @param type the type of the spritesheet (e.g., characters, enemies, tiles)
-    /// @return the JSON payload representing the atlas
-    public Map<String, Object> getPayload(final String type) {
-        return payloads.get(type);
+    /// @return an Optional containing the JSON payload representing the atlas, or empty if not found
+    public Optional<Map<String, Object>> getPayload(final String type) {
+        return Optional.ofNullable(payloads.get(type));
     }
 
     /// Checks if a sprite name exists in any loaded spritesheet.
