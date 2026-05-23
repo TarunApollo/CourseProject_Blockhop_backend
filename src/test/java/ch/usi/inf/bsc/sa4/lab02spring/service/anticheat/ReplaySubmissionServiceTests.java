@@ -7,11 +7,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -71,11 +70,6 @@ class ReplaySubmissionServiceTests {
                     new InputFrameDTO(0, false, false, false, false),
                     new InputFrameDTO(1, true, false, false, false)));
 
-    /// Empty tileset used by replay map conversion.
-    private static final TileSet EMPTY_TILESET = new TileSet(
-            1, "atlas", 128, 128, 0, 8,
-            "atlas.png", 1024, 1024, 0, 0, List.of());
-
     /// Minimal tiled map returned by the mocked converter.
     private static final Map<String, Object> TILED_MAP = Map.of("layers", List.of());
 
@@ -97,7 +91,7 @@ class ReplaySubmissionServiceTests {
 
     /// Mocked tileset service.
     @MockitoBean
-    private TileSetService tileSetService;
+    private TileCatalogService tileCatalogService;
 
     /// Mocked user service.
     @MockitoBean
@@ -286,7 +280,6 @@ class ReplaySubmissionServiceTests {
         Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
         Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(user));
         Mockito.when(attemptService.getAttemptById(ATTEMPT_ID)).thenReturn(attempt);
-        Mockito.when(tileSetService.getTileSet()).thenReturn(EMPTY_TILESET);
         Mockito.when(objectMapper.writeValueAsString(Mockito.any()))
                 .thenReturn(LEVEL_JSON, INPUT_JSON);
         Mockito.when(replayService.replay(Mockito.any(ReplayRequest.class))).thenReturn(replayResult);
@@ -294,12 +287,10 @@ class ReplaySubmissionServiceTests {
 
     /// Mocks the static Tiled map conversion used by the service.
     private MockedStatic<LayerToTiledMapConverter> mockTiledMapConversion() {
-        final MockedStatic<LayerToTiledMapConverter> mockedStatic =
-                Mockito.mockStatic(LayerToTiledMapConverter.class);
+        final MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito.mockStatic(LayerToTiledMapConverter.class);
         mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
                 level,
-                EMPTY_TILESET,
-                tileSetService)).thenReturn(TILED_MAP);
+                tileCatalogService)).thenReturn(TILED_MAP);
         return mockedStatic;
     }
 
@@ -314,8 +305,8 @@ class ReplaySubmissionServiceTests {
 
     /// Verifies the same computed fingerprint is persisted and classified.
     private void verifyFingerprintUpdatedAndClassified() {
-        final ArgumentCaptor<InputLogFingerprint> fingerprintCaptor =
-                ArgumentCaptor.forClass(InputLogFingerprint.class);
+        final ArgumentCaptor<InputLogFingerprint> fingerprintCaptor = ArgumentCaptor
+                .forClass(InputLogFingerprint.class);
         Mockito.verify(attemptService).updateFingerprint(
                 Mockito.eq(ATTEMPT_ID),
                 Mockito.eq(user),

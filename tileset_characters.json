@@ -1,0 +1,322 @@
+{
+  "TextureAtlas": {
+    "SubTexture": [
+      {
+        "_name": "character_beige_climb_a",
+        "_x": "0",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_climb_b",
+        "_x": "129",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_duck",
+        "_x": "258",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_front",
+        "_x": "387",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_hit",
+        "_x": "516",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_idle",
+        "_x": "645",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_jump",
+        "_x": "774",
+        "_y": "0",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_walk_a",
+        "_x": "0",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_beige_walk_b",
+        "_x": "129",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_climb_a",
+        "_x": "258",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_climb_b",
+        "_x": "387",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_duck",
+        "_x": "516",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_front",
+        "_x": "645",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_hit",
+        "_x": "774",
+        "_y": "129",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_idle",
+        "_x": "0",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_jump",
+        "_x": "129",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_walk_a",
+        "_x": "258",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_green_walk_b",
+        "_x": "387",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_climb_a",
+        "_x": "516",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_climb_b",
+        "_x": "645",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_duck",
+        "_x": "774",
+        "_y": "258",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_front",
+        "_x": "0",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_hit",
+        "_x": "129",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_idle",
+        "_x": "258",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_jump",
+        "_x": "387",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_walk_a",
+        "_x": "516",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_pink_walk_b",
+        "_x": "645",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_climb_a",
+        "_x": "774",
+        "_y": "387",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_climb_b",
+        "_x": "0",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_duck",
+        "_x": "129",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_front",
+        "_x": "258",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_hit",
+        "_x": "387",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_idle",
+        "_x": "516",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_jump",
+        "_x": "645",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_walk_a",
+        "_x": "774",
+        "_y": "516",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_purple_walk_b",
+        "_x": "0",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_climb_a",
+        "_x": "129",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_climb_b",
+        "_x": "258",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_duck",
+        "_x": "387",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_front",
+        "_x": "516",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_hit",
+        "_x": "645",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_idle",
+        "_x": "774",
+        "_y": "645",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_jump",
+        "_x": "0",
+        "_y": "774",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_walk_a",
+        "_x": "129",
+        "_y": "774",
+        "_width": "128",
+        "_height": "128"
+      },
+      {
+        "_name": "character_yellow_walk_b",
+        "_x": "258",
+        "_y": "774",
+        "_width": "128",
+        "_height": "128"
+      }
+    ],
+    "_imagePath": "spritesheet-characters-default.png"
+  }
+}

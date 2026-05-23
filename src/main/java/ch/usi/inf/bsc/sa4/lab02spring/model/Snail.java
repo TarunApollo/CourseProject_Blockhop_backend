@@ -3,5 +3,5 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("snail")
-public record Snail(int gid, Position pos) implements Enemy {}
-
+public record Snail(String tileId, Position pos) implements Enemy {
+}
