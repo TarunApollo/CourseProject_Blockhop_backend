@@ -3,7 +3,11 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.anticheat;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.ReplaySerializationException;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayRequestDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayResultDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
@@ -70,15 +74,15 @@ public class ReplaySubmissionService {
 
     /// Replays a finished run and updates its anti-cheat status.
     public ReplayResultDTO submitRun(final String userId, final ReplayRequestDTO request) {
-        final ch.usi.inf.bsc.sa4.lab02spring.model.Level level = levelRepository.findById(request.levelId())
+        final Level level = levelRepository.findById(request.levelId())
                 .orElseThrow(LevelNotFoundException::new);
-        final ch.usi.inf.bsc.sa4.lab02spring.model.User user = userService.getById(userId)
+        final User user = userService.getById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         level.ensurePlayable(userId);
 
         final String attemptId = request.attemptId();
-        final ch.usi.inf.bsc.sa4.lab02spring.model.Attempt attempt = attemptService.getAttemptById(attemptId);
+        final Attempt attempt = attemptService.getAttemptById(attemptId);
         if (!attempt.getUser().getId().equals(userId)) {
             throw new ForbiddenUserException("Attempt does not belong to this user");
         }
@@ -86,7 +90,7 @@ public class ReplaySubmissionService {
         final boolean playerCompleted = attempt.isCompleted();
         AntiCheatLog.levelCompleted(userId, request.levelId(), request.totalFrames());
 
-        final ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint fingerprint = InputLogFingerprintUtils
+        final InputLogFingerprint fingerprint = InputLogFingerprintUtils
                 .fingerprint(request.inputLog());
         attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
 
@@ -100,7 +104,7 @@ public class ReplaySubmissionService {
     }
 
     private ReplayRequest buildReplayRequest(final String userId,
-            final ch.usi.inf.bsc.sa4.lab02spring.model.Level level,
+            final Level level,
             final ReplayRequestDTO request) {
         try {
             final java.util.Map<String, Object> tiledMap = LayerToTiledMapConverter.convertPipeline(
@@ -116,10 +120,10 @@ public class ReplaySubmissionService {
     }
 
     private AttemptVerificationStatus resolveStatus(
-            final ch.usi.inf.bsc.sa4.lab02spring.model.Level level,
-            final ch.usi.inf.bsc.sa4.lab02spring.model.User user,
+            final Level level,
+            final User user,
             final String attemptId,
-            final ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint fingerprint,
+            final InputLogFingerprint fingerprint,
             final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {

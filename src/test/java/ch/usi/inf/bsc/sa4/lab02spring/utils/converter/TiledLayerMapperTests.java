@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
+import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Entry;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
@@ -37,6 +38,13 @@ class TiledLayerMapperTests {
     /// Shared grid position for test objects.
     private static final Position POS = new Position(1, 2);
 
+    /// Key used for the data array.
+    private static final String DATA_KEY = "data";
+    /// Key used for the objects array.
+    private static final String OBJECTS_KEY = "objects";
+    /// Key used for the properties list.
+    private static final String PROPERTIES_KEY = "properties";
+
     /// Catalog entry returned by the mock service.
     private Entry mockEntry;
 
@@ -57,7 +65,7 @@ class TiledLayerMapperTests {
 
         final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height,
                 tileCatalogService);
-        final List<String> data = (List<String>) result.get("data");
+        final List<String> data = (List<String>) result.get(DATA_KEY);
 
         assertNotNull(data);
         assertEquals(width * height, data.size());
@@ -79,7 +87,7 @@ class TiledLayerMapperTests {
         final int height = 3;
 
         final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height, tileCatalogService);
-        final List<String> data = (List<String>) result.get("data");
+        final List<String> data = (List<String>) result.get(DATA_KEY);
 
         assertNotNull(data);
         assertEquals(width * height, data.size());
@@ -97,7 +105,7 @@ class TiledLayerMapperTests {
         Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
 
         final Map<String, Object> result = TiledLayerMapper.buildObjectLayer(Map.of(POS, box), tileCatalogService);
-        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get("objects");
+        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get(OBJECTS_KEY);
 
         assertNotNull(objects);
         assertEquals(1, objects.size());
@@ -113,15 +121,15 @@ class TiledLayerMapperTests {
     @DisplayName("includes properties for boxes with content")
     @SuppressWarnings("unchecked")
     void exportsBoxProperties() {
-        final Content content = new Content.SomeContent(ch.usi.inf.bsc.sa4.lab02spring.model.CoinType.GOLD_COIN);
+        final Content content = new Content.SomeContent(CoinType.GOLD_COIN);
         final GameObject box = new Box(BOX_TILE_ID, POS, content);
         Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
 
         final Map<String, Object> result = TiledLayerMapper.buildObjectLayer(Map.of(POS, box), tileCatalogService);
-        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get("objects");
+        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get(OBJECTS_KEY);
 
         assertNotNull(objects);
-        final List<Map<String, Object>> properties = (List<Map<String, Object>>) objects.get(0).get("properties");
+        final List<Map<String, Object>> properties = (List<Map<String, Object>>) objects.get(0).get(PROPERTIES_KEY);
 
         assertNotNull(properties);
         assertTrue(properties.stream().anyMatch(p -> "Content".equals(p.get("name"))));
@@ -136,10 +144,10 @@ class TiledLayerMapperTests {
         Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
 
         final Map<String, Object> result = TiledLayerMapper.buildObjectLayer(Map.of(POS, box), tileCatalogService);
-        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get("objects");
+        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get(OBJECTS_KEY);
 
         assertNotNull(objects);
         final Map<String, Object> tiledObj = objects.get(0);
-        assertTrue(!tiledObj.containsKey("properties"));
+        assertTrue(!tiledObj.containsKey(PROPERTIES_KEY));
     }
 }

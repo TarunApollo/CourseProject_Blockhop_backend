@@ -23,6 +23,15 @@ import java.util.Map;
 /// Converts level layers to map data for the frontend.
 @SuppressWarnings({ "PMD.AtLeastOneConstructor", "PMD.TooManyStaticImports" })
 final class TiledLayerMapper {
+    /// Key for id property.
+    private static final String ID_KEY = "id";
+    /// Key for opacity property.
+    private static final String OPACITY_KEY = "opacity";
+    /// Key for x coordinate property.
+    private static final String X_KEY = "x";
+    /// Key for y coordinate property.
+    private static final String Y_KEY = "y";
+
     /// Size of one tile in pixels.
     private static final int TILE_SIZE = 128;
 
@@ -57,15 +66,15 @@ final class TiledLayerMapper {
         }
 
         return Map.of(
-                "id", 1,
+                ID_KEY, 1,
                 KEY_NAME, "World",
                 KEY_TYPE, "tilelayer",
                 KEY_WIDTH, width,
                 KEY_HEIGHT, height,
-                "opacity", 1,
+                OPACITY_KEY, 1,
                 KEY_VISIBLE, Boolean.TRUE,
-                "x", 0,
-                "y", 0,
+                X_KEY, 0,
+                Y_KEY, 0,
                 "data", data);
     }
 
@@ -88,14 +97,14 @@ final class TiledLayerMapper {
         }
 
         return Map.of(
-                "id", 2,
+                ID_KEY, 2,
                 KEY_NAME, "QMLayer",
                 KEY_TYPE, "objectgroup",
                 "draworder", "topdown",
-                "opacity", 1,
+                OPACITY_KEY, 1,
                 KEY_VISIBLE, Boolean.TRUE,
-                "x", 0,
-                "y", 0,
+                X_KEY, 0,
+                Y_KEY, 0,
                 "objects", objects);
     }
 
@@ -119,10 +128,10 @@ final class TiledLayerMapper {
         final Entry catalogEntry = tileCatalogService.requireTile(gameObject.tileId());
 
         final List<Map.Entry<String, Object>> entries = new ArrayList<>();
-        entries.add(Map.entry("id", id));
+        entries.add(Map.entry(ID_KEY, id));
         entries.add(Map.entry("tileId", gameObject.tileId()));
-        entries.add(Map.entry("x", x));
-        entries.add(Map.entry("y", y));
+        entries.add(Map.entry(X_KEY, x));
+        entries.add(Map.entry(Y_KEY, y));
         entries.add(Map.entry(KEY_WIDTH, TILE_SIZE));
         entries.add(Map.entry(KEY_HEIGHT, TILE_SIZE));
         entries.add(Map.entry(KEY_VISIBLE, Boolean.TRUE));
@@ -151,7 +160,8 @@ final class TiledLayerMapper {
             properties.add(Map.of(
                     KEY_NAME, "Content",
                     KEY_TYPE, TYPE_STRING,
-                    "value", someContent.coinType().value()));
+                    TiledConstants.KEY_VALUE,
+                    someContent.coinType().value()));
         }
         return properties;
     }

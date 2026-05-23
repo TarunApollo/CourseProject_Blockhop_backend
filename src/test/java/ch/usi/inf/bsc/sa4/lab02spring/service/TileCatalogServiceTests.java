@@ -15,9 +15,13 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Entry;
 import ch.usi.inf.bsc.sa4.lab02spring.model.TileCatalog;
 
 /// Tests for [TileCatalogService].
+@SuppressWarnings("PMD.TooManyStaticImports")
 @SpringBootTest
 @DisplayName("Tile Catalog Service")
 class TileCatalogServiceTests {
+
+    /// Tile ID used for missing tile lookups.
+    private static final String MISSING_TILE = "missing.tile";
 
     @Autowired
     private TileCatalogService service;
@@ -43,7 +47,6 @@ class TileCatalogServiceTests {
     @Test
     @DisplayName("looks up existing tile")
     void looksUpExistingTile() {
-        // Find the first tile in the catalog to query
         final Entry firstTile = service.getTiles().get(0);
         final String tileId = firstTile.id();
 
@@ -73,8 +76,7 @@ class TileCatalogServiceTests {
             assertFalse(service.isObjectTile(worldId));
         }
 
-        // Fails on unknown
-        assertFalse(service.isWorldTile("missing.tile"));
+        assertFalse(service.isWorldTile(MISSING_TILE));
     }
 
     /// Verifies identifying object tiles.
@@ -91,8 +93,7 @@ class TileCatalogServiceTests {
             assertFalse(service.isWorldTile(objectId));
         }
 
-        // Fails on unknown
-        assertFalse(service.isObjectTile("missing.tile"));
+        assertFalse(service.isObjectTile(MISSING_TILE));
     }
 
     /// Verifies getting tile type.

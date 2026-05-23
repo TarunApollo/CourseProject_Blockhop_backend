@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -24,6 +25,17 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 @DisplayName("Layer to Tiled Map Converter")
 @SuppressWarnings("PMD.TooManyStaticImports")
 class LayerToTiledMapConverterTests {
+
+    /// Key for the properties field.
+    private static final String PROPERTIES = "properties";
+    /// Key for the clear condition type.
+    private static final String CLEAR_CONDITION_TYPE = "ClearConditionType";
+    /// Key for the clear condition amount.
+    private static final String CLEAR_CONDITION_AMOUNT = "ClearConditionAmount";
+    /// Key for property names.
+    private static final String NAME_KEY = "name";
+    /// Key for property values.
+    private static final String VALUE_KEY = "value";
 
     /// Mock tile catalog used by the converter.
     @MockitoBean
@@ -51,7 +63,7 @@ class LayerToTiledMapConverterTests {
         assertEquals(testLevel.getHeight(), result.get("height"));
         assertNotNull(result.get("layers"));
         assertNotNull(result.get("tileCatalog"));
-        assertTrue(result.containsKey("properties"));
+        assertTrue(result.containsKey(PROPERTIES));
     }
 
     /// Clear condition values are copied to map properties.
@@ -63,18 +75,18 @@ class LayerToTiledMapConverterTests {
         testLevel = new Level(new User("u1", "n1"), "Title", "Desc", false, clearCondition, Map.of(), Map.of());
 
         final Map<String, Object> result = LayerToTiledMapConverter.convertPipeline(testLevel, tileCatalogService);
-        final List<Map<String, Object>> properties = (List<Map<String, Object>>) result.get("properties");
+        final List<Map<String, Object>> properties = (List<Map<String, Object>>) result.get(PROPERTIES);
 
         assertNotNull(properties);
         final Map<String, Object> typeProp = properties.stream()
-                .filter(p -> "ClearConditionType".equals(p.get("name")))
+                .filter(p -> CLEAR_CONDITION_TYPE.equals(p.get(NAME_KEY)))
                 .findFirst().orElseThrow();
-        assertEquals("NONE", typeProp.get("value"));
+        assertEquals("NONE", typeProp.get(VALUE_KEY));
 
         final Map<String, Object> amountProp = properties.stream()
-                .filter(p -> "ClearConditionAmount".equals(p.get("name")))
+                .filter(p -> CLEAR_CONDITION_AMOUNT.equals(p.get(NAME_KEY)))
                 .findFirst().orElseThrow();
-        assertEquals(0, amountProp.get("value"));
+        assertEquals(0, amountProp.get(VALUE_KEY));
     }
 
     /// Clear condition values are copied to map properties with some condition.
@@ -82,21 +94,21 @@ class LayerToTiledMapConverterTests {
     @DisplayName("maps clear condition properties with some condition")
     @SuppressWarnings("unchecked")
     void mapsSomeClearConditionProperties() {
-        final ClearCondition clearCondition = new ClearCondition(new Condition.SomeClearCondition(ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType.SLIME), 5);
+        final ClearCondition clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.SLIME), 5);
         testLevel = new Level(new User("u1", "n1"), "Title", "Desc", false, clearCondition, Map.of(), Map.of());
 
         final Map<String, Object> result = LayerToTiledMapConverter.convertPipeline(testLevel, tileCatalogService);
-        final List<Map<String, Object>> properties = (List<Map<String, Object>>) result.get("properties");
+        final List<Map<String, Object>> properties = (List<Map<String, Object>>) result.get(PROPERTIES);
 
         assertNotNull(properties);
         final Map<String, Object> typeProp = properties.stream()
-                .filter(p -> "ClearConditionType".equals(p.get("name")))
+                .filter(p -> CLEAR_CONDITION_TYPE.equals(p.get(NAME_KEY)))
                 .findFirst().orElseThrow();
-        assertEquals("SLIME", typeProp.get("value"));
+        assertEquals("SLIME", typeProp.get(VALUE_KEY));
 
         final Map<String, Object> amountProp = properties.stream()
-                .filter(p -> "ClearConditionAmount".equals(p.get("name")))
+                .filter(p -> CLEAR_CONDITION_AMOUNT.equals(p.get(NAME_KEY)))
                 .findFirst().orElseThrow();
-        assertEquals(5, amountProp.get("value"));
+        assertEquals(5, amountProp.get(VALUE_KEY));
     }
 }
