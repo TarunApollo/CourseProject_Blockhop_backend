@@ -10,8 +10,7 @@ spring:
       enabled: true
   data:
     mongodb:
-      database: users_tutorial_lab02
-      uri: ${MONGODB_URI:mongodb://localhost:27017}
+      uri: ${SPRING_DATA_MONGODB_URI}
   security:
     oauth2:
       client:

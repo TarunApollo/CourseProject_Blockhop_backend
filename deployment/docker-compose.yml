@@ -11,7 +11,7 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/users_tutorial_lab02
       - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
       - BACKEND_BASE_URL=${BACKEND_BASE_URL}
 
