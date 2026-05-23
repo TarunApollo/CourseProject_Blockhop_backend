@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /// Exports a level as map data for the frontend.
-@SuppressWarnings("PMD.AtLeastOneConstructor")
+@SuppressWarnings({ "PMD.TooManyStaticImports" , "PMD.AtLeastOneConstructor"})
 public final class LayerToTiledMapConverter {
     /// Static map fields shared by every exported level.
     private static final List<Map.Entry<String, Object>> MAP_METADATA = List.of(

@@ -130,7 +130,8 @@ public final class TileCatalogService {
     ///               ids.
     /// @param curatedTiles entries loaded from JSON
     /// @return unique catalog entries
-    private static List<Entry> buildTiles(final List<Entry> curatedTiles) {
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
+    private static List<Entry> buildTiles(final Iterable<Entry> curatedTiles) {
         final Map<String, Entry> entries = new LinkedHashMap<>();
         for (final Entry entry : curatedTiles) {
             putUnique(entries, entry);
