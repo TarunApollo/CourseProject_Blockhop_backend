@@ -19,6 +19,9 @@ import java.util.Set;
 @Service
 public class SpriteCatalogService {
 
+    /// Shared boxed boolean used in generated atlas payloads.
+    private static final Boolean ATLAS_FLAG_FALSE = Boolean.FALSE;
+
     /// Pre-computed JSON payloads for each spritesheet type.
     private final Map<String, Map<String, Object>> payloads = new HashMap<>();
     
@@ -71,8 +74,8 @@ public class SpriteCatalogService {
     /// @param doc the XML document
     /// @return the parsed payload
     private Map<String, Object> parseXmlToJson(final Document doc) {
-        final Map<String, Object> frames = new HashMap<>();
         final NodeList subTextures = doc.getElementsByTagName("SubTexture");
+        final Map<String, Object> frames = new HashMap<>(subTextures.getLength());
 
         for (int i = 0; i < subTextures.getLength(); i++) {
             final Element elem = (Element) subTextures.item(i);
@@ -86,8 +89,8 @@ public class SpriteCatalogService {
 
             final Map<String, Object> frameObj = new HashMap<>();
             frameObj.put("frame", Map.of("x", x, "y", y, "w", w, "h", h));
-            frameObj.put("rotated", false);
-            frameObj.put("trimmed", false);
+            frameObj.put("rotated", ATLAS_FLAG_FALSE);
+            frameObj.put("trimmed", ATLAS_FLAG_FALSE);
             frameObj.put("spriteSourceSize", Map.of("x", 0, "y", 0, "w", w, "h", h));
             frameObj.put("sourceSize", Map.of("w", w, "h", h));
 
