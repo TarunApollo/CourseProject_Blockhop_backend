@@ -89,7 +89,7 @@ public class GameObjectFactory {
             }
         },
 
-        ENEMY_SPIKED_ALIEN("Enemy_Spiked_Alien") {
+        ENEMY_SPIKED_ALIEN("Enemy_Slime_Spiked") {
             @Override
             public GameObject createGameObject(final String tileId, final Position pos, final Content content) {
                 return new SpikedAlien(tileId, pos);
