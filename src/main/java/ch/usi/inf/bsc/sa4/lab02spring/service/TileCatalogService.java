@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public final class TileCatalogService {
     /// @spec.effects returns the catalog entries in file order.
     /// @return all known tiles
     public List<Entry> getTiles() {
-        return tiles;
+        return Collections.unmodifiableList(tiles);
     }
 
     /// Returns the catalog entry for a tile id.
