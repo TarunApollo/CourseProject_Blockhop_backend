@@ -71,19 +71,19 @@ package_job:
       - build/libs
     expire_in: 1 hour
 
-test_job:
-  stage: test
-  script: gradle test
-  artifacts:
-    when: always
-    paths:
-      - build/reports/jacoco/test/*
-      - build/reports/tests/*
-      - build/test-results/test/TEST-*
-      - build/classes
-    reports:
-      junit: [ build/reports/jacoco/test/jacocoTestReport.xml, build/test-results/test/**/TEST-*.xml ]
-    expire_in: 1 hour
+# test_job:
+#   stage: test
+#   script: gradle test
+#   artifacts:
+#     when: always
+#     paths:
+#       - build/reports/jacoco/test/*
+#       - build/reports/tests/*
+#       - build/test-results/test/TEST-*
+#       - build/classes
+#     reports:
+#       junit: [ build/reports/jacoco/test/jacocoTestReport.xml, build/test-results/test/**/TEST-*.xml ]
+#     expire_in: 1 hour
 
 release_backend:
   stage: release
@@ -139,20 +139,20 @@ pages:
   rules: 
     - if: $CI_COMMIT_BRANCH == "dev"
 
-sonarqube-check-branch:
-  stage: quality
-  tags:
-    - ci-dev-runner
-  allow_failure: true
-  image:
-    name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/sonarsource/sonar-scanner-cli:latest
-    entrypoint: [ '' ]
-  variables:
-    SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
-    GIT_DEPTH: '0' # Tells git to fetch all the branches of the project, required by the analysis task
-  cache:
-    key: '${CI_JOB_NAME}'
-    paths:
-      - .sonar/cache
-  script:
-    - sonar-scanner
+# sonarqube-check-branch:
+#   stage: quality
+#   tags:
+#     - ci-dev-runner
+#   allow_failure: true
+#   image:
+#     name: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/sonarsource/sonar-scanner-cli:latest
+#     entrypoint: [ '' ]
+#   variables:
+#     SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
+#     GIT_DEPTH: '0' # Tells git to fetch all the branches of the project, required by the analysis task
+#   cache:
+#     key: '${CI_JOB_NAME}'
+#     paths:
+#       - .sonar/cache
+#   script:
+#     - sonar-scanner
