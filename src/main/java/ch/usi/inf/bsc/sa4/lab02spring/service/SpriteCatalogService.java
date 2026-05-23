@@ -17,6 +17,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.xml.sax.SAXException;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.SpriteCatalogNotLoadedException;
+
 /// Service that loads and parses spritesheet XML files into JSON payloads.
 @Service
 public class SpriteCatalogService {
@@ -25,23 +30,29 @@ public class SpriteCatalogService {
     private static final Boolean ATLAS_FLAG_FALSE = Boolean.FALSE;
 
     /// Pre-computed JSON payloads for each spritesheet type.
-    private final Map<String, Map<String, Object>> payloads = new HashMap<>();
+    private final Map<String, Map<String, Object>> payloads;
 
     /// Set of all valid sprite names found across all spritesheets.
-    private final Set<String> validSprites = new HashSet<>();
+    private final Set<String> validSprites;
 
     /// Initializes the service by loading all spritesheets from the classpath.
     public SpriteCatalogService() {
         try {
-            loadCatalogs();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load spritesheets", e);
+            final Map<String, Map<String, Object>> tempPayloads = new HashMap<>();
+            final Set<String> tempValidSprites = new HashSet<>();
+            
+            loadCatalogs(tempPayloads, tempValidSprites);
+            
+            this.payloads = Map.copyOf(tempPayloads);
+            this.validSprites = Set.copyOf(tempValidSprites);
+        } catch (final IOException | ParserConfigurationException | SAXException e) {
+            throw new SpriteCatalogNotLoadedException(e);
         }
     }
 
     /// Loads and parses all XML spritesheets from the resources folder.
-    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
-    private void loadCatalogs() throws Exception {
+    private void loadCatalogs(final Map<String, Map<String, Object>> tempPayloads, final Set<String> tempValidSprites) 
+            throws IOException, ParserConfigurationException, SAXException {
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final Resource[] resources = resolver.getResources("classpath:spritesheets/*.xml");
 
@@ -58,8 +69,8 @@ public class SpriteCatalogService {
 
             try (InputStream is = resource.getInputStream()) {
                 final Document doc = db.parse(is);
-                final Map<String, Object> jsonPayload = parseXmlToJson(doc);
-                payloads.put(type, jsonPayload);
+                final Map<String, Object> jsonPayload = parseXmlToJson(doc, tempValidSprites);
+                tempPayloads.put(type, jsonPayload);
             }
         }
     }
@@ -76,8 +87,9 @@ public class SpriteCatalogService {
     /// map.
     ///
     /// @param doc the XML document
+    /// @param tempValidSprites the temporary set to accumulate valid sprite names
     /// @return the parsed payload
-    private Map<String, Object> parseXmlToJson(final Document doc) {
+    private Map<String, Object> parseXmlToJson(final Document doc, final Set<String> tempValidSprites) {
         final NodeList subTextures = doc.getElementsByTagName("SubTexture");
 
         final Map<String, Object> frames = IntStream.range(0, subTextures.getLength())
@@ -86,7 +98,7 @@ public class SpriteCatalogService {
                 .collect(Collectors.toUnmodifiableMap(
                         elem -> {
                             final String name = elem.getAttribute("name");
-                            validSprites.add(name);
+                            tempValidSprites.add(name);
                             return name;
                         },
                         elem -> {
