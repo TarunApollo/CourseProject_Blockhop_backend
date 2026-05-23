@@ -10,6 +10,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -21,10 +23,12 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 @EnableWebSecurity
 public class SecurityConfiguration {
     /// Check out application.yml for all ENV vars used for the URLs.
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfiguration.class);
     private final String frontendBaseUrl;
 
-    public SecurityConfiguration(@Value("${app.frontend-base-url:http://localhost:3000}") final String frontendBaseUrl) {
+    public SecurityConfiguration(@Value("${app.frontend-base-url}") final String frontendBaseUrl) {
         this.frontendBaseUrl = frontendBaseUrl;
+        log.info("OAuth frontend success URL configured as {}", frontendBaseUrl);
     }
 
     /// Creates the CORS configuration used by the application.
