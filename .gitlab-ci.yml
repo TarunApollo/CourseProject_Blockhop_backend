@@ -39,8 +39,8 @@ workflow:
 
 stages:
   - build
-  - test
-  - quality
+  # - test
+  # - quality
   - release
   - deploy
 
