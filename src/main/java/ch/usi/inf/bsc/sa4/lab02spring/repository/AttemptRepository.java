@@ -5,12 +5,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
+import java.util.Comparator;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -152,26 +150,30 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
             int minInputChangeCount,
             int maxInputChangeCount);
 
-    /// Internal query — returns ghost candidates
-    /// sorted by timeTaken ascending, limited by pageable.
-    @Query(value = "{ 'level.$id': ?0, 'completed': true, 'inputLog': { $exists: true, $ne: [] } }",
-           sort  = "{ 'timeTaken': 1 }")
-    List<Attempt> findGhostCandidates(ObjectId levelId, Pageable pageable);
+    /// Internal query — returns ghost candidates for the given level.
+    ///
+    /// We intentionally do not ask MongoDB to sort by `timeTaken`: `Attempt`
+    /// stores Java `Duration`, and Mongo's default representation does not sort
+    /// numerically by elapsed time across values like `PT9S` and `PT10S`.
+    /// Candidate selection therefore happens in Java via `Duration` comparison.
+    @Query("{ 'level.$id': ?0, 'completed': true, 'inputLog': { $exists: true, $ne: [] } }")
+    List<Attempt> findGhostCandidates(ObjectId levelId);
 
     /// Returns the fastest completed attempt
     /// for the given level that has a replayable input log.
     /// @param levelId the ObjectId of the level to query
     /// @return the fastest replayable attempt, or empty if none exists
     default Optional<Attempt> findFastestGhostCandidate(final ObjectId levelId) {
-        final List<Attempt> results = findGhostCandidates(levelId, PageRequest.of(0, 1));
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        return findGhostCandidates(levelId).stream()
+                .min(Comparator.comparing(Attempt::getTimeTaken));
     }
 
-    /// Internal query — returns verified ghost candidates
-    /// sorted by timeTaken ascending, limited by pageable.
-    @Query(value = "{ 'level.$id': ?0, 'completed': true, 'antiCheatStatus': ?1, 'inputLog': { $exists: true, $ne: [] } }",
-           sort  = "{ 'timeTaken': 1 }")
-    List<Attempt> findVerifiedGhostCandidates(ObjectId levelId, AttemptVerificationStatus status, Pageable pageable);
+    /// Internal query — returns verified ghost candidates for the given level.
+    ///
+    /// Fastest-attempt selection happens in Java for the same `Duration`
+    /// ordering reason described on `findGhostCandidates`.
+    @Query("{ 'level.$id': ?0, 'completed': true, 'antiCheatStatus': ?1, 'inputLog': { $exists: true, $ne: [] } }")
+    List<Attempt> findVerifiedGhostCandidates(ObjectId levelId, AttemptVerificationStatus status);
 
     /// Returns the fastest completed attempt
     /// for the given level with a replayable input log
@@ -181,8 +183,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
     /// @return the fastest qualifying attempt, or empty if none exists
     default Optional<Attempt> findFastestVerifiedGhostCandidate(
             final ObjectId levelId, final AttemptVerificationStatus status) {
-        final List<Attempt> results = findVerifiedGhostCandidates(levelId, status, PageRequest.of(0, 1));
-        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+        return findVerifiedGhostCandidates(levelId, status).stream()
+                .min(Comparator.comparing(Attempt::getTimeTaken));
     }
 
     /// Returns whether the given user
