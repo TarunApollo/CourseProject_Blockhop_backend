@@ -13,9 +13,6 @@ services:
     environment:
       - SPRING_MONGODB_URI=mongodb://mongodb:27017/users_tutorial_lab02
       - APP_FRONTEND_BASE_URL=https://hajime.sa4.si.usi.ch
-      - JAVA_TOOL_OPTIONS=-Dspring.mongodb.uri=mongodb://mongodb:27017/users_tutorial_lab02 -Dapp.frontend-base-url=https://hajime.sa4.si.usi.ch
-      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
-      - BACKEND_BASE_URL=${BACKEND_BASE_URL}
 
 networks:
   lab-05-network:
