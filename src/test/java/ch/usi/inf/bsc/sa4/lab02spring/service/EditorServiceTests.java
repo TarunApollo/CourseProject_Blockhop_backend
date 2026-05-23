@@ -180,7 +180,6 @@ class EditorServiceTests {
             final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, INVALID_TILE_ID);
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileCatalogService.isWorldTile(INVALID_TILE_ID)).thenReturn(false);
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto));
@@ -340,7 +339,6 @@ class EditorServiceTests {
             final EditorLevelDTO obj = EditorLevelDTO.create(POS_A, INVALID_TILE_ID);
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(List.of(obj));
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
-            Mockito.when(tileCatalogService.isObjectTile(INVALID_TILE_ID)).thenReturn(false);
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.replaceObjectLayer(OWNER_ID, LEVEL_ID, dto));

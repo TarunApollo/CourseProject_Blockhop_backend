@@ -84,9 +84,6 @@ class LevelFavoriteServiceTests {
         @Test
         @DisplayName("saves a new favorite with the correct user and level")
         void savesNewFavorite() {
-            Mockito.when(levelFavoriteRepository.existsByUserAndLevel(testUser, testLevel))
-                    .thenReturn(false);
-
             levelFavoriteService.addFavorite(testUser, testLevel);
 
             Mockito.verify(levelFavoriteRepository)

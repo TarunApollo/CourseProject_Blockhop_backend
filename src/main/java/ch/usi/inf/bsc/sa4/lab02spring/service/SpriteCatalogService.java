@@ -79,7 +79,6 @@ public class SpriteCatalogService {
     /// @return the parsed payload
     private Map<String, Object> parseXmlToJson(final Document doc) {
         final NodeList subTextures = doc.getElementsByTagName("SubTexture");
-        final Map<String, Object> frames = new HashMap<>(subTextures.getLength());
 
         final Map<String, Object> frames = IntStream.range(0, subTextures.getLength())
                 .mapToObj(subTextures::item)
@@ -98,8 +97,8 @@ public class SpriteCatalogService {
 
                             return Map.of(
                                     "frame", Map.of("x", x, "y", y, "w", w, "h", h),
-                                    "rotated", false,
-                                    "trimmed", false,
+                                    "rotated", ATLAS_FLAG_FALSE,
+                                    "trimmed", ATLAS_FLAG_FALSE,
                                     "spriteSourceSize", Map.of("x", 0, "y", 0, "w", w, "h", h),
                                     "sourceSize", Map.of("w", w, "h", h));
                         }));

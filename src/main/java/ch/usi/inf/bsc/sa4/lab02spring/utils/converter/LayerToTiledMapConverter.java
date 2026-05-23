@@ -18,6 +18,9 @@ import java.util.stream.Stream;
 /// Exports a level as map data for the frontend.
 @SuppressWarnings({ "PMD.TooManyStaticImports" , "PMD.AtLeastOneConstructor"})
 public final class LayerToTiledMapConverter {
+    /// Shared boxed false value for metadata entries.
+    private static final Boolean MAP_FLAG_FALSE = Boolean.FALSE;
+
     /// Static map fields shared by every exported level.
     private static final List<Map.Entry<String, Object>> MAP_METADATA = List.of(
             Map.entry(KEY_TYPE, "map"),
@@ -67,7 +70,7 @@ public final class LayerToTiledMapConverter {
                         Map.entry("height", level.getHeight()),
                         Map.entry("nextlayerid", 3),
                         Map.entry("nextobjectid", level.getObjectLayer().size() + 1),
-                        Map.entry("infinite", false),
+                        Map.entry("infinite", MAP_FLAG_FALSE),
                         Map.entry("doorOpen",
                                 level.getClearCondition().condition() instanceof Condition.NoClearCondition),
                         Map.entry("properties", buildMapProperties(level))))
