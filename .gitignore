@@ -46,4 +46,4 @@ out/
 
 quickpush.md
 
-.env
+.env.local

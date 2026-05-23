@@ -1,5 +1,8 @@
+springdotenv:
+  filenames: .env.local,.env
+
 app:
-  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:3000}
+  frontend-base-url: ${APP_FRONTEND_BASE_URL}
 
 spring:
   output:
@@ -8,10 +11,8 @@ spring:
   threads:
     virtual:
       enabled: true
-  data:
-    mongodb:
-      database: users_tutorial_lab02
-      uri: ${MONGODB_URI:mongodb://localhost:27017}
+  mongodb:
+    uri: ${SPRING_MONGODB_URI}
   security:
     oauth2:
       client:
@@ -23,6 +24,9 @@ spring:
         provider:
           switch-edu-id:
             issuer-uri: https://auth.dev.si.usi.ch/realms/simurbs
+
+server:
+  forward-headers-strategy: framework
 
 logging:
   level:
