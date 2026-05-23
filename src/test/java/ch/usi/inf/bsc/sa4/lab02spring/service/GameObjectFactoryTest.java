@@ -11,6 +11,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
+import ch.usi.inf.bsc.sa4.lab02spring.model.SpikedAlien;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
 
@@ -58,6 +59,9 @@ class GameObjectFactoryTests {
     /// Tile type string for bee enemy objects.
     private static final String TYPE_ENEMY_BEE = "Enemy_Bee";
 
+    /// Tile type string for spiked alien enemy objects.
+    private static final String TYPE_ENEMY_SPIKED_ALIEN = "Enemy_Spiked_Alien";
+
     /// Tile type string for start flag objects.
     private static final String TYPE_START_FLAG = "Start_Flag";
 
@@ -98,7 +102,8 @@ class GameObjectFactoryTests {
                 Arguments.of(TYPE_GOLD, Coin.class),
                 Arguments.of(TYPE_SILVER, Coin.class),
                 Arguments.of(TYPE_BRONZE, Coin.class),
-                Arguments.of(TYPE_ENEMY_BEE, Bee.class));
+                Arguments.of(TYPE_ENEMY_BEE, Bee.class),
+                Arguments.of(TYPE_ENEMY_SPIKED_ALIEN, SpikedAlien.class));
     }
 
     /// Tests for `createGameObject`.
