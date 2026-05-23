@@ -64,6 +64,30 @@ class TiledLayerMapperTests {
         assertEquals("ground.tile", data.get(2 * width + 1));
     }
 
+    /// World tiles outside the map boundaries are ignored.
+    @Test
+    @DisplayName("ignores world tiles outside bounds")
+    @SuppressWarnings("unchecked")
+    void ignoresOutOfBoundsTiles() {
+        final Map<Position, GroundObject> worldLayer = Map.of(
+            new Position(-1, 0), new GroundObject("out.left"),
+            new Position(0, -1), new GroundObject("out.top"),
+            new Position(3, 0), new GroundObject("out.right"),
+            new Position(0, 3), new GroundObject("out.bottom")
+        );
+        final int width = 3;
+        final int height = 3;
+
+        final Map<String, Object> result = TiledLayerMapper.buildWorldLayer(worldLayer, width, height, tileCatalogService);
+        final List<String> data = (List<String>) result.get("data");
+
+        assertNotNull(data);
+        assertEquals(width * height, data.size());
+        for (final String tileId : data) {
+            assertEquals("", tileId);
+        }
+    }
+
     /// Objects include their tile id and catalog type.
     @Test
     @DisplayName("maps objects with catalog data")
@@ -101,5 +125,21 @@ class TiledLayerMapperTests {
 
         assertNotNull(properties);
         assertTrue(properties.stream().anyMatch(p -> "Content".equals(p.get("name"))));
+    }
+
+    /// Objects without SomeContent do not have a properties field.
+    @Test
+    @DisplayName("does not include properties for boxes without content")
+    @SuppressWarnings("unchecked")
+    void excludesBoxPropertiesWithoutContent() {
+        final GameObject box = new Box(BOX_TILE_ID, POS, new Content.NoContent());
+        Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
+
+        final Map<String, Object> result = TiledLayerMapper.buildObjectLayer(Map.of(POS, box), tileCatalogService);
+        final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get("objects");
+
+        assertNotNull(objects);
+        final Map<String, Object> tiledObj = objects.get(0);
+        assertTrue(!tiledObj.containsKey("properties"));
     }
 }

@@ -76,4 +76,27 @@ class LayerToTiledMapConverterTests {
                 .findFirst().orElseThrow();
         assertEquals(0, amountProp.get("value"));
     }
+
+    /// Clear condition values are copied to map properties with some condition.
+    @Test
+    @DisplayName("maps clear condition properties with some condition")
+    @SuppressWarnings("unchecked")
+    void mapsSomeClearConditionProperties() {
+        final ClearCondition clearCondition = new ClearCondition(new Condition.SomeClearCondition(ch.usi.inf.bsc.sa4.lab02spring.model.ClearConditionType.SLIME), 5);
+        testLevel = new Level(new User("u1", "n1"), "Title", "Desc", false, clearCondition, Map.of(), Map.of());
+
+        final Map<String, Object> result = LayerToTiledMapConverter.convertPipeline(testLevel, tileCatalogService);
+        final List<Map<String, Object>> properties = (List<Map<String, Object>>) result.get("properties");
+
+        assertNotNull(properties);
+        final Map<String, Object> typeProp = properties.stream()
+                .filter(p -> "ClearConditionType".equals(p.get("name")))
+                .findFirst().orElseThrow();
+        assertEquals("SLIME", typeProp.get("value"));
+
+        final Map<String, Object> amountProp = properties.stream()
+                .filter(p -> "ClearConditionAmount".equals(p.get("name")))
+                .findFirst().orElseThrow();
+        assertEquals(5, amountProp.get("value"));
+    }
 }

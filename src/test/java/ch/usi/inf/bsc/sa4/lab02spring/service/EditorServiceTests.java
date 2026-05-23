@@ -188,6 +188,35 @@ class EditorServiceTests {
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
 
+        /// Check if null tile ID is rejected.
+        @Test
+        @DisplayName("fails on null tile ID")
+        @SuppressWarnings("NullAway")
+        void throwsOnNullGroundGid() {
+            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, null);
+            final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Check if blank tile ID is rejected.
+        @Test
+        @DisplayName("fails on blank tile ID")
+        void throwsOnBlankGroundGid() {
+            final EditorLevelDTO tile = EditorLevelDTO.create(POS_A, "   ");
+            final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(List.of(tile));
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> editorService.replaceWorldLayer(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
         /// Check if missing level fails.
         @Test
         @DisplayName("fails if level is missing")
@@ -460,6 +489,21 @@ class EditorServiceTests {
 
             Assertions.assertThrows(IllegalArgumentException.class,
                     () -> editorService.updateObjectProperties(OWNER_ID, LEVEL_ID, dto));
+
+            Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Check if unsupported object property update fails.
+        @Test
+        @DisplayName("fails on unsupported property update type")
+        @SuppressWarnings("NullAway")
+        void throwsOnUnsupportedPropertyUpdateType() {
+            testLevel.putObjectLayer(BOX_POS, new StartFlag(BOX_TILE_ID, BOX_POS));
+            
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(testLevel));
+
+            Assertions.assertThrows(NullPointerException.class,
+                    () -> editorService.updateObjectProperties(OWNER_ID, LEVEL_ID, null));
 
             Mockito.verify(levelRepository, Mockito.never()).save(Mockito.any());
         }
