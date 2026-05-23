@@ -22,6 +22,9 @@ spring:
           switch-edu-id:
             issuer-uri: https://auth.dev.si.usi.ch/realms/simurbs
 
+server:
+  forward-headers-strategy: framework
+
 logging:
   level:
     org:
