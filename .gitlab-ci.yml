@@ -132,6 +132,7 @@ deploy_backend:
     - docker --context remote compose -f deployment/docker-compose.yml pull
     - docker --context remote compose -f deployment/docker-compose.yml up -d
     - docker --context remote compose -f deployment/docker-compose.yml ps -a
+    - docker --context remote inspect -f '{{range .Config.Env}}{{println .}}{{end}}' lab-05-backend | grep -E 'SPRING_DATA_MONGODB_URI|JAVA_TOOL_OPTIONS|MONGODB_URI' || true
     - docker --context remote inspect -f 'name={{.Name}} status={{.State.Status}} running={{.State.Running}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' lab-05-backend || true
     - docker --context remote logs --tail=200 lab-05-backend || true
     - docker --context remote logs --tail=100 deployment-mongodb-1 || true
