@@ -9,6 +9,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -149,23 +152,36 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
             int minInputChangeCount,
             int maxInputChangeCount);
 
+    /// Internal query — returns ghost candidates sorted by timeTaken ascending, limited by pageable.
+    @Query(value = "{ 'level.$id': ?0, 'completed': true, 'inputLog': { $exists: true, $ne: [] } }",
+           sort  = "{ 'timeTaken': 1 }")
+    List<Attempt> findGhostCandidates(ObjectId levelId, Pageable pageable);
+
     /// Returns the fastest completed attempt
     /// for the given level that has a replayable input log.
-    /// @param level the level to query
+    /// @param levelId the ObjectId of the level to query
     /// @return the fastest replayable attempt, or empty if none exists
-    @Query(value = "{ 'level': ?0, 'completed': true, 'inputLog': { $exists: true, $ne: [] } }",
+    default Optional<Attempt> findFastestGhostCandidate(final ObjectId levelId) {
+        final List<Attempt> results = findGhostCandidates(levelId, PageRequest.of(0, 1));
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
+
+    /// Internal query — returns verified ghost candidates sorted by timeTaken ascending, limited by pageable.
+    @Query(value = "{ 'level.$id': ?0, 'completed': true, 'antiCheatStatus': ?1, 'inputLog': { $exists: true, $ne: [] } }",
            sort  = "{ 'timeTaken': 1 }")
-    Optional<Attempt> findFastestGhostCandidate(Level level);
+    List<Attempt> findVerifiedGhostCandidates(ObjectId levelId, AttemptVerificationStatus status, Pageable pageable);
 
     /// Returns the fastest completed attempt
     /// for the given level with a replayable input log
     /// and the given anti-cheat verification status.
-    /// @param level  the level to query
-    /// @param status the required anti-cheat status
+    /// @param levelId the ObjectId of the level to query
+    /// @param status  the required anti-cheat status
     /// @return the fastest qualifying attempt, or empty if none exists
-    @Query(value = "{ 'level': ?0, 'completed': true, 'antiCheatStatus': ?1, 'inputLog': { $exists: true, $ne: [] } }",
-           sort  = "{ 'timeTaken': 1 }")
-    Optional<Attempt> findFastestVerifiedGhostCandidate(Level level, AttemptVerificationStatus status);
+    default Optional<Attempt> findFastestVerifiedGhostCandidate(
+            final ObjectId levelId, final AttemptVerificationStatus status) {
+        final List<Attempt> results = findVerifiedGhostCandidates(levelId, status, PageRequest.of(0, 1));
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
 
     /// Returns whether the given user
     /// has at least one completed attempt on the given level.
