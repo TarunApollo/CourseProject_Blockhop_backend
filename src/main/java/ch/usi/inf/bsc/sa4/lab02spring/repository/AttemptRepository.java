@@ -148,4 +148,26 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
             int maxFrameCount,
             int minInputChangeCount,
             int maxInputChangeCount);
+
+    /// Returns the fastest completed attempt for the given level that has a replayable input log.
+    /// @param level the level to query
+    /// @return the fastest replayable attempt, or empty if none exists
+    @Query(value = "{ 'level': ?0, 'completed': true, 'inputLog': { $exists: true, $ne: [] } }",
+           sort  = "{ 'timeTaken': 1 }")
+    Optional<Attempt> findFastestGhostCandidate(Level level);
+
+    /// Returns the fastest completed attempt for the given level with a replayable input log
+    /// and the given anti-cheat verification status.
+    /// @param level  the level to query
+    /// @param status the required anti-cheat status
+    /// @return the fastest qualifying attempt, or empty if none exists
+    @Query(value = "{ 'level': ?0, 'completed': true, 'antiCheatStatus': ?1, 'inputLog': { $exists: true, $ne: [] } }",
+           sort  = "{ 'timeTaken': 1 }")
+    Optional<Attempt> findFastestVerifiedGhostCandidate(Level level, AttemptVerificationStatus status);
+
+    /// Returns whether the given user has at least one completed attempt on the given level.
+    /// @param user  the user to check
+    /// @param level the level to check
+    /// @return true when at least one completed attempt exists
+    boolean existsByUserAndLevelAndCompletedTrue(User user, Level level);
 }
