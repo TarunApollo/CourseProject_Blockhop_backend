@@ -3,4 +3,5 @@ package ch.usi.inf.bsc.sa4.lab02spring.model;
 import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("shell")
-public record Shell(int gid, Position pos) implements Item {}
+public record Shell(String tileId, Position pos) implements Item {
+}

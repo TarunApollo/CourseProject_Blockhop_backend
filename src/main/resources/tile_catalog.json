@@ -1,0 +1,394 @@
+{
+  "tiles": [
+    {
+      "id": "terrain.grass.block.top.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.top",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.top.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.middle",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.vertical.top",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.center",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud.middle",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.vertical.middle",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.bottom.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.bottom",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block.bottom.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.overhang.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.overhang.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.vertical.bottom",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.dirt.block.top",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.dirt.block.center",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.stone.block",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.snow.block",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.strong.empty",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.long.a",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.long.b",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "decoration.mushroom.red",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "decoration.hill",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.long.c",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.red",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.green",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.blue",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.short.a",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.short.b",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "platform.bridge.logs",
+      "type": "Semisolid",
+      "category": "special",
+      "layer": "world"
+    },
+    {
+      "id": "hazard.block.spikes",
+      "type": "Damage",
+      "category": "hazard",
+      "layer": "world"
+    },
+    {
+      "id": "hazard.spikes",
+      "type": "Damage",
+      "category": "hazard",
+      "layer": "world"
+    },
+    {
+      "id": "hazard.lava",
+      "type": "Damage",
+      "category": "hazard",
+      "layer": "world"
+    },
+    {
+      "id": "block.planks",
+      "type": "BoxDouble",
+      "category": "item",
+      "layer": "object"
+    },
+    {
+      "id": "block.plank",
+      "type": "Box",
+      "category": "item",
+      "layer": "object"
+    },
+    {
+      "id": "flag.green",
+      "type": "Start_Flag",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "flag.green.alt",
+      "type": "Start_Flag_B",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "door.closed.bottom",
+      "type": "Door_Closed",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "door.open.bottom",
+      "type": "Door_Open",
+      "category": "essential",
+      "layer": "object"
+    },
+    {
+      "id": "coin.gold",
+      "type": "Item_Coin_Gold",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.gold.side",
+      "type": "Item_Coin_Gold_Side",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.silver",
+      "type": "Item_Coin_Silver",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.silver.side",
+      "type": "Item_Coin_Silver_Side",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.bronze",
+      "type": "Item_Coin_Bronze",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "coin.bronze.side",
+      "type": "Item_Coin_Bronze_Side",
+      "category": "collectible",
+      "layer": "object"
+    },
+    {
+      "id": "enemy.slime.normal",
+      "type": "Enemy_Slime_Normal",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
+      "id": "enemy.snail",
+      "type": "Enemy_Snail",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
+      "id": "enemy.bee",
+      "type": "Enemy_Bee",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.bush",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign.exit",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.grass.purple",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign.right",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign.left",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.grass",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.fence",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.cactus",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    }
+  ]
+}

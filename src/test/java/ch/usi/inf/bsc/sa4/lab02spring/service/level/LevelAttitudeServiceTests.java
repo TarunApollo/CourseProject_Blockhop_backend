@@ -66,18 +66,19 @@ class LevelAttitudeServiceTests {
     }
 
     /// Marks the given test level as published.
+    /// 
     /// @param levelToPublish the level to publish for service tests
     private static void publishLevel(final Level levelToPublish) {
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
-        levelToPublish.putObjectLayer(flag, new StartFlag(68, flag));
-        levelToPublish.putObjectLayer(door, new ExitDoor(115, door));
+        levelToPublish.putObjectLayer(flag, new StartFlag("flag.green", flag));
+        levelToPublish.putObjectLayer(door, new ExitDoor("door.closed.bottom", door));
         levelToPublish.validatePublishEligible(USER_ID);
         levelToPublish.publish(USER_ID);
     }
 
-    /// Verifies that setAttitude throws UserNotFoundException when
-    /// the user is missing.
+    /// Verifies that setAttitude throws UserNotFoundException when the user
+    /// is missing.
     @Test
     @DisplayName("setAttitude throws when user missing")
     void setAttitudeUserMissing() {
@@ -87,8 +88,8 @@ class LevelAttitudeServiceTests {
                 () -> service.setAttitude(USER_ID, LEVEL_ID, LevelAttitudeType.LIKE));
     }
 
-    /// Verifies that setAttitude throws LevelNotFoundException when
-    /// the level is missing.
+    /// Verifies that setAttitude throws LevelNotFoundException when the level
+    /// is missing.
     @Test
     @DisplayName("setAttitude throws when level missing")
     void setAttitudeLevelMissing() {
@@ -115,8 +116,8 @@ class LevelAttitudeServiceTests {
         Mockito.verify(attitudeRepository, Mockito.never()).save(Mockito.any(LevelAttitude.class));
     }
 
-    /// Verifies that setAttitude updates an existing attitude instead
-    /// of creating a new one.
+    /// Verifies that setAttitude updates an existing attitude instead of creating a
+    /// new one.
     @Test
     @DisplayName("setAttitude updates existing attitude")
     void setAttitudeUpdatesExisting() {

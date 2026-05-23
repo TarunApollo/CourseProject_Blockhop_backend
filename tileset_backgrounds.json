@@ -1,0 +1,105 @@
+{
+  "TextureAtlas": {
+    "SubTexture": [
+      {
+        "_name": "background_clouds",
+        "_x": "0",
+        "_y": "0",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_color_desert",
+        "_x": "257",
+        "_y": "0",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_color_hills",
+        "_x": "514",
+        "_y": "0",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_color_mushrooms",
+        "_x": "771",
+        "_y": "0",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_color_trees",
+        "_x": "0",
+        "_y": "257",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_fade_desert",
+        "_x": "257",
+        "_y": "257",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_fade_hills",
+        "_x": "514",
+        "_y": "257",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_fade_mushrooms",
+        "_x": "771",
+        "_y": "257",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_fade_trees",
+        "_x": "0",
+        "_y": "514",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_solid_cloud",
+        "_x": "257",
+        "_y": "514",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_solid_dirt",
+        "_x": "514",
+        "_y": "514",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_solid_grass",
+        "_x": "771",
+        "_y": "514",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_solid_sand",
+        "_x": "0",
+        "_y": "771",
+        "_width": "256",
+        "_height": "256"
+      },
+      {
+        "_name": "background_solid_sky",
+        "_x": "257",
+        "_y": "771",
+        "_width": "256",
+        "_height": "256"
+      }
+    ],
+    "_imagePath": "spritesheet-backgrounds-default.png"
+  }
+}

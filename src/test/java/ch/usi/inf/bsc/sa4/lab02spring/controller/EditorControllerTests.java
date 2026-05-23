@@ -84,7 +84,7 @@ class EditorControllerTests {
                     .thenReturn(testLevel);
 
             final UpdateWorldLayerDTO dto = new UpdateWorldLayerDTO(
-                    List.of(EditorLevelDTO.create(new Position(0, 0), 1)));
+                    List.of(EditorLevelDTO.create(new Position(0, 0), "terrain.grass.block")));
 
             restTestClient.put()
                     .uri(WORLD_LAYER_PATH, LEVEL_ID)
@@ -162,7 +162,7 @@ class EditorControllerTests {
                     .thenReturn(testLevel);
 
             final UpdateObjectLayerDTO dto = new UpdateObjectLayerDTO(
-                    List.of(EditorLevelDTO.create(new Position(1, 1), 42)));
+                    List.of(EditorLevelDTO.create(new Position(1, 1), "block.plank")));
 
             restTestClient
                     .put()

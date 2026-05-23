@@ -3,10 +3,14 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.anticheat;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.ReplaySerializationException;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayRequestDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayResultDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -22,10 +26,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 /// Handles replay submission orchestration outside the HTTP controller.
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Spring injects shared collaborators that stay private to this service."
-)
+@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring injects shared collaborators that stay private to this service.")
 @Service
 public class ReplaySubmissionService {
 
@@ -41,8 +42,8 @@ public class ReplaySubmissionService {
     /// Repository used to load the submitted level.
     private final LevelRepository levelRepository;
 
-    /// Service that provides the tileset used for replay serialization.
-    private final TileSetService tileSetService;
+    /// Service that provides the catalog used for replay serialization.
+    private final TileCatalogService tileCatalogService;
 
     /// Service that loads the authenticated player.
     private final UserService userService;
@@ -50,21 +51,22 @@ public class ReplaySubmissionService {
     /// Mapper used to serialize replay payloads.
     private final ObjectMapper objectMapper;
 
-    /// Service that upgrades legitimate replays to suspicious when fingerprints match.
+    /// Service that upgrades legitimate replays to suspicious when
+    /// fingerprints match.
     private final FingerprintSuspicionService suspicionService;
 
     /// Creates the replay submission service.
     public ReplaySubmissionService(final ReplayService replayService,
             final AttemptService attemptService,
             final LevelRepository levelRepository,
-            final TileSetService tileSetService,
+            final TileCatalogService tileCatalogService,
             final UserService userService,
             final ObjectMapper objectMapper,
             final FingerprintSuspicionService suspicionService) {
         this.replayService = replayService;
         this.attemptService = attemptService;
         this.levelRepository = levelRepository;
-        this.tileSetService = tileSetService;
+        this.tileCatalogService = tileCatalogService;
         this.userService = userService;
         this.objectMapper = objectMapper;
         this.suspicionService = suspicionService;
@@ -72,15 +74,15 @@ public class ReplaySubmissionService {
 
     /// Replays a finished run and updates its anti-cheat status.
     public ReplayResultDTO submitRun(final String userId, final ReplayRequestDTO request) {
-        final ch.usi.inf.bsc.sa4.lab02spring.model.Level level = levelRepository.findById(request.levelId())
+        final Level level = levelRepository.findById(request.levelId())
                 .orElseThrow(LevelNotFoundException::new);
-        final ch.usi.inf.bsc.sa4.lab02spring.model.User user = userService.getById(userId)
+        final User user = userService.getById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         level.ensurePlayable(userId);
 
         final String attemptId = request.attemptId();
-        final ch.usi.inf.bsc.sa4.lab02spring.model.Attempt attempt = attemptService.getAttemptById(attemptId);
+        final Attempt attempt = attemptService.getAttemptById(attemptId);
         if (!attempt.getUser().getId().equals(userId)) {
             throw new ForbiddenUserException("Attempt does not belong to this user");
         }
@@ -88,7 +90,7 @@ public class ReplaySubmissionService {
         final boolean playerCompleted = attempt.isCompleted();
         AntiCheatLog.levelCompleted(userId, request.levelId(), request.totalFrames());
 
-        final ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint fingerprint = InputLogFingerprintUtils
+        final InputLogFingerprint fingerprint = InputLogFingerprintUtils
                 .fingerprint(request.inputLog());
         attemptService.updateFingerprint(attemptId, user, request.levelId(), fingerprint);
 
@@ -102,14 +104,12 @@ public class ReplaySubmissionService {
     }
 
     private ReplayRequest buildReplayRequest(final String userId,
-            final ch.usi.inf.bsc.sa4.lab02spring.model.Level level,
+            final Level level,
             final ReplayRequestDTO request) {
         try {
-            final ch.usi.inf.bsc.sa4.lab02spring.model.TileSet tileSet = tileSetService.getTileSet();
             final java.util.Map<String, Object> tiledMap = LayerToTiledMapConverter.convertPipeline(
                     level,
-                    tileSet,
-                    tileSetService);
+                    this.tileCatalogService);
             final String levelJson = objectMapper.writeValueAsString(tiledMap);
             final String inputJson = serializeInputLog(request);
             return new ReplayRequest(userId, request.levelId(), levelJson, inputJson);
@@ -120,10 +120,10 @@ public class ReplaySubmissionService {
     }
 
     private AttemptVerificationStatus resolveStatus(
-            final ch.usi.inf.bsc.sa4.lab02spring.model.Level level,
-            final ch.usi.inf.bsc.sa4.lab02spring.model.User user,
+            final Level level,
+            final User user,
             final String attemptId,
-            final ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint fingerprint,
+            final InputLogFingerprint fingerprint,
             final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {

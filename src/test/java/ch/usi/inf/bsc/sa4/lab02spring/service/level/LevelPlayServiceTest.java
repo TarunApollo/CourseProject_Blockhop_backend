@@ -6,11 +6,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
-import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.anticheat.AntiCheatLog;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
@@ -66,11 +65,6 @@ class LevelPlayServiceTest {
     private static final AttemptDTO UNFINISHED_DTO = new AttemptDTO(
             Map.of(), new Position(0, 0),
             ZonedDateTime.now(), Duration.ofSeconds(10), false);
-    /// Immutable empty tileset used by play-pipeline tests.
-    private static final TileSet EMPTY_TILESET = new TileSet(
-            1, "atlas", 128, 128, 0, 8,
-            "atlas.png", 1024, 1024, 0, 0, List.of());
-
     /// The service under test.
     @Autowired
     private LevelPlayService service;
@@ -89,7 +83,7 @@ class LevelPlayServiceTest {
 
     /// Mocked tileset service used by playable map generation.
     @MockitoBean
-    private TileSetService tileSetService;
+    private TileCatalogService tileCatalogService;
 
     /// Mocked publish service that validates publish eligibility.
     @MockitoBean
@@ -117,8 +111,8 @@ class LevelPlayServiceTest {
         final Level level = newLevel();
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
-        level.putObjectLayer(flag, new StartFlag(68, flag));
-        level.putObjectLayer(door, new ExitDoor(115, door));
+        level.putObjectLayer(flag, new StartFlag("flag.green", flag));
+        level.putObjectLayer(door, new ExitDoor("door.closed.bottom", door));
         return level;
     }
 
@@ -157,14 +151,12 @@ class LevelPlayServiceTest {
             level.validatePublishEligible(OWNER_ID);
             level.publish(OWNER_ID);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            Mockito.when(tileSetService.getTileSet()).thenReturn(EMPTY_TILESET);
-
             final Map<String, Object> fakeMap = Map.of(LAYERS_KEY, List.of());
             try (MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito
                     .mockStatic(LayerToTiledMapConverter.class);
                     MockedStatic<AntiCheatLog> antiCheatLog = Mockito.mockStatic(AntiCheatLog.class)) {
                 mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
-                        level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
+                        level, tileCatalogService)).thenReturn(fakeMap);
 
                 final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
@@ -179,14 +171,12 @@ class LevelPlayServiceTest {
         void ownerCanPlayOwnUnpublishedLevel() {
             final Level level = newLevel();
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
-            Mockito.when(tileSetService.getTileSet()).thenReturn(EMPTY_TILESET);
-
             final Map<String, Object> fakeMap = Map.of("data", "test");
             try (MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito
                     .mockStatic(LayerToTiledMapConverter.class);
                     MockedStatic<AntiCheatLog> antiCheatLog = Mockito.mockStatic(AntiCheatLog.class)) {
                 mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
-                        level, EMPTY_TILESET, tileSetService)).thenReturn(fakeMap);
+                        level, tileCatalogService)).thenReturn(fakeMap);
 
                 final Map<String, Object> result = service.getPlayableMap(owner, LEVEL_ID);
 
