@@ -152,7 +152,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
             int minInputChangeCount,
             int maxInputChangeCount);
 
-    /// Internal query — returns ghost candidates sorted by timeTaken ascending, limited by pageable.
+    /// Internal query — returns ghost candidates
+    /// sorted by timeTaken ascending, limited by pageable.
     @Query(value = "{ 'level.$id': ?0, 'completed': true, 'inputLog': { $exists: true, $ne: [] } }",
            sort  = "{ 'timeTaken': 1 }")
     List<Attempt> findGhostCandidates(ObjectId levelId, Pageable pageable);
@@ -166,7 +167,8 @@ public interface AttemptRepository extends MongoRepository<Attempt, String>, Att
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
-    /// Internal query — returns verified ghost candidates sorted by timeTaken ascending, limited by pageable.
+    /// Internal query — returns verified ghost candidates
+    /// sorted by timeTaken ascending, limited by pageable.
     @Query(value = "{ 'level.$id': ?0, 'completed': true, 'antiCheatStatus': ?1, 'inputLog': { $exists: true, $ne: [] } }",
            sort  = "{ 'timeTaken': 1 }")
     List<Attempt> findVerifiedGhostCandidates(ObjectId levelId, AttemptVerificationStatus status, Pageable pageable);
