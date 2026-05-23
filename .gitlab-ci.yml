@@ -123,12 +123,18 @@ deploy_backend:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     - setup_ssh_docker_host
     - unset DOCKER_HOST
+    - docker context rm remote --force || true
     - docker context create --docker "host=ssh://$SSH_HOST" remote
     - docker context use remote
     - docker info
+    - docker --context remote compose -f deployment/docker-compose.yml config
     - docker --context remote compose -f deployment/docker-compose.yml down
     - docker --context remote compose -f deployment/docker-compose.yml pull
     - docker --context remote compose -f deployment/docker-compose.yml up -d
+    - docker --context remote compose -f deployment/docker-compose.yml ps -a
+    - docker --context remote inspect -f 'name={{.Name}} status={{.State.Status}} running={{.State.Running}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' lab-05-backend || true
+    - docker --context remote logs --tail=200 lab-05-backend || true
+    - docker --context remote logs --tail=100 deployment-mongodb-1 || true
 
 pages:
   stage: deploy
