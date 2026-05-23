@@ -19,6 +19,36 @@
       "layer": "world"
     },
     {
+      "id": "terrain.grass.horizontal.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.middle",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.block",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.vertical.top",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
       "id": "terrain.grass.block.left",
       "type": "Ground",
       "category": "ground",
@@ -37,6 +67,36 @@
       "layer": "world"
     },
     {
+      "id": "terrain.grass.cloud.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud.middle",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.cloud",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.vertical.middle",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
       "id": "terrain.grass.block.bottom.left",
       "type": "Ground",
       "category": "ground",
@@ -50,6 +110,24 @@
     },
     {
       "id": "terrain.grass.block.bottom.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.overhang.left",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.horizontal.overhang.right",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.vertical.bottom",
       "type": "Ground",
       "category": "ground",
       "layer": "world"
@@ -79,9 +157,81 @@
       "layer": "world"
     },
     {
+      "id": "block.strong.empty",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.long.a",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.long.b",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "decoration.mushroom.red",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "decoration.hill",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.long.c",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.red",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.green",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "block.blue",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.short.a",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
+      "id": "terrain.grass.ramp.short.b",
+      "type": "Ground",
+      "category": "ground",
+      "layer": "world"
+    },
+    {
       "id": "platform.bridge.logs",
       "type": "Semisolid",
       "category": "special",
+      "layer": "world"
+    },
+    {
+      "id": "hazard.block.spikes",
+      "type": "Damage",
+      "category": "hazard",
       "layer": "world"
     },
     {
@@ -127,20 +277,8 @@
       "layer": "object"
     },
     {
-      "id": "door.closed.top",
-      "type": "Door_Closed_Top",
-      "category": "essential",
-      "layer": "object"
-    },
-    {
       "id": "door.open.bottom",
       "type": "Door_Open",
-      "category": "essential",
-      "layer": "object"
-    },
-    {
-      "id": "door.open.top",
-      "type": "Door_Open_Top",
       "category": "essential",
       "layer": "object"
     },
@@ -206,6 +344,42 @@
     },
     {
       "id": "decoration.bush",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign.exit",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.grass.purple",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign.right",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.sign.left",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.grass",
+      "type": "Decoration",
+      "category": "decoration",
+      "layer": "object"
+    },
+    {
+      "id": "decoration.fence",
       "type": "Decoration",
       "category": "decoration",
       "layer": "object"

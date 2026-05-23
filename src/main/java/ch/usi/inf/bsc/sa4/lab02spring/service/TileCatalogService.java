@@ -81,8 +81,9 @@ public final class TileCatalogService {
     /// @throws IllegalArgumentException if the tile id is unknown
     public Entry requireTile(final String tileId) {
         final Entry tile = tilesById.get(tileId);
-        if (tile == null)
+        if (tile == null) {
             throw new IllegalArgumentException("Unknown tileId: " + tileId);
+        }
         return tile;
     }
 
@@ -131,8 +132,9 @@ public final class TileCatalogService {
     /// @return unique catalog entries
     private static List<Entry> buildTiles(final List<Entry> curatedTiles) {
         final Map<String, Entry> entries = new LinkedHashMap<>();
-        for (final Entry entry : curatedTiles)
+        for (final Entry entry : curatedTiles) {
             putUnique(entries, entry);
+        }
         return List.copyOf(entries.values());
     }
 

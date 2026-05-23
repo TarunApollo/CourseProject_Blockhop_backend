@@ -26,11 +26,17 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 @DisplayName("Tiled Layer Mapper")
 class TiledLayerMapperTests {
 
+    /// Test tile id for boxes.
+    private static final String BOX_TILE_ID = "box.id";
+
+    /// Mock tile catalog used by the mapper.
     @MockitoBean
     private TileCatalogService tileCatalogService;
 
+    /// Shared grid position for test objects.
     private static final Position POS = new Position(1, 2);
 
+    /// Catalog entry returned by the mock service.
     private Entry mockEntry;
 
     @BeforeEach
@@ -62,8 +68,8 @@ class TiledLayerMapperTests {
     @DisplayName("maps objects with catalog data")
     @SuppressWarnings("unchecked")
     void buildsObjectLayer() {
-        final GameObject box = new Box("box.id", POS, new Content.NoContent());
-        Mockito.when(tileCatalogService.requireTile("box.id")).thenReturn(mockEntry);
+        final GameObject box = new Box(BOX_TILE_ID, POS, new Content.NoContent());
+        Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
 
         final Map<String, Object> result = TiledLayerMapper.buildObjectLayer(Map.of(POS, box), tileCatalogService);
         final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get("objects");
@@ -71,7 +77,7 @@ class TiledLayerMapperTests {
         assertNotNull(objects);
         assertEquals(1, objects.size());
         final Map<String, Object> tiledObj = objects.get(0);
-        assertEquals("box.id", tiledObj.get("tileId"));
+        assertEquals(BOX_TILE_ID, tiledObj.get("tileId"));
         assertEquals(128, tiledObj.get("x")); // 1 tile from the left
         assertEquals(384, tiledObj.get("y")); // 3 tiles from the top
         assertEquals("TestType", tiledObj.get("type"));
@@ -83,8 +89,8 @@ class TiledLayerMapperTests {
     @SuppressWarnings("unchecked")
     void exportsBoxProperties() {
         final Content content = new Content.SomeContent(ch.usi.inf.bsc.sa4.lab02spring.model.CoinType.GOLD_COIN);
-        final GameObject box = new Box("box.id", POS, content);
-        Mockito.when(tileCatalogService.requireTile("box.id")).thenReturn(mockEntry);
+        final GameObject box = new Box(BOX_TILE_ID, POS, content);
+        Mockito.when(tileCatalogService.requireTile(BOX_TILE_ID)).thenReturn(mockEntry);
 
         final Map<String, Object> result = TiledLayerMapper.buildObjectLayer(Map.of(POS, box), tileCatalogService);
         final List<Map<String, Object>> objects = (List<Map<String, Object>>) result.get("objects");

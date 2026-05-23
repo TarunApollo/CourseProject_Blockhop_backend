@@ -24,9 +24,11 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 @DisplayName("Layer to Tiled Map Converter")
 class LayerToTiledMapConverterTests {
 
+    /// Mock tile catalog used by the converter.
     @MockitoBean
     private TileCatalogService tileCatalogService;
 
+    /// Level used by the tests.
     private Level testLevel;
 
     @BeforeEach

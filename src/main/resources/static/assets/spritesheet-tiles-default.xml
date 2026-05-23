@@ -11,6 +11,7 @@
 	<SubTexture name="block_planks" x="585" y="0" width="64" height="64"/>
 	<SubTexture name="block_red" x="650" y="0" width="64" height="64"/>
 	<SubTexture name="block_spikes" x="715" y="0" width="64" height="64"/>
+	<SubTexture name="hazard_block_spikes" x="715" y="0" width="64" height="64"/>
 	<SubTexture name="block_strong_coin" x="780" y="0" width="64" height="64"/>
 	<SubTexture name="block_strong_coin_active" x="845" y="0" width="64" height="64"/>
 	<SubTexture name="block_strong_danger" x="910" y="0" width="64" height="64"/>
@@ -30,8 +31,11 @@
 	<SubTexture name="bricks_grey" x="650" y="65" width="64" height="64"/>
 	<SubTexture name="bridge" x="715" y="65" width="64" height="64"/>
 	<SubTexture name="bridge_logs" x="780" y="65" width="64" height="64"/>
+	<SubTexture name="platform_bridge_logs" x="780" y="65" width="64" height="64"/>
 	<SubTexture name="bush" x="845" y="65" width="64" height="64"/>
+	<SubTexture name="decoration_bush" x="845" y="65" width="64" height="64"/>
 	<SubTexture name="cactus" x="910" y="65" width="64" height="64"/>
+	<SubTexture name="decoration_cactus" x="910" y="65" width="64" height="64"/>
 	<SubTexture name="chain" x="975" y="65" width="64" height="64"/>
 	<SubTexture name="coin_bronze" x="1040" y="65" width="64" height="64"/>
 	<SubTexture name="coin_bronze_side" x="1105" y="65" width="64" height="64"/>
@@ -41,16 +45,21 @@
 	<SubTexture name="coin_silver_side" x="195" y="130" width="64" height="64"/>
 	<SubTexture name="conveyor" x="260" y="130" width="64" height="64"/>
 	<SubTexture name="door_closed" x="325" y="130" width="64" height="64"/>
+	<SubTexture name="door_closed_bottom" x="325" y="130" width="64" height="64"/>
 	<SubTexture name="door_closed_top" x="390" y="130" width="64" height="64"/>
 	<SubTexture name="door_open" x="455" y="130" width="64" height="64"/>
+	<SubTexture name="door_open_bottom" x="455" y="130" width="64" height="64"/>
 	<SubTexture name="door_open_top" x="520" y="130" width="64" height="64"/>
 	<SubTexture name="fence" x="585" y="130" width="64" height="64"/>
+	<SubTexture name="decoration_fence" x="585" y="130" width="64" height="64"/>
 	<SubTexture name="fence_broken" x="650" y="130" width="64" height="64"/>
 	<SubTexture name="fireball" x="715" y="130" width="64" height="64"/>
 	<SubTexture name="flag_blue_a" x="780" y="130" width="64" height="64"/>
 	<SubTexture name="flag_blue_b" x="845" y="130" width="64" height="64"/>
 	<SubTexture name="flag_green_a" x="910" y="130" width="64" height="64"/>
+	<SubTexture name="flag_green" x="910" y="130" width="64" height="64"/>
 	<SubTexture name="flag_green_b" x="975" y="130" width="64" height="64"/>
+	<SubTexture name="flag_green_alt" x="975" y="130" width="64" height="64"/>
 	<SubTexture name="flag_off" x="1040" y="130" width="64" height="64"/>
 	<SubTexture name="flag_red_a" x="1105" y="130" width="64" height="64"/>
 	<SubTexture name="flag_red_b" x="0" y="195" width="64" height="64"/>
@@ -61,9 +70,12 @@
 	<SubTexture name="gem_red" x="325" y="195" width="64" height="64"/>
 	<SubTexture name="gem_yellow" x="390" y="195" width="64" height="64"/>
 	<SubTexture name="grass" x="455" y="195" width="64" height="64"/>
+	<SubTexture name="decoration_grass" x="455" y="195" width="64" height="64"/>
 	<SubTexture name="grass_purple" x="520" y="195" width="64" height="64"/>
+	<SubTexture name="decoration_grass_purple" x="520" y="195" width="64" height="64"/>
 	<SubTexture name="heart" x="585" y="195" width="64" height="64"/>
 	<SubTexture name="hill" x="650" y="195" width="64" height="64"/>
+	<SubTexture name="decoration_hill" x="650" y="195" width="64" height="64"/>
 	<SubTexture name="hill_top" x="715" y="195" width="64" height="64"/>
 	<SubTexture name="hill_top_smile" x="780" y="195" width="64" height="64"/>
 	<SubTexture name="hud_character_0" x="845" y="195" width="64" height="64"/>
@@ -104,6 +116,7 @@
 	<SubTexture name="ladder_middle" x="780" y="325" width="64" height="64"/>
 	<SubTexture name="ladder_top" x="845" y="325" width="64" height="64"/>
 	<SubTexture name="lava" x="910" y="325" width="64" height="64"/>
+	<SubTexture name="hazard_lava" x="910" y="325" width="64" height="64"/>
 	<SubTexture name="lava_top" x="975" y="325" width="64" height="64"/>
 	<SubTexture name="lava_top_low" x="1040" y="325" width="64" height="64"/>
 	<SubTexture name="lever" x="1105" y="325" width="64" height="64"/>
@@ -115,17 +128,23 @@
 	<SubTexture name="lock_yellow" x="325" y="390" width="64" height="64"/>
 	<SubTexture name="mushroom_brown" x="390" y="390" width="64" height="64"/>
 	<SubTexture name="mushroom_red" x="455" y="390" width="64" height="64"/>
+	<SubTexture name="decoration_mushroom_red" x="455" y="390" width="64" height="64"/>
 	<SubTexture name="ramp" x="520" y="390" width="64" height="64"/>
 	<SubTexture name="rock" x="585" y="390" width="64" height="64"/>
 	<SubTexture name="rop_attached" x="650" y="390" width="64" height="64"/>
 	<SubTexture name="rope" x="715" y="390" width="64" height="64"/>
 	<SubTexture name="saw" x="780" y="390" width="64" height="64"/>
 	<SubTexture name="sign" x="845" y="390" width="64" height="64"/>
+	<SubTexture name="decoration_sign" x="845" y="390" width="64" height="64"/>
 	<SubTexture name="sign_exit" x="910" y="390" width="64" height="64"/>
+	<SubTexture name="decoration_sign_exit" x="910" y="390" width="64" height="64"/>
 	<SubTexture name="sign_left" x="975" y="390" width="64" height="64"/>
+	<SubTexture name="decoration_sign_left" x="975" y="390" width="64" height="64"/>
 	<SubTexture name="sign_right" x="1040" y="390" width="64" height="64"/>
+	<SubTexture name="decoration_sign_right" x="1040" y="390" width="64" height="64"/>
 	<SubTexture name="snow" x="1105" y="390" width="64" height="64"/>
 	<SubTexture name="spikes" x="0" y="455" width="64" height="64"/>
+	<SubTexture name="hazard_spikes" x="0" y="455" width="64" height="64"/>
 	<SubTexture name="spring" x="65" y="455" width="64" height="64"/>
 	<SubTexture name="spring_out" x="130" y="455" width="64" height="64"/>
 	<SubTexture name="star" x="195" y="455" width="64" height="64"/>

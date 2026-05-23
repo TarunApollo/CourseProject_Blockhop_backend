@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 /// Converts level layers to map data for the frontend.
-@SuppressWarnings("PMD.AtLeastOneConstructor")
+@SuppressWarnings({ "PMD.AtLeastOneConstructor", "PMD.TooManyStaticImports" })
 final class TiledLayerMapper {
     /// Size of one tile in pixels.
     private static final int TILE_SIZE = 128;
