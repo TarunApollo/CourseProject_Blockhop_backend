@@ -8,9 +8,8 @@ spring:
   threads:
     virtual:
       enabled: true
-  data:
-    mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI}
+  mongodb:
+    uri: ${SPRING_MONGODB_URI}
   security:
     oauth2:
       client:
