@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.converter;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.KEY_HEIGHT;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.KEY_NAME;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.KEY_TYPE;
+import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.KEY_VALUE;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.KEY_VISIBLE;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.KEY_WIDTH;
 import static ch.usi.inf.bsc.sa4.lab02spring.utils.converter.TiledConstants.TYPE_STRING;
@@ -159,7 +160,7 @@ final class TiledLayerMapper {
             properties.add(Map.of(
                     KEY_NAME, "Content",
                     KEY_TYPE, TYPE_STRING,
-                    TiledConstants.KEY_VALUE,
+                    KEY_VALUE,
                     someContent.coinType().value()));
         }
         return properties;
