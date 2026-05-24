@@ -115,6 +115,7 @@ public class LevelService {
         final Level level = this.levelRepository.findById(levelId).orElseThrow(LevelNotFoundException::new);
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
+        this.levelPublishService.clearAllEngagement(level);
         this.levelRepository.deleteById(levelId);
     }
 
