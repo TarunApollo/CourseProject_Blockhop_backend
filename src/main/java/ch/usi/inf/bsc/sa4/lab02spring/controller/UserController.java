@@ -8,7 +8,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelFavoriteService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
@@ -56,21 +57,29 @@ public class UserController {
     ///
     private final LevelFavoriteService levelFavoriteService;
 
+    ///
+    /// Service used to build enriched level summaries (attitude, like/dislike counts, play stats).
+    ///
+    private final LevelAggregationService levelAggregationService;
+
     /// Constructs a new UserController with the given dependencies.
     /// @param userService the service for accessing user data
     /// @param levelService the service for managing level operations
     /// @param attemptService the service for querying attempt-related statistics
     /// @param levelFavoriteService the service for managing favorite levels
+    /// @param levelAggregationService the service for building enriched level summaries
     @Autowired
     public UserController(
             final UserService userService,
             final LevelService levelService,
             final AttemptService attemptService,
-            final LevelFavoriteService levelFavoriteService) {
+            final LevelFavoriteService levelFavoriteService,
+            final LevelAggregationService levelAggregationService) {
         this.userService = userService;
         this.levelService = levelService;
         this.attemptService = attemptService;
         this.levelFavoriteService = levelFavoriteService;
+        this.levelAggregationService = levelAggregationService;
     }
 
     /// @return a list of all existing users as UserDTOs
@@ -141,11 +150,13 @@ public class UserController {
     /// @return a 200 OK response containing the user's favorited levels as DTOs
     /// @throws UserNotFoundException if no user with the authenticated id exists
     @GetMapping("/me/favorites")
-    public ResponseEntity<List<LevelDTO>> getFavorites(@AuthenticationPrincipal final OAuth2User oAuth2User) {
+    public ResponseEntity<List<LevelSummaryDto>> getFavorites(@AuthenticationPrincipal final OAuth2User oAuth2User) {
         final String userId = OAuth2UserUtils.getRequiredAttribute(oAuth2User, "sub");
         final User user = this.userService.getById(userId).orElseThrow(UserNotFoundException::new);
-        final List<LevelDTO> favorites = this.levelFavoriteService.getFavoritesByUser(user).stream()
-                .map(favorite -> new LevelDTO(favorite.getLevel()))
+        final List<LevelSummaryDto> favorites = this.levelFavoriteService.getFavoritesByUser(user).stream()
+                .filter(favorite -> favorite.getLevel() != null)
+                .filter(favorite -> favorite.getLevel().isPublished())
+                .map(favorite -> this.levelAggregationService.buildFavoriteSummary(favorite.getLevel(), userId))
                 .toList();
         return ResponseEntity.ok(favorites);
     }
