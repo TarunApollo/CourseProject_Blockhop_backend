@@ -2,7 +2,6 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.service.SpriteCatalogService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /// REST controller for serving game assets.
 @RestController
@@ -28,19 +26,16 @@ public class AssetController {
         this.spriteCatalogService = spriteCatalogService;
     }
 
-    /// Serves spritesheet metadata as JSON format compatible with Phaser 3's atlas
-    /// loaders.
+    /// Serves spritesheet metadata in the atlas format used by the frontend game engine.
     ///
     /// @spec.requires type is not null.
-    /// @param type the type of spritesheet to load (e.g., characters, enemies)
-    /// @return a 200 OK response containing the spritesheet metadata with cache
-    ///         headers if found, or a 404 Not Found response otherwise
+    /// @param type the type of spritesheet to load (e.g., characters, enemies, tiles)
+    /// @return a 200 OK response containing the spritesheet metadata if found,
+    ///         or a 404 Not Found response otherwise
     @GetMapping("/spritesheets")
     public ResponseEntity<Map<String, Object>> getSpritesheet(@RequestParam final String type) {
         return spriteCatalogService.getPayload(type)
-                .map(payload -> ResponseEntity.ok()
-                        .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
-                        .body(payload))
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
