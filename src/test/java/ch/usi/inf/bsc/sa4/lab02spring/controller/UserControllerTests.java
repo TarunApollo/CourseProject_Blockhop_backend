@@ -2,13 +2,24 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller;
 
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.CreateUserDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UserProfileDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.ClearCondition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Condition;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.LevelFavorite;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelAggregationService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelFavoriteService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelService;
 
+import java.time.ZonedDateTime;
+import java.util.Map;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -52,6 +63,14 @@ class UserControllerTests {
     @MockitoBean
     private AttemptService attemptService;
 
+    /// Mocked favorite service used by the favorites endpoint.
+    @MockitoBean
+    private LevelFavoriteService levelFavoriteService;
+
+    /// Mocked aggregation service used to build enriched favorites DTOs.
+    @MockitoBean
+    private LevelAggregationService levelAggregationService;
+
     /// HTTP client bound to MockMvc for black-box endpoint assertions.
     @Autowired
     private RestTestClient restTestClient;
@@ -77,6 +96,7 @@ class UserControllerTests {
         Mockito.when(userService.getById(user1.getId())).thenReturn(Optional.of(user1));
         Mockito.when(userService.getById(user2.getId())).thenReturn(Optional.of(user2));
         Mockito.when(userService.getAllUsers()).thenReturn(List.of(user1, user2));
+        Mockito.when(levelFavoriteService.getFavoritesByUser(ArgumentMatchers.any())).thenReturn(List.of());
     }
 
     /// Tests for listing users.
@@ -182,6 +202,86 @@ class UserControllerTests {
             restTestClient.get().uri("/users/profile")
 //                    .header(ControllerSecurityTestConfig.USER_ID_HEADER, "missing")
 //                    .header(ControllerSecurityTestConfig.USER_NAME_HEADER, "Missing")
+                    .exchange()
+                    .expectStatus().isNotFound();
+        }
+    }
+
+    /// Tests for the authenticated user's favorites endpoint.
+    @Nested
+    @DisplayName("GET /users/me/favorites")
+    /* default */
+    class GetFavorites {
+
+        @Test
+        @DisplayName("should return 200 OK and empty list when user has no favorites")
+        /* default */
+        void returnsEmptyList() {
+            restTestClient.get().uri("/users/me/favorites")
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .value(list -> Assertions.assertEquals(0, list.size()));
+        }
+
+        @Test
+        @DisplayName("should return 200 OK with one summary for a published favorite")
+        /* default */
+        void returnsPublishedFavorite() {
+            final Level published = new Level(user1, "My Level", "desc", true,
+                    new ClearCondition(new Condition.NoClearCondition(), 0), Map.of(), Map.of());
+            final LevelFavorite favorite = new LevelFavorite(user1, published, ZonedDateTime.now());
+            final LevelSummaryDto summary = new LevelSummaryDto(published, 0L, 0.0, 0L);
+
+            Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(favorite));
+            Mockito.when(levelAggregationService.buildFavoriteSummary(published, user1.getId()))
+                    .thenReturn(summary);
+
+            restTestClient.get().uri("/users/me/favorites")
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .value(list -> Assertions.assertEquals(1, list.size()));
+        }
+
+        @Test
+        @DisplayName("should filter out favorites whose level reference is null")
+        /* default */
+        void filtersOrphanedFavorite() {
+            final LevelFavorite orphaned = Mockito.mock(LevelFavorite.class);
+            Mockito.when(orphaned.getLevel()).thenReturn(null);
+            Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(orphaned));
+
+            restTestClient.get().uri("/users/me/favorites")
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .value(list -> Assertions.assertEquals(0, list.size()));
+        }
+
+        @Test
+        @DisplayName("should filter out favorites whose level is unpublished")
+        /* default */
+        void filtersUnpublishedFavorite() {
+            final Level unpublished = new Level("My Level", "desc", user1);
+            final LevelFavorite favorite = new LevelFavorite(user1, unpublished, ZonedDateTime.now());
+            Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(favorite));
+
+            restTestClient.get().uri("/users/me/favorites")
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
+                    .value(list -> Assertions.assertEquals(0, list.size()));
+        }
+
+        @Test
+        @DisplayName("should return 404 Not Found when the authenticated user does not exist")
+        /* default */
+        void returnsNotFoundWhenUserMissing() {
+            Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                    .thenReturn(Optional.empty());
+
+            restTestClient.get().uri("/users/me/favorites")
                     .exchange()
                     .expectStatus().isNotFound();
         }

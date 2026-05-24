@@ -451,6 +451,40 @@ class LevelAggregationServiceTest {
         }
     }
 
+    /// Tests for the buildFavoriteSummary entry point.
+    @Nested
+    @DisplayName("when building a favorite summary")
+    class BuildFavoriteSummary {
+
+        /// The returned DTO should reflect the level's own metadata.
+        @Test
+        @DisplayName("returns a summary populated with the level title, description, and creator")
+        void returnsPopulatedSummary() {
+            final Level level = publishedLevel(SAMPLE_TITLE);
+            stubAttempts(level, 5, 2);
+            Mockito.when(userService.getById(CREATOR_ID)).thenReturn(Optional.of(creator));
+
+            final LevelSummaryDto result = service.buildFavoriteSummary(level, CREATOR_ID);
+
+            Assertions.assertEquals(SAMPLE_TITLE, result.title());
+            Assertions.assertEquals(DESC, result.description());
+            Assertions.assertEquals(CREATOR_NAME, result.creatorName());
+        }
+
+        /// When the user exists but has no attitude recorded, userAttitude should be null.
+        @Test
+        @DisplayName("sets userAttitude to null when the user has no recorded attitude")
+        void userAttitudeIsNullWhenAbsent() {
+            final Level level = publishedLevel(SAMPLE_TITLE);
+            stubAttempts(level, 0, 0);
+            Mockito.when(userService.getById(CREATOR_ID)).thenReturn(Optional.of(creator));
+
+            final LevelSummaryDto result = service.buildFavoriteSummary(level, CREATOR_ID);
+
+            Assertions.assertNull(result.userAttitude());
+        }
+    }
+
     /// Stubs the attempt repository to return the given play and clear counts.
     private void stubAttempts(final Level level, final long plays, final long clears) {
         Mockito.when(attemptRepository.countByLevelAndUserNot(level, level.getCreator())).thenReturn(plays);
