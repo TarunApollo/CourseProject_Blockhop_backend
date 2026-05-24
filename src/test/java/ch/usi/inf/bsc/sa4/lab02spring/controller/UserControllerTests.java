@@ -46,10 +46,14 @@ import java.util.Optional;
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
 @SuppressWarnings({
-    "PMD.UnitTestShouldIncludeAssert"
+    "PMD.UnitTestShouldIncludeAssert",
+    "PMD.ExcessiveImports"
 })
 @DisplayName("The User Controller")
 class UserControllerTests {
+
+    /// URI for the authenticated user's favorites endpoint.
+    private static final String FAVORITES_URI = "/users/me/favorites";
 
     /// Mocked user service used across all user endpoint tests.
     @MockitoBean
@@ -217,7 +221,7 @@ class UserControllerTests {
         @DisplayName("should return 200 OK and empty list when user has no favorites")
         /* default */
         void returnsEmptyList() {
-            restTestClient.get().uri("/users/me/favorites")
+            restTestClient.get().uri(FAVORITES_URI)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -237,7 +241,7 @@ class UserControllerTests {
             Mockito.when(levelAggregationService.buildFavoriteSummary(published, user1.getId()))
                     .thenReturn(summary);
 
-            restTestClient.get().uri("/users/me/favorites")
+            restTestClient.get().uri(FAVORITES_URI)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -252,7 +256,7 @@ class UserControllerTests {
             Mockito.when(orphaned.getLevel()).thenReturn(null);
             Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(orphaned));
 
-            restTestClient.get().uri("/users/me/favorites")
+            restTestClient.get().uri(FAVORITES_URI)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -267,7 +271,7 @@ class UserControllerTests {
             final LevelFavorite favorite = new LevelFavorite(user1, unpublished, ZonedDateTime.now());
             Mockito.when(levelFavoriteService.getFavoritesByUser(user1)).thenReturn(List.of(favorite));
 
-            restTestClient.get().uri("/users/me/favorites")
+            restTestClient.get().uri(FAVORITES_URI)
                     .exchange()
                     .expectStatus().isOk()
                     .expectBody(new ParameterizedTypeReference<List<LevelSummaryDto>>() {})
@@ -281,7 +285,7 @@ class UserControllerTests {
             Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                     .thenReturn(Optional.empty());
 
-            restTestClient.get().uri("/users/me/favorites")
+            restTestClient.get().uri(FAVORITES_URI)
                     .exchange()
                     .expectStatus().isNotFound();
         }
