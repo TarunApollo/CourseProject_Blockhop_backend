@@ -87,7 +87,7 @@ public class SpriteCatalogService {
     /// @return the parsed payload (immutable)
     private Map<String, Object> parseXmlToJson(final Document doc, final Set<String> tempValidSprites) {
         final NodeList subTextures = doc.getElementsByTagName("SubTexture");
-        final Map<String, Object> frames = new HashMap<>();
+        final Map<String, Object> frames = new HashMap<>(subTextures.getLength());
 
         for (int i = 0; i < subTextures.getLength(); i++) {
             final Element elem = (Element) subTextures.item(i);
@@ -99,8 +99,8 @@ public class SpriteCatalogService {
 
             final Map<String, Object> frameData = Map.of(
                     "frame", Map.of("x", x, "y", y, "w", w, "h", h),
-                    "rotated", false,
-                    "trimmed", false,
+                    "rotated", Boolean.FALSE,
+                    "trimmed", Boolean.FALSE,
                     "spriteSourceSize", Map.of("x", 0, "y", 0, "w", w, "h", h),
                     "sourceSize", Map.of("w", w, "h", h));
 
