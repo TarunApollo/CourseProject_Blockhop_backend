@@ -86,6 +86,17 @@ public class LevelAggregationService {
         return new LevelSummaryDto(level, playCount, clearRate, popularity, userAttitude, likeCount, dislikeCount);
     }
 
+    /// Builds a summary for a single favorited level, enriched with the current
+    /// user's attitude. Popularity is not meaningful for this context so play count
+    /// is used as the fallback.
+    ///
+    /// @param level         the favorited level to summarize
+    /// @param currentUserId the authenticated user's id
+    /// @return a LevelSummaryDto with attitude, like/dislike counts, and play stats
+    public LevelSummaryDto buildFavoriteSummary(final Level level, final String currentUserId) {
+        return toLevelSummary(level, PublishedLevelSortBy.POPULARITY, DateRangePreset.AllTimeDateRangePreset.ALL_TIME, currentUserId);
+    }
+
     /// Returns all published levels as summaries. Applies the requested sorting
     /// strategy.
     /// 
