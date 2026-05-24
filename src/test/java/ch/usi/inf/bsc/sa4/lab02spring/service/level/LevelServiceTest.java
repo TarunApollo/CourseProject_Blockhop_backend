@@ -325,7 +325,8 @@ class LevelServiceTests {
             Mockito.verify(levelRepository).deleteById(LEVEL_ID);
         }
 
-        /// Engagement (favorites, votes, attempts) must be cleared before the level is removed.
+        /// Engagement (favorites, votes, attempts) must be
+        /// cleared before the level is removed.
         @Test
         @DisplayName("clears engagement before deleting the level")
         void clearsEngagementBeforeDeletion() {
