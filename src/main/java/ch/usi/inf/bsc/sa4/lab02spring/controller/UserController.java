@@ -58,7 +58,8 @@ public class UserController {
     private final LevelFavoriteService levelFavoriteService;
 
     ///
-    /// Service used to build enriched level summaries (attitude, like/dislike counts, play stats).
+    /// Service used to build enriched level summaries
+    /// (attitude, like/dislike counts, play stats).
     ///
     private final LevelAggregationService levelAggregationService;
 
