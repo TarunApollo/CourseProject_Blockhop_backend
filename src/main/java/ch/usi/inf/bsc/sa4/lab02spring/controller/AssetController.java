@@ -26,12 +26,14 @@ public class AssetController {
         this.spriteCatalogService = spriteCatalogService;
     }
 
-    /// Serves spritesheet metadata in the atlas format used by the frontend game engine.
+    /// Serves spritesheet metadata in the atlas format used by the frontend game
+    /// engine.
     ///
     /// @spec.requires type is not null.
-    /// @param type the type of spritesheet to load (e.g., characters, enemies, tiles)
-    /// @return a 200 OK response containing the spritesheet metadata if found,
-    ///         or a 404 Not Found response otherwise
+    /// @param type the type of spritesheet to load (e.g., characters, enemies,
+    ///             tiles)
+    /// @return a 200 OK response containing the spritesheet metadata if found, or a
+    ///         404 Not Found response otherwise
     @GetMapping("/spritesheets")
     public ResponseEntity<Map<String, Object>> getSpritesheet(@RequestParam final String type) {
         return spriteCatalogService.getPayload(type)

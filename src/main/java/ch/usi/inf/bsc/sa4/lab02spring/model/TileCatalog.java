@@ -12,4 +12,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /// @spec.effects stores the tile entries loaded from JSON.
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TileCatalog(
-        List<Entry> tiles) {}
+        List<Entry> tiles) {
+    public TileCatalog {
+        tiles = List.copyOf(tiles);
+    }
+}
