@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Climbable;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Content;
 import ch.usi.inf.bsc.sa4.lab02spring.model.CoinType;
@@ -64,6 +65,13 @@ public class GameObjectFactory {
             @Override
             public GameObject createGameObject(final String tileId, final Position pos, final Content content) {
                 return new Decoration(tileId, pos);
+            }
+        },
+
+        CLIMBABLE("Climbable") {
+            @Override
+            public GameObject createGameObject(final String tileId, final Position pos, final Content content) {
+                return new Climbable(tileId, pos);
             }
         },
 
@@ -171,7 +179,7 @@ public class GameObjectFactory {
                     return type;
                 }
             }
-            throw new UnknownObjectTypeException();
+            throw new UnknownObjectTypeException(value);
         }
     }
 }
