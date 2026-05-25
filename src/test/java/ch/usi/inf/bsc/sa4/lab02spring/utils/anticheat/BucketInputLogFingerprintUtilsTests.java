@@ -54,9 +54,9 @@ class BucketInputLogFingerprintUtilsTests {
                     new InputFrameDTO(10, false, true, false, false),
                     new InputFrameDTO(15, false, false, false, true));
             final String unshifted = InputLogFingerprintUtils.sha256(
-                    "0:L1R0J1S0|1:L0R1J0S1");
+                    "0:L1R0J1S0U0D0X0P0|1:L0R1J0S1U0D0X0P0");
             final String shifted = InputLogFingerprintUtils.sha256(
-                    "0:L1R0J0S0|1:L0R1J1S0|2:L0R0J0S1");
+                    "0:L1R0J0S0U0D0X0P0|1:L0R1J1S0U0D0X0P0|2:L0R0J0S1U0D0X0P0");
 
             final List<String> result = BucketInputLogFingerprintUtils.hashes(inputLog);
 

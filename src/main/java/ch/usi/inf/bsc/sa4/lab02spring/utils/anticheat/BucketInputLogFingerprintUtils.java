@@ -93,12 +93,24 @@ final class BucketInputLogFingerprintUtils {
         private boolean jump;
         /// True if run was pressed.
         private boolean run;
+        /// True if climb up was pressed.
+        private boolean climbUp;
+        /// True if climb down was pressed.
+        private boolean climbDown;
+        /// True if climb exit was pressed.
+        private boolean climbExit;
+        /// True if pickup or throw was pressed.
+        private boolean pickupAndThrow;
 
         private void include(final InputState state) {
             left |= state.left();
             right |= state.right();
             jump |= state.jump();
             run |= state.run();
+            climbUp |= state.climbUp();
+            climbDown |= state.climbDown();
+            climbExit |= state.climbExit();
+            pickupAndThrow |= state.pickupAndThrow();
         }
 
         private void reset() {
@@ -106,17 +118,26 @@ final class BucketInputLogFingerprintUtils {
             right = false;
             jump = false;
             run = false;
+            climbUp = false;
+            climbDown = false;
+            climbExit = false;
+            pickupAndThrow = false;
         }
 
         private boolean isNeutral() {
-            return !left && !right && !jump && !run;
+            return !left && !right && !jump && !run
+                    && !climbUp && !climbDown && !climbExit && !pickupAndThrow;
         }
 
         private String canonical() {
             return "L" + bit(left)
                     + "R" + bit(right)
                     + "J" + bit(jump)
-                    + "S" + bit(run);
+                    + "S" + bit(run)
+                    + "U" + bit(climbUp)
+                    + "D" + bit(climbDown)
+                    + "X" + bit(climbExit)
+                    + "P" + bit(pickupAndThrow);
         }
 
         private static int bit(final boolean value) {

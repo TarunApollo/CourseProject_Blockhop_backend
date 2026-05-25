@@ -46,7 +46,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J0S0|2:L0R1J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J0S0U0D0X0P0|2:L0R1J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(2, result.changeCount());
         }
 
@@ -62,7 +62,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(1, result.changeCount());
         }
 
@@ -78,7 +78,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L0R0J1S0|1:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L0R0J1S0U0D0X0P0|1:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(2, result.changeCount());
         }
 
@@ -100,7 +100,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(1, result.changeCount());
         }
 
@@ -119,7 +119,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(1, result.changeCount());
         }
 
@@ -142,7 +142,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J0S0|3:L0R1J0S0|9:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J0S0U0D0X0P0|3:L0R1J0S0U0D0X0P0|9:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(3, result.changeCount());
         }
 
@@ -158,7 +158,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J0S0|1:L1R0J1S0|2:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J0S0U0D0X0P0|1:L1R0J1S0U0D0X0P0|2:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(3, result.changeCount());
         }
 
@@ -175,7 +175,7 @@ class JitterInputLogFingerprintUtilsTests {
             final JitterInputLogFingerprintUtils.JitterCanonical result =
                     JitterInputLogFingerprintUtils.canonical(inputLog);
 
-            Assertions.assertEquals("0:L1R0J1S0|1:L1R0J0S0", result.canonical());
+            Assertions.assertEquals("0:L1R0J1S0U0D0X0P0|1:L1R0J0S0U0D0X0P0", result.canonical());
             Assertions.assertEquals(2, result.changeCount());
         }
     }

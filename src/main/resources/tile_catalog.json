@@ -869,6 +869,24 @@
       "type": "Decoration",
       "category": "decoration",
       "layer": "object"
+    },
+    {
+      "id": "ladder.top",
+      "type": "Climbable",
+      "category": "special",
+      "layer": "object"
+    },
+    {
+      "id": "ladder.middle",
+      "type": "Climbable",
+      "category": "special",
+      "layer": "object"
+    },
+    {
+      "id": "ladder.bottom",
+      "type": "Climbable",
+      "category": "special",
+      "layer": "object"
     }
   ]
 }
