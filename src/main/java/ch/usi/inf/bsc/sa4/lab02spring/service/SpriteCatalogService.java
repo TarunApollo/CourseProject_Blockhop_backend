@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,10 +22,8 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.SpriteCatalogNotLoadedException;
 
 /// Service that loads and parses spritesheet XML files into JSON payloads.
 @Service
+@SuppressWarnings({ "PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops" })
 public class SpriteCatalogService {
-
-    /// Shared boxed boolean used in generated atlas payloads.
-    private static final Boolean ATLAS_FLAG_FALSE = Boolean.FALSE;
 
     /// Pre-computed JSON payloads for each spritesheet type.
     private final Map<String, Map<String, Object>> payloads;
@@ -36,14 +32,13 @@ public class SpriteCatalogService {
     private final Set<String> validSprites;
 
     /// Initializes the service by loading all spritesheets from the classpath.
-    @SuppressWarnings("PMD.UseConcurrentHashMap")
     public SpriteCatalogService() {
         try {
             final Map<String, Map<String, Object>> tempPayloads = new HashMap<>();
             final Set<String> tempValidSprites = new HashSet<>();
-            
+
             loadCatalogs(tempPayloads, tempValidSprites);
-            
+
             this.payloads = Map.copyOf(tempPayloads);
             this.validSprites = Set.copyOf(tempValidSprites);
         } catch (final IOException | ParserConfigurationException | SAXException e) {
@@ -52,7 +47,7 @@ public class SpriteCatalogService {
     }
 
     /// Loads and parses all XML spritesheets from the resources folder.
-    private void loadCatalogs(final Map<String, Map<String, Object>> tempPayloads, final Set<String> tempValidSprites) 
+    private void loadCatalogs(final Map<String, Map<String, Object>> tempPayloads, final Set<String> tempValidSprites)
             throws IOException, ParserConfigurationException, SAXException {
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final Resource[] resources = resolver.getResources("classpath:spritesheets/*.xml");
@@ -87,36 +82,33 @@ public class SpriteCatalogService {
     /// Parses an XML document representing a spritesheet into a JSON-compatible
     /// map.
     ///
-    /// @param doc the XML document
+    /// @param doc              the XML document
     /// @param tempValidSprites the temporary set to accumulate valid sprite names
-    /// @return the parsed payload
+    /// @return the parsed payload (immutable)
     private Map<String, Object> parseXmlToJson(final Document doc, final Set<String> tempValidSprites) {
         final NodeList subTextures = doc.getElementsByTagName("SubTexture");
+        final Map<String, Object> frames = new HashMap<>(subTextures.getLength());
 
-        final Map<String, Object> frames = IntStream.range(0, subTextures.getLength())
-                .mapToObj(subTextures::item)
-                .map(Element.class::cast)
-                .collect(Collectors.toUnmodifiableMap(
-                        elem -> {
-                            final String name = elem.getAttribute("name");
-                            tempValidSprites.add(name);
-                            return name;
-                        },
-                        elem -> {
-                            final int x = Integer.parseInt(elem.getAttribute("x"));
-                            final int y = Integer.parseInt(elem.getAttribute("y"));
-                            final int w = Integer.parseInt(elem.getAttribute("width"));
-                            final int h = Integer.parseInt(elem.getAttribute("height"));
+        for (int i = 0; i < subTextures.getLength(); i++) {
+            final Element elem = (Element) subTextures.item(i);
+            final String name = elem.getAttribute("name");
+            final int x = Integer.parseInt(elem.getAttribute("x"));
+            final int y = Integer.parseInt(elem.getAttribute("y"));
+            final int w = Integer.parseInt(elem.getAttribute("width"));
+            final int h = Integer.parseInt(elem.getAttribute("height"));
 
-                            return Map.of(
-                                    "frame", Map.of("x", x, "y", y, "w", w, "h", h),
-                                    "rotated", ATLAS_FLAG_FALSE,
-                                    "trimmed", ATLAS_FLAG_FALSE,
-                                    "spriteSourceSize", Map.of("x", 0, "y", 0, "w", w, "h", h),
-                                    "sourceSize", Map.of("w", w, "h", h));
-                        }));
+            final Map<String, Object> frameData = Map.of(
+                    "frame", Map.of("x", x, "y", y, "w", w, "h", h),
+                    "rotated", Boolean.FALSE,
+                    "trimmed", Boolean.FALSE,
+                    "spriteSourceSize", Map.of("x", 0, "y", 0, "w", w, "h", h),
+                    "sourceSize", Map.of("w", w, "h", h));
 
-        return Map.of("frames", frames);
+            frames.put(name, frameData);
+            tempValidSprites.add(name);
+        }
+
+        return Map.of("frames", Map.copyOf(frames));
     }
 
     /// Gets the pre-computed JSON payload for a given spritesheet type.
