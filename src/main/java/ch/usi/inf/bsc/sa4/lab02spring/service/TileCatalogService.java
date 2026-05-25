@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,6 +72,15 @@ public final class TileCatalogService {
     /// @return all known tiles
     public List<Entry> getTiles() {
         return Collections.unmodifiableList(tiles);
+    }
+
+    /// Returns the catalog payload wrapped in an Optional.
+    ///
+    /// @spec.modifies nothing.
+    /// @spec.effects returns an Optional containing the tile catalog map if not empty, otherwise empty.
+    /// @return Optional containing the tile catalog map if not empty, otherwise empty
+    public java.util.Optional<Map<String, Object>> getPayload() {
+        return tiles.isEmpty() ? Optional.empty() : Optional.of(Map.of("tiles", tiles));
     }
 
     /// Returns the catalog entry for a tile id.
