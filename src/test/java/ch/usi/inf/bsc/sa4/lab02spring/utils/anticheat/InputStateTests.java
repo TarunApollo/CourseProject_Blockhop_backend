@@ -21,7 +21,7 @@ class InputStateTests {
         @Test
         @DisplayName("copies button values from the frame")
         void copiesButtonValues() {
-            final InputFrameDTO frame = new InputFrameDTO(7, true, false, true, true);
+            final InputFrameDTO frame = new InputFrameDTO(7, true, false, true, true, true, false, true, true);
 
             final InputState state = InputState.from(frame);
 
@@ -29,6 +29,10 @@ class InputStateTests {
             Assertions.assertFalse(state.right());
             Assertions.assertTrue(state.jump());
             Assertions.assertTrue(state.run());
+            Assertions.assertTrue(state.climbUp());
+            Assertions.assertFalse(state.climbDown());
+            Assertions.assertTrue(state.climbExit());
+            Assertions.assertTrue(state.pickupAndThrow());
         }
     }
 
@@ -41,9 +45,9 @@ class InputStateTests {
         @Test
         @DisplayName("uses left right jump and run order")
         void usesFixedButtonOrder() {
-            final InputState state = new InputState(true, false, true, false);
+            final InputState state = new InputState(true, false, true, false, true, false, true, false);
 
-            Assertions.assertEquals("L1R0J1S0", state.canonical());
+            Assertions.assertEquals("L1R0J1S0U1D0X1P0", state.canonical());
         }
     }
 
@@ -58,6 +62,8 @@ class InputStateTests {
         void detectsNeutralInput() {
             Assertions.assertTrue(new InputState(false, false, false, false).isNeutral());
             Assertions.assertFalse(new InputState(false, true, false, false).isNeutral());
+            Assertions.assertFalse(
+                    new InputState(false, false, false, false, false, false, false, true).isNeutral());
         }
 
         /// Checks jump-only input.
@@ -66,6 +72,8 @@ class InputStateTests {
         void detectsJumpOnlyInput() {
             Assertions.assertTrue(new InputState(false, false, true, false).isJumpOnly());
             Assertions.assertFalse(new InputState(false, false, true, true).isJumpOnly());
+            Assertions.assertFalse(
+                    new InputState(false, false, true, false, true, false, false, false).isJumpOnly());
         }
 
         /// Checks matching horizontal direction.

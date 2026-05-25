@@ -195,7 +195,15 @@ public class ReplaySubmissionService {
         final List<SerializedReplayFrame> frames = request.inputLog().stream()
                 .map(frame -> new SerializedReplayFrame(
                         frame.frame(),
-                        new SerializedPlayerInput(frame.left(), frame.right(), frame.jump(), frame.run())))
+                        new SerializedPlayerInput(
+                                frame.left(),
+                                frame.right(),
+                                frame.jump(),
+                                frame.run(),
+                                frame.climbUp(),
+                                frame.climbDown(),
+                                frame.climbExit(),
+                                frame.pickupAndThrow())))
                 .toList();
         return objectMapper.writeValueAsString(frames);
     }
@@ -203,6 +211,14 @@ public class ReplaySubmissionService {
     private record SerializedReplayFrame(int frame, SerializedPlayerInput input) {
     }
 
-    private record SerializedPlayerInput(boolean left, boolean right, boolean jump, boolean run) {
+    private record SerializedPlayerInput(
+            boolean left,
+            boolean right,
+            boolean jump,
+            boolean run,
+            boolean climbUp,
+            boolean climbDown,
+            boolean climbExit,
+            boolean pickupAndThrow) {
     }
 }
