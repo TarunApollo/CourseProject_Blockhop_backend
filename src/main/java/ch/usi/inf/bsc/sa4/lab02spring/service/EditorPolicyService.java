@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+/// Service that loads the editor policy.
 @Service
 public final class EditorPolicyService {
     /// Caches the immutable editor policy properties.
@@ -41,7 +42,8 @@ public final class EditorPolicyService {
     /// Returns the policy payload wrapped in an Optional.
     /// 
     /// @spec.modifies nothing.
-    /// @spec.effects returns an Optional containing the policy if not empty, otherwise empty.
+    /// @spec.effects returns an Optional containing the policy if not empty,
+    ///               otherwise empty.
     /// @return Optional containing the policy if not empty, otherwise empty
     public Optional<Map<String, Object>> getPayload() {
         return policy.isEmpty() ? Optional.empty() : Optional.of(policy);

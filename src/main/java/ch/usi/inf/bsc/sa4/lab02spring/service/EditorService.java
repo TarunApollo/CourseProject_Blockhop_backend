@@ -26,7 +26,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 /// Applies editor updates to world and object layers.
 @Service
-@SuppressWarnings("PMD.UseConcurrentHashMap")
+@SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
 public class EditorService {
 
     /// Persists edited levels.

@@ -77,9 +77,11 @@ public final class TileCatalogService {
     /// Returns the catalog payload wrapped in an Optional.
     ///
     /// @spec.modifies nothing.
-    /// @spec.effects returns an Optional containing the tile catalog map if not empty, otherwise empty.
-    /// @return Optional containing the tile catalog map if not empty, otherwise empty
-    public java.util.Optional<Map<String, Object>> getPayload() {
+    /// @spec.effects returns an Optional containing the tile catalog map if not
+    ///               empty, otherwise empty.
+    /// @return Optional containing the tile catalog map if not empty,
+    ///         otherwise empty
+    public Optional<Map<String, Object>> getPayload() {
         return tiles.isEmpty() ? Optional.empty() : Optional.of(Map.of("tiles", tiles));
     }
 
