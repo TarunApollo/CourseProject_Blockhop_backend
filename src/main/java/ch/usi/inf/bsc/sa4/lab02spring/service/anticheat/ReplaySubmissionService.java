@@ -100,6 +100,9 @@ public class ReplaySubmissionService {
 
         logVerificationStatus(userId, request, replayResult, playerCompleted, status);
         attemptService.updateAntiCheatStatus(attemptId, user, request.levelId(), status);
+        if (playerCompleted) {
+            attemptService.updateInputLog(attemptId, user, request.levelId(), request.inputLog());
+        }
         return replayResult;
     }
 

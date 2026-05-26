@@ -3,11 +3,14 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.level;
 import ch.usi.inf.bsc.sa4.lab02spring.configuration.ControllerSecurityTestConfig;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptResponseDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.GhostDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.level.GhostService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.level.LevelPlayService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenLevelActionException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
@@ -33,6 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -58,6 +62,10 @@ class LevelPlayControllerTests {
         /// Mocked user service.
         @MockitoBean
         private UserService userService;
+
+        /// Mocked ghost service.
+        @MockitoBean
+        private GhostService ghostService;
 
         /// Client for performing REST calls.
         @Autowired
@@ -213,6 +221,77 @@ class LevelPlayControllerTests {
                                         .thenReturn(Optional.empty());
 
                         restTestClient.get().uri("/levels/play/{levelId}/map", LEVEL_ID)
+                                        .exchange()
+                                        .expectStatus().isNotFound();
+                }
+        }
+
+        /// Tests for GET /levels/{levelId}/ghost.
+        @Nested
+        @DisplayName("GET /levels/{levelId}/ghost")
+        class GetGhost {
+
+                /// Verifies that a player who has completed the level receives the
+                /// ghost payload.
+                @Test
+                @DisplayName("should return 200 OK and the ghost replay when eligible")
+                void returnsGhostWhenEligible() {
+                        final GhostDTO ghostDto = new GhostDTO(
+                                        "attempt-1",
+                                        List.of(new InputFrameDTO(0, true, false, false, false)),
+                                        9123L,
+                                        "Mario");
+
+                        Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                                        .thenReturn(Optional.of(testUser));
+                        Mockito.when(ghostService.getGhostForLevel(LEVEL_ID, testUser))
+                                        .thenReturn(Optional.of(ghostDto));
+
+                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                                        .exchange()
+                                        .expectStatus().isOk()
+                                        .expectBody(GhostDTO.class)
+                                        .isEqualTo(ghostDto);
+                }
+
+                /// Verifies that players who have not completed the level do not see a
+                /// ghost yet.
+                @Test
+                @DisplayName("should return 204 No Content when the player has not completed the level")
+                void returnsNoContentWhenPlayerHasNotCompletedLevel() {
+                        Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                                        .thenReturn(Optional.of(testUser));
+                        Mockito.when(ghostService.getGhostForLevel(LEVEL_ID, testUser))
+                                        .thenReturn(Optional.empty());
+
+                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                                        .exchange()
+                                        .expectStatus().isNoContent();
+                }
+
+                /// Verifies that unknown or unpublished levels surface as 404.
+                @Test
+                @DisplayName("should return 404 Not Found when the level has no visible ghost endpoint")
+                void returnsNotFoundWhenGhostEndpointIsUnavailable() {
+                        Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                                        .thenReturn(Optional.of(testUser));
+                        Mockito.when(ghostService.getGhostForLevel(LEVEL_ID, testUser))
+                                        .thenThrow(new LevelNotFoundException());
+
+                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                                        .exchange()
+                                        .expectStatus().isNotFound();
+                }
+
+                /// Verifies that authenticated users missing from the user store still
+                /// receive 404 before ghost resolution.
+                @Test
+                @DisplayName("should return 404 Not Found when the user does not exist")
+                void returnsNotFoundWhenUserDoesNotExist() {
+                        Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
+                                        .thenReturn(Optional.empty());
+
+                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
                                         .exchange()
                                         .expectStatus().isNotFound();
                 }

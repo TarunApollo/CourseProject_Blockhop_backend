@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
@@ -226,6 +227,45 @@ class AttemptServiceTests {
                             testUser,
                             OTHER_LEVEL_ID,
                             AttemptVerificationStatus.CHEATED));
+            Mockito.verify(attemptRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that a valid owner and level store the replay input log.
+        @Test
+        @DisplayName("updates the input log and saves the attempt")
+        void updatesInputLog() {
+            final List<InputFrameDTO> inputLog = List.of(
+                    new InputFrameDTO(0, false, true, false, true),
+                    new InputFrameDTO(1, false, true, true, true));
+            Mockito.when(attemptRepository.findById(ATTEMPT_ID)).thenReturn(Optional.of(testAttempt));
+
+            attemptService.updateInputLog(ATTEMPT_ID, testUser, LEVEL_ID, inputLog);
+
+            Assertions.assertSame(inputLog, testAttempt.getInputLog());
+            Mockito.verify(attemptRepository).save(testAttempt);
+        }
+
+        /// Verifies that another user cannot mutate replay input data.
+        @Test
+        @DisplayName("throws ForbiddenUserException and prevents input log save for a non-owner")
+        void rejectsInputLogForWrongUser() {
+            final List<InputFrameDTO> inputLog = List.of(new InputFrameDTO(0, false, true, false, true));
+            Mockito.when(attemptRepository.findById(ATTEMPT_ID)).thenReturn(Optional.of(testAttempt));
+
+            Assertions.assertThrows(ForbiddenUserException.class,
+                    () -> attemptService.updateInputLog(ATTEMPT_ID, otherUser, LEVEL_ID, inputLog));
+            Mockito.verify(attemptRepository, Mockito.never()).save(Mockito.any());
+        }
+
+        /// Verifies that replay input data cannot be written for the wrong level.
+        @Test
+        @DisplayName("throws IllegalArgumentException and prevents input log save for the wrong level")
+        void rejectsInputLogForWrongLevel() {
+            final List<InputFrameDTO> inputLog = List.of(new InputFrameDTO(0, false, true, false, true));
+            Mockito.when(attemptRepository.findById(ATTEMPT_ID)).thenReturn(Optional.of(testAttempt));
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> attemptService.updateInputLog(ATTEMPT_ID, testUser, OTHER_LEVEL_ID, inputLog));
             Mockito.verify(attemptRepository, Mockito.never()).save(Mockito.any());
         }
 
