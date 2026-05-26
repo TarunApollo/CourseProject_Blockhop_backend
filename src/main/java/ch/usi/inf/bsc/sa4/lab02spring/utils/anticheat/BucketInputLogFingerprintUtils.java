@@ -29,7 +29,7 @@ final class BucketInputLogFingerprintUtils {
     /// @param bucketSize number of frames in each bucket
     /// @param offset frame shift used before placing frames in buckets
     /// @return text used for the bucket hash
-    private static String canonicalBucketedCombinedInputs(final List<InputFrameDTO> inputLog,
+    private static String canonicalBucketedCombinedInputs(final Iterable<InputFrameDTO> inputLog,
                                                           final int bucketSize,
                                                           final int offset) {
         if (bucketSize <= 0) {
