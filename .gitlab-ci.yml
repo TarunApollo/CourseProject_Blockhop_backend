@@ -7,8 +7,6 @@ variables:
   SSH_HOST: "gitlab-cd@hajime.sa4.si.usi.ch"
   DOCKER_STAGING_HOST: "hajime.sa4.si.usi.ch"
   CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
-  FRONTEND_BASE_URL: "https://hajime.sa4.si.usi.ch"
-  BACKEND_BASE_URL: "https://hajime.sa4.si.usi.ch/backend"
   DOCKER_TLS_CERTDIR: ""
 
 .devops: &devops |
@@ -121,12 +119,22 @@ deploy_backend:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     - setup_ssh_docker_host
     - unset DOCKER_HOST
+    - docker context rm remote --force || true
     - docker context create --docker "host=ssh://$SSH_HOST" remote
     - docker context use remote
-    - docker info
     - docker --context remote compose -f deployment/docker-compose.yml down
     - docker --context remote compose -f deployment/docker-compose.yml pull
     - docker --context remote compose -f deployment/docker-compose.yml up -d
+    - docker --context remote compose -f deployment/docker-compose.yml ps -a
+    - docker --context remote inspect -f '{{range .Config.Env}}{{println .}}{{end}}' lab-05-backend | grep -E 'SPRING_MONGODB_URI|APP_FRONTEND_BASE_URL' || true
+    - docker --context remote inspect -f 'name={{.Name}} status={{.State.Status}} running={{.State.Running}} exit={{.State.ExitCode}} error={{.State.Error}} started={{.State.StartedAt}} finished={{.State.FinishedAt}}' lab-05-backend || true
+    - |
+      if [ "$(docker --context remote inspect -f '{{.State.Running}}' lab-05-backend 2>/dev/null)" != "true" ]; then
+        echo "lab-05-backend is not running after deploy"
+        docker --context remote logs --tail=200 lab-05-backend || true
+        docker --context remote logs --tail=100 deployment-mongodb-1 || true
+        exit 1
+      fi
 
 pages:
   stage: deploy

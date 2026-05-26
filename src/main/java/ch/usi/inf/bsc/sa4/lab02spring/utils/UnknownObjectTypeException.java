@@ -13,7 +13,7 @@ public class UnknownObjectTypeException extends RuntimeException {
     ///
     /// Creates a new exception with the provided message.
     ///
-    public UnknownObjectTypeException(String type){
+    public UnknownObjectTypeException(final String type){
         super("object: " + type + " is unknown");
     }
 }

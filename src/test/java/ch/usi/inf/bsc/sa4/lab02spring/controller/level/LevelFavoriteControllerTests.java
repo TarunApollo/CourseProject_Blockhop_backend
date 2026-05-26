@@ -25,7 +25,6 @@ import java.util.Optional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(ControllerSecurityTestConfig.class)
-@SuppressWarnings({ "PMD.UnitTestShouldIncludeAssert", "PMD.ExcessiveImports" })
 @DisplayName("The Level Favorite Controller")
 class LevelFavoriteControllerTests {
 

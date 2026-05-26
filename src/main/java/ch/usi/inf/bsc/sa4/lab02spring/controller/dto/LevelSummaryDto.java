@@ -13,8 +13,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
-@SuppressFBWarnings(value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2",
-                "US_USELESS_SUPPRESSION_ON_CLASS" }, justification = "Transient response DTO; mutability is intentional and not shared concurrently")
+@SuppressFBWarnings(
+                value = "EI_EXPOSE_REP",
+                justification = "Transient response DTO; mutability is intentional and not shared concurrently")
 public record LevelSummaryDto(
                 String id,
                 String title,
