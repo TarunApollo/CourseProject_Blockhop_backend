@@ -11,8 +11,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UserNotFoundException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,9 +27,6 @@ import java.util.Map;
 /// REST endpoints for player interaction with a level (play and submit).
 @RestController
 @RequestMapping("/levels")
-@SuppressFBWarnings(
-        value = "EI_EXPOSE_REP2",
-        justification = "Spring-managed singleton; injected services are intentionally shared")
 public class LevelPlayController {
 
     /// Handles playable map retrieval and attempt submission.

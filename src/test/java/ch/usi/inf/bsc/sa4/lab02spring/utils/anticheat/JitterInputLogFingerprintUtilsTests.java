@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.utils.anticheat;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -190,7 +191,7 @@ class JitterInputLogFingerprintUtilsTests {
     }
 
     /// Adds idle frames from start to end, both included.
-    private static void addIdleFrames(final List<InputFrameDTO> inputLog,
+    private static void addIdleFrames(final Collection<InputFrameDTO> inputLog,
                                       final int startFrame,
                                       final int endFrame) {
         for (int frame = startFrame; frame <= endFrame; frame++) {
