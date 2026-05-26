@@ -1,10 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.repository;
 
-import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
-import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +11,16 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+
 /// Repository for storing and querying `Attempt` documents.
 ///
 /// In addition to standard MongoDB repository operations, this repository also
 /// exposes custom attempt statistics queries.
+@SuppressWarnings("PMD.TooManyMethods")
 @Repository
 public interface AttemptRepository extends MongoRepository<Attempt, String>, AttemptStatisticsRepository {
 
