@@ -47,6 +47,9 @@ class ReplaySubmissionServiceTests {
     /// level complete string
     private static final String LEVEL_COMPLETE = "level_complete";
 
+    /// level complete string
+    private static final String GAME_OVER = "game_over";
+
     /// time stamp for level attempt
     private static final String TIMESTAMP = "2026-05-20T00:00:00Z";
 
@@ -266,7 +269,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores CHEATED when a completed attempt replays as game over")
         void storesCheatedWhenCompletedAttemptReplaysAsGameOver() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "game_over", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, GAME_OVER, TOTAL_FRAMES);
             givenReplayDependencies(completedAttempt, replayResult);
 
             try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
@@ -291,7 +294,7 @@ class ReplaySubmissionServiceTests {
                     level,
                     false,
                     Duration.ofSeconds(10));
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "game_over", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, GAME_OVER,TOTAL_FRAMES);
             givenReplayDependencies(incompleteAttempt, replayResult);
             Mockito.when(suspicionService.classify(
                     Mockito.eq(level),
@@ -315,7 +318,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores CHEATED when replay fails without an error reason")
         void storesCheatedWhenReplayFailsWithoutErrorReason() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(false, "game_over", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(false, GAME_OVER, TOTAL_FRAMES);
             givenReplayDependencies(completedAttempt, replayResult);
 
             try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
@@ -340,7 +343,7 @@ class ReplaySubmissionServiceTests {
                     level,
                     false,
                     Duration.ofSeconds(10));
-            final ReplayResultDTO replayResult = new ReplayResultDTO(false, "game_over", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(false, GAME_OVER, TOTAL_FRAMES);
             givenReplayDependencies(incompleteAttempt, replayResult);
 
             try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
