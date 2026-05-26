@@ -20,10 +20,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
-import ch.usi.inf.bsc.sa4.lab02spring.model.SpikedAlien;
+import ch.usi.inf.bsc.sa4.lab02spring.model.SlimeSpiked;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
 
 /// Tests for [GameObjectFactory].
+// i am not going to change the old name
+// to the correct one
 @SuppressWarnings("PMD.TooManyStaticImports")
 @SpringBootTest
 @DisplayName("Game Object Factory")
@@ -62,7 +64,7 @@ class GameObjectFactoryTests {
     void createsDecoration() {
         Mockito.when(tileCatalogService.getType(TILE_DECO)).thenReturn("Decoration");
         final GameObject obj = factory.createGameObject(TILE_DECO, new Position(1, 2));
-        
+
         assertInstanceOf(Decoration.class, obj);
         assertEquals(TILE_DECO, obj.tileId());
         assertEquals(new Position(1, 2), obj.pos());
@@ -74,7 +76,7 @@ class GameObjectFactoryTests {
     void createsSlime() {
         Mockito.when(tileCatalogService.getType(TILE_SLIME)).thenReturn("Enemy_Slime_Normal");
         final GameObject obj = factory.createGameObject(TILE_SLIME, new Position(2, 3));
-        
+
         assertInstanceOf(Slime.class, obj);
         assertEquals(TILE_SLIME, obj.tileId());
     }
@@ -86,7 +88,7 @@ class GameObjectFactoryTests {
         Mockito.when(tileCatalogService.getType(TILE_SPIKED_ALIEN)).thenReturn("Enemy_Slime_Spiked");
         final GameObject obj = factory.createGameObject(TILE_SPIKED_ALIEN, new Position(3, 4));
 
-        assertInstanceOf(SpikedAlien.class, obj);
+        assertInstanceOf(SlimeSpiked.class, obj);
         assertEquals(TILE_SPIKED_ALIEN, obj.tileId());
         assertEquals(new Position(3, 4), obj.pos());
     }
@@ -97,7 +99,7 @@ class GameObjectFactoryTests {
     void createsBoxWithoutContent() {
         Mockito.when(tileCatalogService.getType(TILE_BOX)).thenReturn(TYPE_BOX);
         final GameObject obj = factory.createGameObject(TILE_BOX, new Position(1, 1));
-        
+
         final Box box = assertInstanceOf(Box.class, obj);
         assertTrue(box.content() instanceof Content.NoContent);
     }
@@ -109,7 +111,7 @@ class GameObjectFactoryTests {
         Mockito.when(tileCatalogService.getType(TILE_BOX)).thenReturn(TYPE_BOX);
         final Content content = new Content.SomeContent(CoinType.GOLD_COIN);
         final GameObject obj = factory.createGameObject(TILE_BOX, new Position(1, 1), content);
-        
+
         final Box box = assertInstanceOf(Box.class, obj);
         assertEquals(content, box.content());
     }
@@ -120,7 +122,7 @@ class GameObjectFactoryTests {
     void createsGoldCoin() {
         Mockito.when(tileCatalogService.getType(TILE_COIN_GOLD)).thenReturn("Item_Coin_Gold");
         final GameObject obj = factory.createGameObject(TILE_COIN_GOLD, new Position(0, 0));
-        
+
         final Coin coin = assertInstanceOf(Coin.class, obj);
         assertEquals(CoinType.GOLD_COIN, coin.type());
     }
@@ -130,8 +132,8 @@ class GameObjectFactoryTests {
     @DisplayName("fails on unknown object type")
     void failsOnUnknownType() {
         Mockito.when(tileCatalogService.getType(TILE_UNKNOWN)).thenReturn("UnknownType");
-        
-        assertThrows(UnknownObjectTypeException.class, 
+
+        assertThrows(UnknownObjectTypeException.class,
                 () -> factory.createGameObject(TILE_UNKNOWN, new Position(0, 0)));
     }
 }

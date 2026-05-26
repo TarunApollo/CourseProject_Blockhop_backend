@@ -12,7 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Shell;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
-import ch.usi.inf.bsc.sa4.lab02spring.model.SpikedAlien;
+import ch.usi.inf.bsc.sa4.lab02spring.model.SlimeSpiked;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 
@@ -51,7 +51,7 @@ public class MongoConfiguration {
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
                 Snail.class, Slime.class, User.class,
-                Bee.class, SpikedAlien.class, Climbable.class,
+                Bee.class, SlimeSpiked.class, Climbable.class,
                 Level.class, Attempt.class));
         mappingContext.setAutoIndexCreation(true);
         mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());
@@ -91,10 +91,10 @@ public class MongoConfiguration {
         }
     }
 
-    /// Converts a [Date] read from MongoDB (BSON date) to a [ZonedDateTime] in UTC. The
-    /// writing converter stores ZonedDateTime as Instant, which the MongoDB driver
-    /// serialises to BSON Date. On read the driver returns Date, so this converter
-    /// accepts Date rather than Instant.
+    /// Converts a [Date] read from MongoDB (BSON date) to a [ZonedDateTime] in UTC.
+    /// The writing converter stores ZonedDateTime as Instant, which the MongoDB
+    /// driver serialises to BSON Date. On read the driver returns Date, so this
+    /// converter accepts Date rather than Instant.
     ///
     @ReadingConverter
     public static class DateToZonedDateTimeConverter implements Converter<Date, ZonedDateTime> {
@@ -104,9 +104,9 @@ public class MongoConfiguration {
         }
     }
 
-    /// Converts an [Instant] read from MongoDB to a [ZonedDateTime] in UTC. Defensive
-    /// fallback — covers cases where the stored type reaches the Java layer as
-    /// Instant rather than Date.
+    /// Converts an [Instant] read from MongoDB to a [ZonedDateTime] in UTC.
+    /// Defensive fallback — covers cases where the stored type reaches the Java
+    /// layer as Instant rather than Date.
     ///
     @ReadingConverter
     public static class InstantToZonedDateTimeConverter implements Converter<Instant, ZonedDateTime> {
