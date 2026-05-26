@@ -1,5 +1,11 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
+import java.util.Optional;
+
+import org.bson.types.ObjectId;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.GhostDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
@@ -8,14 +14,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 /// Resolves the ghost replay (fastest replayable attempt) for a level.
 ///
@@ -65,6 +64,7 @@ public class GhostService {
     ///         published (the same 404 is returned in both cases so that
     ///         unpublished levels are not enumerable through this endpoint)
     public Optional<GhostDTO> getGhostForLevel(final String levelId, final User currentUser) {
+        Optional<GhostDTO> ghost = Optional.empty();
         final Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         if (!level.isPublished()) {

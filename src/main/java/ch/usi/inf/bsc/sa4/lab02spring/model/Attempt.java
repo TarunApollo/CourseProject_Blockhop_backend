@@ -1,24 +1,28 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
-import org.jspecify.annotations.Nullable;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /// Represents a user's attempt at playing a level. An attempt stores who
 /// played, when it happened, which level was played, whether the level was
 /// completed, and how long the attempt took.
 @SuppressWarnings({"NullAway.Init", "PMD.DataClass"})
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
+@SuppressFBWarnings(
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
+        justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "attempts")
 @CompoundIndex(
         name = "attempt_level_exact_fingerprint_metadata",

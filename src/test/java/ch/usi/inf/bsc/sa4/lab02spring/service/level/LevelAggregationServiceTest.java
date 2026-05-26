@@ -1,17 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
-import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +13,18 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
 /// Unit tests for [LevelAggregationService].
 /// Verifies sort strategies, popularity windows, and clear-rate computation.

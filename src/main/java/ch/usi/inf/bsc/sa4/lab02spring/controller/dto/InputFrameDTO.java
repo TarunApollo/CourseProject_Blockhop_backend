@@ -9,8 +9,14 @@ public record InputFrameDTO(
         boolean climbUp,
         boolean climbDown,
         boolean climbExit,
-        boolean pickupAndThrow
-) {
+        boolean pickupAndThrow) {
+    /// Creates an input frame with the legacy movement fields.
+    ///
+    /// @param frame input frame index
+    /// @param left whether left is pressed
+    /// @param right whether right is pressed
+    /// @param jump whether jump is pressed
+    /// @param run whether run is pressed
     public InputFrameDTO(final int frame,
             final boolean left,
             final boolean right,

@@ -10,8 +10,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /// Represents a user's attitude towards a level. An attitude stores who
 /// liked/disliked, which level was rated and whether a level is liked
 /// or disliked.
-@SuppressWarnings("NullAway.Init")
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
+@SuppressWarnings({ "NullAway.Init", "PMD.DataClass" })
+@SuppressFBWarnings(
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
+        justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "ratings")
 public class LevelAttitude {
 

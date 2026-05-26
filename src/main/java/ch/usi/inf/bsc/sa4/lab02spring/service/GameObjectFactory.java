@@ -12,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Snail;
+import ch.usi.inf.bsc.sa4.lab02spring.model.SpikedAlien;
 import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
 
@@ -93,6 +94,13 @@ public class GameObjectFactory {
             @Override
             public GameObject createGameObject(final String tileId, final Position pos, final Content content) {
                 return new Bee(tileId, pos);
+            }
+        },
+
+        ENEMY_SPIKED_ALIEN("Enemy_Slime_Spiked") {
+            @Override
+            public GameObject createGameObject(final String tileId, final Position pos, final Content content) {
+                return new SpikedAlien(tileId, pos);
             }
         },
 

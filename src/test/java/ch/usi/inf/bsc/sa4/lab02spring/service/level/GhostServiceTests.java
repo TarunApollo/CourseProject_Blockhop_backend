@@ -1,12 +1,10 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
-import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Assertions;
@@ -19,11 +17,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 
 /// Unit tests for [GhostService].
 @SpringBootTest
