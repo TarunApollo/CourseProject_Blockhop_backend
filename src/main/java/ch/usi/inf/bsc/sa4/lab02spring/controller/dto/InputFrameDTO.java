@@ -9,8 +9,8 @@ public record InputFrameDTO(
         boolean climbUp,
         boolean climbDown,
         boolean climbExit,
-        boolean pickupAndThrow
-) {
+        boolean pickupAndThrow) {
+    /// input DTO sent by the frontend
     public InputFrameDTO(final int frame,
             final boolean left,
             final boolean right,
