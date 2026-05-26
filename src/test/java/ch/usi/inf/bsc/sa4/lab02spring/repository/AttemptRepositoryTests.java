@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.time.ZoneOffset;
@@ -206,6 +207,21 @@ import java.util.Optional;
             Assertions.assertTrue(result.isPresent());
             Assertions.assertEquals(fastest.getId(), result.get().getId());
         }
+
+        /// Verifies that pre-timeTakenMs attempts are ignored once legacy
+        /// fallback support is removed.
+        @Test
+        @DisplayName("ignores legacy attempts that do not have timeTakenMs")
+        /* package */ void ignoresLegacyAttemptsWithoutNumericDuration() {
+            final Attempt legacyAttempt = new Attempt(user, NOW, level, true, Duration.ofSeconds(8));
+            legacyAttempt.setInputLog(SAMPLE_LOG);
+            ReflectionTestUtils.setField(legacyAttempt, "timeTakenMs", null);
+            attemptRepository.save(legacyAttempt);
+
+            final Optional<Attempt> result = attemptRepository.findFastestGhostCandidate(levelId());
+
+            Assertions.assertTrue(result.isEmpty());
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -283,6 +299,23 @@ import java.util.Optional;
 
             Assertions.assertTrue(result.isPresent());
             Assertions.assertEquals(legit.getId(), result.get().getId());
+        }
+
+        /// Verifies that verified pre-timeTakenMs attempts are ignored once
+        /// legacy fallback support is removed.
+        @Test
+        @DisplayName("ignores verified legacy attempts that do not have timeTakenMs")
+        /* package */ void ignoresVerifiedLegacyAttemptsWithoutNumericDuration() {
+            final Attempt legacyAttempt = new Attempt(user, NOW, level, true, Duration.ofSeconds(8));
+            legacyAttempt.setInputLog(SAMPLE_LOG);
+            legacyAttempt.setAntiCheatStatus(AttemptVerificationStatus.LEGIT);
+            ReflectionTestUtils.setField(legacyAttempt, "timeTakenMs", null);
+            attemptRepository.save(legacyAttempt);
+
+            final Optional<Attempt> result = attemptRepository.findFastestVerifiedGhostCandidate(
+                    levelId(), AttemptVerificationStatus.LEGIT);
+
+            Assertions.assertTrue(result.isEmpty());
         }
     }
 }

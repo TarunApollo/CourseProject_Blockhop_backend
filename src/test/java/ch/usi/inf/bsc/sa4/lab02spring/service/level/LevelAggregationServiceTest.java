@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
@@ -352,7 +353,10 @@ class LevelAggregationServiceTest {
             Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
             Mockito.when(userService.getById(currentUser.getId())).thenReturn(Optional.of(currentUser));
             stubAttempts(a, 0, 0);
-            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, a)).thenReturn(true);
+            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                    currentUser,
+                    a,
+                    AttemptVerificationStatus.LEGIT)).thenReturn(true);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE,
@@ -361,6 +365,29 @@ class LevelAggregationServiceTest {
                     currentUser.getId());
 
             Assertions.assertTrue(result.get(0).completedByCurrentUser());
+        }
+
+        /// Non-LEGIT completions must not unlock the ghost-related summary flag.
+        @Test
+        @DisplayName("does not mark the level as completed for ghost access when no LEGIT completion exists")
+        void summaryRequiresLegitCompletionFlag() {
+            final Level a = publishedLevel("a");
+            final User currentUser = new User("player-2", "Luigi");
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
+            Mockito.when(userService.getById(currentUser.getId())).thenReturn(Optional.of(currentUser));
+            stubAttempts(a, 0, 0);
+            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                    currentUser,
+                    a,
+                    AttemptVerificationStatus.LEGIT)).thenReturn(false);
+
+            final List<LevelSummaryDto> result = service.getPublishedLevels(
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
+                    null,
+                    currentUser.getId());
+
+            Assertions.assertFalse(result.get(0).completedByCurrentUser());
         }
 
         /// The published-level repository should be hit exactly once per call.

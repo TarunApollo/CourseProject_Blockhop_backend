@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.GhostDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
@@ -23,10 +24,8 @@ import java.util.Optional;
 /// current player must, however, have completed the level at least once
 /// themselves before any ghost is returned to them.
 ///
-/// Anti-cheat verification is intentionally not gated for now — any completed
-/// attempt with a replayable input log is eligible. Adding the verification
-/// gate is tracked separately; see the GitLab issue noted on
-/// `GHOST_REPLAY_BACKEND_PLAN.md`.
+/// Only replay-verified (`LEGIT`) attempts are eligible both for unlocking
+/// ghost access and for the global ghost shown on the level.
 @Service
 @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
@@ -71,12 +70,17 @@ public class GhostService {
         if (!level.isPublished()) {
             throw new LevelNotFoundException();
         }
-        if (!this.attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, level)) {
+        if (!this.attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                currentUser,
+                level,
+                AttemptVerificationStatus.LEGIT)) {
             return Optional.empty();
         }
 
         final ObjectId levelObjectId = new ObjectId(level.getId());
-        final Optional<Attempt> best = this.attemptRepository.findFastestGhostCandidate(levelObjectId);
+        final Optional<Attempt> best = this.attemptRepository.findFastestVerifiedGhostCandidate(
+                levelObjectId,
+                AttemptVerificationStatus.LEGIT);
 
         return best.map(attempt -> new GhostDTO(
                 attempt.getId(),

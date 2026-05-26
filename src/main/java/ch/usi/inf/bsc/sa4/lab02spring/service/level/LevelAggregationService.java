@@ -2,6 +2,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.LevelAttitudeType;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
@@ -81,7 +82,10 @@ public class LevelAggregationService {
                         .map(attitude -> attitude.getAttitude().value())
                         .orElse(null);
         final boolean completedByCurrentUser = currentUser != null
-                && this.attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, level);
+                && this.attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                        currentUser,
+                        level,
+                        AttemptVerificationStatus.LEGIT);
         final long likeCount = this.attitudeRepository.countByLevelAndAttitude(level, LevelAttitudeType.LIKE);
         final long dislikeCount = this.attitudeRepository.countByLevelAndAttitude(level, LevelAttitudeType.DISLIKE);
         return new LevelSummaryDto(
