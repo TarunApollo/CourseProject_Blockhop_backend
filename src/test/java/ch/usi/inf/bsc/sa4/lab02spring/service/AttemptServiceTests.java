@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -99,7 +100,7 @@ class AttemptServiceTests {
                 ATTEMPT_DTO.timestamp(),
                 this.testLevel,
                 ATTEMPT_DTO.completed(),
-                ATTEMPT_DTO.timeTaken());
+                Objects.requireNonNull(ATTEMPT_DTO.timeTaken()));
         this.testAttempt = new Attempt(
                 ATTEMPT_ID,
                 this.testUser,
@@ -148,6 +149,23 @@ class AttemptServiceTests {
             attemptService.submitAttempt(testUser, testLevel, ATTEMPT_DTO);
 
             Mockito.verify(attemptRepository).save(Mockito.refEq(expectedAttempt));
+        }
+
+        /// Verifies that attempts with a missing duration are rejected before
+        /// persistence.
+        @Test
+        @DisplayName("rejects attempts whose timeTaken is null")
+        void rejectsNullTimeTaken() {
+            final AttemptDTO invalidDto = new AttemptDTO(
+                    Map.of(),
+                    new Position(0, 0),
+                    TIMESTAMP,
+                    null,
+                    true);
+
+            Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> attemptService.submitAttempt(testUser, testLevel, invalidDto));
+            Mockito.verify(attemptRepository, Mockito.never()).save(Mockito.any());
         }
     }
 

@@ -3,6 +3,7 @@ package ch.usi.inf.bsc.sa4.lab02spring.controller.dto;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.FieldSerializer;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.time.Duration;
@@ -16,7 +17,7 @@ public record AttemptDTO(
         Map<Position, GroundObject> worldLayer,
         Position playerPosition,
         ZonedDateTime timestamp,
-        Duration timeTaken,
+        @Nullable Duration timeTaken,
         boolean completed
 ) {
 }
