@@ -103,7 +103,8 @@ public class LevelAggregationService {
     /// @param currentUserId the authenticated user's id
     /// @return a LevelSummaryDto with attitude, like/dislike counts, and play stats
     public LevelSummaryDto buildFavoriteSummary(final Level level, final String currentUserId) {
-        return toLevelSummary(level, PublishedLevelSortBy.POPULARITY, DateRangePreset.AllTimeDateRangePreset.ALL_TIME, currentUserId);
+        final User currentUser = this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new);
+        return toLevelSummary(level, PublishedLevelSortBy.POPULARITY, DateRangePreset.AllTimeDateRangePreset.ALL_TIME, currentUser);
     }
 
     /// Returns all published levels as summaries. Applies the requested sorting
