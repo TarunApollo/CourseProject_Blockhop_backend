@@ -75,7 +75,7 @@ class GhostServiceTests {
         this.holderUser = new User("user-2", "Luigi");
         this.publishedLevel = new Level("Level", "desc", this.holderUser);
         ReflectionTestUtils.setField(this.publishedLevel, "id", LEVEL_ID);
-        ReflectionTestUtils.setField(this.publishedLevel, "published", true);
+        ReflectionTestUtils.setField(this.publishedLevel, "published", Boolean.TRUE);
 
         this.inputLog = List.of(
                 new InputFrameDTO(0, false, true, false, true),
@@ -111,7 +111,7 @@ class GhostServiceTests {
         @Test
         @DisplayName("throws LevelNotFoundException when the level is unpublished")
         void throwsWhenLevelIsUnpublished() {
-            ReflectionTestUtils.setField(publishedLevel, "published", false);
+            ReflectionTestUtils.setField(publishedLevel, "published", Boolean.FALSE);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));
 
             Assertions.assertThrows(LevelNotFoundException.class,
@@ -125,7 +125,7 @@ class GhostServiceTests {
         void returnsEmptyWhenCurrentUserHasNotCompleted() {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));
             Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, publishedLevel))
-                    .thenReturn(false);
+                    .thenReturn(Boolean.FALSE);
 
             final Optional<GhostDTO> result = ghostService.getGhostForLevel(LEVEL_ID, currentUser);
 
@@ -140,7 +140,7 @@ class GhostServiceTests {
             final ObjectId levelObjectId = new ObjectId(LEVEL_ID);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));
             Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, publishedLevel))
-                    .thenReturn(true);
+                    .thenReturn(Boolean.TRUE);
             Mockito.when(attemptRepository.findFastestGhostCandidate(levelObjectId)).thenReturn(Optional.empty());
 
             final Optional<GhostDTO> result = ghostService.getGhostForLevel(LEVEL_ID, currentUser);
@@ -155,7 +155,7 @@ class GhostServiceTests {
             final ObjectId levelObjectId = new ObjectId(LEVEL_ID);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(publishedLevel));
             Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, publishedLevel))
-                    .thenReturn(true);
+                    .thenReturn(Boolean.TRUE);
             Mockito.when(attemptRepository.findFastestGhostCandidate(levelObjectId))
                     .thenReturn(Optional.of(ghostAttempt));
 
