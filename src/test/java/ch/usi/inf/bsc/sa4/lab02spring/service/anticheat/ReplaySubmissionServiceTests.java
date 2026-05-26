@@ -41,7 +41,7 @@ import tools.jackson.databind.json.JsonMapper;
 /// Tests for [ReplaySubmissionService].
 @SpringBootTest
 @DisplayName("The Replay Submission Service")
-@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.TooManyStaticImports" })
+@SuppressWarnings("PMD.ExcessiveImports")
 class ReplaySubmissionServiceTests {
 
     /// User id used by replay submission tests.

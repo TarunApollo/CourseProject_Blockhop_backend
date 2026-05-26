@@ -154,34 +154,34 @@ public class ReplaySubmissionService {
     private static String mismatchedReason(final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
-        final String reason;
-        if (!playerCompleted) {
-            reason = "player did not complete level";
-        } else if (isFrameCountMismatch(replayResult, totalFrames)) {
-            reason = "frame count mismatch (timeScale tampering?): reported " + totalFrames
+        if (playerCompleted && isFrameCountMismatch(replayResult, totalFrames)) {
+            return "frame count mismatch (timeScale tampering?): reported " + totalFrames
                     + " but replay took " + replayResult.frames();
-        } else {
-            reason = "player completed but replay ended in " + replayResult.reason();
         }
-        return reason;
+        if (playerCompleted) {
+            return "player completed but replay ended in " + replayResult.reason();
+        }
+        return "player did not complete level";
     }
 
     private static AttemptVerificationStatus toAttemptVerificationStatus(final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
         final AttemptVerificationStatus status;
-        if (!replayResult.valid()) {
+        if (replayResult.valid()) {
+            if (playerCompleted && "game_over".equals(replayResult.reason())) {
+                status = AttemptVerificationStatus.CHEATED;
+            } else if (isFrameCountMismatch(replayResult, totalFrames)) {
+                status = AttemptVerificationStatus.CHEATED;
+            } else {
+                status = AttemptVerificationStatus.LEGIT;
+            }
+        } else {
             if (replayResult.reason().startsWith("error:")) {
                 status = AttemptVerificationStatus.REPLAY_ERROR;
             } else {
                 status = AttemptVerificationStatus.CHEATED;
             }
-        } else if (playerCompleted && "game_over".equals(replayResult.reason())) {
-            status = AttemptVerificationStatus.CHEATED;
-        } else if (isFrameCountMismatch(replayResult, totalFrames)) {
-            status = AttemptVerificationStatus.CHEATED;
-        } else {
-            status = AttemptVerificationStatus.LEGIT;
         }
         return status;
     }

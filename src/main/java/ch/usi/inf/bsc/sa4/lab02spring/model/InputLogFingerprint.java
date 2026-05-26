@@ -18,6 +18,10 @@ public record InputLogFingerprint(
         int inputFrameCount,
         int inputChangeCount) {
 
+    public InputLogFingerprint {
+        changeBucketHashes = List.copyOf(changeBucketHashes);
+    }
+
     /// Creates an empty fingerprint for attempts that have not been verified yet.
     ///
     /// @return an empty fingerprint with sentinel counts
