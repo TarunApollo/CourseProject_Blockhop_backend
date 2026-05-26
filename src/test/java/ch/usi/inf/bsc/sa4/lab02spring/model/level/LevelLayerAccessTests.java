@@ -27,6 +27,12 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.StartFlag;
 @SuppressWarnings({ "PMD.TooManyStaticImports", "java:S2187" })
 class LevelLayerAccessTests {
 
+    /// Test tile id for ground blocks.
+    private static final String GROUND_TILE_ID = "terrain.grass.block";
+
+    /// Test tile id for the start flag.
+    private static final String START_FLAG_TILE_ID = "flag.green";
+
     /// Tests for layer getters.
     @Nested
     @DisplayName("methods getObjectLayer and getWorldLayer")
@@ -40,8 +46,8 @@ class LevelLayerAccessTests {
         void setUp() {
             this.level = LevelTestFixtures.createTestLevel();
             final Position position = new Position(1, 1);
-            this.level.putWorldLayer(position, new GroundObject(8));
-            this.level.putObjectLayer(position, new StartFlag(9, position));
+            this.level.putWorldLayer(position, new GroundObject(GROUND_TILE_ID));
+            this.level.putObjectLayer(position, new StartFlag(START_FLAG_TILE_ID, position));
         }
 
         /// Verify unmodifiable world layer.
@@ -49,7 +55,7 @@ class LevelLayerAccessTests {
         @DisplayName("getWorldLayer returns an unmodifiable world layer")
         void returnsUnmodifiableWorldLayer() {
             final Position pos = new Position(2, 2);
-            final GroundObject ground = new GroundObject(3);
+            final GroundObject ground = new GroundObject(GROUND_TILE_ID);
             final Executable modifyWorldLayer = () -> this.level.getWorldLayer().put(pos, ground);
             assertThrows(UnsupportedOperationException.class, modifyWorldLayer);
         }
@@ -59,7 +65,7 @@ class LevelLayerAccessTests {
         @DisplayName("getObjectLayer returns an unmodifiable object layer")
         void returnsUnmodifiableObjectLayer() {
             final Position pos = new Position(2, 2);
-            final StartFlag flag = new StartFlag(4, pos);
+            final StartFlag flag = new StartFlag(START_FLAG_TILE_ID, pos);
             final Executable modifyObjectLayer = () -> this.level.getObjectLayer().put(pos, flag);
             assertThrows(UnsupportedOperationException.class, modifyObjectLayer);
         }
@@ -89,8 +95,8 @@ class LevelLayerAccessTests {
         @Test
         @DisplayName("putObjectLayer replaces an object layer entry")
         void replacesObjectLayerEntry() {
-            final StartFlag firstObject = new StartFlag(10, this.objectPosition);
-            final Coin replacementObject = new Coin(11, this.objectPosition, CoinType.BRONZE_COIN);
+            final StartFlag firstObject = new StartFlag(START_FLAG_TILE_ID, this.objectPosition);
+            final Coin replacementObject = new Coin("coin.gold", this.objectPosition, CoinType.BRONZE_COIN);
             this.level.putObjectLayer(this.objectPosition, firstObject);
             this.level.putObjectLayer(this.objectPosition, replacementObject);
             assertSame(replacementObject, this.level.getObjectLayer().get(this.objectPosition));
@@ -100,8 +106,8 @@ class LevelLayerAccessTests {
         @Test
         @DisplayName("putWorldLayer replaces a world layer entry")
         void replacesWorldLayerEntry() {
-            final GroundObject firstGround = new GroundObject(20);
-            final GroundObject replacementGround = new GroundObject(21);
+            final GroundObject firstGround = new GroundObject(GROUND_TILE_ID);
+            final GroundObject replacementGround = new GroundObject(GROUND_TILE_ID);
             this.level.putWorldLayer(this.worldPosition, firstGround);
             this.level.putWorldLayer(this.worldPosition, replacementGround);
             assertEquals(replacementGround, this.level.getWorldLayer().get(this.worldPosition));
@@ -111,7 +117,7 @@ class LevelLayerAccessTests {
         @Test
         @DisplayName("removeObjectLayer removes an object layer entry")
         void removesObjectLayerEntry() {
-            this.level.putObjectLayer(this.objectPosition, new StartFlag(10, this.objectPosition));
+            this.level.putObjectLayer(this.objectPosition, new StartFlag(START_FLAG_TILE_ID, this.objectPosition));
             this.level.removeObjectLayer(this.objectPosition);
             assertFalse(this.level.getObjectLayer().containsKey(this.objectPosition));
         }
@@ -120,7 +126,7 @@ class LevelLayerAccessTests {
         @Test
         @DisplayName("removeGroundObject removes a world layer entry")
         void removesWorldLayerEntry() {
-            this.level.putWorldLayer(this.worldPosition, new GroundObject(20));
+            this.level.putWorldLayer(this.worldPosition, new GroundObject(GROUND_TILE_ID));
             this.level.removeGroundObject(this.worldPosition);
             assertFalse(this.level.getWorldLayer().containsKey(this.worldPosition));
         }
@@ -149,9 +155,9 @@ class LevelLayerAccessTests {
             this.pos1 = new Position(1, 2);
             this.pos2 = new Position(3, 4);
             this.newPos = new Position(7, 8);
-            this.newLayer = Map.of(this.newPos, new GroundObject(10));
-            this.level.putWorldLayer(this.pos1, new GroundObject(5));
-            this.level.putWorldLayer(this.pos2, new GroundObject(6));
+            this.newLayer = Map.of(this.newPos, new GroundObject(GROUND_TILE_ID));
+            this.level.putWorldLayer(this.pos1, new GroundObject(GROUND_TILE_ID));
+            this.level.putWorldLayer(this.pos2, new GroundObject(GROUND_TILE_ID));
         }
 
         /// Verify old entry removal.
@@ -175,7 +181,7 @@ class LevelLayerAccessTests {
         @DisplayName("setWorldLayer keeps the new entry")
         void containsNewEntry() {
             this.level.setWorldLayer(this.newLayer);
-            assertEquals(new GroundObject(10), this.level.getWorldLayer().get(this.newPos));
+            assertEquals(new GroundObject(GROUND_TILE_ID), this.level.getWorldLayer().get(this.newPos));
         }
 
         /// Verify clearing layer.
@@ -207,8 +213,8 @@ class LevelLayerAccessTests {
             this.level = LevelTestFixtures.createTestLevel();
             this.pos = new Position(1, 2);
             this.newPos = new Position(5, 6);
-            this.newLayer = Map.of(this.newPos, new StartFlag(77, this.newPos));
-            this.level.putObjectLayer(this.pos, new Coin(33, this.pos, CoinType.GOLD_COIN));
+            this.newLayer = Map.of(this.newPos, new StartFlag(START_FLAG_TILE_ID, this.newPos));
+            this.level.putObjectLayer(this.pos, new Coin("coin.gold", this.pos, CoinType.GOLD_COIN));
         }
 
         /// Verify old entry removal.

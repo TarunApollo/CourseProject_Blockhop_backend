@@ -31,7 +31,7 @@ import org.mockito.Mockito;
 /// Unit tests for the LevelPublishService.
 @SpringBootTest
 @DisplayName("The Level Publish Service")
-//@SuppressWarnings({ "NullAway", "PMD.TooManyStaticImports" })
+// @SuppressWarnings({ "NullAway", "PMD.TooManyStaticImports" })
 class LevelPublishServiceTest {
 
     /// ID of the level used for testing.
@@ -100,8 +100,8 @@ class LevelPublishServiceTest {
         this.publishableLevel = new Level(LEVEL_TITLE, LEVEL_DESC, this.owner);
         final Position flag = new Position(1, 1);
         final Position door = new Position(2, 1);
-        this.publishableLevel.putObjectLayer(flag, new StartFlag(68, flag));
-        this.publishableLevel.putObjectLayer(door, new ExitDoor(115, door));
+        this.publishableLevel.putObjectLayer(flag, new StartFlag("flag.green", flag));
+        this.publishableLevel.putObjectLayer(door, new ExitDoor("door.closed.bottom", door));
     }
 
     /// Tests if the service is loaded correctly.
@@ -326,8 +326,8 @@ class LevelPublishServiceTest {
     @DisplayName("resetLevelAfterEdit")
     class ResetLevelAfterEdit {
 
-        /// Editing a level starts a new public version, so old public engagement
-        /// must be removed and the level must be validated again before publishing.
+        /// Editing a level starts a new public version, so old public engagement must
+        /// be removed and the level must be validated again before publishing.
         @Test
         @DisplayName("clears publish eligibility, attempts, favorites, and attitudes")
         void clearsPublicStateAfterEdit() {

@@ -16,19 +16,26 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
-///
-/// Configures application security.
-///
+/**
+ * Configures application security.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+    /** Security configuration logger. */
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityConfiguration.class);
+
     /// Check out application.yml for all ENV vars used for the URLs.
-    private static final Logger log = LoggerFactory.getLogger(SecurityConfiguration.class);
     private final String frontendBaseUrl;
 
+    /**
+     * Creates a security configuration using the configured frontend base URL.
+     *
+     * @param frontendBaseUrl frontend URL used after OAuth login
+     */
     public SecurityConfiguration(@Value("${app.frontend-base-url}") final String frontendBaseUrl) {
         this.frontendBaseUrl = frontendBaseUrl;
-        log.info("OAuth frontend success URL configured as {}", frontendBaseUrl);
+        LOG.info("OAuth frontend success URL configured as {}", frontendBaseUrl);
     }
 
     /// Creates the CORS configuration used by the application.
@@ -57,6 +64,7 @@ public class SecurityConfiguration {
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/assets/**").permitAll()
                         // Allow unauthenticated CSRF token retrieval for frontend setup.
                         .requestMatchers("/csrf").permitAll()
                         .anyRequest().authenticated())

@@ -64,7 +64,7 @@ public class LevelAggregationService {
             final Level level,
             final PublishedLevelSortBy sortBy,
             final DateRangePreset period,
-            final @Nullable String currentUserId) {
+            final @Nullable User currentUser) {
         final User creator = level.getCreator();
         final long playCount = this.attemptRepository.countByLevelAndUserNot(level, creator);
         final long clearCount = this.attemptRepository.countByLevelAndUserNotAndCompletedTrue(level, creator);
@@ -74,16 +74,25 @@ public class LevelAggregationService {
             popularity = this.attemptRepository.countByLevelAndUserNotAndTimestampAfter(
                     level, creator, relative.rangeStart());
         }
-        final String userAttitude = currentUserId == null
+        final String userAttitude = currentUser == null
                 ? null
                 : this.attitudeRepository
-                        .findByLevelAndUser(level,
-                                this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new))
+                        .findByLevelAndUser(level, currentUser)
                         .map(attitude -> attitude.getAttitude().value())
                         .orElse(null);
+        final boolean completedByCurrentUser = currentUser != null
+                && this.attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, level);
         final long likeCount = this.attitudeRepository.countByLevelAndAttitude(level, LevelAttitudeType.LIKE);
         final long dislikeCount = this.attitudeRepository.countByLevelAndAttitude(level, LevelAttitudeType.DISLIKE);
-        return new LevelSummaryDto(level, playCount, clearRate, popularity, userAttitude, likeCount, dislikeCount);
+        return new LevelSummaryDto(
+                level,
+                playCount,
+                clearRate,
+                popularity,
+                userAttitude,
+                completedByCurrentUser,
+                likeCount,
+                dislikeCount);
     }
 
     /// Builds a summary for a single favorited level, enriched with the current
@@ -169,9 +178,12 @@ public class LevelAggregationService {
             final DateRangePreset period,
             final @Nullable String currentUserId) {
         final List<Level> levels = this.levelRepository.findByPublishedTrue();
+        final User currentUser = currentUserId == null
+                ? null
+                : this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new);
 
         return levels.stream()
-                .map(level -> toLevelSummary(level, sortBy, period, currentUserId))
+                .map(level -> toLevelSummary(level, sortBy, period, currentUser))
                 .toList();
     }
 

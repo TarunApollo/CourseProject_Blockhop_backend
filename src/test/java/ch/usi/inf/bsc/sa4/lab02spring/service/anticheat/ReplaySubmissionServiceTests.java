@@ -1,5 +1,6 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.anticheat;
 
+import ch.usi.inf.bsc.sa4.lab02spring.controller.ReplaySerializationException;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayRequestDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ReplayResultDTO;
@@ -7,11 +8,10 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.TileSet;
 import ch.usi.inf.bsc.sa4.lab02spring.model.User;
 import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
 import ch.usi.inf.bsc.sa4.lab02spring.service.AttemptService;
-import ch.usi.inf.bsc.sa4.lab02spring.service.TileSetService;
+import ch.usi.inf.bsc.sa4.lab02spring.service.TileCatalogService;
 import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
@@ -41,8 +41,18 @@ import tools.jackson.databind.json.JsonMapper;
 /// Tests for [ReplaySubmissionService].
 @SpringBootTest
 @DisplayName("The Replay Submission Service")
-@SuppressWarnings({ "PMD.ExcessiveImports", "PMD.TooManyStaticImports" })
+@SuppressWarnings("PMD.ExcessiveImports")
 class ReplaySubmissionServiceTests {
+
+    /// level complete string
+    private static final String LEVEL_COMPLETE = "level_complete";
+
+    /// level complete string
+    private static final String GAME_OVER = "game_over";
+
+    /// time stamp for level attempt
+    private static final String TIMESTAMP = "2026-05-20T00:00:00Z";
+
 
     /// User id used by replay submission tests.
     private static final String USER_ID = "user-1";
@@ -71,11 +81,6 @@ class ReplaySubmissionServiceTests {
                     new InputFrameDTO(0, false, false, false, false),
                     new InputFrameDTO(1, true, false, false, false)));
 
-    /// Empty tileset used by replay map conversion.
-    private static final TileSet EMPTY_TILESET = new TileSet(
-            1, "atlas", 128, 128, 0, 8,
-            "atlas.png", 1024, 1024, 0, 0, List.of());
-
     /// Minimal tiled map returned by the mocked converter.
     private static final Map<String, Object> TILED_MAP = Map.of("layers", List.of());
 
@@ -97,7 +102,7 @@ class ReplaySubmissionServiceTests {
 
     /// Mocked tileset service.
     @MockitoBean
-    private TileSetService tileSetService;
+    private TileCatalogService tileCatalogService;
 
     /// Mocked user service.
     @MockitoBean
@@ -127,7 +132,7 @@ class ReplaySubmissionServiceTests {
         level = new Level("Replay", "desc", user);
         completedAttempt = new Attempt(
                 user,
-                ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                ZonedDateTime.parse(TIMESTAMP),
                 level,
                 true,
                 Duration.ofSeconds(10));
@@ -170,7 +175,7 @@ class ReplaySubmissionServiceTests {
             final User otherUser = new User("other-user", "Luigi");
             final Attempt otherAttempt = new Attempt(
                     otherUser,
-                    ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                    ZonedDateTime.parse(TIMESTAMP),
                     level,
                     true,
                     Duration.ofSeconds(10));
@@ -194,7 +199,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores LEGIT when replay passes and fingerprint is clean")
         void storesLegitWhenReplayPassesAndFingerprintIsClean() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES);
             givenReplayDependencies(completedAttempt, replayResult);
             Mockito.when(suspicionService.classify(
                     Mockito.eq(level),
@@ -221,7 +226,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores SUSPICIOUS when fingerprint classification is suspicious")
         void storesSuspiciousWhenFingerprintClassificationIsSuspicious() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES);
             givenReplayDependencies(completedAttempt, replayResult);
             Mockito.when(suspicionService.classify(
                     Mockito.eq(level),
@@ -245,8 +250,101 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores CHEATED when replay frame count differs beyond tolerance")
         void storesCheatedWhenReplayFrameCountDiffersBeyondTolerance() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES + 6);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES + 6);
             givenReplayDependencies(completedAttempt, replayResult);
+
+            try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
+                service.submitRun(USER_ID, REQUEST);
+
+                Mockito.verify(attemptService).updateAntiCheatStatus(
+                        ATTEMPT_ID,
+                        user,
+                        LEVEL_ID,
+                        AttemptVerificationStatus.CHEATED);
+                Mockito.verifyNoInteractions(suspicionService);
+            }
+        }
+
+        /// Checks completed attempts that replay into game-over.
+        @Test
+        @DisplayName("stores CHEATED when a completed attempt replays as game over")
+        void storesCheatedWhenCompletedAttemptReplaysAsGameOver() throws JacksonException {
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, GAME_OVER, TOTAL_FRAMES);
+            givenReplayDependencies(completedAttempt, replayResult);
+
+            try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
+                service.submitRun(USER_ID, REQUEST);
+
+                Mockito.verify(attemptService).updateAntiCheatStatus(
+                        ATTEMPT_ID,
+                        user,
+                        LEVEL_ID,
+                        AttemptVerificationStatus.CHEATED);
+                Mockito.verifyNoInteractions(suspicionService);
+            }
+        }
+
+        /// Checks incomplete player attempts that replay as game-over cleanly.
+        @Test
+        @DisplayName("stores LEGIT when an incomplete attempt replays as game over and fingerprint is clean")
+        void storesLegitWhenIncompleteAttemptReplaysAsGameOverAndFingerprintIsClean() throws JacksonException {
+            final Attempt incompleteAttempt = new Attempt(
+                    user,
+                    ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                    level,
+                    false,
+                    Duration.ofSeconds(10));
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, GAME_OVER,TOTAL_FRAMES);
+            givenReplayDependencies(incompleteAttempt, replayResult);
+            Mockito.when(suspicionService.classify(
+                    Mockito.eq(level),
+                    Mockito.eq(user),
+                    Mockito.eq(ATTEMPT_ID),
+                    Mockito.any(InputLogFingerprint.class)))
+                    .thenReturn(AttemptVerificationStatus.LEGIT);
+
+            try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
+                service.submitRun(USER_ID, REQUEST);
+
+                Mockito.verify(attemptService).updateAntiCheatStatus(
+                        ATTEMPT_ID,
+                        user,
+                        LEVEL_ID,
+                        AttemptVerificationStatus.LEGIT);
+            }
+        }
+
+        /// Checks non-error replay failures.
+        @Test
+        @DisplayName("stores CHEATED when replay fails without an error reason")
+        void storesCheatedWhenReplayFailsWithoutErrorReason() throws JacksonException {
+            final ReplayResultDTO replayResult = new ReplayResultDTO(false, GAME_OVER, TOTAL_FRAMES);
+            givenReplayDependencies(completedAttempt, replayResult);
+
+            try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
+                service.submitRun(USER_ID, REQUEST);
+
+                Mockito.verify(attemptService).updateAntiCheatStatus(
+                        ATTEMPT_ID,
+                        user,
+                        LEVEL_ID,
+                        AttemptVerificationStatus.CHEATED);
+                Mockito.verifyNoInteractions(suspicionService);
+            }
+        }
+
+        /// Checks failed player attempts that also fail replay.
+        @Test
+        @DisplayName("stores CHEATED when an incomplete player attempt fails replay")
+        void storesCheatedWhenIncompletePlayerAttemptFailsReplay() throws JacksonException {
+            final Attempt incompleteAttempt = new Attempt(
+                    user,
+                    ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                    level,
+                    false,
+                    Duration.ofSeconds(10));
+            final ReplayResultDTO replayResult = new ReplayResultDTO(false, GAME_OVER, TOTAL_FRAMES);
+            givenReplayDependencies(incompleteAttempt, replayResult);
 
             try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
                 service.submitRun(USER_ID, REQUEST);
@@ -278,6 +376,48 @@ class ReplaySubmissionServiceTests {
                 Mockito.verifyNoInteractions(suspicionService);
             }
         }
+
+        /// Checks serialization failures before replay execution.
+        @Test
+        @DisplayName("throws ReplaySerializationException when replay payload serialization fails")
+        void throwsWhenReplayPayloadSerializationFails() throws JacksonException {
+            givenReplayDependencies(completedAttempt, new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES));
+            Mockito.when(objectMapper.writeValueAsString(Mockito.any()))
+                    .thenThrow(new JacksonException("boom") {
+                        private static final long serialVersionUID = 1L;
+                    });
+
+            try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
+                Assertions.assertThrows(ReplaySerializationException.class,
+                        () -> service.submitRun(USER_ID, REQUEST));
+
+                Mockito.verify(replayService, Mockito.never()).replay(Mockito.any());
+                Mockito.verify(attemptService, Mockito.never()).updateAntiCheatStatus(
+                        Mockito.anyString(),
+                        Mockito.any(User.class),
+                        Mockito.anyString(),
+                        Mockito.any(AttemptVerificationStatus.class));
+            }
+        }
+
+        /// Checks unexpected classifier output fails explicitly.
+        @Test
+        @DisplayName("throws IllegalStateException when classifier returns NOT_VERIFIED")
+        void throwsWhenClassifierReturnsNotVerified() throws JacksonException {
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES);
+            givenReplayDependencies(completedAttempt, replayResult);
+            Mockito.when(suspicionService.classify(
+                    Mockito.eq(level),
+                    Mockito.eq(user),
+                    Mockito.eq(ATTEMPT_ID),
+                    Mockito.any(InputLogFingerprint.class)))
+                    .thenReturn(AttemptVerificationStatus.NOT_VERIFIED);
+
+            try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
+                Assertions.assertThrows(IllegalStateException.class,
+                        () -> service.submitRun(USER_ID, REQUEST));
+            }
+        }
     }
 
     /// Stubs the direct collaborators needed for a replay submission.
@@ -286,7 +426,6 @@ class ReplaySubmissionServiceTests {
         Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
         Mockito.when(userService.getById(USER_ID)).thenReturn(Optional.of(user));
         Mockito.when(attemptService.getAttemptById(ATTEMPT_ID)).thenReturn(attempt);
-        Mockito.when(tileSetService.getTileSet()).thenReturn(EMPTY_TILESET);
         Mockito.when(objectMapper.writeValueAsString(Mockito.any()))
                 .thenReturn(LEVEL_JSON, INPUT_JSON);
         Mockito.when(replayService.replay(Mockito.any(ReplayRequest.class))).thenReturn(replayResult);
@@ -294,12 +433,10 @@ class ReplaySubmissionServiceTests {
 
     /// Mocks the static Tiled map conversion used by the service.
     private MockedStatic<LayerToTiledMapConverter> mockTiledMapConversion() {
-        final MockedStatic<LayerToTiledMapConverter> mockedStatic =
-                Mockito.mockStatic(LayerToTiledMapConverter.class);
+        final MockedStatic<LayerToTiledMapConverter> mockedStatic = Mockito.mockStatic(LayerToTiledMapConverter.class);
         mockedStatic.when(() -> LayerToTiledMapConverter.convertPipeline(
                 level,
-                EMPTY_TILESET,
-                tileSetService)).thenReturn(TILED_MAP);
+                tileCatalogService)).thenReturn(TILED_MAP);
         return mockedStatic;
     }
 
@@ -314,8 +451,8 @@ class ReplaySubmissionServiceTests {
 
     /// Verifies the same computed fingerprint is persisted and classified.
     private void verifyFingerprintUpdatedAndClassified() {
-        final ArgumentCaptor<InputLogFingerprint> fingerprintCaptor =
-                ArgumentCaptor.forClass(InputLogFingerprint.class);
+        final ArgumentCaptor<InputLogFingerprint> fingerprintCaptor = ArgumentCaptor
+                .forClass(InputLogFingerprint.class);
         Mockito.verify(attemptService).updateFingerprint(
                 Mockito.eq(ATTEMPT_ID),
                 Mockito.eq(user),

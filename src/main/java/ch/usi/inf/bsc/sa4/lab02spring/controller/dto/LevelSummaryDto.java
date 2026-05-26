@@ -13,8 +13,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
-@SuppressFBWarnings(value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2",
-                "US_USELESS_SUPPRESSION_ON_CLASS" }, justification = "Transient response DTO; mutability is intentional and not shared concurrently")
+@SuppressFBWarnings(
+                value = "EI_EXPOSE_REP",
+                justification = "Transient response DTO; mutability is intentional and not shared concurrently")
 public record LevelSummaryDto(
                 String id,
                 String title,
@@ -24,6 +25,7 @@ public record LevelSummaryDto(
                 double clearRate,
                 long popularity,
                 @Nullable String userAttitude,
+                boolean completedByCurrentUser,
                 long likeCount,
                 long dislikeCount,
                 @JsonSerialize(using = FieldSerializer.LevelDTOObjectLayerSerializer.class) @JsonDeserialize(keyUsing = FieldSerializer.PositionKeyDeserializer.class) Map<Position, GameObject> objectLayer,
@@ -41,7 +43,7 @@ public record LevelSummaryDto(
                         final long playCount,
                         final double clearRate,
                         final long popularity) {
-                this(level, playCount, clearRate, popularity, null, 0, 0);
+                this(level, playCount, clearRate, popularity, null, false, 0, 0);
         }
 
         /// Constructs a LevelSummaryDto from the given Level entity and statistics,
@@ -59,6 +61,7 @@ public record LevelSummaryDto(
                         final double clearRate,
                         final long popularity,
                         final @Nullable String userAttitude,
+                        final boolean completedByCurrentUser,
                         final long likeCount,
                         final long dislikeCount) {
                 this(
@@ -70,6 +73,7 @@ public record LevelSummaryDto(
                                 clearRate,
                                 popularity,
                                 userAttitude,
+                                completedByCurrentUser,
                                 likeCount,
                                 dislikeCount,
                                 level.getObjectLayer(),

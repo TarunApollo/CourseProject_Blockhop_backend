@@ -1,6 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.AttemptDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
 import ch.usi.inf.bsc.sa4.lab02spring.model.InputLogFingerprint;
@@ -11,6 +12,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.AttemptNotFoundException;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.ForbiddenUserException;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
@@ -134,7 +136,7 @@ public class AttemptService {
     }
 
     /// Stores the computed input fingerprint for an attempt.
-    /// 
+    ///
     /// @param attemptId   the id of the attempt to update
     /// @param user        the owner expected for the attempt
     /// @param levelId     the level expected for the attempt
@@ -151,6 +153,32 @@ public class AttemptService {
             throw new IllegalArgumentException("Attempt does not belong to this level");
         }
         attempt.setFingerprint(fingerprint);
+        this.attemptRepository.save(attempt);
+    }
+
+    /// Stores the recorded input log for an attempt so it can later be replayed
+    /// as a ghost.
+    ///
+    /// Loads the attempt fresh and saves it back; callers must not pre-load the
+    /// attempt themselves, since other replay-submission updates may have
+    /// persisted changes between loads.
+    ///
+    /// @param attemptId the id of the attempt to update
+    /// @param user      the owner expected for the attempt
+    /// @param levelId   the level expected for the attempt
+    /// @param inputLog  the per-frame input log to store on the attempt
+    public void updateInputLog(final String attemptId,
+            final User user,
+            final String levelId,
+            final List<InputFrameDTO> inputLog) {
+        final Attempt attempt = getAttemptById(attemptId);
+        if (!attempt.getUser().getId().equals(user.getId())) {
+            throw new ForbiddenUserException("Attempt does not belong to this user");
+        }
+        if (!attempt.getLevel().getId().equals(levelId)) {
+            throw new IllegalArgumentException("Attempt does not belong to this level");
+        }
+        attempt.setInputLog(inputLog);
         this.attemptRepository.save(attempt);
     }
 

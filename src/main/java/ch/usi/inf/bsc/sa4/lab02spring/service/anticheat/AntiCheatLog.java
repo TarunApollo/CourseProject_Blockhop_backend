@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public final class AntiCheatLog {
 
     /// Anti-cheat logger.
-    private static final Logger log = LoggerFactory.getLogger(AntiCheatLog.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AntiCheatLog.class);
 
     /// Text at the start of each anti-cheat log.
     private static final String LOG_PREFIX = "[ANTICHEAT]";
@@ -30,8 +30,8 @@ public final class AntiCheatLog {
     /// @param userId player id
     /// @param levelId level id
     public static void levelStarted(final String userId, final String levelId) {
-        if (log.isInfoEnabled()) {
-            log.info("{} {} {} started level {}",
+        if (LOG.isInfoEnabled()) {
+            LOG.info("{} {} {} started level {}",
                     cyan(LOG_PREFIX), bold("Player"), userId, levelId);
         }
     }
@@ -40,8 +40,8 @@ public final class AntiCheatLog {
     /// @param userId player id
     /// @param levelId level id
     public static void levelEntered(final String userId, final String levelId) {
-        if (log.isInfoEnabled()) {
-            log.info("{} Player {} opened level {} for play",
+        if (LOG.isInfoEnabled()) {
+            LOG.info("{} Player {} opened level {} for play",
                     cyan(LOG_PREFIX), userId, levelId);
         }
     }
@@ -51,8 +51,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param frames recorded frame count
     public static void levelCompleted(final String userId, final String levelId, final int frames) {
-        if (log.isInfoEnabled()) {
-            log.info("{} {} {} completed level {} ({} frames), starting replay...",
+        if (LOG.isInfoEnabled()) {
+            LOG.info("{} {} {} completed level {} ({} frames), starting replay...",
                     cyan(LOG_PREFIX), bold("Player"), userId, levelId, frames);
         }
     }
@@ -62,8 +62,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param reason replay result reason
     public static void replayValid(final String userId, final String levelId, final String reason) {
-        if (log.isInfoEnabled()) {
-            log.info(REPLAY_OUTCOME_FORMAT,
+        if (LOG.isInfoEnabled()) {
+            LOG.info(REPLAY_OUTCOME_FORMAT,
                     green(LOG_PREFIX), bold("REPLAY VERIFIED"), userId, levelId, reason);
         }
     }
@@ -73,8 +73,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param reason mismatch reason
     public static void replayMismatch(final String userId, final String levelId, final String reason) {
-        if (log.isWarnEnabled()) {
-            log.warn(REPLAY_OUTCOME_FORMAT,
+        if (LOG.isWarnEnabled()) {
+            LOG.warn(REPLAY_OUTCOME_FORMAT,
                     red(LOG_PREFIX), bold("REPLAY MISMATCH"), userId, levelId, reason);
         }
     }
@@ -84,8 +84,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param reason suspicion reason
     public static void replaySuspicious(final String userId, final String levelId, final String reason) {
-        if (log.isWarnEnabled()) {
-            log.warn(REPLAY_OUTCOME_FORMAT,
+        if (LOG.isWarnEnabled()) {
+            LOG.warn(REPLAY_OUTCOME_FORMAT,
                     yellow(LOG_PREFIX), bold("REPLAY SUSPICIOUS"), userId, levelId, reason);
         }
     }
@@ -95,8 +95,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param reason invalid replay reason
     public static void replayInvalid(final String userId, final String levelId, final String reason) {
-        if (log.isWarnEnabled()) {
-            log.warn(REPLAY_OUTCOME_FORMAT,
+        if (LOG.isWarnEnabled()) {
+            LOG.warn(REPLAY_OUTCOME_FORMAT,
                     red(LOG_PREFIX), bold("REPLAY INVALID"), userId, levelId, reason);
         }
     }
@@ -106,8 +106,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param error error message
     public static void replayError(final String userId, final String levelId, final String error) {
-        if (log.isErrorEnabled()) {
-            log.error("{} Replay FAILED for player {} on level {}: {}",
+        if (LOG.isErrorEnabled()) {
+            LOG.error("{} Replay FAILED for player {} on level {}: {}",
                     red(LOG_PREFIX), userId, levelId, error);
         }
     }
@@ -116,8 +116,8 @@ public final class AntiCheatLog {
     /// @param userId player id
     /// @param levelId level id
     public static void replayTimeout(final String userId, final String levelId) {
-        if (log.isWarnEnabled()) {
-            log.warn("{} Replay TIMED OUT for player {} on level {}",
+        if (LOG.isWarnEnabled()) {
+            LOG.warn("{} Replay TIMED OUT for player {} on level {}",
                     yellow(LOG_PREFIX), userId, levelId);
         }
     }
@@ -127,8 +127,8 @@ public final class AntiCheatLog {
     /// @param levelId level id
     /// @param command command to run
     public static void replaySpinningUp(final String userId, final String levelId, final String command) {
-        if (log.isInfoEnabled()) {
-            log.info("{} {} for player {} on level {} via `{}`",
+        if (LOG.isInfoEnabled()) {
+            LOG.info("{} {} for player {} on level {} via `{}`",
                     cyan(LOG_PREFIX), bold("Spinning up headless Phaser"), userId, levelId, command);
         }
     }
