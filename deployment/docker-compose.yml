@@ -11,9 +11,8 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017
-      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
-      - BACKEND_BASE_URL=${BACKEND_BASE_URL}
+      - SPRING_MONGODB_URI=mongodb://mongodb:27017/users_tutorial_lab02
+      - APP_FRONTEND_BASE_URL=https://hajime.sa4.si.usi.ch
 
 networks:
   lab-05-network:
