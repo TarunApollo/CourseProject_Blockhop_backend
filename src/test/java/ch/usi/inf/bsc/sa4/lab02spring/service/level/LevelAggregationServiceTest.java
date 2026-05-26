@@ -1,16 +1,5 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +13,18 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.LevelSummaryDto;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.PublishedLevelSearchCriteria;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttitudeRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.service.UserService;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
 /// Unit tests for [LevelAggregationService].
 /// Verifies sort strategies, popularity windows, and clear-rate computation.
@@ -352,7 +353,10 @@ class LevelAggregationServiceTest {
             Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
             Mockito.when(userService.getById(currentUser.getId())).thenReturn(Optional.of(currentUser));
             stubAttempts(a, 0, 0);
-            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, a)).thenReturn(Boolean.TRUE);
+            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                    currentUser,
+                    a,
+                    AttemptVerificationStatus.LEGIT)).thenReturn(Boolean.TRUE);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE,
@@ -361,6 +365,29 @@ class LevelAggregationServiceTest {
                     currentUser.getId());
 
             Assertions.assertTrue(result.get(0).completedByCurrentUser());
+        }
+
+        /// Non-LEGIT completions must not unlock the ghost-related summary flag.
+        @Test
+        @DisplayName("does not mark the level as completed for ghost access when no LEGIT completion exists")
+        void summaryRequiresLegitCompletionFlag() {
+            final Level a = publishedLevel("a");
+            final User currentUser = new User("player-2", "Luigi");
+            Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
+            Mockito.when(userService.getById(currentUser.getId())).thenReturn(Optional.of(currentUser));
+            stubAttempts(a, 0, 0);
+            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                    currentUser,
+                    a,
+                    AttemptVerificationStatus.LEGIT)).thenReturn(Boolean.FALSE);
+
+            final List<LevelSummaryDto> result = service.getPublishedLevels(
+                    PublishedLevelSortBy.CLEAR_RATE,
+                    DateRangePreset.AllTimeDateRangePreset.ALL_TIME,
+                    null,
+                    currentUser.getId());
+
+            Assertions.assertFalse(result.get(0).completedByCurrentUser());
         }
 
         /// The published-level repository should be hit exactly once per call.

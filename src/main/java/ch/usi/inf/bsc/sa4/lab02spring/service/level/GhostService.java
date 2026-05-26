@@ -1,20 +1,20 @@
 package ch.usi.inf.bsc.sa4.lab02spring.service.level;
 
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.GhostDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
-import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
-import ch.usi.inf.bsc.sa4.lab02spring.model.User;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
-import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.GhostDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
+import ch.usi.inf.bsc.sa4.lab02spring.model.AttemptVerificationStatus;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
+import ch.usi.inf.bsc.sa4.lab02spring.model.User;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.AttemptRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.repository.LevelRepository;
+import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelNotFoundException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /// Resolves the ghost replay (fastest replayable attempt) for a level.
 ///
@@ -23,10 +23,8 @@ import java.util.Optional;
 /// current player must, however, have completed the level at least once
 /// themselves before any ghost is returned to them.
 ///
-/// Anti-cheat verification is intentionally not gated for now — any completed
-/// attempt with a replayable input log is eligible. Adding the verification
-/// gate is tracked separately; see the GitLab issue noted on
-/// `GHOST_REPLAY_BACKEND_PLAN.md`.
+/// Only replay-verified (`LEGIT`) attempts are eligible both for unlocking
+/// ghost access and for the global ghost shown on the level.
 @Service
 @SuppressFBWarnings(
         value = "EI_EXPOSE_REP2",
@@ -66,21 +64,28 @@ public class GhostService {
     ///         published (the same 404 is returned in both cases so that
     ///         unpublished levels are not enumerable through this endpoint)
     public Optional<GhostDTO> getGhostForLevel(final String levelId, final User currentUser) {
-        Optional<GhostDTO> ghost = Optional.empty();
         final Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         if (!level.isPublished()) {
             throw new LevelNotFoundException();
         }
-        if (this.attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, level)) {
+        final Optional<GhostDTO> ghost;
+        if (this.attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
+                currentUser,
+                level,
+                AttemptVerificationStatus.LEGIT)) {
             final ObjectId levelObjectId = new ObjectId(level.getId());
-            final Optional<Attempt> best = this.attemptRepository.findFastestGhostCandidate(levelObjectId);
+            final Optional<Attempt> best = this.attemptRepository.findFastestVerifiedGhostCandidate(
+                    levelObjectId,
+                    AttemptVerificationStatus.LEGIT);
 
             ghost = best.map(attempt -> new GhostDTO(
                     attempt.getId(),
                     attempt.getInputLog(),
                     attempt.getTimeTaken().toMillis(),
                     attempt.getUser().getName()));
+        } else {
+            ghost = Optional.empty();
         }
         return ghost;
     }

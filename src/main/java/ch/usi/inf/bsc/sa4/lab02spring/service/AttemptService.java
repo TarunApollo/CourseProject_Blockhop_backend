@@ -95,6 +95,9 @@ public class AttemptService {
     ///              condition
     /// @return the saved attempt
     public Attempt submitAttempt(final User user, final Level level, final AttemptDTO dto) {
+        if (dto.timeTaken() == null) {
+            throw new IllegalArgumentException("Attempt timeTaken cannot be null");
+        }
         final Attempt attempt = new Attempt(
                 user,
                 dto.timestamp(),

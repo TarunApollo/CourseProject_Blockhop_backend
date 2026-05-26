@@ -1,17 +1,20 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.InputFrameDTO;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /// Represents a user's attempt at playing a level. An attempt stores who
 /// played, when it happened, which level was played, whether the level was
@@ -32,7 +35,7 @@ import java.util.List;
         def = "{'level': 1, 'fingerprint.jitterInputHash': 1, 'fingerprint.jitterInputChangeCount': 1}")
 @CompoundIndex(
         name = "attempt_level_completed_timetaken_ghost",
-        def = "{'level': 1, 'completed': 1, 'timeTaken': 1}")
+        def = "{'level': 1, 'completed': 1, 'antiCheatStatus': 1, 'timeTakenMs': 1}")
 public class Attempt {
 
     /// Database identifier of the attempt.
@@ -55,6 +58,9 @@ public class Attempt {
 
     /// Time spent on the attempt.
     /* package */ Duration timeTaken;
+
+    /// Numeric duration used for efficient MongoDB sorting.
+    /* package */ @Nullable Long timeTakenMs;
 
     /// Result of replay based anti cheat verification for this attempt.
     /* package */ AttemptVerificationStatus antiCheatStatus;
@@ -80,6 +86,7 @@ public class Attempt {
         this.level = level;
         this.completed = completed;
         this.timeTaken = timeTaken;
+        this.timeTakenMs = toTimeTakenMs(timeTaken);
         this.antiCheatStatus = AttemptVerificationStatus.NOT_VERIFIED;
         this.fingerprint = InputLogFingerprint.empty();
     }
@@ -96,7 +103,8 @@ public class Attempt {
     @PersistenceCreator
     public Attempt(final String id, final User user, final ZonedDateTime timestamp, final Level level,
             final boolean completed, final Duration timeTaken,
-            final AttemptVerificationStatus antiCheatStatus) {
+            final AttemptVerificationStatus antiCheatStatus,
+            final @Nullable Long timeTakenMs) {
         this.id = id;
         this.user = user;
         this.timestamp = timestamp;
@@ -104,6 +112,14 @@ public class Attempt {
         this.completed = completed;
         this.timeTaken = timeTaken;
         this.antiCheatStatus = antiCheatStatus;
+        this.timeTakenMs = timeTakenMs != null ? timeTakenMs : toTimeTakenMs(timeTaken);
+    }
+
+    /// Backward-compatible constructor used by tests and non-persistence call sites.
+    public Attempt(final String id, final User user, final ZonedDateTime timestamp, final Level level,
+            final boolean completed, final Duration timeTaken,
+            final AttemptVerificationStatus antiCheatStatus) {
+        this(id, user, timestamp, level, completed, timeTaken, antiCheatStatus, toTimeTakenMs(timeTaken));
     }
 
     /// Returns the database id of this attempt.
@@ -139,6 +155,13 @@ public class Attempt {
     /// @return attempt duration
     public Duration getTimeTaken() {
         return timeTaken;
+    }
+
+    /// Returns the numeric duration used for Mongo sorting.
+    ///
+    /// @return attempt duration in milliseconds, or null when unavailable
+    public @Nullable Long getTimeTakenMs() {
+        return timeTakenMs != null ? timeTakenMs : toTimeTakenMs(timeTaken);
     }
 
     /// Reports whether this attempt completed the level.
@@ -195,5 +218,9 @@ public class Attempt {
     /// @param inputLog frames to store
     public void setInputLog(final List<InputFrameDTO> inputLog) {
         this.inputLog = inputLog;
+    }
+
+    private static @Nullable Long toTimeTakenMs(final @Nullable Duration duration) {
+        return duration == null ? null : duration.toMillis();
     }
 }
