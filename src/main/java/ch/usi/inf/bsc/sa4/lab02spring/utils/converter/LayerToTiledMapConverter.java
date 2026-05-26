@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /// Exports a level as map data for the frontend.
-@SuppressWarnings({ "PMD.TooManyStaticImports" , "PMD.AtLeastOneConstructor"})
+@SuppressWarnings({ "PMD.TooManyStaticImports", "PMD.AtLeastOneConstructor" })
 public final class LayerToTiledMapConverter {
     /// Shared boxed false value for metadata entries.
     private static final Boolean MAP_FLAG_FALSE = Boolean.FALSE;
@@ -31,6 +31,11 @@ public final class LayerToTiledMapConverter {
             Map.entry("version", "1.10"),
             Map.entry("tiledversion", "1.10.1"),
             Map.entry("compressionlevel", -1));
+
+    /// private ctor no instantiation for sonarqube
+    /// 
+    private LayerToTiledMapConverter() {
+    }
 
     /// Converts a level into the map payload expected by the frontend.
     ///
