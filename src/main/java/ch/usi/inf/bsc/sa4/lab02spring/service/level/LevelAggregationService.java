@@ -95,6 +95,18 @@ public class LevelAggregationService {
                 dislikeCount);
     }
 
+    /// Builds a summary for a single favorited level, enriched with the current
+    /// user's attitude. Popularity is not meaningful for this context so play count
+    /// is used as the fallback.
+    ///
+    /// @param level         the favorited level to summarize
+    /// @param currentUserId the authenticated user's id
+    /// @return a LevelSummaryDto with attitude, like/dislike counts, and play stats
+    public LevelSummaryDto buildFavoriteSummary(final Level level, final String currentUserId) {
+        final User currentUser = this.userService.getById(currentUserId).orElseThrow(UserNotFoundException::new);
+        return toLevelSummary(level, PublishedLevelSortBy.POPULARITY, DateRangePreset.AllTimeDateRangePreset.ALL_TIME, currentUser);
+    }
+
     /// Returns all published levels as summaries. Applies the requested sorting
     /// strategy.
     /// 

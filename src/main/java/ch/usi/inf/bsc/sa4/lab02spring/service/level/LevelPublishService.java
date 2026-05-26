@@ -159,4 +159,15 @@ public class LevelPublishService {
         this.levelFavoriteRepository.deleteByLevelId(levelId);
         this.attitudeRepository.deleteByLevelId(levelId);
     }
+
+    /// Removes all engagement records (attempts, favorites, attitudes) for a level
+    /// that is being permanently deleted.
+    ///
+    /// @spec.requires level is not null.
+    /// @spec.modifies attempts, favorites, and attitudes referencing level.
+    /// @spec.effects deletes all engagement records for the given level.
+    /// @param level the level being deleted
+    public void clearAllEngagement(final Level level) {
+        this.clearLevelEngagement(level);
+    }
 }

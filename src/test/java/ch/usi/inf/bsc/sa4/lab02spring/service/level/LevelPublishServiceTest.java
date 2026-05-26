@@ -304,6 +304,23 @@ class LevelPublishServiceTest {
         }
     }
 
+    /// Tests for the clearAllEngagement method.
+    @Nested
+    @DisplayName("clearAllEngagement")
+    class ClearAllEngagement {
+
+        /// All engagement records (attempts, favorites, attitudes) must be removed.
+        @Test
+        @DisplayName("deletes attempts, favorites, and attitudes for the level")
+        void clearsAllEngagement() {
+            service.clearAllEngagement(testLevel);
+
+            Mockito.verify(attemptRepository).deleteByLevel(testLevel);
+            Mockito.verify(levelFavoriteRepository).deleteByLevelId(testLevel.getId());
+            Mockito.verify(attitudeRepository).deleteByLevelId(testLevel.getId());
+        }
+    }
+
     /// Tests for the resetLevelAfterEdit method.
     @Nested
     @DisplayName("resetLevelAfterEdit")

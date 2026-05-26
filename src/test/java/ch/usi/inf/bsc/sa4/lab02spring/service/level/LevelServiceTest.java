@@ -324,6 +324,21 @@ class LevelServiceTests {
 
             Mockito.verify(levelRepository).deleteById(LEVEL_ID);
         }
+
+        /// Engagement (favorites, votes, attempts) must be
+        /// cleared before the level is removed.
+        @Test
+        @DisplayName("clears engagement before deleting the level")
+        void clearsEngagementBeforeDeletion() {
+            final Level level = newLevel(DEFAULT_TITLE, owner);
+            Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+
+            service.deleteLevel(OWNER_ID, LEVEL_ID);
+
+            final org.mockito.InOrder order = Mockito.inOrder(levelPublishService, levelRepository);
+            order.verify(levelPublishService).clearAllEngagement(level);
+            order.verify(levelRepository).deleteById(LEVEL_ID);
+        }
     }
 
     /// Tests for the getCreatedLevelsByUser entry point.
@@ -378,10 +393,10 @@ class LevelServiceTests {
         @DisplayName("throws LevelNotFoundException when the level does not exist")
         void levelNotFound() {
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.empty());
+            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty());
 
             Assertions.assertThrows(LevelNotFoundException.class,
-                    () -> service.updateLevelProperties(owner, LEVEL_ID,
-                            new UpdateLevelDTO(Optional.empty(), Optional.empty(), Optional.empty())));
+                    () -> service.updateLevelProperties(owner, LEVEL_ID, dto));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
@@ -392,10 +407,10 @@ class LevelServiceTests {
         void nonOwnerCannotUpdate() {
             final Level level = newLevel(DEFAULT_TITLE, owner);
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty());
 
             Assertions.assertThrows(ForbiddenUserException.class,
-                    () -> service.updateLevelProperties(otherUser, LEVEL_ID,
-                            new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty())));
+                    () -> service.updateLevelProperties(otherUser, LEVEL_ID, dto));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
@@ -406,10 +421,10 @@ class LevelServiceTests {
         void publishedCannotBeUpdated() {
             final Level level = publishedLevel();
             Mockito.when(levelRepository.findById(LEVEL_ID)).thenReturn(Optional.of(level));
+            final UpdateLevelDTO dto = new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty());
 
             Assertions.assertThrows(LevelPublishedException.class,
-                    () -> service.updateLevelProperties(owner, LEVEL_ID,
-                            new UpdateLevelDTO(Optional.of(SHORT_NEW_TITLE), Optional.empty(), Optional.empty())));
+                    () -> service.updateLevelProperties(owner, LEVEL_ID, dto));
 
             Mockito.verify(levelRepository, Mockito.never()).save(ArgumentMatchers.<Level>any());
         }
