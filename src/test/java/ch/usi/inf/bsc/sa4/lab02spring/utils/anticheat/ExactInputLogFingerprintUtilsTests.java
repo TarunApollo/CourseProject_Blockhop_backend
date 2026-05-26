@@ -48,8 +48,8 @@ class ExactInputLogFingerprintUtilsTests {
                     ExactInputLogFingerprintUtils.canonical(inputLog);
 
             Assertions.assertEquals(
-                    "0:L0R0J0S0|1:L1R0J0S0|2:L1R0J0S0|3:L0R0J0S0"
-                            + "|4:L0R1J0S0|5:L0R1J1S0|6:L0R0J0S0|7:L1R0J0S0",
+                    "0:L0R0J0S0U0D0X0P0|1:L1R0J0S0U0D0X0P0|2:L1R0J0S0U0D0X0P0|3:L0R0J0S0U0D0X0P0"
+                            + "|4:L0R1J0S0U0D0X0P0|5:L0R1J1S0U0D0X0P0|6:L0R0J0S0U0D0X0P0|7:L1R0J0S0U0D0X0P0",
                     result.canonical());
             Assertions.assertEquals(4, result.inputChangeCount());
         }

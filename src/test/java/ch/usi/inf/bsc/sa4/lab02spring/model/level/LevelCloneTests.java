@@ -50,8 +50,8 @@ class LevelCloneTests {
             this.clearCondition = new ClearCondition(new Condition.SomeClearCondition(ClearConditionType.COIN), 5);
             LevelTestFixtures.publishTestLevel(this.original);
             this.original.setClearCondition(this.clearCondition);
-            this.original.putWorldLayer(worldPosition, new GroundObject(21));
-            this.original.putObjectLayer(objectPosition, new Coin(33, objectPosition, CoinType.GOLD_COIN));
+            this.original.putWorldLayer(worldPosition, new GroundObject("terrain.grass.block"));
+            this.original.putObjectLayer(objectPosition, new Coin("coin.gold", objectPosition, CoinType.GOLD_COIN));
             this.cloned = this.original.cloneFor(this.cloneCreator, "Cloned Title");
         }
 
@@ -75,7 +75,7 @@ class LevelCloneTests {
         @DisplayName("cloneFor does not share the world layer")
         void doesNotShareWorldLayer() {
             final Position clonedOnlyPos = new Position(10, 2);
-            this.cloned.putWorldLayer(clonedOnlyPos, new GroundObject(99));
+            this.cloned.putWorldLayer(clonedOnlyPos, new GroundObject("terrain.grass.block"));
             assertFalse(this.original.getWorldLayer().containsKey(clonedOnlyPos));
         }
 

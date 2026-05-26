@@ -5,6 +5,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Attempt;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Box;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Bee;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Coin;
+import ch.usi.inf.bsc.sa4.lab02spring.model.Climbable;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.ExitDoor;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
@@ -49,7 +50,7 @@ public class MongoConfiguration {
                 StartFlag.class, ExitDoor.class, Coin.class,
                 Box.class, Decoration.class, Shell.class,
                 Snail.class, Slime.class, User.class,
-                Bee.class,
+                Bee.class, Climbable.class,
                 Level.class, Attempt.class));
         mappingContext.setAutoIndexCreation(true);
         mappingContext.setSimpleTypeHolder(customConversions.getSimpleTypeHolder());

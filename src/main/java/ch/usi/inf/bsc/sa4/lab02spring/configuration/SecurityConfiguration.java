@@ -64,6 +64,7 @@ public class SecurityConfiguration {
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/assets/**").permitAll()
                         // Allow unauthenticated CSRF token retrieval for frontend setup.
                         .requestMatchers("/csrf").permitAll()
                         .anyRequest().authenticated())
