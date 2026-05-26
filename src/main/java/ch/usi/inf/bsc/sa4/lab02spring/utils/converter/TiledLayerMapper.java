@@ -36,6 +36,11 @@ final class TiledLayerMapper {
     /// Size of one tile in pixels.
     private static final int TILE_SIZE = 128;
 
+    /// private ctor no instantiation for sonarqube
+    /// 
+    private TiledLayerMapper() {
+    }
+
     /// Builds the world layer with tile ids.
     ///
     /// @spec.requires worldLayer and tileCatalogService are not null.

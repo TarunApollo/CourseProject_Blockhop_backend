@@ -18,7 +18,7 @@ final class JitterInputLogFingerprintUtils {
     private JitterInputLogFingerprintUtils() {
     }
 
-    /* package */ static JitterCanonical canonical(final List<InputFrameDTO> inputLog) {
+    /* package */ static JitterCanonical canonical(final Iterable<InputFrameDTO> inputLog) {
         final List<InputRun> runs = jitterInputRuns(inputLog);
         final List<InputRun> withoutFakeJumps = removeFakeJumpOnlyRuns(runs);
         final List<InputRun> withoutXNoise = removeHorizontalCancellationNoise(withoutFakeJumps);

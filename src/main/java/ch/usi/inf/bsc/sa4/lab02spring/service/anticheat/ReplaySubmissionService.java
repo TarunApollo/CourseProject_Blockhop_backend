@@ -100,6 +100,9 @@ public class ReplaySubmissionService {
 
         logVerificationStatus(userId, request, replayResult, playerCompleted, status);
         attemptService.updateAntiCheatStatus(attemptId, user, request.levelId(), status);
+        if (playerCompleted) {
+            attemptService.updateInputLog(attemptId, user, request.levelId(), request.inputLog());
+        }
         return replayResult;
     }
 
@@ -154,14 +157,14 @@ public class ReplaySubmissionService {
     private static String mismatchedReason(final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
-        final String reason;
-        if (!playerCompleted) {
-            reason = "player did not complete level";
-        } else if (isFrameCountMismatch(replayResult, totalFrames)) {
-            reason = "frame count mismatch (timeScale tampering?): reported " + totalFrames
-                    + " but replay took " + replayResult.frames();
-        } else {
-            reason = "player completed but replay ended in " + replayResult.reason();
+        String reason = "player did not complete level";
+        if (playerCompleted) {
+            if (isFrameCountMismatch(replayResult, totalFrames)) {
+                reason = "frame count mismatch (timeScale tampering?): reported " + totalFrames
+                        + " but replay took " + replayResult.frames();
+            } else {
+                reason = "player completed but replay ended in " + replayResult.reason();
+            }
         }
         return reason;
     }
@@ -170,18 +173,20 @@ public class ReplaySubmissionService {
             final boolean playerCompleted,
             final int totalFrames) {
         final AttemptVerificationStatus status;
-        if (!replayResult.valid()) {
+        if (replayResult.valid()) {
+            if (playerCompleted && "game_over".equals(replayResult.reason())) {
+                status = AttemptVerificationStatus.CHEATED;
+            } else if (isFrameCountMismatch(replayResult, totalFrames)) {
+                status = AttemptVerificationStatus.CHEATED;
+            } else {
+                status = AttemptVerificationStatus.LEGIT;
+            }
+        } else {
             if (replayResult.reason().startsWith("error:")) {
                 status = AttemptVerificationStatus.REPLAY_ERROR;
             } else {
                 status = AttemptVerificationStatus.CHEATED;
             }
-        } else if (playerCompleted && "game_over".equals(replayResult.reason())) {
-            status = AttemptVerificationStatus.CHEATED;
-        } else if (isFrameCountMismatch(replayResult, totalFrames)) {
-            status = AttemptVerificationStatus.CHEATED;
-        } else {
-            status = AttemptVerificationStatus.LEGIT;
         }
         return status;
     }
@@ -195,7 +200,15 @@ public class ReplaySubmissionService {
         final List<SerializedReplayFrame> frames = request.inputLog().stream()
                 .map(frame -> new SerializedReplayFrame(
                         frame.frame(),
-                        new SerializedPlayerInput(frame.left(), frame.right(), frame.jump(), frame.run())))
+                        new SerializedPlayerInput(
+                                frame.left(),
+                                frame.right(),
+                                frame.jump(),
+                                frame.run(),
+                                frame.climbUp(),
+                                frame.climbDown(),
+                                frame.climbExit(),
+                                frame.pickupAndThrow())))
                 .toList();
         return objectMapper.writeValueAsString(frames);
     }
@@ -203,6 +216,14 @@ public class ReplaySubmissionService {
     private record SerializedReplayFrame(int frame, SerializedPlayerInput input) {
     }
 
-    private record SerializedPlayerInput(boolean left, boolean right, boolean jump, boolean run) {
+    private record SerializedPlayerInput(
+            boolean left,
+            boolean right,
+            boolean jump,
+            boolean run,
+            boolean climbUp,
+            boolean climbDown,
+            boolean climbExit,
+            boolean pickupAndThrow) {
     }
 }

@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.BoxPropertyUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.EditorLevelDTO;
-import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.ILayerUpdateDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectLayerDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateObjectPropertiesDTO;
 import ch.usi.inf.bsc.sa4.lab02spring.controller.dto.UpdateWorldLayerDTO;
+import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GroundObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Level;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
@@ -26,7 +26,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.LevelPublishedException;
 
 /// Applies editor updates to world and object layers.
 @Service
-@SuppressWarnings("PMD.UseConcurrentHashMap")
+@SuppressWarnings({"PMD.UseConcurrentHashMap", "PMD.AvoidInstantiatingObjectsInLoops"})
 public class EditorService {
 
     /// Persists edited levels.
@@ -71,10 +71,29 @@ public class EditorService {
     /// @throws IllegalArgumentException if any position is out of bounds or any
     ///                                  tileId is invalid
     public Level replaceWorldLayer(final String userId, final String levelId, final UpdateWorldLayerDTO dto) {
-        return applyLayerUpdate(userId, levelId, dto, (level, entry) -> {
-            validateTileId(entry.tileId(), tileCatalogService::isWorldTile);
-            return new GroundObject(entry.tileId());
-        }, Level::setWorldLayer);
+        final Level level = levelRepository.findById(levelId)
+                .orElseThrow(LevelNotFoundException::new);
+
+        level.ensureOwnedBy(userId);
+        level.ensureModifiable();
+
+        final Map<Position, GroundObject> newLayer = new LinkedHashMap<>(dto.tiles().size());
+        final Set<Position> seenPositions = new HashSet<>(dto.tiles().size());
+
+        for (final EditorLevelDTO entry : dto.tiles()) {
+            level.ensureWithinBounds(entry.position());
+            if (!seenPositions.add(entry.position())) {
+                throw new IllegalArgumentException("Duplicate position in layer: " + entry.position());
+            }
+            if (entry.tileId() == null || entry.tileId().isBlank() || !tileCatalogService.isWorldTile(entry.tileId())) {
+                throw new IllegalArgumentException("Invalid tileId: " + entry.tileId());
+            }
+            newLayer.put(entry.position(), new GroundObject(entry.tileId()));
+        }
+
+        level.setWorldLayer(Collections.unmodifiableMap(newLayer));
+        this.levelPublishService.resetLevelAfterEdit(level, userId);
+        return levelRepository.save(level);
     }
 
     /// Replaces the entire object layer of a level. The request contains all
@@ -92,49 +111,30 @@ public class EditorService {
     /// @throws IllegalArgumentException if any position is out of bounds, tileId
     ///                                  invalid, or placement rules are violated
     public Level replaceObjectLayer(final String userId, final String levelId, final UpdateObjectLayerDTO dto) {
-        return applyLayerUpdate(userId, levelId, dto, (level, entry) -> {
-            validateTileId(entry.tileId(), tileCatalogService::isObjectTile);
-            return gameObjectFactory.createGameObject(entry.tileId(), entry.position(), entry.content());
-        }, (level, layer) -> {
-            level.ensureValidObjectLayer(layer);
-            level.setObjectLayer(layer);
-        });
-    }
-
-    /// Common logic for replacing a level layer.
-    private <T> Level applyLayerUpdate(
-            final String userId,
-            final String levelId,
-            final ILayerUpdateDTO dto,
-            final java.util.function.BiFunction<Level, EditorLevelDTO, T> factory,
-            final java.util.function.BiConsumer<Level, Map<Position, T>> setter) {
         final Level level = levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
 
         level.ensureOwnedBy(userId);
         level.ensureModifiable();
 
-        final Map<Position, T> newLayer = new LinkedHashMap<>(dto.entries().size());
-        final Set<Position> seenPositions = new HashSet<>(dto.entries().size());
+        final Map<Position, GameObject> newLayer = new LinkedHashMap<>(dto.objects().size());
+        final Set<Position> seenPositions = new HashSet<>(dto.objects().size());
 
-        for (final EditorLevelDTO entry : dto.entries()) {
+        for (final EditorLevelDTO entry : dto.objects()) {
             level.ensureWithinBounds(entry.position());
             if (!seenPositions.add(entry.position())) {
                 throw new IllegalArgumentException("Duplicate position in layer: " + entry.position());
             }
-            newLayer.put(entry.position(), factory.apply(level, entry));
+            if (entry.tileId() == null || entry.tileId().isBlank() || !tileCatalogService.isObjectTile(entry.tileId())) {
+                throw new IllegalArgumentException("Invalid tileId: " + entry.tileId());
+            }
+            newLayer.put(entry.position(), gameObjectFactory.createGameObject(entry.tileId(), entry.position(), entry.content()));
         }
 
-        setter.accept(level, Collections.unmodifiableMap(newLayer));
-
+        level.ensureValidObjectLayer(newLayer);
+        level.setObjectLayer(Collections.unmodifiableMap(newLayer));
         this.levelPublishService.resetLevelAfterEdit(level, userId);
         return levelRepository.save(level);
-    }
-
-    private static void validateTileId(final String tileId, final java.util.function.Predicate<String> predicate) {
-        if (tileId == null || tileId.isBlank() || !predicate.test(tileId)) {
-            throw new IllegalArgumentException("Invalid tileId: " + tileId);
-        }
     }
 
     /// Updates the properties of an existing object in the object layer.

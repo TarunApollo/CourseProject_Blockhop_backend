@@ -10,21 +10,32 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
-///
-/// Configures application security.
-///
+/**
+ * Configures application security.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+    /** Security configuration logger. */
+    private static final Logger LOG = LoggerFactory.getLogger(SecurityConfiguration.class);
+
     /// Check out application.yml for all ENV vars used for the URLs.
     private final String frontendBaseUrl;
 
-    public SecurityConfiguration(@Value("${app.frontend-base-url:http://localhost:3000}") final String frontendBaseUrl) {
+    /**
+     * Creates a security configuration using the configured frontend base URL.
+     *
+     * @param frontendBaseUrl frontend URL used after OAuth login
+     */
+    public SecurityConfiguration(@Value("${app.frontend-base-url}") final String frontendBaseUrl) {
         this.frontendBaseUrl = frontendBaseUrl;
+        LOG.info("OAuth frontend success URL configured as {}", frontendBaseUrl);
     }
 
     /// Creates the CORS configuration used by the application.
@@ -53,7 +64,7 @@ public class SecurityConfiguration {
                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/assets/spritesheets").permitAll()
+                        .requestMatchers("/assets/**").permitAll()
                         // Allow unauthenticated CSRF token retrieval for frontend setup.
                         .requestMatchers("/csrf").permitAll()
                         .anyRequest().authenticated())

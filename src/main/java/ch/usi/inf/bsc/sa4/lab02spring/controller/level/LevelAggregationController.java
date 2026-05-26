@@ -7,8 +7,6 @@ import ch.usi.inf.bsc.sa4.lab02spring.utils.DateRangePreset;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.OAuth2UserUtils;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.PublishedLevelSortBy;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,7 +22,6 @@ import java.util.List;
 /// REST endpoints producing aggregated views over published levels.
 @RestController
 @RequestMapping("/levels")
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Spring-managed singleton; injected services are intentionally shared")
 public class LevelAggregationController {
     /// OAuth2 subject attribute name.
     private static final String OAUTH_SUB_ATTRIBUTE = "sub";

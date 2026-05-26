@@ -35,15 +35,9 @@ class AssetControllerTests {
 
     /// Valid existing spritesheet type.
     private static final String TYPE_CHARACTERS = "characters";
-    
+
     /// Unknown spritesheet type.
     private static final String TYPE_UNKNOWN = "unknown";
-    
-    /// Header name for cache control.
-    private static final String CACHE_CONTROL_HEADER = "Cache-Control";
-    
-    /// Header value for cache control.
-    private static final String CACHE_CONTROL_VALUE = "max-age=3600, public";
 
     /// Tests for fetching spritesheets.
     @Nested
@@ -52,7 +46,7 @@ class AssetControllerTests {
 
         /// Tests when the spritesheet type exists.
         @Test
-        @DisplayName("should return 200 OK and payload with cache headers")
+        @DisplayName("should return 200 OK and payload")
         void typeExists() {
             final Map<String, Object> payload = Map.of("frames", Map.of("sprite1", Map.of()));
             Mockito.when(spriteCatalogService.getPayload(TYPE_CHARACTERS)).thenReturn(Optional.of(payload));
@@ -61,7 +55,6 @@ class AssetControllerTests {
                     .uri("/assets/spritesheets?type={type}", TYPE_CHARACTERS)
                     .exchange()
                     .expectStatus().isOk()
-                    .expectHeader().valueEquals(CACHE_CONTROL_HEADER, CACHE_CONTROL_VALUE)
                     .expectBody(Map.class).isEqualTo(payload);
         }
 

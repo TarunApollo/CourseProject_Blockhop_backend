@@ -1,0 +1,80 @@
+{
+  "needsSupportCategories": ["item", "essential", "enemy", "decoration"],
+  "solidCategories": ["ground", "special", "hazard", "item"],
+  "boxTileIds": ["block.planks", "block.plank"],
+  "coinTileIds": ["coin.gold", "coin.silver", "coin.bronze"],
+  "flyingTileIds": ["enemy.bee"],
+  "uniqueObjectRules": [
+    {
+      "key": "startFlag",
+      "tileIds": ["flag.green"],
+      "requiredErrorMessage": "Level must have a Start Flag",
+      "duplicateErrorMessage": "Level can only have one Start Flag",
+      "duplicateIssueMessage": "There can only be one Start Flag."
+    },
+    {
+      "key": "exitDoor",
+      "tileIds": ["door.closed.bottom", "door.open.bottom"],
+      "requiredErrorMessage": "Level must have an Exit Door",
+      "duplicateErrorMessage": "Level can only have one Exit Door",
+      "duplicateIssueMessage": "There can only be one Exit Door."
+    }
+  ],
+  "categoryLabels": {
+    "ground": "Ground Tiles",
+    "special": "Special Platforms",
+    "hazard": "Hazards",
+    "essential": "Essential Objects",
+    "item": "Items & Boxes",
+    "enemy": "Enemies",
+    "collectible": "Collectibles",
+    "decoration": "Decorations"
+  },
+  "tileGroupOrder": [
+    "ground", "special", "hazard", "essential", "item", "enemy", "collectible", "decoration"
+  ],
+  "groupRules": {
+    "ground": { "layer": "world", "categories": ["ground"] },
+    "special": { "layer": "world", "categories": ["special"] },
+    "hazard": { "layer": "world", "categories": ["hazard"] },
+    "essential": { "layer": "object", "categories": ["essential"] },
+    "item": { "layer": "object", "categories": ["item"] },
+    "enemy": { "layer": "object", "categories": ["enemy"] },
+    "collectible": { "layer": "object", "categories": ["collectible"] },
+    "decoration": { "layer": "object", "categories": ["decoration"] }
+  },
+  "groundRoleAnchors": [
+    "block", "cloud", "horizontal.overhang.left", "horizontal.overhang.right",
+    "block.strong.empty", "ramp.long.a", "ramp.long.b", "ramp.long.c",
+    "ramp.short.a", "ramp.short.b"
+  ],
+  "groupTileIdAnchors": {
+    "special": ["platform.bridge.logs"],
+    "hazard": ["hazard.spikes", "hazard.block.spikes"],
+    "essential": ["flag.green", "door.closed.bottom"],
+    "item": ["block.planks", "block.plank"],
+    "enemy": ["enemy.slime.normal", "enemy.snail", "enemy.bee"],
+    "collectible": ["coin.gold", "coin.silver", "coin.bronze"],
+    "decoration": [
+      "decoration.sign", "decoration.sign.right", "decoration.sign.left",
+      "decoration.bush", "decoration.cactus", "decoration.grass",
+      "decoration.grass.purple", "decoration.fence", "decoration.sign.exit"
+    ]
+  },
+  "clearConditionTileIds": {
+    "coin": "coin.gold",
+    "box": "block.plank",
+    "slime": "enemy.slime.normal",
+    "snail": "enemy.snail",
+    "bee": "enemy.bee"
+  },
+  "groundSpecialTileIds": [
+    "block.strong.empty", "platform.bridge.logs", "hazard.block.spikes",
+    "hazard.spikes", "block.red", "block.green", "block.blue"
+  ],
+  "specialAutoTile": {
+    "tileId": "terrain.grass.block",
+    "type": "AutoTile",
+    "category": "ground"
+  }
+}
