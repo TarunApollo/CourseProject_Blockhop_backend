@@ -5,6 +5,17 @@ public record InputFrameDTO(
         boolean left,
         boolean right,
         boolean jump,
-        boolean run
+        boolean run,
+        boolean climbUp,
+        boolean climbDown,
+        boolean climbExit,
+        boolean pickupAndThrow
 ) {
+    public InputFrameDTO(final int frame,
+            final boolean left,
+            final boolean right,
+            final boolean jump,
+            final boolean run) {
+        this(frame, left, right, jump, run, false, false, false, false);
+    }
 }
