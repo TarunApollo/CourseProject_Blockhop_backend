@@ -43,6 +43,13 @@ import tools.jackson.databind.json.JsonMapper;
 @SuppressWarnings({ "PMD.ExcessiveImports", "PMD.TooManyStaticImports" })
 class ReplaySubmissionServiceTests {
 
+    /// level complete string
+    private static final String LEVEL_COMPLETE = "level_complete";
+
+    /// time stamp for level attempt
+    private static final String TIMESTAMP = "2026-05-20T00:00:00Z";
+
+
     /// User id used by replay submission tests.
     private static final String USER_ID = "user-1";
 
@@ -121,7 +128,7 @@ class ReplaySubmissionServiceTests {
         level = new Level("Replay", "desc", user);
         completedAttempt = new Attempt(
                 user,
-                ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                ZonedDateTime.parse(TIMESTAMP),
                 level,
                 true,
                 Duration.ofSeconds(10));
@@ -164,7 +171,7 @@ class ReplaySubmissionServiceTests {
             final User otherUser = new User("other-user", "Luigi");
             final Attempt otherAttempt = new Attempt(
                     otherUser,
-                    ZonedDateTime.parse("2026-05-20T00:00:00Z"),
+                    ZonedDateTime.parse(TIMESTAMP),
                     level,
                     true,
                     Duration.ofSeconds(10));
@@ -188,7 +195,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores LEGIT when replay passes and fingerprint is clean")
         void storesLegitWhenReplayPassesAndFingerprintIsClean() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES);
             givenReplayDependencies(completedAttempt, replayResult);
             Mockito.when(suspicionService.classify(
                     Mockito.eq(level),
@@ -215,7 +222,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores SUSPICIOUS when fingerprint classification is suspicious")
         void storesSuspiciousWhenFingerprintClassificationIsSuspicious() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES);
             givenReplayDependencies(completedAttempt, replayResult);
             Mockito.when(suspicionService.classify(
                     Mockito.eq(level),
@@ -239,7 +246,7 @@ class ReplaySubmissionServiceTests {
         @Test
         @DisplayName("stores CHEATED when replay frame count differs beyond tolerance")
         void storesCheatedWhenReplayFrameCountDiffersBeyondTolerance() throws JacksonException {
-            final ReplayResultDTO replayResult = new ReplayResultDTO(true, "level_complete", TOTAL_FRAMES + 6);
+            final ReplayResultDTO replayResult = new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES + 6);
             givenReplayDependencies(completedAttempt, replayResult);
 
             try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
