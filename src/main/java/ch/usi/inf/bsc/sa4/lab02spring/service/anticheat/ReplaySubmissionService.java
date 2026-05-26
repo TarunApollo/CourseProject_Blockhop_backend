@@ -154,14 +154,16 @@ public class ReplaySubmissionService {
     private static String mismatchedReason(final ReplayResultDTO replayResult,
             final boolean playerCompleted,
             final int totalFrames) {
-        if (playerCompleted && isFrameCountMismatch(replayResult, totalFrames)) {
-            return "frame count mismatch (timeScale tampering?): reported " + totalFrames
-                    + " but replay took " + replayResult.frames();
-        }
+        String reason = "player did not complete level";
         if (playerCompleted) {
-            return "player completed but replay ended in " + replayResult.reason();
+            if (isFrameCountMismatch(replayResult, totalFrames)) {
+                reason = "frame count mismatch (timeScale tampering?): reported " + totalFrames
+                        + " but replay took " + replayResult.frames();
+            } else {
+                reason = "player completed but replay ended in " + replayResult.reason();
+            }
         }
-        return "player did not complete level";
+        return reason;
     }
 
     private static AttemptVerificationStatus toAttemptVerificationStatus(final ReplayResultDTO replayResult,

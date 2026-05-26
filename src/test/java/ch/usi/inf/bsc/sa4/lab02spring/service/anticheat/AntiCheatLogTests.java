@@ -87,6 +87,26 @@ class AntiCheatLogTests {
         Assertions.assertTrue(logs.contains("Replay TIMED OUT"));
     }
 
+    /// Checks disabled log levels.
+    @Test
+    @DisplayName("skips all messages when the logger is disabled")
+    void skipsAllMessagesWhenLoggerIsDisabled() {
+        logger.setLevel(Level.OFF);
+
+        AntiCheatLog.levelStarted(USER_ID, LEVEL_ID);
+        AntiCheatLog.levelEntered(USER_ID, LEVEL_ID);
+        AntiCheatLog.levelCompleted(USER_ID, LEVEL_ID, 42);
+        AntiCheatLog.replaySpinningUp(USER_ID, LEVEL_ID, "npx tsx replay.ts");
+        AntiCheatLog.replayValid(USER_ID, LEVEL_ID, "level_complete");
+        AntiCheatLog.replayMismatch(USER_ID, LEVEL_ID, "frame mismatch");
+        AntiCheatLog.replaySuspicious(USER_ID, LEVEL_ID, "fingerprint");
+        AntiCheatLog.replayInvalid(USER_ID, LEVEL_ID, "error");
+        AntiCheatLog.replayError(USER_ID, LEVEL_ID, "boom");
+        AntiCheatLog.replayTimeout(USER_ID, LEVEL_ID);
+
+        Assertions.assertTrue(appender.list.isEmpty());
+    }
+
     /// Returns all captured formatted log messages.
     private String loggedMessages() {
         return appender.list.stream()
