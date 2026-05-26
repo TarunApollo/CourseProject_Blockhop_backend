@@ -20,6 +20,7 @@ import ch.usi.inf.bsc.sa4.lab02spring.model.Decoration;
 import ch.usi.inf.bsc.sa4.lab02spring.model.GameObject;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Position;
 import ch.usi.inf.bsc.sa4.lab02spring.model.Slime;
+import ch.usi.inf.bsc.sa4.lab02spring.model.SpikedAlien;
 import ch.usi.inf.bsc.sa4.lab02spring.utils.UnknownObjectTypeException;
 
 /// Tests for [GameObjectFactory].
@@ -32,6 +33,8 @@ class GameObjectFactoryTests {
     private static final String TILE_DECO = "tile.deco";
     /// Tile ID for slime enemies.
     private static final String TILE_SLIME = "tile.slime";
+    /// Tile ID for spiked alien enemies.
+    private static final String TILE_SPIKED_ALIEN = "tile.spiked-alien";
     /// Tile ID for box objects.
     private static final String TILE_BOX = "tile.box";
     /// Expected object type for boxes.
@@ -74,6 +77,18 @@ class GameObjectFactoryTests {
         
         assertInstanceOf(Slime.class, obj);
         assertEquals(TILE_SLIME, obj.tileId());
+    }
+
+    /// Tests creation of spiked alien enemy.
+    @Test
+    @DisplayName("creates SpikedAlien from tile type")
+    void createsSpikedAlien() {
+        Mockito.when(tileCatalogService.getType(TILE_SPIKED_ALIEN)).thenReturn("Enemy_Slime_Spiked");
+        final GameObject obj = factory.createGameObject(TILE_SPIKED_ALIEN, new Position(3, 4));
+
+        assertInstanceOf(SpikedAlien.class, obj);
+        assertEquals(TILE_SPIKED_ALIEN, obj.tileId());
+        assertEquals(new Position(3, 4), obj.pos());
     }
 
     /// Tests creation of a box with default content.

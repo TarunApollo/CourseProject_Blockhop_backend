@@ -817,6 +817,12 @@
       "layer": "object"
     },
     {
+      "id": "enemy.slime.spiked",
+      "type": "Enemy_Slime_Spiked",
+      "category": "enemy",
+      "layer": "object"
+    },
+    {
       "id": "decoration.sign",
       "type": "Decoration",
       "category": "decoration",
