@@ -356,7 +356,7 @@ class LevelAggregationServiceTest {
             Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
                     currentUser,
                     a,
-                    AttemptVerificationStatus.LEGIT)).thenReturn(true);
+                    AttemptVerificationStatus.LEGIT)).thenReturn(Boolean.TRUE);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE,
@@ -379,7 +379,7 @@ class LevelAggregationServiceTest {
             Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrueAndAntiCheatStatus(
                     currentUser,
                     a,
-                    AttemptVerificationStatus.LEGIT)).thenReturn(false);
+                    AttemptVerificationStatus.LEGIT)).thenReturn(Boolean.FALSE);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE,
