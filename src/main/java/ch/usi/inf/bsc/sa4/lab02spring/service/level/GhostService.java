@@ -66,22 +66,22 @@ public class GhostService {
     ///         published (the same 404 is returned in both cases so that
     ///         unpublished levels are not enumerable through this endpoint)
     public Optional<GhostDTO> getGhostForLevel(final String levelId, final User currentUser) {
+        Optional<GhostDTO> ghost = Optional.empty();
         final Level level = this.levelRepository.findById(levelId)
                 .orElseThrow(LevelNotFoundException::new);
         if (!level.isPublished()) {
             throw new LevelNotFoundException();
         }
-        if (!this.attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, level)) {
-            return Optional.empty();
+        if (this.attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, level)) {
+            final ObjectId levelObjectId = new ObjectId(level.getId());
+            final Optional<Attempt> best = this.attemptRepository.findFastestGhostCandidate(levelObjectId);
+
+            ghost = best.map(attempt -> new GhostDTO(
+                    attempt.getId(),
+                    attempt.getInputLog(),
+                    attempt.getTimeTaken().toMillis(),
+                    attempt.getUser().getName()));
         }
-
-        final ObjectId levelObjectId = new ObjectId(level.getId());
-        final Optional<Attempt> best = this.attemptRepository.findFastestGhostCandidate(levelObjectId);
-
-        return best.map(attempt -> new GhostDTO(
-                attempt.getId(),
-                attempt.getInputLog(),
-                attempt.getTimeTaken().toMillis(),
-                attempt.getUser().getName()));
+        return ghost;
     }
 }

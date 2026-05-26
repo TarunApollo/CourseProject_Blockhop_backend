@@ -1,7 +1,7 @@
 package ch.usi.inf.bsc.sa4.lab02spring.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -17,7 +17,9 @@ import java.util.List;
 /// played, when it happened, which level was played, whether the level was
 /// completed, and how long the attempt took.
 @SuppressWarnings({"NullAway.Init", "PMD.DataClass"})
-@SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Mongo-managed entity; references stored as-is for persistence")
+@SuppressFBWarnings(
+        value = { "EI_EXPOSE_REP", "EI_EXPOSE_REP2" },
+        justification = "Mongo-managed entity; references stored as-is for persistence")
 @Document(collection = "attempts")
 @CompoundIndex(
         name = "attempt_level_exact_fingerprint_metadata",

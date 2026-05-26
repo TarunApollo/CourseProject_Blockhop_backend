@@ -352,7 +352,7 @@ class LevelAggregationServiceTest {
             Mockito.when(levelRepository.findByPublishedTrue()).thenReturn(List.of(a));
             Mockito.when(userService.getById(currentUser.getId())).thenReturn(Optional.of(currentUser));
             stubAttempts(a, 0, 0);
-            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, a)).thenReturn(true);
+            Mockito.when(attemptRepository.existsByUserAndLevelAndCompletedTrue(currentUser, a)).thenReturn(Boolean.TRUE);
 
             final List<LevelSummaryDto> result = service.getPublishedLevels(
                     PublishedLevelSortBy.CLEAR_RATE,
