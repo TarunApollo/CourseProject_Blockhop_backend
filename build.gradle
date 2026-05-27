@@ -6,6 +6,42 @@ plugins {
 	id 'jacoco'
 }
 
+import net.ltgt.gradle.errorprone.CheckSeverity
+
+def replayBundleOutput = layout.projectDirectory.file('anticheat/replay.bundle.mjs')
+
+def readFrontendDirFromDotenv = {
+	for (String fileName : ['.env.local', '.env']) {
+		File dotenvFile = layout.projectDirectory.file(fileName).asFile
+		if (!dotenvFile.exists()) {
+			continue
+		}
+		for (String line : dotenvFile.readLines()) {
+			String trimmed = line.trim()
+			if (!trimmed.isEmpty() && !trimmed.startsWith('#')) {
+				String[] parts = trimmed.split('=', 2)
+				if (parts.length == 2 && parts[0] == 'FRONTEND_DIR') {
+					return parts[1].trim()
+				}
+			}
+		}
+	}
+	return null
+}
+
+def resolveFrontendDirectory = {
+	String configuredDir = readFrontendDirFromDotenv()
+	File frontendDir = file(configuredDir ?: '../frontend').canonicalFile
+	if (!frontendDir.exists()) {
+		throw new GradleException("Frontend directory not found: ${frontendDir}")
+	}
+	File replayEntry = new File(frontendDir, 'replay/replay.ts')
+	if (!replayEntry.exists()) {
+		throw new GradleException("Replay entry not found: ${replayEntry}")
+	}
+	return frontendDir
+}
+
 java {
 	sourceCompatibility = '25'
 	targetCompatibility = '25'
@@ -41,6 +77,23 @@ bootJar {
 	archiveFileName = 'lab02-spring-0.0.1-SNAPSHOT.jar'
 }
 
+tasks.register('buildReplayBundle', Exec) {
+	outputs.file(replayBundleOutput)
+	outputs.upToDateWhen { false }
+	doFirst {
+		File frontendDir = resolveFrontendDirectory()
+		File bundleFile = replayBundleOutput.asFile
+		bundleFile.parentFile.mkdirs()
+		workingDir frontendDir
+		commandLine 'npx', 'esbuild', 'replay/replay.ts', '--bundle', '--platform=node', '--format=esm',
+			"--outfile=${bundleFile.absolutePath}"
+	}
+}
+
+tasks.named('bootRun') {
+	dependsOn tasks.named('buildReplayBundle')
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
@@ -59,9 +112,6 @@ jacocoTestReport {
 		xml.required = true
 	}
 }
-
-
-import net.ltgt.gradle.errorprone.CheckSeverity
 
 tasks.withType(JavaCompile).configureEach {
 	options.errorprone {
