@@ -3,6 +3,8 @@ services:
     image: mongo:6
     networks: [ lab-05-network ]
     restart: always
+    volumes:
+      - mongo-data:/data/db
 
   backend:
     image: ${BACKEND_IMAGE}
@@ -14,6 +16,9 @@ services:
       - SPRING_MONGODB_URI=mongodb://mongodb:27017/users_tutorial_lab02
       - APP_FRONTEND_BASE_URL=https://hajime.sa4.si.usi.ch
       - REPLAY_SCRIPT_PATH=/backend/anticheat/replay.bundle.mjs
+
+volumes:
+  mongo-data:
 
 networks:
   lab-05-network:
