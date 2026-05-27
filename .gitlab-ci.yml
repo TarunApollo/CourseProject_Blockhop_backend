@@ -88,7 +88,7 @@ fetch_replay_bundle:
         "private": true
       }
       EOF
-    - cd anticheat/npm-install && npm install --no-save ${FRONTEND_REPLAY_PACKAGE_NAME} && cp node_modules/${FRONTEND_REPLAY_PACKAGE_NAME}/replay.bundle.mjs ../../replay.bundle.mjs
+    - cd anticheat/npm-install && npm install --no-save ${FRONTEND_REPLAY_PACKAGE_NAME} && cp node_modules/${FRONTEND_REPLAY_PACKAGE_NAME}/replay.bundle.mjs ../replay.bundle.mjs
   artifacts:
     when: always
     paths:
