@@ -12,7 +12,8 @@ public enum ClearConditionType {
     COIN("coin"),
     SLIME("slime"),
     SNAIL("snail"),
-    BEE("bee");
+    BEE("bee"),
+    SLIME_SPIKED("slime_spiked");
 
 
     /// External string representation used for JSON serialization.
