@@ -4,6 +4,8 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   SONARQUBE_PROJECT_KEY: sa4-2026-${CI_PROJECT_ID}
   SONARQUBE_PROJECT_NAME: sa4-2026/team-4-backend
+  FRONTEND_PROJECT_ID: "80343747"
+  FRONTEND_REPLAY_PACKAGE_NAME: "replay-bundle"
   SSH_HOST: "gitlab-cd@hajime.sa4.si.usi.ch"
   DOCKER_STAGING_HOST: "hajime.sa4.si.usi.ch"
   CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX_SLASH: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/
@@ -68,6 +70,31 @@ package_job:
       - build/libs
     expire_in: 1 hour
 
+fetch_replay_bundle:
+  stage: build
+  image: node:22
+  script:
+    - mkdir -p anticheat
+    - mkdir -p anticheat/npm-install
+    - |
+      cat > anticheat/npm-install/.npmrc <<EOF
+      registry=https://${CI_SERVER_HOST}/api/v4/projects/${FRONTEND_PROJECT_ID}/packages/npm/
+      //${CI_SERVER_HOST}/api/v4/projects/${FRONTEND_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+      EOF
+    - |
+      cat > anticheat/npm-install/package.json <<EOF
+      {
+        "private": true
+      }
+      EOF
+    - npm install --prefix anticheat/npm-install --no-save ${FRONTEND_REPLAY_PACKAGE_NAME}
+    - cp anticheat/npm-install/node_modules/${FRONTEND_REPLAY_PACKAGE_NAME}/replay.bundle.mjs anticheat/replay.bundle.mjs
+  artifacts:
+    when: always
+    paths:
+      - anticheat/replay.bundle.mjs
+    expire_in: 1 hour
+
 test_job:
   stage: test
   script: gradle test
@@ -90,6 +117,7 @@ release_backend:
   image: ${CI_DEPENDENCY_PROXY_DIRECT_GROUP_IMAGE_PREFIX}/docker:28
   dependencies:
     - package_job
+    - fetch_replay_bundle
   variables:
     DOCKER_HOST: tcp://docker:2375
   script:

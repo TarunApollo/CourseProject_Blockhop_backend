@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -27,14 +28,11 @@ public class ReplayService {
     /// Max seconds before replay fails.
     private static final long REPLAY_TIMEOUT_SECONDS = 30;
 
-    /// Env var for the frontend folder.
-    private static final String FRONTEND_DIR_ENV = "FRONTEND_DIR";
-
-    /// Env var for overriding the `npx` executable path.
-    private static final String NPX_PATH_ENV = "NPX_PATH";
-
     /// Env var for overriding the replay script path.
     private static final String REPLAY_SCRIPT_PATH_ENV = "REPLAY_SCRIPT_PATH";
+
+    /// Default bundled replay script path.
+    private static final Path DEFAULT_REPLAY_SCRIPT_PATH = Path.of("anticheat/replay.bundle.mjs");
 
     /// Replay execution error reason.
     public static final String EXECUTION_ERROR = "error:execution_error";
@@ -45,17 +43,13 @@ public class ReplayService {
     /// Reads app settings.
     private final Environment environment;
 
-    /// Cached `npx` path. Empty means not found.
+    /// Cached `node` path. Empty means not found.
     @Nullable
-    private String npxPath;
+    private String nodePath;
 
     /// Cached replay script path. Empty means not found.
     @Nullable
     private String replayScriptPath;
-
-    /// Cached frontend folder for running replay.
-    @Nullable
-    private Path frontendDirectory;
 
     /// Creates the replay service.
     ///
@@ -72,9 +66,9 @@ public class ReplayService {
     ///
     /// @return whether replay passed, why, and the final frame
     public ReplayResultDTO replay(final ReplayRequest replayRequest) {
-        final String npx = resolveNpx();
         final String script = resolveReplayScript();
-        ReplayResultDTO result = validateReplayPrerequisites(replayRequest, npx, script);
+        final String node = resolveNode();
+        ReplayResultDTO result = validateReplayPrerequisites(replayRequest, script, node);
 
         if (result == null) {
             Path levelFile = null;
@@ -87,7 +81,7 @@ public class ReplayService {
                 inputFile = Files.createTempFile("replay-input-", ".json");
                 Files.writeString(inputFile, replayRequest.inputLogJson(), StandardCharsets.UTF_8);
 
-                result = executeReplayProcess(replayRequest, Objects.requireNonNull(npx),
+                result = executeReplayProcess(replayRequest, Objects.requireNonNull(node),
                         Objects.requireNonNull(script), levelFile, inputFile);
             } catch (final InterruptedException e) {
                 // Reset the interrupted flag so the system knows this operation was cancelled.
@@ -112,29 +106,32 @@ public class ReplayService {
     }
 
     @Nullable
-    private ReplayResultDTO validateReplayPrerequisites(final ReplayRequest replayRequest, @Nullable final String npx,
-            @Nullable final String script) {
+    private ReplayResultDTO validateReplayPrerequisites(final ReplayRequest replayRequest,
+            @Nullable final String script,
+            @Nullable final String node) {
         ReplayResultDTO result = null;
 
-        if (npx == null) {
-            AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), "npx not found on PATH");
-            result = new ReplayResultDTO(false, "error:npx_not_found", 0);
-        } else if (script == null) {
+        if (script == null) {
             AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), "Replay script not found");
             result = new ReplayResultDTO(false, "error:script_not_found", 0);
+        } else if (node == null) {
+            AntiCheatLog.replayError(replayRequest.userId(), replayRequest.levelId(), "node not found on PATH");
+            result = new ReplayResultDTO(false, "error:node_not_found", 0);
         }
 
         return result;
     }
 
-    private ReplayResultDTO executeReplayProcess(final ReplayRequest replayRequest, final String npx, final String script,
+    private ReplayResultDTO executeReplayProcess(final ReplayRequest replayRequest,
+            final String node,
+            final String script,
             final Path levelFile, final Path inputFile) throws java.io.IOException, InterruptedException {
-        final String commandString = String.join(" ", npx, "tsx", script, levelFile.toString(), inputFile.toString());
+        final List<String> command = List.of(node, script, levelFile.toString(), inputFile.toString());
+        final String commandString = String.join(" ", command);
         AntiCheatLog.replaySpinningUp(replayRequest.userId(), replayRequest.levelId(), commandString);
 
-        final ProcessBuilder processBuilder = new ProcessBuilder(
-                npx, "tsx", script, levelFile.toString(), inputFile.toString());
-        processBuilder.directory(resolveFrontendDirectory().toFile());
+        final ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.directory(resolveReplayWorkingDirectory(script).toFile());
         processBuilder.redirectErrorStream(true);
 
         final Process process = processBuilder.start();
@@ -153,6 +150,12 @@ public class ReplayService {
         }
 
         return result;
+    }
+
+    private Path resolveReplayWorkingDirectory(final String script) {
+        final Path scriptPath = Path.of(script).toAbsolutePath().normalize();
+        final Path parent = scriptPath.getParent();
+        return parent == null ? Path.of(".").toAbsolutePath().normalize() : parent;
     }
 
     private String readProcessOutput(final Process process) throws java.io.IOException {
@@ -196,43 +199,26 @@ public class ReplayService {
         }
     }
 
-    /// Finds and remembers `npx`.
-    ///
-    /// @return `npx` path, or null if it is missing
     @Nullable
-    private synchronized String resolveNpx() {
+    private synchronized String resolveNode() {
         String resolved = null;
 
-        if (npxPath == null) {
-            npxPath = resolveNpxPathValue();
+        if (nodePath == null) {
+            nodePath = resolveBinaryFromPath("node");
         }
 
-        if (!npxPath.isEmpty()) {
-            resolved = npxPath;
+        if (!nodePath.isEmpty()) {
+            resolved = nodePath;
         }
 
         return resolved;
     }
 
-    private String resolveNpxPathValue() {
-        final String configuredNpxPath = configuredPath(NPX_PATH_ENV);
-        final String resolvedPath;
-
-        if (configuredNpxPath == null) {
-            resolvedPath = resolveNpxFromPath();
-        } else {
-            final Path candidate = Path.of(configuredNpxPath).toAbsolutePath().normalize();
-            resolvedPath = Files.isExecutable(candidate) ? candidate.toString() : "";
-        }
-
-        return resolvedPath;
-    }
-
-    private String resolveNpxFromPath() {
+    private String resolveBinaryFromPath(final String binaryName) {
         String resolvedPath = "";
 
         try {
-            final Process process = new ProcessBuilder("which", "npx").start();
+            final Process process = new ProcessBuilder("which", binaryName).start();
 
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
@@ -262,8 +248,8 @@ public class ReplayService {
         if (replayScriptPath == null) {
             final String configuredReplayScriptPath = configuredPath(REPLAY_SCRIPT_PATH_ENV);
             final Path candidate = configuredReplayScriptPath == null
-                    ? resolveFrontendDirectory().resolve("replay/replay.ts")
-                    : Path.of(configuredReplayScriptPath);
+                    ? DEFAULT_REPLAY_SCRIPT_PATH
+                    : Path.of(configuredReplayScriptPath).toAbsolutePath().normalize();
             replayScriptPath = Files.exists(candidate) ? candidate.toAbsolutePath().normalize().toString() : "";
         }
 
@@ -278,26 +264,6 @@ public class ReplayService {
     private String configuredPath(final String propertyName) {
         final String configured = environment.getProperty(propertyName);
         return configured == null || configured.isBlank() ? null : configured;
-    }
-
-    /// Finds and remembers the frontend folder.
-    ///
-    /// @return frontend folder path
-    private synchronized Path resolveFrontendDirectory() {
-        Path resolved = frontendDirectory;
-
-        if (resolved == null) {
-            final String envDir = environment.getProperty(FRONTEND_DIR_ENV);
-            if (envDir != null && !envDir.isBlank()) {
-                resolved = Path.of(envDir).toAbsolutePath().normalize();
-            } else {
-                resolved = Path.of("../frontend").toAbsolutePath().normalize();
-            }
-
-            frontendDirectory = resolved;
-        }
-
-        return resolved;
     }
 
     /// JSON line printed by the replay script.
