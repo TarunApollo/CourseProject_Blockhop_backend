@@ -103,7 +103,11 @@ public class ReplaySubmissionService {
         if (playerCompleted) {
             attemptService.updateInputLog(attemptId, user, request.levelId(), request.inputLog());
         }
-        return replayResult;
+        return new ReplayResultDTO(
+                replayResult.valid(),
+                replayResult.reason(),
+                replayResult.frames(),
+                status);
     }
 
     private ReplayRequest buildReplayRequest(final String userId,

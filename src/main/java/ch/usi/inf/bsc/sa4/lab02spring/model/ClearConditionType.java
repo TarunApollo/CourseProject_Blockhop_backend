@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum ClearConditionType {
     BOX("box"),
     COIN("coin"),
-    SLIME("slime"),
+    SLIME("slime_normal"),
     SNAIL("snail"),
     BEE("bee"),
     SLIME_SPIKED("slime_spiked");
