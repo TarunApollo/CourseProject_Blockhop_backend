@@ -18,7 +18,10 @@ import org.junit.jupiter.api.function.Executable;
     private static final String COIN_VALUE = "coin";
 
     /// JSON value for the SLIME clear condition.
-    private static final String SLIME_VALUE = "slime";
+    private static final String SLIME_VALUE = "slime_normal";
+
+    /// JSON value for the SLIME_SPIKED clear condition.
+    private static final String SLIME_SPIKED_VALUE = "slime_spiked";
 
     /// JSON value for the SNAIL clear condition.
     private static final String SNAIL_VALUE = "snail";
@@ -62,6 +65,13 @@ import org.junit.jupiter.api.function.Executable;
         @Test
         /* package */ void slimeReturnsCorrectValue() {
             Assertions.assertEquals(SLIME_VALUE, ClearConditionType.SLIME.value());
+        }
+
+        /// Verifies that SLIME_SPIKED returns the correct JSON key.
+        @DisplayName(" verifies that SLIME_SPIKED returns the correct JSON key ")
+        @Test
+        /* package */ void slimeSpikedReturnsCorrectValue() {
+            Assertions.assertEquals(SLIME_SPIKED_VALUE, ClearConditionType.SLIME_SPIKED.value());
         }
 
         /// Verifies that SNAIL returns the correct JSON key.
@@ -108,6 +118,16 @@ import org.junit.jupiter.api.function.Executable;
             Assertions.assertEquals(
                     ClearConditionType.SLIME,
                     ClearConditionType.fromValue(SLIME_VALUE));
+        }
+
+        /// Verifies that fromValue returns SLIME_SPIKED
+        /// for the slime spiked JSON key.
+        @DisplayName(" verifies that fromValue returns SLIME_SPIKED for the slime spiked JSON key ")
+        @Test
+        /* package */ void returnsSlimeSpiked() {
+            Assertions.assertEquals(
+                    ClearConditionType.SLIME_SPIKED,
+                    ClearConditionType.fromValue(SLIME_SPIKED_VALUE));
         }
 
         
