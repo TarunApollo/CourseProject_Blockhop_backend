@@ -55,6 +55,9 @@ class LevelPlayControllerTests {
         /// URI template for the submit endpoint.
         private static final String SUBMIT_URI = "/levels/{levelId}/submit";
 
+        /// URI template for the ghost endpoint.
+        private static final String GHOST_URI = "/levels/{levelId}/ghost";
+
         /// Mocked play service.
         @MockitoBean
         private LevelPlayService levelPlayService;
@@ -247,7 +250,7 @@ class LevelPlayControllerTests {
                         Mockito.when(ghostService.getGhostForLevel(LEVEL_ID, testUser))
                                         .thenReturn(Optional.of(ghostDto));
 
-                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                        restTestClient.get().uri(GHOST_URI, LEVEL_ID)
                                         .exchange()
                                         .expectStatus().isOk()
                                         .expectBody(GhostDTO.class)
@@ -264,7 +267,7 @@ class LevelPlayControllerTests {
                         Mockito.when(ghostService.getGhostForLevel(LEVEL_ID, testUser))
                                         .thenReturn(Optional.empty());
 
-                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                        restTestClient.get().uri(GHOST_URI, LEVEL_ID)
                                         .exchange()
                                         .expectStatus().isNoContent();
                 }
@@ -278,7 +281,7 @@ class LevelPlayControllerTests {
                         Mockito.when(ghostService.getGhostForLevel(LEVEL_ID, testUser))
                                         .thenThrow(new LevelNotFoundException());
 
-                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                        restTestClient.get().uri(GHOST_URI, LEVEL_ID)
                                         .exchange()
                                         .expectStatus().isNotFound();
                 }
@@ -291,7 +294,7 @@ class LevelPlayControllerTests {
                         Mockito.when(userService.getById(ControllerSecurityTestConfig.DEFAULT_USER_ID))
                                         .thenReturn(Optional.empty());
 
-                        restTestClient.get().uri("/levels/{levelId}/ghost", LEVEL_ID)
+                        restTestClient.get().uri(GHOST_URI, LEVEL_ID)
                                         .exchange()
                                         .expectStatus().isNotFound();
                 }
