@@ -58,7 +58,7 @@ class ReplayServiceTests {
         /// Checks that missing node stops replay.
         @Test
         @DisplayName("returns node_not_found when node cannot be resolved")
-        void returnsNodeNotFound() {
+        void returnsNodeNotFound() throws IOException {
             final Path replayScript = tempDir.resolve("replay.bundle.mjs");
             writeFile(replayScript, "");
             ReflectionTestUtils.setField(replayService, NODE_PATH_FIELD, "");
@@ -120,7 +120,7 @@ class ReplayServiceTests {
         /// Checks that process startup errors become replay execution errors.
         @Test
         @DisplayName("returns execution_error when the process cannot start")
-        void returnsExecutionErrorWhenProcessCannotStart() {
+        void returnsExecutionErrorWhenProcessCannotStart() throws IOException {
             final Path replayScript = tempDir.resolve("replay.bundle.mjs");
             writeFile(replayScript, "");
             ReflectionTestUtils.setField(replayService, NODE_PATH_FIELD,
@@ -144,11 +144,7 @@ class ReplayServiceTests {
         return executable;
     }
 
-    private void writeFile(final Path file, final String content) {
-        try {
-            Files.writeString(file, content);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void writeFile(final Path file, final String content) throws IOException {
+        Files.writeString(file, content);
     }
 }

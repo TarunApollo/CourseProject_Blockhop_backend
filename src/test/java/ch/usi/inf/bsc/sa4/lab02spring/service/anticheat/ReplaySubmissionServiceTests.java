@@ -211,7 +211,9 @@ class ReplaySubmissionServiceTests {
             try (MockedStatic<LayerToTiledMapConverter> ignored = mockTiledMapConversion()) {
                 final ReplayResultDTO result = service.submitRun(USER_ID, REQUEST);
 
-                Assertions.assertEquals(replayResult, result);
+                Assertions.assertEquals(
+                        new ReplayResultDTO(true, LEVEL_COMPLETE, TOTAL_FRAMES, AttemptVerificationStatus.LEGIT),
+                        result);
                 verifyReplayRequest();
                 verifyFingerprintUpdatedAndClassified();
                 Mockito.verify(attemptService).updateAntiCheatStatus(
