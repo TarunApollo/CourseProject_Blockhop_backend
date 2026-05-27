@@ -47,3 +47,6 @@ out/
 quickpush.md
 
 .env.local
+
+# anticheat replay bundle
+anticheat/replay.bundle.mjs
