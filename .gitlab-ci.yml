@@ -79,6 +79,7 @@ fetch_replay_bundle:
     - |
       cat > anticheat/npm-install/.npmrc <<EOF
       registry=https://${CI_SERVER_HOST}/api/v4/projects/${FRONTEND_PROJECT_ID}/packages/npm/
+      always-auth=true
       //${CI_SERVER_HOST}/api/v4/projects/${FRONTEND_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
       EOF
     - |
